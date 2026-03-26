@@ -1,6 +1,6 @@
 <template>
   <main class="container">
-    <h1>Welcome to Linyu</h1>
+    <h1>{{ $t('common.hello') }}! {{ $t('common.welcome') }} to Linyu</h1>
     <div class="row">
       <img src="/linyu.svg" class="logo vite" alt="Vite logo" />
     </div>
@@ -9,7 +9,8 @@
       <input id="greet-input" v-model="name" placeholder="Enter a name..." />
       <button type="submit">Greet</button>
     </form>
-    <button @click="setThemePattern">{{ themePattern }}</button>
+    <button @click="setThemePattern">切换模式</button>
+    <button @click="setLang">切换语言</button>
     <div>
       <p class="bg-blue-500">{{ greetMsg }}</p>
     </div>
@@ -19,10 +20,10 @@
 <script setup lang="ts">
   import { nextTick, ref, watch } from 'vue'
   import { invoke } from '@tauri-apps/api/core'
-  import { useSystemSettingStore } from './stores/systemSetting'
-  import { ThemePatternEnum } from './constants/system'
+  import { useSystemSettingStore } from '@/stores/systemSetting'
+  import { ThemePatternEnum, LangEnum } from '@/constants/system'
+
   const systemSetting = useSystemSettingStore()
-  const themePattern = ref('')
 
   watch(
     () => systemSetting.themes.scheme,
@@ -40,8 +41,13 @@
   )
 
   const setThemePattern = () => {
-    themePattern.value = themePattern.value === ThemePatternEnum.DARK ? ThemePatternEnum.LIGHT : ThemePatternEnum.DARK
-    systemSetting.setThemePattern(themePattern.value as ThemePatternEnum)
+    systemSetting.setThemePattern(
+      systemSetting.themes.pattern === ThemePatternEnum.DARK ? ThemePatternEnum.LIGHT : ThemePatternEnum.DARK
+    )
+  }
+
+  const setLang = () => {
+    systemSetting.setLang(systemSetting.preferences.lang === LangEnum.ZH ? LangEnum.EN : LangEnum.ZH)
   }
 
   const greetMsg = ref('')

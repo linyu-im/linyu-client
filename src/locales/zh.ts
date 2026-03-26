@@ -1,0 +1,6 @@
+export default {
+  common: {
+    hello: '你好',
+    welcome: '欢迎使用'
+  }
+}

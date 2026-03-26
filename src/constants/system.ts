@@ -9,3 +9,9 @@ export enum ThemePatternEnum {
   DARK = 'dark',
   OS = 'os'
 }
+
+//语言
+export enum LangEnum {
+  ZH = 'zh',
+  EN = 'en'
+}

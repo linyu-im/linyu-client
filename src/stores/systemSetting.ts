@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import { setTheme } from '@tauri-apps/api/app'
 import { Theme } from '@tauri-apps/api/window'
-import { ThemePatternEnum, ThemeSchemeEnum } from '../constants/system'
+import { ThemePatternEnum, ThemeSchemeEnum, LangEnum } from '@/constants/system'
+import { loadLanguage } from '@/locales'
 
 type SystemSetting = {
   themes: {
@@ -9,6 +10,10 @@ type SystemSetting = {
     pattern: ThemePatternEnum
     //主题方案
     scheme: ThemeSchemeEnum
+  }
+  preferences: {
+    //语言
+    lang: LangEnum
   }
 }
 
@@ -18,6 +23,9 @@ export const useSystemSettingStore = defineStore('systemSetting', {
       themes: {
         pattern: ThemePatternEnum.LIGHT,
         scheme: ThemeSchemeEnum.DEFALUT
+      },
+      preferences: {
+        lang: LangEnum.ZH
       }
     }
   },
@@ -28,6 +36,12 @@ export const useSystemSettingStore = defineStore('systemSetting', {
       })
       setTheme(Object.is(pattern, 'os') ? null : (pattern as Theme))
       document.documentElement.dataset.theme = pattern as string
+    },
+    setLang(lang: LangEnum) {
+      this.$patch((state) => {
+        state.preferences.lang = lang
+      })
+      loadLanguage(lang)
     }
   },
   share: {
