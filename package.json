@@ -7,18 +7,55 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "lint:staged": "lint-staged && vue-tsc --noEmit",
+    "commit": "git add . && git-cz",
+    "type-check": "vue-tsc --noEmit",
+    "check": "pnpm lint && pnpm type-check",
+    "prepare": "husky",
+    "format:vue": "pnpm dlx prettier --write \"src/**/*.vue\"",
+    "format:all": "pnpm lint:fix && pnpm format:vue"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.5.3",
+    "@vueuse/core": "^14.2.1",
+    "mitt": "^3.0.1",
+    "naive-ui": "^2.44.1",
+    "pinia": "^3.0.4",
+    "pinia-plugin-persistedstate": "^4.7.1",
+    "pinia-shared-state": "^2.0.1",
+    "sass": "^1.98.0",
+    "vue": "^3.5.30",
+    "vue-i18n": "^11.3.0",
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.3",
-    "vue-tsc": "^2.1.10",
-    "@tauri-apps/cli": "^2"
+    "@biomejs/biome": "^2.4.8",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@tauri-apps/cli": "^2.10.1",
+    "@unocss/preset-wind3": "^66.6.7",
+    "@unocss/reset": "^66.6.7",
+    "@unocss/transformer-directives": "^66.6.7",
+    "@unocss/transformer-variant-group": "^66.6.7",
+    "@unocss/vite": "^66.6.7",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "commitizen": "^4.3.1",
+    "commitlint": "^20.5.0",
+    "cz-git": "^1.12.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "unocss": "^66.6.7",
+    "vite": "^8.0.2",
+    "vue-tsc": "^3.2.6"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
   }
 }

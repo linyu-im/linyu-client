@@ -1,0 +1,138 @@
+{
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**/*.{js,jsx,ts,tsx,vue,json}",
+
+      "!.*",
+      "!node_modules",
+      "!dist",
+      "!coverage",
+      "!public",
+      "!src-tauri",
+      "!src/typings/*.d.ts"
+    ]
+  },
+
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 120,
+    "bracketSameLine": true,
+    "bracketSpacing": true,
+    "useEditorconfig": true
+  },
+
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "a11y": {
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off",
+        "noSvgWithoutTitle": "off",
+        "useAltText": "off"
+      },
+
+      "complexity": {
+        "useOptionalChain": "off",
+        "useLiteralKeys": "off",
+        "useDateNow": "off",
+        "noStaticOnlyClass": "off"
+      },
+
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn"
+      },
+
+      "style": {
+        "useNodejsImportProtocol": "off",
+        "noNonNullAssertion": "off",
+        "useNamingConvention": "off",
+        "useTemplate": "off",
+        "useImportType": "off"
+      },
+
+      "suspicious": {
+        "noGlobalIsNan": "off",
+        "noExplicitAny": "off",
+        "noAssignInExpressions": "off",
+        "noImplicitAnyLet": "off",
+        "noConfusingVoidType": "off",
+        "noArrayIndexKey": "off",
+        "useIterableCallbackReturn": "off"
+      }
+    }
+  },
+
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "none",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "always",
+      "bracketSameLine": true,
+      "bracketSpacing": true
+    }
+  },
+
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "off"
+      }
+    }
+  },
+
+  "overrides": [
+    {
+      "includes": ["**/*.vue"],
+
+      "formatter": {
+        "enabled": true
+      },
+
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          },
+
+          "style": {
+            "useNamingConvention": "off",
+            "useTemplate": "off"
+          },
+
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noAssignInExpressions": "off",
+            "noImplicitAnyLet": "off"
+          }
+        }
+      }
+    }
+  ]
+}
