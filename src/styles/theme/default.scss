@@ -1,0 +1,17 @@
+:root{
+    .default{
+        //主题色
+        --primary: #4C9BFF;
+        //背景色
+        --primary-bg: #fff;
+    }
+}
+
+html[data-theme="dark"]{
+    .default{
+        //主题色
+        --primary: #4C9BFF;
+        //背景色
+        --primary-bg: #000;
+    }
+}
