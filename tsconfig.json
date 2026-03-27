@@ -21,9 +21,8 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "@/*": ["./src/*"], // src 根目录
-      "~/*": ["./src/*"], // 项目根目录
-      "#/*": ["./src/mobile/*"] // mobile 特殊目录
+      "~/*": ["./"],
+      "@/*": ["./src/*"]
     },
 
     "allowSyntheticDefaultImports": true,

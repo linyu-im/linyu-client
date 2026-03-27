@@ -1,8 +1,7 @@
 import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { PiniaSharedState } from 'pinia-shared-state'
 import { createPinia } from 'pinia'
-
-export const pinia = createPinia()
+const pinia = createPinia()
 
 pinia
   .use(
@@ -17,3 +16,5 @@ pinia
       type: 'native'
     })
   )
+
+export default pinia

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { setTheme } from '@tauri-apps/api/app'
 import { Theme } from '@tauri-apps/api/window'
 import { ThemePatternEnum, ThemeSchemeEnum, LangEnum } from '@/constants/system'
-import { loadLanguage } from '@/locales'
+import { loadLanguage } from '@/services/i18n'
 
 type SystemSetting = {
   themes: {
