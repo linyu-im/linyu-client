@@ -14,14 +14,18 @@
       {
         "title": "linyu-client",
         "url": "/login",
-        "width": 320,
-        "height": 500,
+        "width": 336,
+        "height": 580,
         "fullscreen": false,
         "resizable": false,
         "center": true,
         "skipTaskbar": false,
         "transparent": true,
-        "decorations": false
+        "decorations": false,
+        "windowEffects":{
+          "effects": ["acrylic"],
+          "state": "active"
+        }
       }
     ],
     "security": {

@@ -1,6 +1,34 @@
 {
-  "common": {
-    "hello": "Hello",
-    "welcome": "Welcome"
+  "login": {
+    "loginText": "Login",
+    "autoLogin": "Auto Login",
+    "other": {
+      "text": "Other Methods",
+      "scan": "QR Login",
+      "github": "GitHub",
+      "gitee": "Gitee"
+    },
+    "input": {
+      "username": "Username",
+      "password": "Password"
+    },
+    "register": {
+      "tip": "New to Linyu?",
+      "text": "Sign Up"
+    },
+    "welcome": {
+      "text1": "Welcome to Linyu",
+      "text2": "Start your journey"
+    },
+    "terms": {
+      "text1": "Agree to",
+      "text2": "Terms of Service",
+      "text3": "and",
+      "text4": "Privacy Policy"
+    },
+    "footer": {
+      "provider": "© 2026 Linyu Team",
+      "support": "Support"
+    }
   }
 }

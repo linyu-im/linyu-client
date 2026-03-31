@@ -1,4 +1,5 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { Effect, EffectState } from '@tauri-apps/api/window'
 
 const defaultOptions = {
   width: 800,
@@ -38,7 +39,11 @@ export const createWebviewWindow = async (
     decorations: false,
     transparent: options.transparent,
     visible: options.visible,
-    dragDropEnabled: true
+    dragDropEnabled: true,
+    windowEffects: {
+      effects: [Effect.Acrylic],
+      state: EffectState.Active
+    }
   })
 
   webview.once('tauri://created', async () => {
@@ -53,4 +58,14 @@ export const createWebviewWindow = async (
   })
 
   return webview
+}
+
+export const closeCurrentWindow = async () => {
+  const webview = WebviewWindow.getCurrent()
+  webview.close()
+}
+
+export const minimizeCurrentWindow = async () => {
+  const webview = WebviewWindow.getCurrent()
+  webview.minimize()
 }

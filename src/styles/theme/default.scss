@@ -1,17 +1,53 @@
-:root{
-    .default{
+:root {
+    .default {
         //主题色
-        --primary: #4C9BFF;
-        //背景色
-        --primary-bg: #fff;
+        --primary-color: #4C9BFF;
+        --primary-rgb: 76, 155, 255;
+        //主深色
+        --primary-strong-color: #003E8C;
+        --primary-strong-rgb: 0, 62, 140;
+        //主浅色
+        --primary-soft-color: #76B2FB;
+        --primary-soft-rgb: 112, 178, 191;
+        //主背景色
+        --primary-bg-color: #000;
+
+        //按钮浅色背景
+        --button-soft-bg: #F7F7F7;
+        //输入框浅色背景
+        --input-soft-bg: #F7F7F7;
+        //icon按钮的hover颜色
+        --icon-hover-color: rgba(166, 166, 166, 0.3);
+        //操作栏背景色
+        --toolbar-bg-color: rgba(230, 240, 255, 0.85);
+        //次要字体颜色
+        --text-secondary-color: #9E9E9E;
     }
 }
 
-html[data-theme="dark"]{
-    .default{
+html[data-theme="dark"] {
+    .default {
         //主题色
-        --primary: #4C9BFF;
-        //背景色
-        --primary-bg: #000;
+        --primary-color: #4C9BFF;
+        --primary-rgb: 76, 155, 255;
+        //主深色
+        --primary-strong-color: #003E8C;
+        --primary-strong-rgb: 0, 62, 140;
+        //主浅色
+        --primary-soft-color: #76B2FB;
+        --primary-soft-rgb: 112, 178, 191;
+        //主背景色
+        --primary-bg-color: #000;
+
+        //按钮浅色背景
+        --button-soft-bg: #F7F7F7;
+        //输入框浅色背景
+        --input-soft-bg: #F7F7F7;
+        //icon按钮的hover颜色
+        --icon-hover-color: rgba(166, 166, 166, 0.3);
+        //操作栏背景色
+        --toolbar-bg-color: rgba(230, 240, 255, 0.85);
+        //次要字体颜色
+        --text-secondary-color: #9E9E9E;
     }
 }

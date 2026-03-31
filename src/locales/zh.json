@@ -1,6 +1,34 @@
 {
-  "common": {
-    "hello": "你好",
-    "welcome": "欢迎使用"
+  "login": {
+    "loginText": "登录",
+    "autoLogin": "自动登录",
+    "other": {
+      "text": "其他登录方式",
+      "scan": "扫码登录",
+      "github": "GitHub",
+      "gitee": "Gitee"
+    },
+    "input": {
+      "username": "请输入账号",
+      "password": "请输入密码"
+    },
+    "register": {
+      "tip": "首次使用Linyu?",
+      "text": "创建账号"
+    },
+    "welcome": {
+      "text1": "欢迎使用林语",
+      "text2": "开始你的探索之旅"
+    },
+    "terms": {
+      "text1": "已阅读并同意",
+      "text2": "服务协议",
+      "text3": "和",
+      "text4": "Linyu隐私保护指引"
+    },
+    "footer": {
+      "provider": "© 2026 Linyu Team",
+      "support": "技术支持"
+    }
   }
 }

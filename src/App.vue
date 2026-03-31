@@ -1,12 +1,15 @@
 <template>
-  <main class="h-100vh w-100vw">
-    <router-view />
-  </main>
+  <div class="h-100vh w-100vw">
+    <linyu-provider>
+      <router-view />
+    </linyu-provider>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { nextTick, watch } from 'vue'
   import { useSystemSettingStore } from '@/stores/systemSetting'
+  import LinyuProvider from './components/LinyuProvider.vue'
 
   const systemSetting = useSystemSettingStore()
 
