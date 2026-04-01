@@ -9,7 +9,7 @@
       "gitee": "Gitee"
     },
     "input": {
-      "username": "Username",
+      "account": "Account",
       "password": "Password"
     },
     "register": {

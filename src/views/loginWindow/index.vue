@@ -29,8 +29,13 @@
 
       <!-- 账号密码 -->
       <div class="flex flex-col gap-10px">
-        <n-input type="text" :placeholder="t('login.input.username')" clearable />
-        <n-input type="password" show-password-on="click" :placeholder="t('login.input.password')" clearable />
+        <n-input type="text" v-model:value="accountInfo.account" :placeholder="t('login.input.account')" clearable />
+        <n-input
+          type="password"
+          show-password-on="click"
+          v-model:value="accountInfo.password"
+          :placeholder="t('login.input.password')"
+          clearable />
         <div class="flex items-center">
           <n-checkbox size="small" />
           <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.autoLogin') }}</span>
@@ -100,12 +105,22 @@
 
 <script setup lang="ts">
   import SvgIconButton from '@/components/SvgIconButton.vue'
+  import { userApi } from '@/api'
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
+  const accountInfo = ref({
+    account: '',
+    password: ''
+  })
+
   const onLogin = () => {
-    createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+    userApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
+      if (res.code === 0) {
+        createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+      }
+    })
   }
 </script>
 

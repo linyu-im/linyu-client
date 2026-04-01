@@ -18,7 +18,6 @@ export const createWebviewWindow = async (
   options: Partial<typeof defaultOptions> = {}
 ) => {
   var webview = await WebviewWindow.getByLabel(label)
-  console.log(webview)
   if (webview) {
     await webview.setFocus()
     await webview.show()

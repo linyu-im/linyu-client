@@ -9,7 +9,7 @@
       "gitee": "Gitee"
     },
     "input": {
-      "username": "请输入账号",
+      "account": "请输入账号",
       "password": "请输入密码"
     },
     "register": {

@@ -35,7 +35,6 @@ export async function loadLanguage(lang: string): Promise<string> {
 
   const loader = localeModules[`/src/locales/${lang}.json`]
   if (!loader) {
-    console.warn(`[未找到语言包]: ${lang}`)
     return setLanguage(LangEnum.ZH)
   }
 
@@ -44,8 +43,7 @@ export async function loadLanguage(lang: string): Promise<string> {
     i18n.global.setLocaleMessage(lang, messages.default)
     loadedLanguages.push(lang)
     return setLanguage(lang)
-  } catch (e) {
-    console.error(`[加载语言包失败]: ${lang}`, e)
+  } catch (_e) {
     return setLanguage(LangEnum.ZH)
   }
 }
