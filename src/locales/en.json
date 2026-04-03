@@ -1,6 +1,9 @@
 {
   "login": {
-    "loginText": "Login",
+    "text": {
+      "default": "Login",
+      "loading": "Login in progress"
+    },
     "autoLogin": "Auto Login",
     "other": {
       "text": "Other Methods",

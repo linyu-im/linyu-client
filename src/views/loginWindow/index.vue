@@ -45,13 +45,15 @@
       <!-- 登录和协议 -->
       <div class="m-t-25px">
         <n-button
-          class="w-full h-38px bg-gradient-to-r from-[var(--primary-color)] to-[var(--primary-strong-color)] hover:from-[var(--primary-soft-color)] hover:to-[var(--primary-strong-color)]"
+          class="login__btn-gradient"
           type="primary"
-          @click="onLogin">
-          {{ t('login.loginText') }}
+          :loading="loginLoading"
+          :disabled="loginButtonDisabled"
+          @click="onAccountLogin">
+          {{ loginText }}
         </n-button>
         <div class="flex gap-5px m-t-10px justify-center select-none">
-          <n-checkbox size="small" />
+          <n-checkbox v-model:checked="termsChecked" size="small" />
           <div class="flex text-12px text-[var(--text-secondary-color)]">
             <span>{{ t('login.terms.text1') }}</span>
             <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.terms.text2') }}</span>
@@ -108,20 +110,40 @@
   import { userApi } from '@/api'
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
+  import { useUserStore } from '@/stores/user'
   const { t } = useI18n()
+  const userStore = useUserStore()
 
-  const accountInfo = ref({
-    account: '',
-    password: ''
-  })
+  const loginText = ref(t('login.text.default'))
+  const accountInfo = ref({ account: '', password: '' })
+  const loginLoading = ref(false)
+  const loginButtonDisabled = ref(true)
+  const termsChecked = ref(false)
 
-  const onLogin = () => {
+  const onAccountLogin = () => {
+    loginLoading.value = true
     userApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
+      loginLoading.value = false
       if (res.code === 0) {
+        userStore.setUserInfo({ token: res.data?.token || '', userId: res.data?.userId || '' })
         createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+      } else {
+        window.$message.error(res.msg)
       }
     })
   }
+
+  watch(
+    () => loginLoading.value,
+    (val) => {
+      loginText.value = val ? t('login.text.loading') : t('login.text.default')
+    }
+  )
+
+  watchEffect(() => {
+    loginButtonDisabled.value =
+      accountInfo.value.account === '' || accountInfo.value.password === '' || loginLoading.value || !termsChecked.value
+  })
 </script>
 
 <style scoped lang="scss">
@@ -152,6 +174,16 @@
         height: 32px;
         border-radius: 5px;
         font-size: 12px;
+      }
+
+      .login__btn-gradient {
+        width: 100%;
+        height: 38px;
+        background: linear-gradient(to right, var(--primary-color), var(--primary-strong-color));
+
+        &:not(.n-button--disabled):hover {
+          background: linear-gradient(to right, var(--primary-soft-color), var(--primary-strong-color));
+        }
       }
     }
 

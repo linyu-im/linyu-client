@@ -1,6 +1,9 @@
 {
   "login": {
-    "loginText": "登录",
+    "text": {
+      "default": "登录",
+      "loading": "登录中"
+    },
     "autoLogin": "自动登录",
     "other": {
       "text": "其他登录方式",

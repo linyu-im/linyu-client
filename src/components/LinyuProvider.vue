@@ -1,11 +1,24 @@
 <template>
-  <NConfigProvider :theme-overrides="themeOverrides">
-    <slot></slot>
-  </NConfigProvider>
+  <n-config-provider :theme-overrides="themeOverrides">
+    <n-message-provider :max="3" container-style="word-break: break-all !important">
+      <slot></slot>
+      <naive-component-content />
+    </n-message-provider>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
   import { GlobalThemeOverrides } from 'naive-ui'
+
+  const NaiveComponentContent = defineComponent({
+    name: 'NaiveComponentContent',
+    setup() {
+      window.$message = useMessage()
+    },
+    render() {
+      return h('div')
+    }
+  })
 
   const themeOverrides: GlobalThemeOverrides = {
     Button: {
@@ -58,6 +71,10 @@
       loadingColor: 'var(--primary-color)',
       caretColor: 'var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)'
+    },
+    Message: {
+      maxWidth: '90vw'
     }
   }
 </script>
+<style scoped></style>

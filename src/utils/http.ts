@@ -10,8 +10,8 @@ export interface RequestConfig<T = any> {
 }
 
 export interface ApiResponse<T = any> {
-  code?: number
-  msg?: string
+  code: number
+  msg: string
   data?: T
 }
 
@@ -34,14 +34,20 @@ async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`)
+      return {
+        code: response.status,
+        msg: `HTTP Error: ${response.status}`
+      }
     }
 
     const result: ApiResponse<T> = await response.json()
 
     return result
   } catch (error: any) {
-    throw new Error(`网络错误: ${error?.message || error}`)
+    return {
+      code: 1,
+      msg: `Network Error: ${error?.message || error}`
+    }
   }
 }
 

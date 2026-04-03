@@ -1,4 +1,9 @@
+@use 'font';
 :root {
     //红色
     --red: #ED4C4C;
+}
+
+* {
+  font-family: 'MiSans', sans-serif !important;
 }

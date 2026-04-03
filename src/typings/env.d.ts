@@ -6,3 +6,7 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+declare interface Window {
+  $message: ReturnType<typeof useMessage>
+}
