@@ -1,3 +1,4 @@
+import { AccountLoginParam, LoginResult } from '@/types/api/user'
 import { ApiResponse, post } from '@/utils/http'
 
 export function accountLogin(params: AccountLoginParam): Promise<ApiResponse<LoginResult>> {

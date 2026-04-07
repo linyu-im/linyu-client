@@ -111,6 +111,7 @@
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
+
   const { t } = useI18n()
   const userStore = useUserStore()
 
@@ -152,6 +153,7 @@
     width: 100vw;
     display: flex;
     flex-direction: column;
+    color: var(--text-color);
 
     .login__toolbar {
       height: 40px;
@@ -164,7 +166,7 @@
 
     .login__content {
       flex: 1;
-      background-color: #fff;
+      background-color: var(--primary-bg-color);
       padding: 0px 20px;
       display: flex;
       flex-direction: column;

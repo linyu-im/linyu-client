@@ -10,7 +10,9 @@
         --primary-soft-color: #76B2FB;
         --primary-soft-rgb: 112, 178, 191;
         //主背景色
-        --primary-bg-color: #000;
+        --primary-bg-color: #FFF;
+        //次要背景色
+        --secondary-bg-color: #FFF;
 
         //按钮浅色背景
         --button-soft-bg: #F7F7F7;
@@ -20,6 +22,8 @@
         --icon-hover-color: rgba(166, 166, 166, 0.3);
         //操作栏背景色
         --toolbar-bg-color: rgba(230, 240, 255, 0.85);
+        //字体颜色
+        --text-color: #000;
         //次要字体颜色
         --text-secondary-color: #9E9E9E;
     }

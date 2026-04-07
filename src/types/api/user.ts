@@ -1,11 +1,11 @@
 // 账号密码登录参数
-interface AccountLoginParam {
+export interface AccountLoginParam {
   account: string
   password: string
 }
 
 // 登录结果
-interface LoginResult {
+export interface LoginResult {
   userId: string
   token: string
 }

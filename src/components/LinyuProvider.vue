@@ -51,11 +51,11 @@
       borderPressed: '1px solid var(--button-soft-bg)',
       borderFocus: '1px solid var(--button-soft-bg)',
       borderDisabled: '1px solid var(--button-soft-bg)',
-      textColor: '#000',
-      textColorPressed: '#000',
-      textColorFocus: '#000',
-      textColorDisabled: '#000',
-      textColorHover: '#000',
+      textColor: 'var(--text-color)',
+      textColorPressed: 'var(--text-color)',
+      textColorFocus: 'var(--text-color)',
+      textColorDisabled: 'var(--text-color)',
+      textColorHover: 'var(--text-color)',
       rippleColor: 'var(--button-soft-bg)'
     },
     Checkbox: {
@@ -70,7 +70,8 @@
       borderHover: '1px solid var(--primary-color)',
       loadingColor: 'var(--primary-color)',
       caretColor: 'var(--primary-color)',
-      boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)'
+      boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      placeholderColor: 'var(--text-secondary-color)'
     },
     Message: {
       maxWidth: '90vw'

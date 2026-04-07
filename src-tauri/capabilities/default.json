@@ -8,12 +8,16 @@
   "permissions": [
     "core:default",
     "core:app:allow-set-app-theme",
+    "core:app:allow-default-window-icon",
     "core:webview:allow-create-webview-window",
+    "core:window:allow-hide",
     "core:window:allow-set-focus",
     "core:window:allow-show",
     "core:window:allow-start-dragging",
     "core:window:allow-minimize",
     "core:window:allow-close",
+    "core:window:allow-unmaximize",
+    "core:window:allow-set-position",
     "opener:default",
     "http:default",
     "http:allow-fetch",
@@ -36,6 +40,7 @@
           "url": "https://*:*"
         }
       ]
-    }
+    },
+    "process:default"
   ]
 }

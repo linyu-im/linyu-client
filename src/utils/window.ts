@@ -9,7 +9,11 @@ const defaultOptions = {
   resizable: false,
   visible: true,
   transparent: false,
-  closeWindow: null
+  closeWindow: null,
+  skipTaskbar: false,
+  decorations: false,
+  dragDropEnabled: true,
+  center: true
 }
 
 export const createWebviewWindow = async (
@@ -29,16 +33,16 @@ export const createWebviewWindow = async (
     url: `/${label}`,
     fullscreen: false,
     resizable: options.resizable,
-    center: true,
+    center: options.center,
     width: options.width,
     height: options.height,
     minHeight: options.minHeight,
     minWidth: options.minWidth,
-    skipTaskbar: false,
-    decorations: false,
+    skipTaskbar: options.skipTaskbar,
+    decorations: options.decorations,
     transparent: options.transparent,
     visible: options.visible,
-    dragDropEnabled: true,
+    dragDropEnabled: options.dragDropEnabled,
     windowEffects: {
       effects: [Effect.Acrylic],
       state: EffectState.Active
