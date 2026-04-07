@@ -1,13 +1,16 @@
 <template>
   <div class="tray">
     <div class="p-5px">
-      <div class="tray__option" @click="onExitApp">退出Linyu</div>
+      <div class="tray__option" @click="onExitApp">{{ t('tray.exit') }}</div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
   import { exit } from '@tauri-apps/plugin-process'
   import { initSystemTray, setTrayEvent } from '@/utils/tray'
+  import { useI18n } from 'vue-i18n'
+
+  const { t } = useI18n()
   initSystemTray()
   setTrayEvent()
 

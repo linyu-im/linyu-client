@@ -1,5 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http'
-
+import { useUserStore } from '@/stores/user'
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
 
 export interface RequestConfig<T = any> {
@@ -16,7 +16,8 @@ export interface ApiResponse<T = any> {
 }
 
 function getToken(): string {
-  return localStorage.getItem('token') || ''
+  const userStore = useUserStore()
+  return userStore.userInfo.token || ''
 }
 
 async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
@@ -28,7 +29,7 @@ async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
       body: data ? JSON.stringify(data) : undefined,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        'x-token': getToken(),
+        Authorization: getToken(),
         ...headers
       }
     })

@@ -4,7 +4,7 @@ import { Theme } from '@tauri-apps/api/window'
 import { ThemePatternEnum, ThemeSchemeEnum, LangEnum } from '@/constants/system'
 import { loadLanguage } from '@/services/i18n'
 
-type SystemSetting = {
+type SystemSettingStore = {
   themes: {
     //主题模式
     pattern: ThemePatternEnum
@@ -18,7 +18,7 @@ type SystemSetting = {
 }
 
 export const useSystemSettingStore = defineStore('systemSetting', {
-  state: (): SystemSetting => {
+  state: (): SystemSettingStore => {
     return {
       themes: {
         pattern: ThemePatternEnum.LIGHT,

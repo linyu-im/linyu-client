@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-type User = {
+type UserStore = {
   userInfo: {
     token: string
     userId: string
@@ -10,7 +10,7 @@ type User = {
 
 export const useUserStore = defineStore('user', {
   persist: true,
-  state: (): User => ({
+  state: (): UserStore => ({
     userInfo: {
       token: '',
       userId: '',
@@ -18,18 +18,23 @@ export const useUserStore = defineStore('user', {
     }
   }),
   actions: {
-    setUserInfo(userInfo: User['userInfo']) {
-      this.userInfo = userInfo
-      this.userInfo.isLoggedIn = true
+    setUserInfo(userInfo: UserStore['userInfo']) {
+      this.$patch((state) => {
+        state.userInfo.token = userInfo.token
+        state.userInfo.userId = userInfo.userId
+        state.userInfo.isLoggedIn = true
+      })
     },
+
     removeUserInfo() {
-      this.userInfo = {
-        token: '',
-        userId: '',
-        isLoggedIn: false
-      }
+      this.$patch((state) => {
+        state.userInfo.token = ''
+        state.userInfo.userId = ''
+        state.userInfo.isLoggedIn = false
+      })
     }
   },
+
   share: {
     enable: true,
     initialize: true

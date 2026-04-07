@@ -37,7 +37,7 @@
           :placeholder="t('login.input.password')"
           clearable />
         <div class="flex items-center">
-          <n-checkbox size="small" />
+          <n-checkbox size="small" v-model:checked="globalStore.isAutoLogin" @update:checked="onAutoLoginChange" />
           <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.autoLogin') }}</span>
         </div>
       </div>
@@ -111,9 +111,11 @@
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
+  import { useGlobalStore } from '@/stores/global'
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const globalStore = useGlobalStore()
 
   const loginText = ref(t('login.text.default'))
   const accountInfo = ref({ account: '', password: '' })
@@ -134,10 +136,37 @@
     })
   }
 
+  const onAutoLogin = () => {
+    loginLoading.value = true
+    loginButtonDisabled.value = true
+    userApi.tokenReset().then((res) => {
+      if (res.code === 0) {
+        userStore.setUserInfo({ token: res.data?.token || '', userId: res.data?.userId || '' })
+        createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  const onAutoLoginChange = (val: boolean) => {
+    globalStore.setIsAutoLogin(val)
+  }
+
+  onMounted(() => {
+    if (globalStore.isAutoLogin) {
+      onAutoLogin()
+    }
+  })
+
   watch(
     () => loginLoading.value,
     (val) => {
-      loginText.value = val ? t('login.text.loading') : t('login.text.default')
+      if (globalStore.isAutoLogin) {
+        loginText.value = t('login.text.autoLoginLoading')
+      } else {
+        loginText.value = val ? t('login.text.loading') : t('login.text.default')
+      }
     }
   )
 
