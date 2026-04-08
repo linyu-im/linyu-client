@@ -28,7 +28,7 @@ export const initSystemTray = async () => {
             for (const window of windows) {
               if (window.label === 'home' || window.label === 'login') {
                 await window.show()
-                await window.unmaximize()
+                await window.unminimize()
                 await window.setFocus()
               }
             }

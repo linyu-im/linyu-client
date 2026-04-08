@@ -52,7 +52,7 @@
           @click="onAccountLogin">
           {{ loginText }}
         </n-button>
-        <div class="flex gap-5px m-t-10px justify-center select-none">
+        <div class="flex gap-5px m-t-10px justify-center items-center select-none">
           <n-checkbox v-model:checked="termsChecked" size="small" />
           <div class="flex text-12px text-[var(--text-secondary-color)]">
             <span>{{ t('login.terms.text1') }}</span>
@@ -82,7 +82,7 @@
               </template>
               {{ t('login.other.github') }}
             </n-button>
-            <n-button size="small" class="other-login__button">
+            <n-button size="small" class="other-login__button" @click="() => onOauth2Login('gitee')">
               <template #icon>
                 <svg class="size-14px"><use href="#gitee" /></svg>
               </template>
@@ -107,11 +107,16 @@
 
 <script setup lang="ts">
   import SvgIconButton from '@/components/SvgIconButton.vue'
-  import { userApi } from '@/api'
+  import { oauth2Api, userApi } from '@/api'
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import { useGlobalStore } from '@/stores/global'
+  import { invoke } from '@tauri-apps/api/core'
+  import { openUrl } from '@/utils/open'
+  import { once } from '@tauri-apps/api/event'
+  import { OAuth2LoginPayload } from '@/types/cmd/login'
+  import { LoginResult } from '@/types/api/user'
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -123,13 +128,17 @@
   const loginButtonDisabled = ref(true)
   const termsChecked = ref(false)
 
+  const loginSuccess = (info: LoginResult) => {
+    userStore.setUserInfo({ token: info?.token || '', userId: info?.userId || '' })
+    createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+  }
+
   const onAccountLogin = () => {
     loginLoading.value = true
     userApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
       loginLoading.value = false
-      if (res.code === 0) {
-        userStore.setUserInfo({ token: res.data?.token || '', userId: res.data?.userId || '' })
-        createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+      if (res.code === 0 && res.data) {
+        loginSuccess(res.data)
       } else {
         window.$message.error(res.msg)
       }
@@ -140,12 +149,28 @@
     loginLoading.value = true
     loginButtonDisabled.value = true
     userApi.tokenReset().then((res) => {
-      if (res.code === 0) {
-        userStore.setUserInfo({ token: res.data?.token || '', userId: res.data?.userId || '' })
-        createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+      if (res.code === 0 && res.data) {
+        loginSuccess(res.data)
       } else {
         window.$message.error(res.msg)
       }
+    })
+  }
+
+  const onOauth2Login = async (oauthType: string) => {
+    const urlInfo = await oauth2Api.oauth2Url({ type: oauthType })
+    await invoke('start_oauth_server', { oauthType: oauthType, redirectUrl: urlInfo.data?.redirectUrl || '' })
+    await openUrl(urlInfo.data?.authUrl || '')
+    await once<OAuth2LoginPayload>('oauth-code', (event) => {
+      loginLoading.value = true
+      userApi.oauth2Login({ code: event.payload.code, type: oauthType }).then((res) => {
+        loginLoading.value = false
+        if (res.code === 0 && res.data) {
+          loginSuccess(res.data)
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
     })
   }
 

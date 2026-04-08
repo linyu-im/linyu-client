@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "linyu-client",
+  "productName": "Linyu",
   "version": "0.1.0",
   "identifier": "chat.linyu",
   "build": {
@@ -49,6 +49,9 @@
   },
   "bundle": {
     "active": true,
+    "resources": [
+      "html"
+    ],
     "targets": "all",
     "icon": [
       "icons/32x32.png",

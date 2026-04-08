@@ -1,4 +1,4 @@
-import { AccountLoginParam, LoginResult } from '@/types/api/user'
+import { AccountLoginParam, LoginResult, Oauth2LoginParam } from '@/types/api/user'
 import { ApiResponse, post } from '@/utils/http'
 
 export function accountLogin(params: AccountLoginParam): Promise<ApiResponse<LoginResult>> {
@@ -7,4 +7,8 @@ export function accountLogin(params: AccountLoginParam): Promise<ApiResponse<Log
 
 export function tokenReset(): Promise<ApiResponse<LoginResult>> {
   return post<LoginResult, void>('/api/auth/v1/login/token/reset')
+}
+
+export function oauth2Login(params: Oauth2LoginParam): Promise<ApiResponse<LoginResult>> {
+  return post<LoginResult, Oauth2LoginParam>('/api/auth/v1/login/oauth2', params)
 }

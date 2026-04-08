@@ -9,3 +9,9 @@ export interface LoginResult {
   userId: string
   token: string
 }
+
+// OAuth2登录参数
+export interface Oauth2LoginParam {
+  code: string
+  type: string
+}
