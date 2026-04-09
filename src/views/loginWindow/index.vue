@@ -12,6 +12,9 @@
         </div>
       </div>
       <div class="flex">
+        <n-dropdown :options="setttngsOptions" trigger="click">
+          <SvgIconButton href="#settings" />
+        </n-dropdown>
         <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
         <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeCurrentWindow" />
       </div>
@@ -105,7 +108,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import { oauth2Api, userApi } from '@/api'
   import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
@@ -117,16 +120,103 @@
   import { once } from '@tauri-apps/api/event'
   import { OAuth2LoginPayload } from '@/types/cmd/login'
   import { LoginResult } from '@/types/api/user'
+  import { useSystemSettingStore } from '@/stores/systemSetting'
+  import { LangEnum, ThemePatternEnum } from '@/constants/system'
 
   const { t } = useI18n()
   const userStore = useUserStore()
   const globalStore = useGlobalStore()
+  const systemSetting = useSystemSettingStore()
 
   const loginText = ref(t('login.text.default'))
   const accountInfo = ref({ account: '', password: '' })
   const loginLoading = ref(false)
   const loginButtonDisabled = ref(true)
   const termsChecked = ref(false)
+
+  const setttngsOptions = [
+    {
+      label: () => t('login.settings.theme.text'),
+      key: 'pattern',
+      children: [
+        {
+          label: () => renderThemeColorOptions(ThemePatternEnum.LIGHT, t('login.settings.theme.light')),
+          key: 'light',
+          props: {
+            onClick: () => onSetThemeColor(ThemePatternEnum.LIGHT)
+          }
+        },
+        {
+          label: () => renderThemeColorOptions(ThemePatternEnum.DARK, t('login.settings.theme.dark')),
+          key: 'dark',
+          props: {
+            onClick: () => onSetThemeColor(ThemePatternEnum.DARK)
+          }
+        },
+        {
+          label: () => renderThemeColorOptions(ThemePatternEnum.OS, t('login.settings.theme.system')),
+          key: 'system',
+          props: {
+            onClick: () => onSetThemeColor(ThemePatternEnum.OS)
+          }
+        }
+      ]
+    },
+    {
+      label: () => t('login.settings.language'),
+      key: 'language',
+      children: [
+        {
+          label: () => renderLanguageOptions(LangEnum.ZH, '中文'),
+          key: 'zh',
+          props: {
+            onClick: () => onSetLanguage(LangEnum.ZH)
+          }
+        },
+        {
+          label: () => renderLanguageOptions(LangEnum.EN, 'English'),
+          key: 'en',
+          props: {
+            onClick: () => onSetLanguage(LangEnum.EN)
+          }
+        }
+      ]
+    }
+  ]
+
+  const renderLanguageOptions = (lang: LangEnum, langName: string) => {
+    return (
+      <div class="flex items-center justify-between">
+        <p>{langName}</p>
+        {lang === systemSetting.preferences.lang && (
+          <svg class="size-16px m-l-5px text-[var(--primary-color)]">
+            <use href="#check"></use>
+          </svg>
+        )}
+      </div>
+    )
+  }
+
+  const renderThemeColorOptions = (themeColor: ThemePatternEnum, themeColorName: string) => {
+    return (
+      <div class="flex items-center justify-between">
+        <p>{themeColorName}</p>
+        {themeColor === systemSetting.themes.pattern && (
+          <svg class="size-16px m-l-5px text-[var(--primary-color)]">
+            <use href="#check"></use>
+          </svg>
+        )}
+      </div>
+    )
+  }
+
+  const onSetThemeColor = (pattern: ThemePatternEnum) => {
+    systemSetting.setThemePattern(pattern)
+  }
+
+  const onSetLanguage = (lang: LangEnum) => {
+    systemSetting.setLang(lang)
+  }
 
   const loginSuccess = (info: LoginResult) => {
     userStore.setUserInfo({ token: info?.token || '', userId: info?.userId || '' })
@@ -220,8 +310,8 @@
 
     .login__content {
       flex: 1;
-      background-color: var(--primary-bg-color);
-      padding: 0px 20px;
+      background-color: var(--bg-primary-color);
+      padding: 0 20px;
       display: flex;
       flex-direction: column;
 
@@ -251,12 +341,12 @@
       align-items: center;
       padding: 0 10px;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
     :deep(.n-input) {
-      background-color: #f7f7f7;
+      background-color: var(--input-soft-bg);
 
       .n-input__input-el {
         padding: 0;

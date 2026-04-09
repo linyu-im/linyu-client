@@ -23,7 +23,7 @@
   .tray {
     height: 100vh;
     width: 100vw;
-    background-color: var(--primary-bg-color);
+    background-color: var(--bg-primary-color);
     user-select: none;
     font-size: 14px;
     color: var(--text-color);

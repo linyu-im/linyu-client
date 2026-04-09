@@ -8,7 +8,10 @@
 </template>
 
 <script setup lang="ts">
+  import { useSystemSettingStore } from '@/stores/systemSetting'
   import { GlobalThemeOverrides } from 'naive-ui'
+
+  let systemSetting = useSystemSettingStore()
 
   const NaiveComponentContent = defineComponent({
     name: 'NaiveComponentContent',
@@ -59,23 +62,51 @@
       rippleColor: 'var(--button-soft-bg)'
     },
     Checkbox: {
+      border: '1px solid var(--border-color)',
       borderFocus: '1px solid var(--primary-color)',
       borderChecked: '1px solid var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
-      colorChecked: 'var(--primary-color)'
+      colorChecked: 'var(--primary-color)',
+      color: 'var(--button-soft-bg)'
     },
     Input: {
+      border: '1px solid var(--border-color)',
       borderRadius: '5px',
       borderFocus: '1px solid var(--primary-color)',
       borderHover: '1px solid var(--primary-color)',
       loadingColor: 'var(--primary-color)',
       caretColor: 'var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
-      placeholderColor: 'var(--text-secondary-color)'
+      placeholderColor: 'var(--text-secondary-color)',
+      textColor: 'var(--text-color)'
     },
     Message: {
       maxWidth: '90vw'
+    },
+    Divider: {
+      color: 'var(--divider-color)'
+    },
+    Dropdown: {
+      color: 'var(--bg-muted-color)',
+      optionTextColor: 'var(--text-color)',
+      optionTextColorHover: 'var(--primary-color)',
+      optionColorHover: 'var(--bg-muted-color)',
+      dividerColor: 'var(--divider-color)'
     }
   }
+
+  let media = window.matchMedia('(prefers-color-scheme: dark)')
+
+  const handleThememChange = () => {
+    systemSetting.setThemePattern(systemSetting.themes.pattern)
+  }
+
+  onMounted(() => {
+    media.addEventListener('change', handleThememChange)
+  })
+
+  onBeforeUnmount(() => {
+    media?.removeEventListener('change', handleThememChange)
+  })
 </script>
 <style scoped></style>

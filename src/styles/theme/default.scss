@@ -1,19 +1,28 @@
 :root {
     .default {
+        /* 全局级别 */
         //主题色
         --primary-color: #4C9BFF;
         --primary-rgb: 76, 155, 255;
-        //主深色
         --primary-strong-color: #003E8C;
         --primary-strong-rgb: 0, 62, 140;
-        //主浅色
         --primary-soft-color: #76B2FB;
         --primary-soft-rgb: 112, 178, 191;
-        //主背景色
-        --primary-bg-color: #FFF;
-        //次要背景色
-        --secondary-bg-color: #FFF;
 
+        //主背景色
+        --bg-primary-color: #FFF;
+        --bg-secondary-color: #FFF;
+        --bg-muted-color: #F7F7F7;
+
+        //文本颜色
+        --text-color: #000;
+        --text-secondary-color: #9d9d9d;
+        --text-muted-color:#585858;
+
+        //边框颜色（输入框，选择框）
+        --border-color: #e3e3e3;
+
+        /* 组件级别 */
         //按钮浅色背景
         --button-soft-bg: #F7F7F7;
         //输入框浅色背景
@@ -21,37 +30,46 @@
         //icon按钮的hover颜色
         --icon-hover-color: rgba(166, 166, 166, 0.3);
         //操作栏背景色
-        --toolbar-bg-color: rgba(230, 240, 255, 0.85);
-        //字体颜色
-        --text-color: #000;
-        //次要字体颜色
-        --text-secondary-color: #9E9E9E;
+        --toolbar-bg-color: rgba(230, 240, 255, 0.5);
+        //分割线颜色
+        --divider-color:#EFEFF5;
     }
 }
 
 html[data-theme="dark"] {
     .default {
+        /* 全局级别 */
         //主题色
         --primary-color: #4C9BFF;
         --primary-rgb: 76, 155, 255;
-        //主深色
         --primary-strong-color: #003E8C;
         --primary-strong-rgb: 0, 62, 140;
-        //主浅色
         --primary-soft-color: #76B2FB;
         --primary-soft-rgb: 112, 178, 191;
-        //主背景色
-        --primary-bg-color: #000;
 
+        //文本颜色
+        --text-color: #FFF;
+        --text-secondary-color: #9E9E9E;
+        --text-muted-color: #949495;
+
+        //主背景色
+        --bg-primary-color: #282828;
+        --bg-secondary-color: #FFF;
+        --bg-muted-color: #202020;
+
+        //边框颜色（输入框，选择框）
+        --border-color: #454547;
+
+        /* 组件级别 */
         //按钮浅色背景
-        --button-soft-bg: #F7F7F7;
+        --button-soft-bg: #3A3A3B;
         //输入框浅色背景
-        --input-soft-bg: #F7F7F7;
+        --input-soft-bg: #3A3A3B;
         //icon按钮的hover颜色
         --icon-hover-color: rgba(166, 166, 166, 0.3);
         //操作栏背景色
-        --toolbar-bg-color: rgba(230, 240, 255, 0.85);
-        //次要字体颜色
-        --text-secondary-color: #9E9E9E;
+        --toolbar-bg-color: rgba(47, 50, 53, 0.7);
+        //分割线颜色
+        --divider-color:#3a3a3a;
     }
 }

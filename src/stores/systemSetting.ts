@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { setTheme } from '@tauri-apps/api/app'
 import { Theme } from '@tauri-apps/api/window'
 import { ThemePatternEnum, ThemeSchemeEnum, LangEnum } from '@/constants/system'
-import { loadLanguage } from '@/services/i18n'
 
 type SystemSettingStore = {
   themes: {
@@ -18,6 +17,7 @@ type SystemSettingStore = {
 }
 
 export const useSystemSettingStore = defineStore('systemSetting', {
+  persist: true,
   state: (): SystemSettingStore => {
     return {
       themes: {
@@ -30,18 +30,27 @@ export const useSystemSettingStore = defineStore('systemSetting', {
     }
   },
   actions: {
+    initSetting() {
+      this.setThemePattern(this.themes.pattern)
+      this.setLang(this.preferences.lang)
+    },
     setThemePattern(pattern: ThemePatternEnum) {
       this.$patch((state) => {
         state.themes.pattern = pattern
       })
-      setTheme(Object.is(pattern, 'os') ? null : (pattern as Theme))
-      document.documentElement.dataset.theme = pattern as string
+      let actualPattern = pattern
+      if (pattern === ThemePatternEnum.OS) {
+        actualPattern = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? ThemePatternEnum.DARK
+          : ThemePatternEnum.LIGHT
+      }
+      setTheme(Object.is(pattern, 'os') ? null : (actualPattern as Theme))
+      document.documentElement.dataset.theme = actualPattern as string
     },
     setLang(lang: LangEnum) {
       this.$patch((state) => {
         state.preferences.lang = lang
       })
-      loadLanguage(lang)
     }
   },
   share: {

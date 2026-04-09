@@ -33,6 +33,15 @@
     "footer": {
       "provider": "© 2026 Linyu Team",
       "support": "Support"
+    },
+    "settings": {
+      "theme": {
+        "text": "Theme Color",
+        "dark": "Dark",
+        "light": "Light",
+        "system": "Follow System"
+      },
+      "language": "Language"
     }
   },
   "tray": {

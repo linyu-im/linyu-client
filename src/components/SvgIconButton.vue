@@ -4,7 +4,7 @@
     :class="[disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer group', { 'is-active': active }]"
     :style="wrapperStyle"
     @click="handleClick">
-    <svg class="w-full h-full pointer-events-none">
+    <svg class="w-3/5 h-3/5 inter-events-none">
       <use :href="href"></use>
     </svg>
   </div>
@@ -28,8 +28,8 @@
   const props = withDefaults(defineProps<Props>(), {
     size: 32,
     radius: 2,
-    color: '#9D9D9D',
-    hoverColor: '#000',
+    color: 'var(--text-muted-color)',
+    hoverColor: 'var(--text-muted-color)',
     bg: 'transparent',
     hoverBg: 'var(--icon-hover-color)',
     disabled: false,

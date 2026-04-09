@@ -1,6 +1,7 @@
 // src/i18n/index.ts
 import { createI18n } from 'vue-i18n'
 import zh from '@/locales/zh.json'
+import en from '@/locales/en.json'
 import { LangEnum } from '@/constants/system'
 
 type MessageSchema = typeof zh
@@ -10,7 +11,8 @@ const i18n = createI18n<false>({
   locale: LangEnum.ZH,
   fallbackLocale: LangEnum.ZH,
   messages: {
-    [LangEnum.ZH]: zh
+    [LangEnum.ZH]: zh,
+    [LangEnum.EN]: en
   }
 })
 

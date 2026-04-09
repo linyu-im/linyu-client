@@ -33,6 +33,15 @@
     "footer": {
       "provider": "© 2026 Linyu Team",
       "support": "技术支持"
+    },
+    "settings": {
+      "theme": {
+        "text": "主题颜色",
+        "dark": "深色",
+        "light": "浅色",
+        "system": "跟随系统"
+      },
+      "language": "语言"
     }
   },
   "tray": {
