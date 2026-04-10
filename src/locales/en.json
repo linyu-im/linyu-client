@@ -25,10 +25,9 @@
       "text2": "Start your journey"
     },
     "terms": {
-      "text1": "Agree to",
+      "text1": "Agree to {text2} and {text3}",
       "text2": "Terms of Service",
-      "text3": "and",
-      "text4": "Privacy Policy"
+      "text3": "Privacy Policy"
     },
     "footer": {
       "provider": "© 2026 Linyu Team",

@@ -6,16 +6,16 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { exit } from '@tauri-apps/plugin-process'
   import { initSystemTray, setTrayEvent } from '@/utils/tray'
   import { useI18n } from 'vue-i18n'
+  import { exitApp } from '@/utils/window'
 
   const { t } = useI18n()
   initSystemTray()
   setTrayEvent()
 
   const onExitApp = () => {
-    exit()
+    exitApp()
   }
 </script>
 

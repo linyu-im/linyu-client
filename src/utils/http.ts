@@ -1,5 +1,6 @@
 import { fetch } from '@tauri-apps/plugin-http'
 import { useUserStore } from '@/stores/user'
+import { useSystemSettingStore } from '@/stores/systemSetting'
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
 
 export interface RequestConfig<T = any> {
@@ -20,6 +21,11 @@ function getToken(): string {
   return userStore.userInfo.token || ''
 }
 
+function getLang(): string {
+  const systemSetting = useSystemSettingStore()
+  return systemSetting.preferences.lang || 'zh'
+}
+
 async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
   const { url, method = 'GET', data, headers = {} } = config
 
@@ -29,6 +35,7 @@ async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
       body: data ? JSON.stringify(data) : undefined,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
+        'Accept-Language': getLang(),
         Authorization: getToken(),
         ...headers
       }

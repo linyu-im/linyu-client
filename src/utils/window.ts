@@ -1,5 +1,6 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { Effect, EffectState } from '@tauri-apps/api/window'
+import { exit } from '@tauri-apps/plugin-process'
 
 const defaultOptions = {
   width: 800,
@@ -71,4 +72,8 @@ export const closeCurrentWindow = async () => {
 export const minimizeCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
   webview.minimize()
+}
+
+export const exitApp = async () => {
+  exit()
 }

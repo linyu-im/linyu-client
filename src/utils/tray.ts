@@ -19,7 +19,7 @@ export const initSystemTray = async () => {
   }
   const options: TrayIconOptions = {
     id: 'tray',
-    tooltip: 'linyu',
+    tooltip: '林语',
     action: async (event: TrayIconEvent) => {
       switch (event.type) {
         case 'Click': {

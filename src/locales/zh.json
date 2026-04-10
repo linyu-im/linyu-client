@@ -25,10 +25,9 @@
       "text2": "开始你的探索之旅"
     },
     "terms": {
-      "text1": "已阅读并同意",
+      "text1": "已阅读并同意{text2}和{text3}",
       "text2": "服务协议",
-      "text3": "和",
-      "text4": "Linyu隐私保护指引"
+      "text3": "Linyu隐私保护指引"
     },
     "footer": {
       "provider": "© 2026 Linyu Team",

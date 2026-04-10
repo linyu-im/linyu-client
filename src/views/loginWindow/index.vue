@@ -16,7 +16,7 @@
           <SvgIconButton href="#settings" />
         </n-dropdown>
         <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
-        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeCurrentWindow" />
+        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="exitApp" />
       </div>
     </div>
 
@@ -57,12 +57,18 @@
         </n-button>
         <div class="flex gap-5px m-t-10px justify-center items-center select-none">
           <n-checkbox v-model:checked="termsChecked" size="small" />
-          <div class="flex text-12px text-[var(--text-secondary-color)]">
-            <span>{{ t('login.terms.text1') }}</span>
-            <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.terms.text2') }}</span>
-            <span>{{ t('login.terms.text3') }}</span>
-            <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.terms.text4') }}</span>
-          </div>
+          <i18n-t keypath="login.terms.text1" tag="div" class="inline text-12px text-[var(--text-secondary-color)]">
+            <template #text2>
+              <span class="color-[var(--primary-color)] cursor-pointer">
+                {{ t('login.terms.text2') }}
+              </span>
+            </template>
+            <template #text3>
+              <span class="color-[var(--primary-color)] cursor-pointer">
+                {{ t('login.terms.text3') }}
+              </span>
+            </template>
+          </i18n-t>
         </div>
       </div>
 
@@ -111,7 +117,7 @@
 <script setup lang="tsx">
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import { oauth2Api, userApi } from '@/api'
-  import { closeCurrentWindow, createWebviewWindow, minimizeCurrentWindow } from '@/utils/window'
+  import { createWebviewWindow, exitApp, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import { useGlobalStore } from '@/stores/global'
@@ -128,11 +134,11 @@
   const globalStore = useGlobalStore()
   const systemSetting = useSystemSettingStore()
 
-  const loginText = ref(t('login.text.default'))
   const accountInfo = ref({ account: '', password: '' })
   const loginLoading = ref(false)
   const loginButtonDisabled = ref(true)
   const termsChecked = ref(false)
+  const loginType = ref('')
 
   const setttngsOptions = [
     {
@@ -184,6 +190,13 @@
     }
   ]
 
+  const loginText = computed(() => {
+    if (loginLoading.value) {
+      return loginType.value === 'auto' ? t('login.text.autoLoginLoading') : t('login.text.loading')
+    }
+    return t('login.text.default')
+  })
+
   const renderLanguageOptions = (lang: LangEnum, langName: string) => {
     return (
       <div class="flex items-center justify-between">
@@ -224,6 +237,7 @@
   }
 
   const onAccountLogin = () => {
+    loginType.value = 'manual'
     loginLoading.value = true
     userApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
       loginLoading.value = false
@@ -236,6 +250,7 @@
   }
 
   const onAutoLogin = () => {
+    loginType.value = 'auto'
     loginLoading.value = true
     loginButtonDisabled.value = true
     userApi.tokenReset().then((res) => {
@@ -273,17 +288,6 @@
       onAutoLogin()
     }
   })
-
-  watch(
-    () => loginLoading.value,
-    (val) => {
-      if (globalStore.isAutoLogin) {
-        loginText.value = t('login.text.autoLoginLoading')
-      } else {
-        loginText.value = val ? t('login.text.loading') : t('login.text.default')
-      }
-    }
-  )
 
   watchEffect(() => {
     loginButtonDisabled.value =
