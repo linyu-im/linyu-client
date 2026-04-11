@@ -20,10 +20,16 @@ declare module 'vue' {
     NDivider: typeof import('naive-ui')['NDivider']
     NDropdown: typeof import('naive-ui')['NDropdown']
     NInput: typeof import('naive-ui')['NInput']
+    NLayout: typeof import('naive-ui')['NLayout']
+    NLayoutContent: typeof import('naive-ui')['NLayoutContent']
+    NLayoutFooter: typeof import('naive-ui')['NLayoutFooter']
+    NLayoutHeader: typeof import('naive-ui')['NLayoutHeader']
+    NLayoutSider: typeof import('naive-ui')['NLayoutSider']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SvgIconButton: typeof import('./../components/SvgIconButton.vue')['default']
+    ToolBar: typeof import('./../components/ToolBar.vue')['default']
   }
 }
 
@@ -37,8 +43,14 @@ declare global {
   const NDivider: typeof import('naive-ui')['NDivider']
   const NDropdown: typeof import('naive-ui')['NDropdown']
   const NInput: typeof import('naive-ui')['NInput']
+  const NLayout: typeof import('naive-ui')['NLayout']
+  const NLayoutContent: typeof import('naive-ui')['NLayoutContent']
+  const NLayoutFooter: typeof import('naive-ui')['NLayoutFooter']
+  const NLayoutHeader: typeof import('naive-ui')['NLayoutHeader']
+  const NLayoutSider: typeof import('naive-ui')['NLayoutSider']
   const NMessageProvider: typeof import('naive-ui')['NMessageProvider']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
   const SvgIconButton: typeof import('./../components/SvgIconButton.vue')['default']
+  const ToolBar: typeof import('./../components/ToolBar.vue')['default']
 }

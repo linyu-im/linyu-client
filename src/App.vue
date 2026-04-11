@@ -11,12 +11,11 @@
   import { useSystemSettingStore } from '@/stores/systemSetting'
   import LinyuProvider from './components/LinyuProvider.vue'
   import { loadLanguage } from './services/i18n'
+  import { ThemePatternEnum } from './constants/system'
+  import { setTheme } from '@tauri-apps/api/app'
+  import { Theme } from '@tauri-apps/api/window'
 
   const systemSetting = useSystemSettingStore()
-
-  onMounted(() => {
-    systemSetting.initSetting()
-  })
 
   watch(
     () => systemSetting.themes.scheme,
@@ -27,6 +26,22 @@
       await nextTick(() => {
         app.add(val)
       })
+    },
+    {
+      immediate: true
+    }
+  )
+
+  watch(
+    () => systemSetting.themes.pattern,
+    (pattern) => {
+      if (pattern !== ThemePatternEnum.OS) {
+        setTheme(pattern as Theme)
+        document.documentElement.dataset.theme = pattern as string
+      } else {
+        setTheme(null)
+        systemSetting.sycnOsTheme()
+      }
     },
     {
       immediate: true

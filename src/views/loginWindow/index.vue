@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <!-- 顶部操作栏 -->
-    <div data-tauri-drag-region class="login__toolbar">
+    <ToolBar class="login__toolbar">
       <div class="flex gap-5px items-center">
         <svg class="size-24px pointer-events-none">
           <use href="#linyu"></use>
@@ -18,7 +18,7 @@
         <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
         <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="exitApp" />
       </div>
-    </div>
+    </ToolBar>
 
     <!-- 内容部分 -->
     <div data-tauri-drag-region class="login__content">
@@ -57,7 +57,11 @@
         </n-button>
         <div class="flex gap-5px m-t-10px justify-center items-center select-none">
           <n-checkbox v-model:checked="termsChecked" size="small" />
-          <i18n-t keypath="login.terms.text1" tag="div" class="inline text-12px text-[var(--text-secondary-color)]">
+          <i18n-t
+            scope="global"
+            keypath="login.terms.text1"
+            tag="div"
+            class="inline text-12px text-[var(--text-secondary-color)]">
             <template #text2>
               <span class="color-[var(--primary-color)] cursor-pointer">
                 {{ t('login.terms.text2') }}
@@ -128,6 +132,7 @@
   import { LoginResult } from '@/types/api/user'
   import { useSystemSettingStore } from '@/stores/systemSetting'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
+  import { computed, onMounted, ref, watchEffect } from 'vue'
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -233,7 +238,12 @@
 
   const loginSuccess = (info: LoginResult) => {
     userStore.setUserInfo({ token: info?.token || '', userId: info?.userId || '' })
-    createWebviewWindow('Linyu', 'home', { width: 600, height: 400 })
+    createWebviewWindow('林语', 'home', {
+      width: 900,
+      height: 675,
+      resizable: true,
+      transparent: true
+    })
   }
 
   const onAccountLogin = () => {
@@ -305,7 +315,6 @@
 
     .login__toolbar {
       height: 40px;
-      background-color: var(--toolbar-bg-color);
       display: flex;
       justify-content: space-between;
       align-items: center;

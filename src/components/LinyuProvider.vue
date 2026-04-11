@@ -98,7 +98,7 @@
   let media = window.matchMedia('(prefers-color-scheme: dark)')
 
   const handleThememChange = () => {
-    systemSetting.setThemePattern(systemSetting.themes.pattern)
+    systemSetting.sycnOsTheme()
   }
 
   onMounted(() => {

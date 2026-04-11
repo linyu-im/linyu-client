@@ -3,14 +3,15 @@ import { Effect, EffectState } from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
 
 const defaultOptions = {
-  width: 800,
-  height: 600,
-  minWidth: 400,
-  minHeight: 500,
+  width: 900,
+  height: 670,
+  minWidth: 800,
+  minHeight: 600,
   resizable: false,
+  fullscreen: false,
   visible: true,
   transparent: false,
-  closeWindow: null,
+  closeWindow: null as string | null,
   skipTaskbar: false,
   decorations: false,
   dragDropEnabled: true,
@@ -22,7 +23,9 @@ export const createWebviewWindow = async (
   label: string,
   options: Partial<typeof defaultOptions> = {}
 ) => {
-  var webview = await WebviewWindow.getByLabel(label)
+  const opts = { ...defaultOptions, ...options }
+
+  let webview = await WebviewWindow.getByLabel(label)
   if (webview) {
     await webview.setFocus()
     await webview.show()
@@ -32,18 +35,18 @@ export const createWebviewWindow = async (
   webview = new WebviewWindow(label, {
     title,
     url: `/${label}`,
-    fullscreen: false,
-    resizable: options.resizable,
-    center: options.center,
-    width: options.width,
-    height: options.height,
-    minHeight: options.minHeight,
-    minWidth: options.minWidth,
-    skipTaskbar: options.skipTaskbar,
-    decorations: options.decorations,
-    transparent: options.transparent,
-    visible: options.visible,
-    dragDropEnabled: options.dragDropEnabled,
+    fullscreen: opts.fullscreen,
+    resizable: opts.resizable,
+    center: opts.center,
+    width: opts.width,
+    height: opts.height,
+    minHeight: opts.minHeight,
+    minWidth: opts.minWidth,
+    skipTaskbar: opts.skipTaskbar,
+    decorations: opts.decorations,
+    transparent: opts.transparent,
+    visible: opts.visible,
+    dragDropEnabled: opts.dragDropEnabled,
     windowEffects: {
       effects: [Effect.Acrylic],
       state: EffectState.Active
@@ -51,14 +54,14 @@ export const createWebviewWindow = async (
   })
 
   webview.once('tauri://created', async () => {
-    if (options.closeWindow) {
-      const win = await WebviewWindow.getByLabel(options.closeWindow)
-      win?.close()
+    if (opts.closeWindow) {
+      const win = await WebviewWindow.getByLabel(opts.closeWindow)
+      await win?.close()
     }
   })
 
-  webview.once('tauri://error', async (e) => {
-    console.log(e)
+  webview.once('tauri://error', (e) => {
+    console.error('创建窗口失败:', e)
   })
 
   return webview
@@ -66,14 +69,30 @@ export const createWebviewWindow = async (
 
 export const closeCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
-  webview.close()
+  await webview.close()
 }
 
 export const minimizeCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
-  webview.minimize()
+  await webview.minimize()
+}
+
+export const hideCurrentWindow = async () => {
+  const webview = WebviewWindow.getCurrent()
+  await webview.hide()
+}
+
+export const restoreOrMaximizeCurrentWindow = async () => {
+  const webview = WebviewWindow.getCurrent()
+  const isMaximized = await webview.isMaximized()
+  if (isMaximized) {
+    await webview.unmaximize()
+  } else {
+    await webview.maximize()
+  }
+  return isMaximized
 }
 
 export const exitApp = async () => {
-  exit()
+  await exit()
 }

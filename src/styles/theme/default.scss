@@ -11,13 +11,13 @@
 
         //主背景色
         --bg-primary-color: #FFF;
-        --bg-secondary-color: #FFF;
+        --bg-secondary-color: #F5F5F5;
         --bg-muted-color: #F7F7F7;
 
         //文本颜色
         --text-color: #000;
         --text-secondary-color: #9d9d9d;
-        --text-muted-color:#585858;
+        --text-muted-color:#4c4c4c;
 
         //边框颜色（输入框，选择框）
         --border-color: #e3e3e3;
@@ -33,6 +33,8 @@
         --toolbar-bg-color: rgba(230, 240, 255, 0.5);
         //分割线颜色
         --divider-color:#EFEFF5;
+        //按钮激活颜色
+        --icon-active-color: #0095f8;
     }
 }
 
@@ -50,11 +52,11 @@ html[data-theme="dark"] {
         //文本颜色
         --text-color: #FFF;
         --text-secondary-color: #9E9E9E;
-        --text-muted-color: #949495;
+        --text-muted-color: #9c9c9c;
 
         //主背景色
         --bg-primary-color: #282828;
-        --bg-secondary-color: #FFF;
+        --bg-secondary-color: #202020;
         --bg-muted-color: #202020;
 
         //边框颜色（输入框，选择框）
@@ -71,5 +73,7 @@ html[data-theme="dark"] {
         --toolbar-bg-color: rgba(47, 50, 53, 0.7);
         //分割线颜色
         --divider-color:#3a3a3a;
+        //按钮激活颜色
+        --icon-active-color: #0088e2;
     }
 }

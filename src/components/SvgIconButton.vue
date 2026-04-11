@@ -4,7 +4,7 @@
     :class="[disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer group', { 'is-active': active }]"
     :style="wrapperStyle"
     @click="handleClick">
-    <svg class="w-3/5 h-3/5 inter-events-none">
+    <svg class="pointer-events-none">
       <use :href="href"></use>
     </svg>
   </div>
@@ -23,6 +23,7 @@
     hoverBg?: string
     disabled?: boolean
     active?: boolean
+    iconSize?: string
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -33,7 +34,8 @@
     bg: 'transparent',
     hoverBg: 'var(--icon-hover-color)',
     disabled: false,
-    active: false
+    active: false,
+    iconSize: '60%'
   })
 
   const emit = defineEmits(['click'])
@@ -55,20 +57,27 @@
     background: v-bind(bg);
   }
 
-  .icon-wrapper:not(.cursor-not-allowed):hover,
-  .icon-wrapper.is-active {
-    background: v-bind(hoverBg) !important;
-    color: v-bind(hoverColor);
-  }
-
   svg {
     color: v-bind(color);
     fill: currentColor;
     transition: color 0.2s;
+    width: v-bind(iconSize);
+    height: v-bind(iconSize);
   }
 
-  .icon-wrapper:not(.cursor-not-allowed):hover svg,
-  .icon-wrapper.is-active svg {
+  .icon-wrapper:not(.cursor-not-allowed):not(.is-active):hover {
+    background: v-bind(hoverBg);
+  }
+
+  .icon-wrapper:not(.cursor-not-allowed):not(.is-active):hover svg {
     color: v-bind(hoverColor);
+  }
+
+  .icon-wrapper.is-active {
+    background: rgba(var(--primary-rgb), 0.1) !important;
+  }
+
+  .icon-wrapper.is-active svg {
+    color: var(--icon-active-color);
   }
 </style>
