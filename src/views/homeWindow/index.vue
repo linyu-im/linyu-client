@@ -2,18 +2,25 @@
   <div class="home">
     <!-- 顶部 -->
     <ToolBar class="home__header" @maximized="(is) => (isMaximize = is)">
-      <div class="w-50px flex items-center justify-center select-none">
-        <!-- <svg class="size-18px pointer-events-none">
-          <use href="#linyu2" />
-        </svg> -->
+      <div class="w-50px flex items-center justify-center">
         <div class="text-12px font-900 m-l-2px">Linyu</div>
       </div>
-      <div class="flex">
-        <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
-        <SvgIconButton
-          :href="isMaximize ? '#restore' : '#maximize'"
-          @click="() => restoreOrMaximizeCurrentWindow().then((v) => (isMaximize = !v))" />
-        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="hideCurrentWindow" />
+      <div class="flex justify-between items-center flex-1 pointer-events-none">
+        <!-- 头像状态 -->
+        <div class="m-l-10px flex items-center pointer-events-auto">
+          <div class="flex position-relative items-center">
+            <n-avatar class="size-24px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
+            <div class="size-10px bg-[var(--primary-color)] rounded-full absolute bottom-[-2px] right-[-2px]"></div>
+          </div>
+          <div class="m-l-8px text-12px">Heath</div>
+        </div>
+        <div class="flex pointer-events-auto">
+          <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
+          <SvgIconButton
+            :href="isMaximize ? '#restore' : '#maximize'"
+            @click="() => restoreOrMaximizeCurrentWindow().then((v) => (isMaximize = !v))" />
+          <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="hideCurrentWindow" />
+        </div>
       </div>
     </ToolBar>
     <!-- 主体 -->
@@ -21,67 +28,120 @@
       <!-- 左侧 -->
       <ToolBar class="home__sider" @maximized="(is) => (isMaximize = is)">
         <div class="flex flex-col gap-8px">
-          <SvgIconButton
-            v-for="item in menuOptions"
-            :key="item.id"
-            :size="34"
-            :radius="5"
-            :href="seletedMenuOption === item.id ? item.activeIcon : item.icon"
-            :active="item.id === seletedMenuOption"
-            icon-size="22px"
-            @click="() => (seletedMenuOption = item.id)" />
+          <n-popover v-for="item in menuOptions" :key="item.id" :show-arrow="false" placement="right" trigger="hover">
+            <template #trigger>
+              <SvgIconButton
+                :size="34"
+                :radius="5"
+                :href="seletedMenuOption === item.id ? item.activeIcon : item.icon"
+                :active="item.id === seletedMenuOption"
+                icon-size="22px"
+                @click="() => onClickMenu(item)" />
+            </template>
+            <span class="select-none">{{ item.label }}</span>
+          </n-popover>
+        </div>
+        <div>
+          <n-dropdown :z-index="100" :options="moreOptions" trigger="click" placement="right" transfer>
+            <n-popover :z-index="99" :show-arrow="false" placement="right" trigger="hover">
+              <template #trigger>
+                <SvgIconButton :size="34" :radius="5" href="#list" icon-size="22px" />
+              </template>
+              <span class="select-none">{{ t('home.options.more.text') }}</span>
+            </n-popover>
+          </n-dropdown>
         </div>
       </ToolBar>
       <!-- 内容 -->
-      <div class="home__content"></div>
+      <div class="home__content">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { hideCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import { useI18n } from 'vue-i18n'
+  import { useRouter } from 'vue-router'
 
   const isMaximize = ref(false)
   const seletedMenuOption = ref('message')
+  const { t } = useI18n()
+  const router = useRouter()
 
-  let menuOptions = [
+  const menuOptions = computed(() => [
     {
       id: 'message',
-      label: '消息',
+      label: t('home.options.message'),
       icon: '#message',
-      activeIcon: '#message-active'
+      activeIcon: '#message-active',
+      path: '/home/message'
     },
     {
-      id: 'user',
-      label: '用户',
+      id: 'contacts',
+      label: t('home.options.contacts'),
       icon: '#user',
-      activeIcon: '#user-active'
+      activeIcon: '#user-active',
+      path: '/home/contacts'
     },
     {
       id: 'moment',
-      label: '过往',
+      label: t('home.options.moment'),
       icon: '#moment',
-      activeIcon: '#moment-active'
+      activeIcon: '#moment-active',
+      path: '/home/moment'
     },
     {
       id: 'drive',
-      label: '网盘',
+      label: t('home.options.drive'),
       icon: '#drive',
-      activeIcon: '#drive-active'
+      activeIcon: '#drive-active',
+      path: '/home/drive'
     },
     {
       id: 'ai',
-      label: 'AI',
+      label: t('home.options.ai'),
       icon: '#ai',
-      activeIcon: '#ai-active'
+      activeIcon: '#ai-active',
+      path: '/home/ai'
     },
     {
       id: 'application ',
-      label: '应用',
+      label: t('home.options.application'),
       icon: '#application',
-      activeIcon: '#application-active'
+      activeIcon: '#application-active',
+      path: '/home/application'
     }
-  ]
+  ])
+
+  const moreOptions = computed(() => [
+    {
+      label: () => t('home.options.more.update'),
+      key: 'update'
+    },
+    {
+      label: () => t('home.options.more.feedback'),
+      key: 'feedback'
+    },
+    {
+      label: () => t('home.options.more.setting'),
+      key: 'setting'
+    },
+    {
+      label: () => t('home.options.more.about'),
+      key: 'about'
+    },
+    {
+      label: () => t('home.options.more.exit'),
+      key: 'exit'
+    }
+  ])
+
+  const onClickMenu = (item: { id: string; path: string }) => {
+    seletedMenuOption.value = item.id
+    router.push(item.path)
+  }
 
   onMounted(() => {})
 </script>
@@ -94,13 +154,14 @@
     flex-direction: column;
     color: var(--text-color);
     background-color: transparent;
+    overflow: hidden;
 
     .home__header {
       height: 38px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       padding: 0 3px 0 0;
+      user-select: none;
     }
 
     .home__layout {
@@ -113,8 +174,10 @@
         width: 50px;
         background-color: transparent;
         display: flex;
-        justify-content: center;
-        padding: 5px 0;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 10px 0;
+        align-items: center;
 
         .home__sider-btn {
           height: 34px;

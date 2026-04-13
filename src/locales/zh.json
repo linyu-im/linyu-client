@@ -45,5 +45,23 @@
   },
   "tray": {
     "exit": "退出Linyu"
+  },
+  "home": {
+    "options": {
+      "message": "消息",
+      "contacts": "联系人",
+      "moment": "过往",
+      "drive": "网盘",
+      "ai": "AI",
+      "application": "应用",
+      "more": {
+        "text": "更多",
+        "update": "检查更新",
+        "feedback": "意见反馈",
+        "setting": "设置",
+        "about": "关于",
+        "exit": "退出"
+      }
+    }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="h-100vh w-100vw">
+  <div class="h-100vh w-100vw overflow-hidden">
     <linyu-provider>
       <router-view />
     </linyu-provider>

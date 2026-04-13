@@ -92,6 +92,11 @@
       optionTextColorHover: 'var(--primary-color)',
       optionColorHover: 'var(--bg-muted-color)',
       dividerColor: 'var(--divider-color)'
+    },
+    Popover: {
+      color: 'var(--bg-muted-color)',
+      textColor: 'var(--text-color)',
+      border: '1px solid var(--border-color)'
     }
   }
 

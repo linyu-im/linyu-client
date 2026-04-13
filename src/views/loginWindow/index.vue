@@ -323,7 +323,7 @@
 
     .login__content {
       flex: 1;
-      background-color: var(--bg-primary-color);
+      background-color: var(--bg-secondary-color);
       padding: 0 20px;
       display: flex;
       flex-direction: column;

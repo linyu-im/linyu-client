@@ -45,5 +45,23 @@
   },
   "tray": {
     "exit": "Exit Linyu"
+  },
+  "home": {
+    "options": {
+      "message": "Message",
+      "contacts": "Contacts",
+      "moment": "Moment",
+      "drive": "Drive",
+      "ai": "AI",
+      "application": "Application",
+      "more": {
+        "text": "More",
+        "update": "Check Update",
+        "feedback": "Feedback",
+        "setting": "Settings",
+        "about": "About",
+        "exit": "Exit"
+      }
+    }
   }
 }
