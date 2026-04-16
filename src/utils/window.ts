@@ -5,8 +5,8 @@ import { exit } from '@tauri-apps/plugin-process'
 const defaultOptions = {
   width: 900,
   height: 670,
-  minWidth: 800,
-  minHeight: 600,
+  minWidth: 0,
+  minHeight: 0,
   resizable: false,
   fullscreen: false,
   visible: true,
@@ -96,3 +96,16 @@ export const restoreOrMaximizeCurrentWindow = async () => {
 export const exitApp = async () => {
   await exit()
 }
+
+export const createHomeWinodw = () =>
+  createWebviewWindow('林语', 'home', {
+    width: 900,
+    height: 675,
+    minWidth: 800,
+    minHeight: 600,
+    resizable: true,
+    transparent: true
+  })
+
+export const createEmotionWinodw = () =>
+  createWebviewWindow('心情', 'emotion', { width: 320, height: 525, transparent: true })

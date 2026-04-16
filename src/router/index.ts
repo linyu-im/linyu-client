@@ -48,6 +48,11 @@ const routes: RouteRecordRaw[] = [
     path: '/tray',
     name: 'tray',
     component: () => import('@/views/trayWindow/index.vue')
+  },
+  {
+    path: '/emotion',
+    name: 'emotion',
+    component: () => import('@/views/emotionWindow/index.vue')
   }
 ]
 

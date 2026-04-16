@@ -120,8 +120,8 @@
 
 <script setup lang="tsx">
   import SvgIconButton from '@/components/SvgIconButton.vue'
-  import { oauth2Api, userApi } from '@/api'
-  import { createWebviewWindow, exitApp, minimizeCurrentWindow } from '@/utils/window'
+  import { authApi, oauth2Api } from '@/api'
+  import { createHomeWinodw, exitApp, minimizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import { useGlobalStore } from '@/stores/global'
@@ -129,7 +129,7 @@
   import { openUrl } from '@/utils/open'
   import { once } from '@tauri-apps/api/event'
   import { OAuth2LoginPayload } from '@/types/cmd/login'
-  import { LoginResult } from '@/types/api/user'
+  import { LoginResult } from '@/types/api/auth'
   import { useSystemSettingStore } from '@/stores/systemSetting'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { computed, onMounted, ref, watchEffect } from 'vue'
@@ -237,19 +237,14 @@
   }
 
   const loginSuccess = (info: LoginResult) => {
-    userStore.setUserInfo({ token: info?.token || '', userId: info?.userId || '' })
-    createWebviewWindow('林语', 'home', {
-      width: 900,
-      height: 675,
-      resizable: true,
-      transparent: true
-    })
+    userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
+    createHomeWinodw()
   }
 
   const onAccountLogin = () => {
     loginType.value = 'manual'
     loginLoading.value = true
-    userApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
+    authApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
       loginLoading.value = false
       if (res.code === 0 && res.data) {
         loginSuccess(res.data)
@@ -263,13 +258,19 @@
     loginType.value = 'auto'
     loginLoading.value = true
     loginButtonDisabled.value = true
-    userApi.tokenReset().then((res) => {
-      if (res.code === 0 && res.data) {
-        loginSuccess(res.data)
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    authApi
+      .tokenReset()
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          loginSuccess(res.data)
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        loginLoading.value = false
+        loginButtonDisabled.value = false
+      })
   }
 
   const onOauth2Login = async (oauthType: string) => {
@@ -278,7 +279,7 @@
     await openUrl(urlInfo.data?.authUrl || '')
     await once<OAuth2LoginPayload>('oauth-code', (event) => {
       loginLoading.value = true
-      userApi.oauth2Login({ code: event.payload.code, type: oauthType }).then((res) => {
+      authApi.oauth2Login({ code: event.payload.code, type: oauthType }).then((res) => {
         loginLoading.value = false
         if (res.code === 0 && res.data) {
           loginSuccess(res.data)

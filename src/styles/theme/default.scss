@@ -13,26 +13,29 @@
         --bg-primary-color: #FFF;
         --bg-secondary-color: #F5F5F5;
         --bg-muted-color: #F7F7F7;
+        --bg-primary-rgb: 255, 255, 255;
+        --bg-secondary-rgb: 245, 245, 245;
+        --bg-muted-rgb: 247, 247, 247;
 
         //文本颜色
         --text-color: #000;
         --text-secondary-color: #9d9d9d;
-        --text-muted-color:#4c4c4c;
+        --text-muted-color: #4c4c4c;
 
         //边框颜色（输入框，选择框）
         --border-color: #e3e3e3;
 
         /* 组件级别 */
         //按钮浅色背景
-        --button-soft-bg: #F7F7F7;
+        --button-soft-bg: #EBEBEB;
         //输入框浅色背景
-        --input-soft-bg: #F7F7F7;
+        --input-soft-bg: #EBEBEB;
         //icon按钮的hover颜色
         --icon-hover-color: rgba(169, 169, 169, 0.25);
         //操作栏背景色
         --toolbar-bg-color: rgba(230, 240, 255, 0.5);
         //分割线颜色
-        --divider-color:#EFEFF5;
+        --divider-color: #EFEFF5;
         //按钮激活颜色
         --icon-active-color: #0095f8;
     }
@@ -58,6 +61,9 @@ html[data-theme="dark"] {
         --bg-primary-color: #282828;
         --bg-secondary-color: #202020;
         --bg-muted-color: #282828;
+        --bg-primary-rgb: 40, 40, 40;
+        --bg-secondary-rgb: 32, 32, 32;
+        --bg-muted-rgb: 40, 40, 40;
 
         //边框颜色（输入框，选择框）
         --border-color: #454547;
@@ -72,7 +78,7 @@ html[data-theme="dark"] {
         //操作栏背景色
         --toolbar-bg-color: rgba(47, 50, 53, 0.7);
         //分割线颜色
-        --divider-color:#3a3a3a;
+        --divider-color: #3a3a3a;
         //按钮激活颜色
         --icon-active-color: #0088e2;
     }

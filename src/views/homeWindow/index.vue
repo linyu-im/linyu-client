@@ -3,16 +3,27 @@
     <!-- 顶部 -->
     <ToolBar class="home__header" @maximized="(is) => (isMaximize = is)">
       <div class="w-50px flex items-center justify-center">
-        <div class="text-12px font-900 m-l-2px">Linyu</div>
+        <div
+          class="text-12px m-l-2 font-900 select-none bg-gradient-to-r from-[var(--primary-color)] to-[var(--primary-strong-color)] bg-clip-text text-transparent">
+          Linyu
+        </div>
       </div>
       <div class="flex justify-between items-center flex-1 pointer-events-none">
         <!-- 头像状态 -->
         <div class="m-l-10px flex items-center pointer-events-auto">
           <div class="flex position-relative items-center">
-            <n-avatar class="size-24px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            <div class="size-10px bg-[var(--primary-color)] rounded-full absolute bottom-[-2px] right-[-2px]"></div>
+            <n-avatar
+              class="size-24px rounded-5px bg-#FFF"
+              fallback-src="/avatar.png"
+              :src="userStore.userInfo.avatar" />
+            <div
+              class="size-14px bg-[var(--bg-primary-color)] rounded-full absolute bottom-[-4px] right-[-4px] flex justify-center items-center"
+              @click="() => createEmotionWinodw()">
+              <img v-if="userStore.userInfo.emotionId" class="size-10px" :src="userStore.userInfo.emotionUrl" alt="" />
+              <div v-else class="dot"></div>
+            </div>
           </div>
-          <div class="m-l-8px text-12px">Heath</div>
+          <div class="m-l-8px text-12px">{{ userStore.userInfo.username }}</div>
         </div>
         <div class="flex pointer-events-auto">
           <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
@@ -61,9 +72,18 @@
 </template>
 
 <script setup lang="ts">
-  import { hideCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import { userApi } from '@/api'
+  import { useUserStore } from '@/stores/user'
+  import {
+    createEmotionWinodw,
+    hideCurrentWindow,
+    minimizeCurrentWindow,
+    restoreOrMaximizeCurrentWindow
+  } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useRouter } from 'vue-router'
+
+  const userStore = useUserStore()
 
   const isMaximize = ref(false)
   const seletedMenuOption = ref('message')
@@ -143,7 +163,19 @@
     router.push(item.path)
   }
 
-  onMounted(() => {})
+  const onCurrentUserInfo = () => {
+    userApi.currentUserInfo().then((res) => {
+      if (res.code === 0 && res.data) {
+        userStore.setUserInfo(res.data)
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  onMounted(() => {
+    onCurrentUserInfo()
+  })
 </script>
 
 <style scoped lang="scss">
@@ -197,5 +229,17 @@
         border-radius: 5px 0 0 0;
       }
     }
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+    background: radial-gradient(circle at 5% 5%, rgba(255, 255, 255, 0.8), var(--primary-color) 40%);
+
+    box-shadow:
+      inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+      inset 1px 1px 2px rgba(255, 255, 255, 0.4);
   }
 </style>

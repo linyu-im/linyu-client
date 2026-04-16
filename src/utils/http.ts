@@ -18,7 +18,7 @@ export interface ApiResponse<T = any> {
 
 function getToken(): string {
   const userStore = useUserStore()
-  return userStore.userInfo.token || ''
+  return userStore.authInfo.token || ''
 }
 
 function getLang(): string {

@@ -1,17 +1,15 @@
-// 账号密码登录参数
-export interface AccountLoginParam {
+export interface UserInfoResult {
+  id: string
+  username: string
   account: string
-  password: string
-}
-
-// 登录结果
-export interface LoginResult {
-  userId: string
-  token: string
-}
-
-// OAuth2登录参数
-export interface Oauth2LoginParam {
-  code: string
-  type: string
+  phone: string
+  email: string
+  gitee: string
+  gender: string
+  avatar: string
+  birthday: string
+  emotionId: string
+  status: string
+  emotionName: string
+  emotionUrl: string
 }

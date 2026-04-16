@@ -1,36 +1,64 @@
+import { UserInfoResult } from '@/types/api/user'
 import { defineStore } from 'pinia'
 
 type UserStore = {
-  userInfo: {
+  authInfo: {
     token: string
     userId: string
     isLoggedIn?: boolean
   }
+  userInfo: UserInfoResult
 }
 
 export const useUserStore = defineStore('user', {
   persist: true,
   state: (): UserStore => ({
-    userInfo: {
+    authInfo: {
       token: '',
       userId: '',
       isLoggedIn: false
+    },
+    userInfo: {
+      id: '',
+      username: '',
+      account: '',
+      phone: '',
+      email: '',
+      gitee: '',
+      gender: '',
+      avatar: '',
+      birthday: '',
+      emotionId: '',
+      status: '',
+      emotionName: '',
+      emotionUrl: ''
     }
   }),
   actions: {
-    setUserInfo(userInfo: UserStore['userInfo']) {
+    setAuthInfo(authInfo: UserStore['authInfo']) {
       this.$patch((state) => {
-        state.userInfo.token = userInfo.token
-        state.userInfo.userId = userInfo.userId
-        state.userInfo.isLoggedIn = true
+        state.authInfo.token = authInfo.token
+        state.authInfo.userId = authInfo.userId
+        state.authInfo.isLoggedIn = true
       })
     },
-
-    removeUserInfo() {
+    removeAuthInfo() {
       this.$patch((state) => {
-        state.userInfo.token = ''
-        state.userInfo.userId = ''
-        state.userInfo.isLoggedIn = false
+        state.authInfo.token = ''
+        state.authInfo.userId = ''
+        state.authInfo.isLoggedIn = false
+      })
+    },
+    setUserInfo(info: UserInfoResult) {
+      this.$patch((state) => {
+        state.userInfo = info
+      })
+    },
+    setUserEmotion(emotionId: string, emotionName: string, emotionUrl: string) {
+      this.$patch((state) => {
+        state.userInfo.emotionId = emotionId
+        state.userInfo.emotionName = emotionName
+        state.userInfo.emotionUrl = emotionUrl
       })
     }
   },
