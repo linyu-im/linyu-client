@@ -16,14 +16,16 @@
               class="size-24px rounded-5px bg-#FFF"
               fallback-src="/avatar.png"
               :src="userStore.userInfo.avatar" />
-            <div
-              class="size-14px bg-[var(--bg-primary-color)] rounded-full absolute bottom-[-4px] right-[-4px] flex justify-center items-center"
-              @click="() => createEmotionWinodw()">
-              <img v-if="userStore.userInfo.emotionId" class="size-10px" :src="userStore.userInfo.emotionUrl" alt="" />
-              <div v-else class="dot"></div>
+          </div>
+          <div class="m-l-8px text-14px font-bold">{{ userStore.userInfo.username }}</div>
+          <div
+            class="flex items-center justify-center text-12px cursor-pointer text-[var(--text-muted-color)] m-l-10px"
+            @click="() => createEmotionWinodw()">
+            <img v-if="userStore.userInfo.emotionId" class="size-14px" :src="userStore.userInfo.emotionUrl" alt="" />
+            <div class="m-l-2px">
+              {{ userStore.userInfo.emotionId ? userStore.userInfo.emotionName : t('home.emotion.setText') }}
             </div>
           </div>
-          <div class="m-l-8px text-12px">{{ userStore.userInfo.username }}</div>
         </div>
         <div class="flex pointer-events-auto">
           <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
@@ -194,6 +196,7 @@
       align-items: center;
       padding: 0 3px 0 0;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .home__layout {
@@ -215,7 +218,6 @@
           height: 34px;
           width: 34px;
           text-align: center;
-          background-color: aqua;
           border-radius: 5px;
           display: flex;
           justify-content: center;
@@ -229,17 +231,5 @@
         border-radius: 5px 0 0 0;
       }
     }
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-
-    background: radial-gradient(circle at 5% 5%, rgba(255, 255, 255, 0.8), var(--primary-color) 40%);
-
-    box-shadow:
-      inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-      inset 1px 1px 2px rgba(255, 255, 255, 0.4);
   }
 </style>

@@ -360,8 +360,6 @@
     }
 
     :deep(.n-input) {
-      background-color: var(--input-soft-bg);
-
       .n-input__input-el {
         padding: 0;
         height: 40px;

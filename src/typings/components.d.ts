@@ -12,14 +12,18 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    LinyuEmpty: typeof import('./../components/LinyuEmpty.vue')['default']
     LinyuProvider: typeof import('./../components/LinyuProvider.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
+    NBadge: typeof import('naive-ui')['NBadge']
     NButton: typeof import('naive-ui')['NButton']
     NCheckbox: typeof import('naive-ui')['NCheckbox']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
     NDivider: typeof import('naive-ui')['NDivider']
     NDropdown: typeof import('naive-ui')['NDropdown']
+    NIcon: typeof import('naive-ui')['NIcon']
     NInput: typeof import('naive-ui')['NInput']
+    NIpunt: typeof import('naive-ui')['NIpunt']
     NLayout: typeof import('naive-ui')['NLayout']
     NLayoutContent: typeof import('naive-ui')['NLayoutContent']
     NLayoutFooter: typeof import('naive-ui')['NLayoutFooter']
@@ -27,6 +31,7 @@ declare module 'vue' {
     NLayoutSider: typeof import('naive-ui')['NLayoutSider']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NPopover: typeof import('naive-ui')['NPopover']
+    NScrollbar: typeof import('naive-ui')['NScrollbar']
     NTooltip: typeof import('naive-ui')['NTooltip']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -37,14 +42,18 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const LinyuEmpty: typeof import('./../components/LinyuEmpty.vue')['default']
   const LinyuProvider: typeof import('./../components/LinyuProvider.vue')['default']
   const NAvatar: typeof import('naive-ui')['NAvatar']
+  const NBadge: typeof import('naive-ui')['NBadge']
   const NButton: typeof import('naive-ui')['NButton']
   const NCheckbox: typeof import('naive-ui')['NCheckbox']
   const NConfigProvider: typeof import('naive-ui')['NConfigProvider']
   const NDivider: typeof import('naive-ui')['NDivider']
   const NDropdown: typeof import('naive-ui')['NDropdown']
+  const NIcon: typeof import('naive-ui')['NIcon']
   const NInput: typeof import('naive-ui')['NInput']
+  const NIpunt: typeof import('naive-ui')['NIpunt']
   const NLayout: typeof import('naive-ui')['NLayout']
   const NLayoutContent: typeof import('naive-ui')['NLayoutContent']
   const NLayoutFooter: typeof import('naive-ui')['NLayoutFooter']
@@ -52,6 +61,7 @@ declare global {
   const NLayoutSider: typeof import('naive-ui')['NLayoutSider']
   const NMessageProvider: typeof import('naive-ui')['NMessageProvider']
   const NPopover: typeof import('naive-ui')['NPopover']
+  const NScrollbar: typeof import('naive-ui')['NScrollbar']
   const NTooltip: typeof import('naive-ui')['NTooltip']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']

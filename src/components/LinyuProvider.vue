@@ -46,9 +46,9 @@
       // 默认
       color: 'var(--button-soft-bg)',
       colorPressed: 'var(--button-soft-bg)',
-      colorFocus: 'rgba(var(--button-soft-bg),0.8)',
-      colorDisabled: 'rgba(var(--button-soft-bg),0.8)',
-      colorHover: 'rgba(var(--button-soft-bg),0.8)',
+      colorFocus: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+      colorDisabled: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+      colorHover: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
       border: '1px solid var(--button-soft-bg)',
       borderHover: '1px solid var(--button-soft-bg)',
       borderPressed: '1px solid var(--button-soft-bg)',
@@ -78,10 +78,18 @@
       caretColor: 'var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       placeholderColor: 'var(--text-secondary-color)',
-      textColor: 'var(--text-color)'
+      textColor: 'var(--text-color)',
+      color: 'var(--input-soft-bg)',
+      colorFocus: 'var(--input-soft-bg)'
     },
     Message: {
-      maxWidth: '90vw'
+      maxWidth: '90vw',
+      colorError: 'var(--bg-muted-color)',
+      textColorError: 'var(--text-color)',
+      boxShadowError: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      colorSuccess: 'var(--bg-muted-color)',
+      textColorSuccess: 'var(--text-color)',
+      boxShadowSuccess: '0 0 0 1px rgba(var(--primary-rgb),0.3)'
     },
     Divider: {
       color: 'var(--divider-color)'
@@ -97,6 +105,10 @@
       color: 'var(--bg-muted-color)',
       textColor: 'var(--text-color)',
       border: '1px solid var(--border-color)'
+    },
+    Badge: {
+      color: 'var(--red)',
+      fontSize: '10px'
     }
   }
 

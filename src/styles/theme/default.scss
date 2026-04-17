@@ -35,9 +35,11 @@
         //操作栏背景色
         --toolbar-bg-color: rgba(230, 240, 255, 0.5);
         //分割线颜色
-        --divider-color: #EFEFF5;
+        --divider-color: #dedede;
         //按钮激活颜色
         --icon-active-color: #0095f8;
+        //卡片背景颜色
+        --card-bg-color: #EBEBEB;
     }
 }
 
@@ -81,5 +83,7 @@ html[data-theme="dark"] {
         --divider-color: #3a3a3a;
         //按钮激活颜色
         --icon-active-color: #0088e2;
+        //卡片背景颜色
+        --card-bg-color: #3A3A3B;
     }
 }
