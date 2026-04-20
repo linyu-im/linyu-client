@@ -1,4 +1,4 @@
-export interface EmotionListResult {
+export interface Emotonn {
   id: string
   emotionName: string
   url: string

@@ -109,6 +109,11 @@
     Badge: {
       color: 'var(--red)',
       fontSize: '10px'
+    },
+    Scrollbar: {
+      width: '6px',
+      color: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)',
+      colorHover: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)'
     }
   }
 
@@ -126,4 +131,4 @@
     media?.removeEventListener('change', handleThememChange)
   })
 </script>
-<style scoped></style>
+<style></style>

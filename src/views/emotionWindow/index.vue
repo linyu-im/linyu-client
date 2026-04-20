@@ -35,10 +35,10 @@
 <script setup lang="ts">
   import { emotionApi, userApi } from '@/api'
   import { useUserStore } from '@/stores/user'
-  import { EmotionListResult } from '@/types/api/emotion'
+  import { Emotonn } from '@/types/api/emotion'
   import { closeCurrentWindow } from '@/utils/window'
 
-  const emotionList = ref<EmotionListResult[]>([])
+  const emotionList = ref<Emotonn[]>([])
   const userStore = useUserStore()
   const activeEmotionId = ref<string>(userStore.userInfo.emotionId)
 

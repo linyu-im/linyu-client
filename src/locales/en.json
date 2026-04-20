@@ -66,5 +66,17 @@
     "emotion": {
       "setText": "Set My Emotion"
     }
+  },
+  "message": {
+    "noChat": "No new messages",
+    "msgType": {
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "file": "File",
+      "ecard": "Ecard",
+      "voice": "Voice",
+      "unknown": "Unknown Type"
+    }
   }
 }

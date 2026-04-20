@@ -66,5 +66,17 @@
     "emotion": {
       "setText": "设置我的心情"
     }
+  },
+  "message": {
+    "noChat": "暂无新的消息",
+    "msgType": {
+      "text": "文本",
+      "image": "图片",
+      "video": "视频",
+      "file": "文件",
+      "ecard": "名片",
+      "voice": "语音",
+      "unknown": "未知类型"
+    }
   }
 }

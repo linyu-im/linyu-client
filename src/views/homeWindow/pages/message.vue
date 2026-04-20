@@ -2,7 +2,13 @@
   <div class="message">
     <div class="chatlist">
       <div class="chatlist__title">
-        <n-input type="text" style="width: 190px; height: 28px" class="text-14px" placeholder="搜索" clearable>
+        <n-input
+          size="small"
+          type="text"
+          style="width: 190px; height: 28px"
+          class="text-14px"
+          placeholder="搜索"
+          clearable>
           <template #prefix>
             <svg class="size-16px text-[var(--text-secondary-color)]">
               <use href="#search"></use>
@@ -15,185 +21,109 @@
           </svg>
         </n-button>
       </div>
-      <n-scrollbar style="margin-top: 10px; margin-bottom: 10px">
+      <n-scrollbar v-if="chatList.length > 0" style="margin-top: 10px">
         <div class="chatlist__content">
-          <div class="chatlist__item top">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
+          <div
+            v-for="item in chatList"
+            :key="item.id"
+            class="chatlist__item"
+            :class="{ top: item.peerIsTop, active: globalStore.selectedChatId === item.id }"
+            @click="() => onSelectChat(item)">
+            <n-badge
+              :value="item.unreadNum"
+              :dot="item.peerIsMute && item.unreadNum > 0"
+              :max="99"
+              class="select-none pointer-events-none p-0 text-1px"
+              :offset="[-2, 2]">
+              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" :src="item.peerAvatar" />
             </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
+            <div class="flex-1 min-w-0 m-l-12px h-40px flex flex-col justify-center gap-6px">
+              <div class="flex justify-between items-center h-14px">
+                <div class="text-14px truncate">{{ item.peerName }}</div>
+                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">
+                  {{ formatTime(item.updatedAt) }}
+                </div>
               </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item top">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item active">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
-              </div>
-            </div>
-          </div>
-          <div class="chatlist__item">
-            <n-badge :value="5" :max="99" class="select-none pointer-events-none p-0 text-1px" :offset="[-3, 3]">
-              <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
-            </n-badge>
-            <div class="flex-1 min-w-0 m-l-10px h-40px flex flex-col justify-center gap-8px">
-              <div class="flex justify-between items-center">
-                <div class="text-14px truncate">1小娜娜22222222222222222222222222222222222</div>
-                <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">昨天10:20</div>
-              </div>
-              <div class="text-[var(--text-secondary-color)] text-12px truncate">
-                你在干什么?1111111111111112221111111
+              <div class="flex justify-between items-center h-18px">
+                <component :is="toShowChatMessage(item.lastMsgContent)" />
+                <svg v-if="item.peerIsMute" class="size-16px text-[var(--text-secondary-color)] flex-shrink-0 m-l-5px">
+                  <use href="#bell-mute"></use>
+                </svg>
               </div>
             </div>
           </div>
         </div>
       </n-scrollbar>
+      <div
+        v-else
+        class="flex-1 flex w-full h-full justify-center items-center text-[12px] text-[var(--text-secondary-color)]">
+        {{ t('message.noChat') }}
+      </div>
     </div>
     <div class="content">
       <linyu-empty />
     </div>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="tsx">
+  import { chatApi } from '@/api'
+  import { useGlobalStore } from '@/stores/global'
+  import { Chat } from '@/types/api/chat'
+  import { Message } from '@/types/api/message'
+  import { formatTime } from '@/utils/time'
+  import { useI18n } from 'vue-i18n'
+
+  const { t } = useI18n()
+  const globalStore = useGlobalStore()
+
+  const chatList = ref<Chat[]>([])
+
+  const toShowChatMessage = (msg: Message | null) => {
+    if (!msg) return <span />
+    switch (msg.msgType) {
+      case 'text':
+        return <span class="text-[var(--text-secondary-color)] text-12px truncate">{msg.content.text}</span>
+      case 'image':
+        return <span>[{t('message.msgType.image')}]</span>
+      case 'video':
+        return <span>[{t('message.msgType.video')}]</span>
+      case 'file':
+        return (
+          <span>
+            [{t('message.msgType.file')}] {msg.content.fileName}
+          </span>
+        )
+      case 'ecard':
+        return (
+          <span>
+            [{t('message.msgType.ecard')}] {msg.content.userName}
+          </span>
+        )
+      case 'voice':
+        return <span>[{t('message.msgType.voice')}]</span>
+      default:
+        return <span>[{t('message.msgType.unknown')}]</span>
+    }
+  }
+
+  const onSelectChat = (item: Chat) => {
+    globalStore.setSelectedChatId(item.id)
+  }
+
+  const onChatList = () => {
+    chatApi.list().then((res) => {
+      if (res.code === 0 && res.data) {
+        chatList.value = res.data
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  onMounted(() => {
+    onChatList()
+  })
+</script>
 <style scoped lang="scss">
   .message {
     display: flex;
@@ -205,7 +135,6 @@
       width: 240px;
       padding: 10px;
       border-right: 1px var(--divider-color) solid;
-      height: calc(100% - 48px);
 
       .chatlist__title {
         display: flex;

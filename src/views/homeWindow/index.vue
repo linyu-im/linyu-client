@@ -202,7 +202,7 @@
     .home__layout {
       flex: 1;
       display: flex;
-      height: 100%;
+      height: calc(100% - 38px);
       background-color: var(--toolbar-bg-color);
 
       .home__sider {
