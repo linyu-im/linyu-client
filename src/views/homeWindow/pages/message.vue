@@ -28,7 +28,8 @@
             :key="item.id"
             class="chatlist__item"
             :class="{ top: item.peerIsTop, active: globalStore.selectedChatId === item.id }"
-            @click="() => onSelectChat(item)">
+            @click="() => onSelectChat(item)"
+            @contextmenu="(e: MouseEvent) => onContextMenu(e, item)">
             <n-badge
               :value="item.unreadNum"
               :dot="item.peerIsMute && item.unreadNum > 0"
@@ -63,6 +64,15 @@
     <div class="content">
       <linyu-empty />
     </div>
+    <n-dropdown
+      trigger="manual"
+      placement="bottom-start"
+      :x="contextMenuX"
+      :y="contextMenuY"
+      :options="contextMenuOptions"
+      :show="contextMenuShow"
+      @select="onContextMenuSelect"
+      @clickoutside="onContextMenuClickoutside" />
   </div>
 </template>
 <script setup lang="tsx">
@@ -77,6 +87,125 @@
   const globalStore = useGlobalStore()
 
   const chatList = ref<Chat[]>([])
+
+  const contextMenuShow = ref(false)
+  const contextMenuX = ref(0)
+  const contextMenuY = ref(0)
+  const contextMenuTarget = ref<Chat | null>(null)
+
+  const contextMenuOptions = computed(() => {
+    const item = contextMenuTarget.value
+    if (!item) return []
+    return [
+      {
+        label: () => t(item.peerIsTop ? 'message.contextMenu.cancelTop' : 'message.contextMenu.top'),
+        key: 'toggleTop'
+      },
+      {
+        label: () => t('message.contextMenu.markRead'),
+        key: 'markRead',
+        disabled: item.unreadNum === 0
+      },
+      {
+        label: () => t(item.peerIsMute ? 'message.contextMenu.cancelMute' : 'message.contextMenu.mute'),
+        key: 'toggleMute'
+      },
+      { type: 'divider' as const, key: 'd1' },
+      {
+        label: () => t('message.contextMenu.independentWindow'),
+        key: 'independentWindow'
+      },
+      { type: 'divider' as const, key: 'd2' },
+      {
+        label: () => t('message.contextMenu.delete'),
+        key: 'delete'
+      }
+    ]
+  })
+
+  const onContextMenu = (e: MouseEvent, item: Chat) => {
+    e.preventDefault()
+    contextMenuTarget.value = item
+    contextMenuX.value = e.clientX
+    contextMenuY.value = e.clientY
+    nextTick(() => {
+      contextMenuShow.value = true
+    })
+  }
+
+  const onContextMenuClickoutside = () => {
+    contextMenuShow.value = false
+  }
+
+  const onContextMenuSelect = (key: string) => {
+    contextMenuShow.value = false
+    const item = contextMenuTarget.value
+    if (!item) return
+    switch (key) {
+      case 'toggleTop':
+        onToggleTop(item)
+        break
+      case 'markRead':
+        onMarkRead(item)
+        break
+      case 'toggleMute':
+        onToggleMute(item)
+        break
+      case 'independentWindow':
+        onIndependentWindow(item)
+        break
+      case 'delete':
+        onDelete(item)
+        break
+    }
+  }
+
+  const onToggleTop = (item: Chat) => {
+    chatApi.top({ chatId: item.id, isTop: !item.peerIsTop }).then((res) => {
+      if (res.code === 0) {
+        onChatList()
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  const onMarkRead = (item: Chat) => {
+    chatApi.markRead({ chatId: item.id }).then((res) => {
+      if (res.code === 0) {
+        onChatList()
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  const onToggleMute = (item: Chat) => {
+    chatApi.mute({ chatId: item.id, isMute: !item.peerIsMute }).then((res) => {
+      if (res.code === 0) {
+        onChatList()
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  const onIndependentWindow = (item: Chat) => {
+    window.$message.info('TODO: independent window for ' + item.peerName)
+  }
+
+  const onDelete = (item: Chat) => {
+    chatApi.remove({ chatId: item.id }).then((res) => {
+      if (res.code === 0) {
+        if (globalStore.selectedChatId === item.id) {
+          globalStore.setSelectedChatId('')
+        }
+        onChatList()
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
 
   const toShowChatMessage = (msg: Message | null) => {
     if (!msg) return <span />

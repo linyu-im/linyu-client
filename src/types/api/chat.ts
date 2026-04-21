@@ -17,3 +17,21 @@ export interface Chat {
   peerIsTop?: boolean
   peerIsMute?: boolean
 }
+
+export interface ChatTopParam {
+  chatId: string
+  isTop: boolean
+}
+
+export interface ChatMuteParam {
+  chatId: string
+  isMute: boolean
+}
+
+export interface ChatMarkReadParam {
+  chatId: string
+}
+
+export interface ChatDeleteParam {
+  chatId: string
+}

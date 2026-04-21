@@ -77,6 +77,15 @@
       "ecard": "名片",
       "voice": "语音",
       "unknown": "未知类型"
+    },
+    "contextMenu": {
+      "top": "置顶",
+      "cancelTop": "取消置顶",
+      "markRead": "标记已读",
+      "mute": "消息免打扰",
+      "cancelMute": "取消免打扰",
+      "independentWindow": "独立聊天窗口",
+      "delete": "从列表中删除"
     }
   }
 }

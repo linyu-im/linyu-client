@@ -77,6 +77,15 @@
       "ecard": "Ecard",
       "voice": "Voice",
       "unknown": "Unknown Type"
+    },
+    "contextMenu": {
+      "top": "Pin to Top",
+      "cancelTop": "Unpin",
+      "markRead": "Mark as Read",
+      "mute": "Mute Notifications",
+      "cancelMute": "Unmute",
+      "independentWindow": "Independent Chat Window",
+      "delete": "Remove from List"
     }
   }
 }
