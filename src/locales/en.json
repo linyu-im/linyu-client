@@ -86,6 +86,10 @@
       "cancelMute": "Unmute",
       "independentWindow": "Independent Chat Window",
       "delete": "Remove from List"
+    },
+    "addMenu": {
+      "addContact": "Add Contact",
+      "createGroup": "Create Group Chat"
     }
   }
 }

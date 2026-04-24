@@ -12,6 +12,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ChatSession: typeof import('./../components/ChatSession.vue')['default']
     LinyuEmpty: typeof import('./../components/LinyuEmpty.vue')['default']
     LinyuProvider: typeof import('./../components/LinyuProvider.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
@@ -22,11 +23,14 @@ declare module 'vue' {
     NDivider: typeof import('naive-ui')['NDivider']
     NDropdown: typeof import('naive-ui')['NDropdown']
     NInput: typeof import('naive-ui')['NInput']
+    NMention: typeof import('naive-ui')['NMention']
     NMessageProvider: typeof import('naive-ui')['NMessageProvider']
     NPopover: typeof import('naive-ui')['NPopover']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
+    NSplit: typeof import('naive-ui')['NSplit']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Split: typeof import('./../components/Split.vue')['default']
     SvgIconButton: typeof import('./../components/SvgIconButton.vue')['default']
     ToolBar: typeof import('./../components/ToolBar.vue')['default']
   }
@@ -34,6 +38,7 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const ChatSession: typeof import('./../components/ChatSession.vue')['default']
   const LinyuEmpty: typeof import('./../components/LinyuEmpty.vue')['default']
   const LinyuProvider: typeof import('./../components/LinyuProvider.vue')['default']
   const NAvatar: typeof import('naive-ui')['NAvatar']
@@ -44,11 +49,14 @@ declare global {
   const NDivider: typeof import('naive-ui')['NDivider']
   const NDropdown: typeof import('naive-ui')['NDropdown']
   const NInput: typeof import('naive-ui')['NInput']
+  const NMention: typeof import('naive-ui')['NMention']
   const NMessageProvider: typeof import('naive-ui')['NMessageProvider']
   const NPopover: typeof import('naive-ui')['NPopover']
   const NScrollbar: typeof import('naive-ui')['NScrollbar']
+  const NSplit: typeof import('naive-ui')['NSplit']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
+  const Split: typeof import('./../components/Split.vue')['default']
   const SvgIconButton: typeof import('./../components/SvgIconButton.vue')['default']
   const ToolBar: typeof import('./../components/ToolBar.vue')['default']
 }

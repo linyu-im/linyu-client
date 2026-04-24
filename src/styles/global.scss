@@ -8,6 +8,7 @@
 * {
   font-family: 'MiSans', sans-serif !important;
   --n-scrollbar-rail-right-vertical-right: 0px;
+  box-sizing: border-box;
 }
 
 body {
@@ -17,5 +18,15 @@ body {
 
   img {
     -webkit-user-drag: none;
+  }
+}
+
+.n-dropdown-menu {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-color) !important;
+
+  .v-binder-follower-content {
+    background-color: color-mix(in srgb, var(--bg-muted-color) 80%, transparent) !important;
   }
 }

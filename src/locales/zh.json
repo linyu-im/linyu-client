@@ -86,6 +86,10 @@
       "cancelMute": "取消免打扰",
       "independentWindow": "独立聊天窗口",
       "delete": "从列表中删除"
+    },
+    "addMenu": {
+      "addContact": "添加联系人",
+      "createGroup": "发起群聊"
     }
   }
 }

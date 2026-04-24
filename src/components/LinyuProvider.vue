@@ -95,10 +95,10 @@
       color: 'var(--divider-color)'
     },
     Dropdown: {
-      color: 'var(--bg-muted-color)',
+      color: 'color-mix(in srgb, var(--bg-muted-color) 80%, transparent)',
       optionTextColor: 'var(--text-color)',
       optionTextColorHover: 'var(--primary-color)',
-      optionColorHover: 'var(--bg-muted-color)',
+      optionColorHover: 'color-mix(in srgb, var(--bg-muted-color) 60%, transparent)',
       dividerColor: 'var(--divider-color)'
     },
     Popover: {
