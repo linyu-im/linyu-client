@@ -23,6 +23,7 @@
         "skipTaskbar": false,
         "transparent": true,
         "decorations": false,
+        "dragDropEnabled": false,
         "windowEffects":{
           "effects": ["acrylic"],
           "state": "active"
@@ -40,7 +41,8 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "decorations": false,
-        "transparent": true
+        "transparent": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {

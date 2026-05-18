@@ -90,6 +90,15 @@
     "addMenu": {
       "addContact": "添加联系人",
       "createGroup": "发起群聊"
+    },
+    "editor": {
+      "placeholder": "请输入消息，支持 {'@'} 提及、粘贴/拖拽图片与文件…",
+      "dragDropHint": "松开添加：图片/文件",
+      "mentionEmpty": "无匹配内容",
+      "send": "发送",
+      "sendSuccess": "已发送，共 {count} 段内容",
+      "imageTooLarge": "图片大小超出限制",
+      "fileTooLarge": "文件大小超出限制"
     }
   }
 }

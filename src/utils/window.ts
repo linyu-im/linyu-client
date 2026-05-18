@@ -14,7 +14,9 @@ const defaultOptions = {
   closeWindow: null as string | null,
   skipTaskbar: false,
   decorations: false,
-  dragDropEnabled: true,
+  // 关闭 Tauri 原生拖拽处理，否则系统层会拦截 OS 级 file drop，WebView 里的 HTML5
+  // dragover / drop 事件根本收不到，富文本编辑器拖入图片 / 文件就没反应。
+  dragDropEnabled: false,
   center: true
 }
 

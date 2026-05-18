@@ -101,12 +101,12 @@
         justify-content: center;
         flex: 1;
         min-height: 0;
+        margin: 0 10px;
 
         .emotion__card {
-          width: 80%;
           background-color: rgba(var(--bg-muted-rgb), 0.5);
           border-radius: 5px;
-          padding: 20px;
+          padding: 10px;
           box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
           display: grid;
           grid-template-columns: repeat(4, 64px);

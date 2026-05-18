@@ -322,7 +322,7 @@
           border-radius: 5px;
           width: 100%;
           display: flex;
-          padding: 10px;
+          padding: 12px 10px;
           align-items: center;
           user-select: none;
           box-sizing: border-box;

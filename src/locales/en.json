@@ -90,6 +90,15 @@
     "addMenu": {
       "addContact": "Add Contact",
       "createGroup": "Create Group Chat"
+    },
+    "editor": {
+      "placeholder": "Type a message. {'@'}mention, paste or drag images and files…",
+      "dragDropHint": "Drop to add image or file",
+      "mentionEmpty": "No matches",
+      "send": "Send",
+      "sendSuccess": "Sent ({count} segments)",
+      "imageTooLarge": "Image exceeds size limit",
+      "fileTooLarge": "File exceeds size limit"
     }
   }
 }
