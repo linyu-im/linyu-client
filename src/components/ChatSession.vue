@@ -14,9 +14,17 @@
         <SvgIconButton href="#more" />
       </div>
     </div>
-    <Split direction="vertical" fixed="second" :min-size="180" :max-size="440" :default-size="260">
+    <Split
+      class="chat-session__split"
+      direction="vertical"
+      fixed="second"
+      :min-size="180"
+      :max-size="440"
+      :default-size="260">
       <template #first>
-        <div class="chat-session__content"></div>
+        <div class="chat-session__content">
+          <MessageList :messages="demoMessages" />
+        </div>
       </template>
       <template #second>
         <div class="chat-session__input">
@@ -54,8 +62,149 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { useUserStore } from '@/stores/user'
+  import type { Message } from '@/types/api/message'
 
   const { t } = useI18n()
+  const userStore = useUserStore()
+
+  const DEMO_PEER_ID = 'peer-demo-aru'
+  const DEMO_SELF = 'demo-self'
+
+  const rawDemoMessages: Array<Message & { fromId: string }> = [
+    {
+      id: '1',
+      sessionId: 'session-demo',
+      fromId: DEMO_PEER_ID,
+      toId: 'self',
+      msgType: 'text',
+      content: { text: '你好，最近在忙什么？' },
+      fromType: 'user',
+      isShowTime: true,
+      msgScene: 'private',
+      createdAt: '2026-05-19 09:12:00',
+      updatedAt: '2026-05-19 09:12:00'
+    },
+    {
+      id: '2',
+      sessionId: 'session-demo',
+      fromId: DEMO_SELF,
+      toId: DEMO_PEER_ID,
+      msgType: 'text',
+      content: { text: '在写林语客户端的消息列表，刚把气泡样式搭好。' },
+      fromType: 'user',
+      isShowTime: false,
+      msgScene: 'private',
+      createdAt: '2026-05-19 09:13:20',
+      updatedAt: '2026-05-19 09:13:20'
+    },
+    {
+      id: '3',
+      sessionId: 'session-demo',
+      fromId: DEMO_PEER_ID,
+      toId: 'self',
+      msgType: 'image',
+      content: {
+        imgUrl: 'https://picsum.photos/seed/linyu-demo/480/320',
+        imgThumbUrl: 'https://picsum.photos/seed/linyu-demo/240/160',
+        imgName: 'sunset.jpg',
+        imgSize: '245760'
+      },
+      fromType: 'user',
+      isShowTime: false,
+      msgScene: 'private',
+      createdAt: '2026-05-19 09:14:05',
+      updatedAt: '2026-05-19 09:14:05'
+    },
+    {
+      id: '4',
+      sessionId: 'session-demo',
+      fromId: DEMO_SELF,
+      toId: DEMO_PEER_ID,
+      msgType: 'voice',
+      content: { voiceUrl: '', voiceDuration: '12' },
+      fromType: 'user',
+      isShowTime: false,
+      msgScene: 'private',
+      createdAt: '2026-05-19 09:15:10',
+      updatedAt: '2026-05-19 09:15:10'
+    },
+    {
+      id: '5',
+      sessionId: 'session-demo',
+      fromId: DEMO_PEER_ID,
+      toId: 'self',
+      msgType: 'file',
+      content: {
+        fileUrl: '#',
+        fileType: 'application/pdf',
+        fileName:
+          '林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明.pdf',
+        fileSize: '1048576'
+      },
+      fromType: 'user',
+      isShowTime: true,
+      msgScene: 'private',
+      createdAt: '2026-05-19 10:02:00',
+      updatedAt: '2026-05-19 10:02:00'
+    },
+    {
+      id: '51',
+      sessionId: 'session-demo',
+      fromId: DEMO_PEER_ID,
+      toId: 'self',
+      msgType: 'file',
+      content: {
+        fileUrl: '#',
+        fileType: 'application/text',
+        fileName: '林语产品的333333333.mp',
+        fileSize: '1048576'
+      },
+      fromType: 'user',
+      isShowTime: true,
+      msgScene: 'private',
+      createdAt: '2026-05-19 10:02:00',
+      updatedAt: '2026-05-19 10:02:00'
+    },
+    {
+      id: '6',
+      sessionId: 'session-demo',
+      fromId: DEMO_SELF,
+      toId: DEMO_PEER_ID,
+      msgType: 'ecard',
+      content: {
+        userId: 'u-designer',
+        userName: '设计师小林',
+        userAvatar: '/avatar.png'
+      },
+      fromType: 'user',
+      isShowTime: false,
+      msgScene: 'private',
+      createdAt: '2026-05-19 10:03:30',
+      updatedAt: '2026-05-19 10:03:30'
+    },
+    {
+      id: '7',
+      sessionId: 'session-demo',
+      fromId: DEMO_PEER_ID,
+      toId: 'self',
+      msgType: 'text',
+      content: { text: '看起来不错，右键消息试试菜单 👍' },
+      fromType: 'user',
+      isShowTime: false,
+      msgScene: 'private',
+      createdAt: '2026-05-19 10:04:00',
+      updatedAt: '2026-05-19 10:04:00'
+    }
+  ]
+
+  const demoMessages = computed<Message[]>(() => {
+    const sid = userStore.authInfo.userId || DEMO_SELF
+    return rawDemoMessages.map((msg) => ({
+      ...msg,
+      fromId: msg.fromId === DEMO_SELF ? sid : msg.fromId
+    }))
+  })
   import MessageEditor, { type EditorPayload } from './MessageEditor/index.vue'
   import type { MentionItem } from './MessageEditor/MentionList.vue'
 
@@ -117,16 +266,28 @@
       flex-shrink: 0;
     }
 
+    .chat-session__split {
+      flex: 1;
+      min-height: 0;
+    }
+
     .chat-session__content {
       height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .chat-session__input {
       display: flex;
       flex-direction: column;
+      box-sizing: border-box;
       padding: 5px 15px 10px 15px;
       align-items: flex-start;
       height: 100%;
+      min-height: 0;
+      overflow: hidden;
     }
   }
 </style>

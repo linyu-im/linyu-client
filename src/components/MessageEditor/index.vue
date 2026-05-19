@@ -390,15 +390,6 @@
     display: flex;
     align-items: stretch;
 
-    &:hover {
-      border-color: var(--primary-color);
-    }
-
-    &:focus-within {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.3);
-    }
-
     &.is-disabled {
       opacity: 0.6;
       cursor: not-allowed;

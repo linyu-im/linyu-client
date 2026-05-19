@@ -91,6 +91,19 @@
       "addContact": "添加联系人",
       "createGroup": "发起群聊"
     },
+    "ecard": {
+      "recommend": "好友推荐"
+    },
+    "bubbleMenu": {
+      "copy": "复制",
+      "copySuccess": "已复制",
+      "copyUnsupported": "该消息类型暂不支持复制",
+      "quote": "引用（开发中）",
+      "forward": "转发（开发中）",
+      "favorite": "收藏（开发中）",
+      "multiSelect": "多选（开发中）",
+      "delete": "删除（开发中）"
+    },
     "editor": {
       "placeholder": "请输入消息，支持 {'@'} 提及、粘贴/拖拽图片与文件…",
       "dragDropHint": "松开添加：图片/文件",

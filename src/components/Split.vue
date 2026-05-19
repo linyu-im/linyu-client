@@ -84,8 +84,16 @@
       flex-direction: column;
     }
 
-    .split__first {
+    .split__first,
+    .split__second {
+      min-width: 0;
+      min-height: 0;
       overflow: hidden;
+    }
+
+    .split__second {
+      display: flex;
+      flex-direction: column;
     }
 
     .split__handle {

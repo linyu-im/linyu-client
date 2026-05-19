@@ -8,3 +8,7 @@ export function currentUserInfo(): Promise<ApiResponse<UserInfoResult>> {
 export function userEmotionSet(id: string): Promise<ApiResponse<void>> {
   return post<void, { emotionId: string }>('/api/basic/v1/user/emotion/set', { emotionId: id })
 }
+
+export function getUserAvatar(id: string): Promise<ApiResponse<string>> {
+  return post<string, { userId: string }>('/api/basic/v1/user/avatar/get', { userId: id })
+}

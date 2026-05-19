@@ -91,6 +91,19 @@
       "addContact": "Add Contact",
       "createGroup": "Create Group Chat"
     },
+    "ecard": {
+      "recommend": "Friend Recommendation"
+    },
+    "bubbleMenu": {
+      "copy": "Copy",
+      "copySuccess": "Copied",
+      "copyUnsupported": "This message type cannot be copied",
+      "quote": "Quote (coming soon)",
+      "forward": "Forward (coming soon)",
+      "favorite": "Favorite (coming soon)",
+      "multiSelect": "Multi-select (coming soon)",
+      "delete": "Delete (coming soon)"
+    },
     "editor": {
       "placeholder": "Type a message. {'@'}mention, paste or drag images and files…",
       "dragDropHint": "Drop to add image or file",

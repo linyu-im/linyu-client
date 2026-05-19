@@ -40,7 +40,7 @@
                   :max="99"
                   class="select-none pointer-events-none p-0 text-1px"
                   :offset="[-2, 2]">
-                  <n-avatar class="size-38px rounded-5px bg-#FFF" fallback-src="/avatar.png" :src="item.peerAvatar" />
+                  <Avatar class="size-38px rounded-5px bg-#FFF" :id="item.peerId" />
                 </n-badge>
                 <div class="flex-1 min-w-0 m-l-12px h-40px flex flex-col justify-center gap-6px">
                   <div class="flex justify-between items-center h-14px">

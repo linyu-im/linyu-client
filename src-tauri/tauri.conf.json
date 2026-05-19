@@ -46,7 +46,13 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["$APPDATA/avatar/**", "$APPDATA/avatar"]
+        }
+      }
     }
   },
   "bundle": {
