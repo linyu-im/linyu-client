@@ -111,7 +111,11 @@
       "send": "Send",
       "sendSuccess": "Sent ({count} segments)",
       "imageTooLarge": "Image exceeds size limit",
-      "fileTooLarge": "File exceeds size limit"
+      "fileTooLarge": "File exceeds size limit",
+      "noChatTarget": "Please select a chat first",
+      "mediaUploadPending": "Images and files must be uploaded before sending",
+      "sendFailed": "Failed to send",
+      "sendPartial": "Sent {sent}/{total}; some messages were not sent"
     }
   }
 }

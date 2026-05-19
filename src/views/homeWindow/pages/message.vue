@@ -69,7 +69,7 @@
         </div>
       </template>
       <template #second>
-        <chat-session />
+        <chat-session :to-user-id="activePeerId" />
       </template>
     </Split>
     <n-dropdown
@@ -276,6 +276,11 @@
         return <span>[{t('message.msgType.unknown')}]</span>
     }
   }
+
+  const activePeerId = computed(() => {
+    const chat = chatList.value.find((item) => item.id === globalStore.selectedChatId)
+    return chat?.peerId ?? ''
+  })
 
   const onSelectChat = (item: Chat) => {
     globalStore.setSelectedChatId(item.id)

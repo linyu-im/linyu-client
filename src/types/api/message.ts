@@ -60,3 +60,20 @@ export type Message = {
     updatedAt: string
   }
 }[keyof MsgTypeMap]
+
+export interface SendMessageMention {
+  id: string
+  mentionType: string
+}
+
+export type SendMessageMsgType = keyof MsgTypeMap
+
+export type SendMessageContent = MsgTypeMap[SendMessageMsgType]
+
+export interface SendMessageToUserParam {
+  toUserId: string
+  msgType: SendMessageMsgType
+  content: SendMessageContent
+  /** 文本消息中的 @ 提及列表（与 content.text 中的 @昵称 对应） */
+  mentions?: SendMessageMention[]
+}

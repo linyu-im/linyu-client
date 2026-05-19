@@ -24,17 +24,13 @@
   import { FileChip } from './extensions/FileChip'
   import { buildMentionSuggestion } from './extensions/suggestion'
   import type { MentionItem } from './MentionList.vue'
+  import type { FileContent, ImageContent } from '@/types/api/message'
 
-  export interface EditorSegment {
-    type: 'text' | 'mention' | 'image' | 'file'
-    text?: string
-    id?: string
-    label?: string
-    url?: string
-    name?: string
-    size?: number
-    mime?: string
-  }
+  export type EditorSegment =
+    | { type: 'text'; text: string }
+    | { type: 'mention'; id: string; label: string }
+    | { type: 'image'; content: ImageContent }
+    | { type: 'file'; content: FileContent }
 
   export interface EditorPayload {
     html: string
@@ -114,16 +110,28 @@
             label: node.attrs?.label ?? ''
           })
           break
-        case 'image':
-          segments.push({ type: 'image', url: node.attrs?.src ?? '' })
+        case 'image': {
+          const imgUrl = node.attrs?.src ?? ''
+          segments.push({
+            type: 'image',
+            content: {
+              imgUrl,
+              imgThumbUrl: imgUrl,
+              imgName: node.attrs?.alt ?? '',
+              imgSize: node.attrs?.fileSize != null ? String(node.attrs.fileSize) : '0'
+            }
+          })
           break
+        }
         case 'fileChip':
           segments.push({
             type: 'file',
-            name: node.attrs?.name ?? '',
-            size: node.attrs?.size ?? 0,
-            mime: node.attrs?.mime ?? '',
-            url: node.attrs?.url ?? ''
+            content: {
+              fileUrl: node.attrs?.url ?? '',
+              fileType: node.attrs?.mime ?? '',
+              fileName: node.attrs?.name ?? '',
+              fileSize: node.attrs?.size != null ? String(node.attrs.size) : '0'
+            }
           })
           break
       }
@@ -168,7 +176,19 @@
         placeholder: () => resolvedPlaceholder.value,
         emptyEditorClass: 'is-editor-empty'
       }),
-      Image.extend({ selectable: false }).configure({
+      Image.extend({
+        selectable: false,
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            fileSize: {
+              default: 0,
+              parseHTML: (element) => Number(element.getAttribute('data-file-size')) || 0,
+              renderHTML: (attributes) => (attributes.fileSize ? { 'data-file-size': String(attributes.fileSize) } : {})
+            }
+          }
+        }
+      }).configure({
         inline: true,
         allowBase64: true,
         HTMLAttributes: { class: 'message-editor__image' }
@@ -232,7 +252,14 @@
     }
     const url = URL.createObjectURL(file)
     trackBlob(url)
-    editor.value?.chain().focus().setImage({ src: url, alt: file.name }).run()
+    editor.value
+      ?.chain()
+      .focus()
+      .insertContent({
+        type: 'image',
+        attrs: { src: url, alt: file.name, fileSize: file.size }
+      })
+      .run()
   }
 
   const insertFileChip = (file: File) => {

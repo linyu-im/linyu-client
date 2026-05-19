@@ -62,8 +62,21 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { messageApi } from '@/api'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
+  import { buildSendParamsFromSegments, buildSendUnitsFromSegments } from '@/utils/editorMessage'
+  import MessageEditor, { type EditorPayload } from './MessageEditor/index.vue'
+  import type { MentionItem } from './MessageEditor/MentionList.vue'
+
+  interface Props {
+    /** 接收方用户 ID */
+    toUserId?: string
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    toUserId: ''
+  })
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -205,8 +218,6 @@
       fromId: msg.fromId === DEMO_SELF ? sid : msg.fromId
     }))
   })
-  import MessageEditor, { type EditorPayload } from './MessageEditor/index.vue'
-  import type { MentionItem } from './MessageEditor/MentionList.vue'
 
   const draft = ref('')
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
@@ -228,19 +239,59 @@
     return mentionableMembers.filter((m) => m.label.toLowerCase().includes(q))
   }
 
-  const onSend = (payload?: EditorPayload) => {
+  const resolveToUserId = () => props.toUserId || DEMO_PEER_ID
+
+  const onSend = async (payload?: EditorPayload) => {
     if (!editorRef.value) return
-    if (payload) {
-      console.log('[ChatSession] submit payload =', payload)
-      console.log('[ChatSession] html    =', payload.html)
-      console.log('[ChatSession] text    =', payload.text)
-      console.log('[ChatSession] json    =', JSON.stringify(payload.json, null, 2))
-      console.log('[ChatSession] segments =', payload.segments)
-      console.table(payload.segments)
-      window.$message?.success(t('message.editor.sendSuccess', { count: payload.segments.length }))
-      editorRef.value.clear()
-    } else {
+    if (!payload) {
       editorRef.value.submit()
+      return
+    }
+
+    if (payload.isEmpty) return
+
+    const toUserId = resolveToUserId()
+    if (!toUserId) {
+      window.$message?.warning(t('message.editor.noChatTarget'))
+      return
+    }
+
+    const units = buildSendUnitsFromSegments(payload.segments)
+    if (!units.length) return
+
+    const params = await buildSendParamsFromSegments(payload.segments, toUserId)
+    const skippedMedia = units.length - params.length
+
+    if (!params.length) {
+      if (skippedMedia > 0) {
+        window.$message?.warning(t('message.editor.mediaUploadPending'))
+      }
+      return
+    }
+
+    let sent = 0
+    let lastError = ''
+
+    for (const param of params) {
+      console.log(param)
+      const res = await messageApi.sendToUser(param)
+      if (res.code === 0) {
+        sent += 1
+      } else {
+        lastError = res.msg
+        window.$message?.error(res.msg)
+      }
+    }
+
+    if (sent > 0) {
+      editorRef.value.clear()
+      if (skippedMedia > 0) {
+        window.$message?.warning(t('message.editor.sendPartial', { sent, total: units.length }))
+      } else {
+        window.$message?.success(t('message.editor.sendSuccess', { count: sent }))
+      }
+    } else if (lastError) {
+      window.$message?.error(lastError || t('message.editor.sendFailed'))
     }
   }
 
