@@ -2,12 +2,15 @@
   <div class="chat-session">
     <!-- 相关用户信息 -->
     <div class="chat-session__header">
-      <div class="flex select-none">
-        <div class="text-16px font-bold truncate">阿如</div>
+      <div v-if="peerInfo" class="flex select-none">
+        <div class="text-16px font-bold truncate">{{ peerInfo.remark || peerInfo.username }}</div>
         <div class="flex items-center justify-center text-12px text-[var(--text-muted-color)] m-l-10px">
-          <img class="size-14px" src="/emotion/empty.png" alt="" />
-          <div class="m-l-2px">自由万岁</div>
+          <img class="size-14px" :src="peerInfo.emotionUrl" alt="" />
+          <div class="m-l-2px">{{ peerInfo.emotionName }}</div>
         </div>
+      </div>
+      <div v-else class="flex select-none">
+        <div class="text-16px font-bold truncate"></div>
       </div>
       <div class="flex items-center">
         <SvgIconButton href="#record" />
@@ -23,7 +26,13 @@
       :default-size="260">
       <template #first>
         <div class="chat-session__content">
-          <MessageList :messages="demoMessages" />
+          <MessageList
+            :key="props.toId"
+            :messages="messages"
+            :loading="loading"
+            :loading-more="loadingMore"
+            :has-more="hasMore"
+            @reach-top="onLoadMore" />
         </div>
       </template>
       <template #second>
@@ -60,169 +69,150 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { ref } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import { messageApi } from '@/api'
-  import { useUserStore } from '@/stores/user'
+  import { messageApi, userApi } from '@/api'
   import type { Message } from '@/types/api/message'
+  import type { UserInfoResult } from '@/types/api/user'
   import { buildSendParamsFromSegments, buildSendUnitsFromSegments } from '@/utils/editorMessage'
   import MessageEditor, { type EditorPayload } from './MessageEditor/index.vue'
   import type { MentionItem } from './MessageEditor/MentionList.vue'
 
   interface Props {
-    /** 接收方用户 ID */
-    toUserId?: string
+    toId?: string
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    toUserId: ''
+    toId: ''
   })
 
   const { t } = useI18n()
-  const userStore = useUserStore()
 
-  const DEMO_PEER_ID = 'peer-demo-aru'
-  const DEMO_SELF = 'demo-self'
+  const PAGE_SIZE = 20
+  const messages = ref<Message[]>([])
+  const page = ref(0)
+  const totalPage = ref(0)
+  const loading = ref(false)
+  const loadingMore = ref(false)
 
-  const rawDemoMessages: Array<Message & { fromId: string }> = [
-    {
-      id: '1',
-      sessionId: 'session-demo',
-      fromId: DEMO_PEER_ID,
-      toId: 'self',
-      msgType: 'text',
-      content: { text: '你好，最近在忙什么？' },
-      fromType: 'user',
-      isShowTime: true,
-      msgScene: 'private',
-      createdAt: '2026-05-19 09:12:00',
-      updatedAt: '2026-05-19 09:12:00'
-    },
-    {
-      id: '2',
-      sessionId: 'session-demo',
-      fromId: DEMO_SELF,
-      toId: DEMO_PEER_ID,
-      msgType: 'text',
-      content: { text: '在写林语客户端的消息列表，刚把气泡样式搭好。' },
-      fromType: 'user',
-      isShowTime: false,
-      msgScene: 'private',
-      createdAt: '2026-05-19 09:13:20',
-      updatedAt: '2026-05-19 09:13:20'
-    },
-    {
-      id: '3',
-      sessionId: 'session-demo',
-      fromId: DEMO_PEER_ID,
-      toId: 'self',
-      msgType: 'image',
-      content: {
-        imgUrl: 'https://picsum.photos/seed/linyu-demo/480/320',
-        imgThumbUrl: 'https://picsum.photos/seed/linyu-demo/240/160',
-        imgName: 'sunset.jpg',
-        imgSize: '245760'
-      },
-      fromType: 'user',
-      isShowTime: false,
-      msgScene: 'private',
-      createdAt: '2026-05-19 09:14:05',
-      updatedAt: '2026-05-19 09:14:05'
-    },
-    {
-      id: '4',
-      sessionId: 'session-demo',
-      fromId: DEMO_SELF,
-      toId: DEMO_PEER_ID,
-      msgType: 'voice',
-      content: { voiceUrl: '', voiceDuration: '12' },
-      fromType: 'user',
-      isShowTime: false,
-      msgScene: 'private',
-      createdAt: '2026-05-19 09:15:10',
-      updatedAt: '2026-05-19 09:15:10'
-    },
-    {
-      id: '5',
-      sessionId: 'session-demo',
-      fromId: DEMO_PEER_ID,
-      toId: 'self',
-      msgType: 'file',
-      content: {
-        fileUrl: '#',
-        fileType: 'application/pdf',
-        fileName:
-          '林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明林语产品的说明.pdf',
-        fileSize: '1048576'
-      },
-      fromType: 'user',
-      isShowTime: true,
-      msgScene: 'private',
-      createdAt: '2026-05-19 10:02:00',
-      updatedAt: '2026-05-19 10:02:00'
-    },
-    {
-      id: '51',
-      sessionId: 'session-demo',
-      fromId: DEMO_PEER_ID,
-      toId: 'self',
-      msgType: 'file',
-      content: {
-        fileUrl: '#',
-        fileType: 'application/text',
-        fileName: '林语产品的333333333.mp',
-        fileSize: '1048576'
-      },
-      fromType: 'user',
-      isShowTime: true,
-      msgScene: 'private',
-      createdAt: '2026-05-19 10:02:00',
-      updatedAt: '2026-05-19 10:02:00'
-    },
-    {
-      id: '6',
-      sessionId: 'session-demo',
-      fromId: DEMO_SELF,
-      toId: DEMO_PEER_ID,
-      msgType: 'ecard',
-      content: {
-        userId: 'u-designer',
-        userName: '设计师小林',
-        userAvatar: '/avatar.png'
-      },
-      fromType: 'user',
-      isShowTime: false,
-      msgScene: 'private',
-      createdAt: '2026-05-19 10:03:30',
-      updatedAt: '2026-05-19 10:03:30'
-    },
-    {
-      id: '7',
-      sessionId: 'session-demo',
-      fromId: DEMO_PEER_ID,
-      toId: 'self',
-      msgType: 'text',
-      content: { text: '看起来不错，右键消息试试菜单 👍' },
-      fromType: 'user',
-      isShowTime: false,
-      msgScene: 'private',
-      createdAt: '2026-05-19 10:04:00',
-      updatedAt: '2026-05-19 10:04:00'
-    }
-  ]
-
-  const demoMessages = computed<Message[]>(() => {
-    const sid = userStore.authInfo.userId || DEMO_SELF
-    return rawDemoMessages.map((msg) => ({
-      ...msg,
-      fromId: msg.fromId === DEMO_SELF ? sid : msg.fromId
-    }))
-  })
+  const hasMore = computed(() => page.value > 0 && page.value < totalPage.value)
 
   const draft = ref('')
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
+  const peerInfo = ref<UserInfoResult | null>(null)
 
-  // 演示用静态成员列表，后续替换为接口数据
+  type ApiMessage = Message & { MsgScene?: string }
+
+  const normalizeMessage = (raw: ApiMessage): Message => {
+    const { MsgScene, ...rest } = raw
+    return {
+      ...rest,
+      msgScene: rest.msgScene ?? MsgScene ?? '',
+      fromType: rest.fromType || 'user'
+    }
+  }
+
+  const toDisplayOrder = (records: Message[]) => records.slice().reverse()
+
+  const mergeMessages = (incoming: Message[], existing: Message[]) => {
+    const older = toDisplayOrder(incoming)
+    const map = new Map<string, Message>()
+    for (const msg of [...older, ...existing]) {
+      map.set(msg.id, msg)
+    }
+    return [...map.values()]
+  }
+
+  const resetMessages = () => {
+    messages.value = []
+    page.value = 0
+    totalPage.value = 0
+    loading.value = false
+    loadingMore.value = false
+  }
+
+  const fetchMessagePage = async (targetPage: number) => {
+    const toId = props.toId
+    if (!toId) return null
+
+    const res = await messageApi.page({
+      toId,
+      page: targetPage,
+      pageSize: PAGE_SIZE
+    })
+
+    if (res.code !== 0 || !res.data) {
+      window.$message?.error(res.msg || t('message.editor.sendFailed'))
+      return null
+    }
+
+    const records = res.data.records.map((item) => normalizeMessage(item as ApiMessage))
+    return {
+      records,
+      page: res.data.page,
+      totalPage: res.data.totalPage
+    }
+  }
+
+  const loadInitialMessages = async () => {
+    if (!props.toId) {
+      resetMessages()
+      return
+    }
+
+    resetMessages()
+    loading.value = true
+
+    try {
+      const result = await fetchMessagePage(1)
+      if (!result) return
+
+      messages.value = toDisplayOrder(result.records)
+      page.value = result.page
+      totalPage.value = result.totalPage
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const onLoadMore = async () => {
+    if (!props.toId || loading.value || loadingMore.value || !hasMore.value) return
+
+    loadingMore.value = true
+    try {
+      const result = await fetchMessagePage(page.value + 1)
+      if (!result) return
+
+      messages.value = mergeMessages(result.records, messages.value)
+      page.value = result.page
+      totalPage.value = result.totalPage
+    } finally {
+      loadingMore.value = false
+    }
+  }
+
+  watch(
+    () => props.toId,
+    () => {
+      loadInitialMessages()
+    },
+    { immediate: true }
+  )
+
+  const loadPeerInfo = () => {
+    if (!props.toId) {
+      peerInfo.value = null
+      return
+    }
+
+    userApi.getUserInfo({ userId: props.toId }).then((res) => {
+      if (res.code === 0 && res.data) {
+        peerInfo.value = res.data
+      }
+    })
+  }
+
+  watch(() => props.toId, loadPeerInfo, { immediate: true })
+
   const mentionableMembers: MentionItem[] = [
     { id: '1', label: '阿如', desc: '在线' },
     { id: '2', label: '小明', desc: '在线' },
@@ -239,7 +229,7 @@
     return mentionableMembers.filter((m) => m.label.toLowerCase().includes(q))
   }
 
-  const resolveToUserId = () => props.toUserId || DEMO_PEER_ID
+  const resolveToUserId = () => props.toId
 
   const onSend = async (payload?: EditorPayload) => {
     if (!editorRef.value) return

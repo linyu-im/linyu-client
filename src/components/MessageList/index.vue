@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar class="message-list">
+  <n-scrollbar ref="scrollbarRef" class="message-list" @scroll="onScroll">
     <div class="message-list__inner">
       <template v-for="message in messages" :key="message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
@@ -24,22 +24,119 @@
 </template>
 
 <script setup lang="ts">
+  import type { ScrollbarInst } from 'naive-ui'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
 
   const userStore = useUserStore()
 
-  defineProps({
+  const props = defineProps({
     messages: {
       type: Array as PropType<Message[]>,
       default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    loadingMore: {
+      type: Boolean,
+      default: false
+    },
+    hasMore: {
+      type: Boolean,
+      default: false
     }
   })
 
+  const emit = defineEmits<{
+    'reach-top': []
+  }>()
+
+  const scrollbarRef = ref<ScrollbarInst | null>(null)
+  const reachTopLocked = ref(false)
+  let savedScrollHeight = 0
+  let savedScrollTop = 0
+
+  const SCROLL_TOP_THRESHOLD = 48
+
+  const getScrollContainer = (): HTMLElement | null => {
+    const inst = scrollbarRef.value
+    if (!inst) return null
+    return (inst as ScrollbarInst & { containerRef?: HTMLElement | null }).containerRef ?? null
+  }
+
+  const scrollToBottom = () => {
+    nextTick(() => {
+      const container = getScrollContainer()
+      if (container) {
+        container.scrollTop = container.scrollHeight
+        return
+      }
+      scrollbarRef.value?.scrollTo({ top: Number.MAX_SAFE_INTEGER })
+    })
+  }
+
+  const onScroll = (e: Event) => {
+    if (!props.hasMore || props.loadingMore || props.loading) return
+
+    const target = e.target as HTMLElement
+    if (target.scrollTop > SCROLL_TOP_THRESHOLD) {
+      reachTopLocked.value = false
+      return
+    }
+    if (reachTopLocked.value) return
+
+    const container = getScrollContainer()
+    if (container) {
+      savedScrollHeight = container.scrollHeight
+      savedScrollTop = container.scrollTop
+    }
+    reachTopLocked.value = true
+    emit('reach-top')
+  }
+
+  watch(
+    () => props.messages,
+    (newMessages, oldMessages) => {
+      const prepended =
+        (oldMessages?.length ?? 0) > 0 &&
+        newMessages.length > (oldMessages?.length ?? 0) &&
+        newMessages[0]?.id !== oldMessages?.[0]?.id
+
+      nextTick(() => {
+        const container = getScrollContainer()
+        if (!container) {
+          if (!prepended) scrollToBottom()
+          return
+        }
+
+        if (prepended) {
+          const newHeight = container.scrollHeight
+          container.scrollTop = newHeight - savedScrollHeight + savedScrollTop
+          reachTopLocked.value = false
+        } else {
+          container.scrollTop = container.scrollHeight
+        }
+      })
+    },
+    { flush: 'post' }
+  )
+
+  watch(
+    () => props.loadingMore,
+    (loading) => {
+      if (!loading) {
+        reachTopLocked.value = false
+      }
+    }
+  )
+
+  defineExpose({ scrollToBottom })
+
   const isSelf = (message: Message) => {
     const uid = userStore.authInfo.userId
-    if (uid) return message.fromId === uid
-    return message.fromId === 'demo-self'
+    return !!uid && message.fromId === uid
   }
 
   const isPlainBubble = (message: Message) => message.msgType === 'image' || message.msgType === 'video'

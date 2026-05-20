@@ -31,7 +31,8 @@ export const useUserStore = defineStore('user', {
       emotionId: '',
       status: '',
       emotionName: '',
-      emotionUrl: ''
+      emotionUrl: '',
+      remark: ''
     }
   }),
   actions: {

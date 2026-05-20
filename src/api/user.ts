@@ -1,8 +1,12 @@
-import { UserInfoResult } from '@/types/api/user'
+import { UserInfoParam, UserInfoResult } from '@/types/api/user'
 import { ApiResponse, post } from '@/utils/http'
 
 export function currentUserInfo(): Promise<ApiResponse<UserInfoResult>> {
   return post<UserInfoResult, void>('/api/basic/v1/user/current/info')
+}
+
+export function getUserInfo(params: UserInfoParam): Promise<ApiResponse<UserInfoResult>> {
+  return post<UserInfoResult, UserInfoParam>('/api/basic/v1/user/info', params)
 }
 
 export function userEmotionSet(id: string): Promise<ApiResponse<void>> {

@@ -77,3 +77,17 @@ export interface SendMessageToUserParam {
   /** 文本消息中的 @ 提及列表（与 content.text 中的 @昵称 对应） */
   mentions?: SendMessageMention[]
 }
+
+export interface MessagePageParam {
+  toId: string
+  page: number
+  pageSize: number
+}
+
+export interface MessagePageResult {
+  records: Message[]
+  total: number
+  page: number
+  pageSize: number
+  totalPage: number
+}

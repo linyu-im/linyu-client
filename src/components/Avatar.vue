@@ -77,7 +77,6 @@
 
   const loadAvatar = () => {
     if (!props.id) return
-
     loadLocalAvatar(props.type, props.id).then((localUrl) => {
       if (localUrl) {
         src.value = localUrl
@@ -97,13 +96,6 @@
       }
     })
   }
-
-  watch(
-    () => props.id,
-    () => {
-      loadAvatar()
-    }
-  )
 
   onMounted(() => {
     loadAvatar()

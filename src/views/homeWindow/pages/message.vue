@@ -44,7 +44,7 @@
                 </n-badge>
                 <div class="flex-1 min-w-0 m-l-12px h-40px flex flex-col justify-center gap-6px">
                   <div class="flex justify-between items-center h-14px">
-                    <div class="text-14px truncate">{{ item.peerName }}</div>
+                    <div class="text-14px truncate">{{ item.peerRemark ? item.peerRemark : item.peerName }}</div>
                     <div class="text-[var(--text-secondary-color)] text-10px flex-shrink-0 m-l-5px">
                       {{ formatTime(item.updatedAt) }}
                     </div>
@@ -69,7 +69,7 @@
         </div>
       </template>
       <template #second>
-        <chat-session :to-user-id="activePeerId" />
+        <chat-session :to-id="activePeerId" />
       </template>
     </Split>
     <n-dropdown

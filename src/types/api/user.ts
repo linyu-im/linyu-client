@@ -1,3 +1,7 @@
+export interface UserInfoParam {
+  userId: string
+}
+
 export interface UserInfoResult {
   id: string
   username: string
@@ -12,4 +16,5 @@ export interface UserInfoResult {
   status: string
   emotionName: string
   emotionUrl: string
+  remark: string
 }
