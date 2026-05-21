@@ -16,5 +16,7 @@ export interface UserInfoResult {
   status: string
   emotionName: string
   emotionUrl: string
+  signature: string
+  momentBgUrl: string
   remark: string
 }

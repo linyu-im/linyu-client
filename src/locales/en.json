@@ -117,5 +117,62 @@
       "sendFailed": "Failed to send",
       "sendPartial": "Sent {sent}/{total}; some messages were not sent"
     }
+  },
+  "moment": {
+    "empty": "No moments yet",
+    "refreshed": "Refreshed",
+    "nav": {
+      "all": "All",
+      "special": "Special",
+      "mine": "Mine",
+      "refresh": "Refresh",
+      "compose": "New moment"
+    },
+    "cover": {
+      "changeCover": "Change cover",
+      "settings": "Settings",
+      "todo": "Coming soon"
+    },
+    "visibility": {
+      "all": "Public",
+      "private": "Only me",
+      "include": "Visible to selected friends",
+      "exclude": "Hidden from selected friends"
+    },
+    "post": {
+      "userFallback": "User",
+      "likesSuffix": "and {count} others liked this",
+      "likeTodo": "Like API coming soon",
+      "commentTodo": "Comment API coming soon",
+      "reply": "Reply",
+      "commentPlaceholder": "Write a comment...",
+      "viewAllComments": "View all comments",
+      "viewAllCommentsTodo": "Comment details coming soon",
+      "justNow": "Just now",
+      "deleted": "Deleted",
+      "more": {
+        "report": "Report",
+        "hide": "Hide this user",
+        "delete": "Delete",
+        "todo": "Coming soon"
+      }
+    },
+    "compose": {
+      "title": "New moment",
+      "placeholder": "Share what is on your mind...",
+      "addImage": "Add image",
+      "submit": "Post",
+      "successTitle": "Posted!",
+      "successSub": "Your moment was published successfully",
+      "publishTodo": "Publish API coming soon",
+      "tools": {
+        "image": "Add image",
+        "video": "Add video",
+        "topic": "Add topic",
+        "location": "Add location",
+        "emoji": "Emoji",
+        "todo": "Coming soon"
+      }
+    }
   }
 }

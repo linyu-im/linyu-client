@@ -37,7 +37,15 @@
       </template>
       <template #second>
         <div class="chat-session__input">
-          <div class="flex w-full items-center justify-between m-b-5px">
+          <div class="flex-1 flex w-full min-h-0">
+            <MessageEditor
+              ref="editorRef"
+              v-model="draft"
+              :fetch-mentions="onFetchMentions"
+              @submit="onSend"
+              @file-rejected="onFileRejected" />
+          </div>
+          <div class="flex w-full items-center justify-between m-t-10px">
             <div class="flex items-center gap-5px">
               <SvgIconButton href="#emotion" />
               <SvgIconButton href="#scissor" />
@@ -48,20 +56,10 @@
             <div class="flex items-center gap-5px">
               <SvgIconButton href="#phone" />
               <SvgIconButton href="#video" />
+              <n-button size="tiny" type="primary" class="w-56px m-l-20px p-y-12px" @click="onSend()">
+                {{ t('message.editor.send') }}
+              </n-button>
             </div>
-          </div>
-          <div class="flex-1 flex w-full min-h-0">
-            <MessageEditor
-              ref="editorRef"
-              v-model="draft"
-              :fetch-mentions="onFetchMentions"
-              @submit="onSend"
-              @file-rejected="onFileRejected" />
-          </div>
-          <div class="flex w-full items-center justify-end m-t-10px">
-            <n-button size="tiny" type="primary" class="w-60px" @click="onSend()">
-              {{ t('message.editor.send') }}
-            </n-button>
           </div>
         </div>
       </template>

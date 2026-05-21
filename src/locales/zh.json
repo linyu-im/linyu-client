@@ -117,5 +117,62 @@
       "sendFailed": "发送失败",
       "sendPartial": "已发送 {sent}/{total} 条，部分消息未发送"
     }
+  },
+  "moment": {
+    "empty": "暂无动态",
+    "refreshed": "已刷新",
+    "nav": {
+      "all": "全部",
+      "special": "特别关心",
+      "mine": "我的",
+      "refresh": "刷新",
+      "compose": "发布动态"
+    },
+    "cover": {
+      "changeCover": "更换封面",
+      "settings": "设置",
+      "todo": "功能开发中"
+    },
+    "visibility": {
+      "all": "公开",
+      "private": "仅自己可见",
+      "include": "部分好友可见",
+      "exclude": "部分好友不可见"
+    },
+    "post": {
+      "userFallback": "用户",
+      "likesSuffix": "等 {count} 人觉得很赞",
+      "likeTodo": "点赞接口待接入",
+      "commentTodo": "评论接口待接入",
+      "reply": "回复",
+      "commentPlaceholder": "写下你的评论...",
+      "viewAllComments": "查看全部评论",
+      "viewAllCommentsTodo": "评论详情开发中",
+      "justNow": "刚刚",
+      "deleted": "已删除",
+      "more": {
+        "report": "举报",
+        "hide": "不看此人",
+        "delete": "删除",
+        "todo": "功能开发中"
+      }
+    },
+    "compose": {
+      "title": "发布过往",
+      "placeholder": "分享你此刻的想法...",
+      "addImage": "添加图片",
+      "submit": "发布",
+      "successTitle": "发布成功！",
+      "successSub": "你的动态已经成功发布",
+      "publishTodo": "发布接口待接入",
+      "tools": {
+        "image": "添加图片",
+        "video": "添加视频",
+        "topic": "添加话题",
+        "location": "添加位置",
+        "emoji": "表情",
+        "todo": "功能开发中"
+      }
+    }
   }
 }

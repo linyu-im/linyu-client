@@ -32,6 +32,8 @@ export const useUserStore = defineStore('user', {
       status: '',
       emotionName: '',
       emotionUrl: '',
+      signature: '',
+      momentBgUrl: '',
       remark: ''
     }
   }),
