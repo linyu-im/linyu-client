@@ -114,6 +114,9 @@
       width: '6px',
       color: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)',
       colorHover: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)'
+    },
+    Spin: {
+      color: 'var(--primary-color)'
     }
   }
 

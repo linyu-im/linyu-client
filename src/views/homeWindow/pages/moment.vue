@@ -13,17 +13,17 @@
             <div class="moment__spacer" />
 
             <MomentPostCard
-              v-for="post in filteredPosts"
-              :key="post.id"
-              :post="post"
+              v-for="record in filteredRecords"
+              :key="record.moment.id"
+              :record="record"
               :current-user-id="userStore.userInfo.id"
               @toggle-like="onToggleLike"
-              @toggle-comment-like="onToggleCommentLike"
               @view-all-comments="onViewAllComments"
               @add-comment="onAddComment"
+              @delete-comment="onDeleteComment"
               @delete="onDeletePost" />
 
-            <div v-if="!loading && filteredPosts.length === 0" class="moment__empty">
+            <div v-if="!loading && filteredRecords.length === 0" class="moment__empty">
               <LinyuEmpty :size="80" />
               <p class="moment__empty-text">{{ t('moment.empty') }}</p>
             </div>
@@ -47,8 +47,7 @@
   import MomentPostCard from '@/components/moment/MomentPostCard.vue'
   import MomentComposeModal from '@/components/moment/MomentComposeModal.vue'
   import { useUserStore } from '@/stores/user'
-  import type { MomentFilter, MomentPost, MomentVisibleType } from '@/types/api/moment'
-  import { mapMomentRecordToPost } from '@/utils/moment'
+  import type { MomentFilter, MomentLike, MomentRecord, MomentVisibleType } from '@/types/api/moment'
   import { useI18n } from 'vue-i18n'
 
   const PAGE_SIZE = 20
@@ -59,29 +58,25 @@
   const activeFilter = ref<MomentFilter>('all')
   const showCompose = ref(false)
   const loading = ref(false)
-  const posts = ref<MomentPost[]>([])
+  const records = ref<MomentRecord[]>([])
 
-  const filteredPosts = computed(() => {
+  const filteredRecords = computed(() => {
     switch (activeFilter.value) {
       case 'mine':
-        return posts.value.filter((p) => p.isMine)
+        return records.value.filter((r) => r.moment.userId === userStore.userInfo.id)
       case 'special':
         return []
       default:
-        return posts.value
+        return records.value
     }
   })
-
-  const nameFallback = computed(() => t('moment.post.userFallback'))
 
   const fetchMoments = async () => {
     loading.value = true
     try {
       const res = await momentApi.page({ page: 1, PageSize: PAGE_SIZE })
       if (res.code === 0 && res.data) {
-        posts.value = res.data.records.map((record) =>
-          mapMomentRecordToPost(record, userStore.userInfo.id, nameFallback.value)
-        )
+        records.value = res.data.records
       } else {
         window.$message.error(res.msg)
       }
@@ -90,47 +85,73 @@
     }
   }
 
-  const findPost = (id: string) => posts.value.find((p) => p.id === id)
+  const findRecord = (momentId: string) => records.value.find((r) => r.moment.id === momentId)
 
-  const onToggleLike = (postId: string) => {
-    const post = findPost(postId)
-    if (!post) return
-    post.liked = !post.liked
-    post.likeCount += post.liked ? 1 : -1
-    window.$message.info(t('moment.post.likeTodo'))
+  const onToggleLike = async (momentId: string) => {
+    const record = findRecord(momentId)
+    if (!record) return
+
+    const likes = record.likes ?? []
+    const idx = likes.findIndex((l) => l.userId === userStore.userInfo.id)
+    const isLiked = idx >= 0
+
+    const res = isLiked ? await momentApi.likeCancel({ momentId }) : await momentApi.likeAdd({ momentId })
+
+    if (res.code !== 0) {
+      window.$message.error(res.msg)
+      return
+    }
+
+    if (isLiked) {
+      record.likes = likes.filter((l) => l.userId !== userStore.userInfo.id)
+    } else {
+      const like = res.data as MomentLike
+      record.likes = [like, ...likes]
+    }
   }
 
-  const onToggleCommentLike = (postId: string, commentId: string) => {
-    const post = findPost(postId)
-    const comment = post?.comments.find((c) => c.id === commentId)
-    if (!comment) return
-    comment.liked = !comment.liked
-    comment.likeCount += comment.liked ? 1 : -1
+  const onViewAllComments = (momentId: string) => {
+    window.$message.info(t('moment.post.viewAllCommentsTodo', { id: momentId }))
   }
 
-  const onViewAllComments = (postId: string) => {
-    window.$message.info(t('moment.post.viewAllCommentsTodo', { id: postId }))
-  }
+  const onAddComment = async (momentId: string, content: string, parentId?: string) => {
+    const record = findRecord(momentId)
+    if (!record) return
 
-  const onAddComment = (postId: string, text: string) => {
-    const post = findPost(postId)
-    if (!post) return
-    post.comments.unshift({
-      id: `c-${Date.now()}`,
-      author: {
-        id: userStore.userInfo.id,
-        name: userStore.userInfo.username
-      },
-      text,
-      time: t('moment.post.justNow'),
-      likeCount: 0
+    const res = await momentApi.commentAdd({
+      momentId,
+      content,
+      ...(parentId ? { parentId } : {})
     })
-    post.commentCount += 1
-    window.$message.info(t('moment.post.commentTodo'))
+
+    if (res.code !== 0) {
+      window.$message.error(res.msg)
+      return
+    }
+
+    if (!res.data) return
+
+    const comments = record.comments ?? []
+    record.comments = [...comments, res.data]
   }
 
-  const onDeletePost = (postId: string) => {
-    posts.value = posts.value.filter((p) => p.id !== postId)
+  const onDeleteComment = async (momentId: string, commentId: string) => {
+    const record = findRecord(momentId)
+    if (!record) return
+
+    const res = await momentApi.commentDel({ commentId })
+
+    if (res.code !== 0) {
+      window.$message.error(res.msg)
+      return
+    }
+
+    const comments = record.comments ?? []
+    record.comments = comments.filter((c) => c.id !== commentId)
+  }
+
+  const onDeletePost = (momentId: string) => {
+    records.value = records.value.filter((r) => r.moment.id !== momentId)
     window.$message.success(t('moment.post.deleted'))
   }
 

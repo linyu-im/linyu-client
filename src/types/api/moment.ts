@@ -18,6 +18,8 @@ export interface Moment {
   createdAt: string
   updatedAt: string
   deletedAt: string | null
+  username: string
+  userLevel: number
 }
 
 export interface MomentComment {
@@ -25,11 +27,11 @@ export interface MomentComment {
   momentId: string
   userId: string
   replyUserId: string
+  replyUsername: string
   parentId: string
   content: string
   createdAt: string
   username: string
-  userAvatar: string
 }
 
 export interface MomentLike {
@@ -38,13 +40,26 @@ export interface MomentLike {
   userId: string
   createdAt: string
   username: string
-  userAvatar: string
 }
 
 export interface MomentRecord {
   moment: Moment
   comments: MomentComment[] | null
   likes: MomentLike[] | null
+}
+
+export interface MomentLikeParam {
+  momentId: string
+}
+
+export interface MomentCommentAddParam {
+  momentId: string
+  content: string
+  parentId?: string
+}
+
+export interface MomentCommentDelParam {
+  commentId: string
 }
 
 export interface MomentPageParam {
@@ -62,43 +77,6 @@ export interface MomentPageResult {
 
 /** 页面展示用 */
 export type MomentFilter = 'all' | 'special' | 'mine'
-
-export interface MomentAuthor {
-  id: string
-  name: string
-}
-
-export interface MomentPostComment {
-  id: string
-  author: MomentAuthor
-  text: string
-  replyTo?: string
-  time: string
-  likeCount: number
-  liked?: boolean
-}
-
-export interface MomentMedia {
-  url: string
-  thumbUrl?: string
-  isVideo?: boolean
-}
-
-export interface MomentPost {
-  id: string
-  author: MomentAuthor
-  time: string
-  visibility: MomentVisibleType
-  content: string
-  images?: MomentMedia[]
-  location?: string
-  likeCount: number
-  commentCount: number
-  liked: boolean
-  likeAuthors: MomentAuthor[]
-  comments: MomentPostComment[]
-  isMine?: boolean
-}
 
 export interface MomentProfile {
   coverUrl: string

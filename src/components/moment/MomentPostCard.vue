@@ -3,14 +3,15 @@
     <div class="moment-post__header">
       <div class="moment-post__author">
         <div class="moment-post__avatar-wrap">
-          <Avatar :id="post.author.id" class="moment-post__avatar size-48px rounded-14px bg-#FFF" />
+          <Avatar :id="moment.userId" class="moment-post__avatar size-48px rounded-14px bg-#FFF" />
         </div>
         <div class="moment-post__detail">
           <div class="moment-post__name-row">
-            <span class="moment-post__name">{{ post.author.name }}</span>
+            <span class="moment-post__name">{{ moment.username }}</span>
+            <LevelTag :level="moment.userLevel" />
           </div>
           <div class="moment-post__meta">
-            <span>{{ post.time }}</span>
+            <span>{{ formatTime(moment.createdAt) }}</span>
           </div>
         </div>
       </div>
@@ -31,80 +32,82 @@
         </template>
       </p>
 
-      <div v-if="post.images?.length" class="moment-post__images" :class="imageGridClass(post.images.length)">
-        <div v-for="(img, i) in post.images" :key="i" class="moment-post__img-wrap">
-          <img :src="img.thumbUrl || img.url" alt="" />
-          <div v-if="img.isVideo" class="moment-post__video-overlay">
+      <div v-if="media.length" class="moment-post__images" :class="imageGridClass(media.length)">
+        <div v-for="(item, i) in media" :key="i" class="moment-post__img-wrap">
+          <img :src="item.thumbUrl || item.url" alt="" />
+          <div v-if="item.mediaType === 'video'" class="moment-post__video-overlay">
             <div class="moment-post__play-btn" />
           </div>
         </div>
       </div>
 
-      <div v-if="post.location" class="moment-post__location">
+      <div v-if="moment.location" class="moment-post__location">
         <svg class="size-14px">
           <use href="#location"></use>
         </svg>
-        <span>{{ post.location }}</span>
+        <span>{{ moment.location }}</span>
       </div>
     </div>
 
     <div class="moment-post__actions">
-      <button
-        type="button"
-        class="moment-post__action"
-        :class="{ liked: post.liked }"
-        @click="emit('toggleLike', post.id)">
-        <svg class="size-18px" :fill="post.liked ? 'currentColor' : 'none'">
+      <button type="button" class="moment-post__action" :class="{ liked }" @click="emit('toggleLike', moment.id)">
+        <svg class="size-18px" :fill="liked ? 'currentColor' : 'none'">
           <use href="#heart"></use>
         </svg>
-        <span>{{ post.likeCount }}</span>
+        <span>{{ likeCount }}</span>
       </button>
-      <button type="button" class="moment-post__action" @click="showCommentInput = !showCommentInput">
+      <button type="button" class="moment-post__action" @click="toggleCommentInput">
         <svg class="size-18px">
           <use href="#comment"></use>
         </svg>
-        <span>{{ post.commentCount }}</span>
+        <span>{{ commentCount }}</span>
       </button>
     </div>
 
-    <div v-if="post.likeCount > 0 || post.comments.length" class="moment-post__interactions">
-      <div v-if="post.likeCount > 0" class="moment-post__likes">
+    <div v-if="likeCount > 0 || commentCount > 0 || showCommentInput" class="moment-post__interactions">
+      <div v-if="likeCount > 0" class="moment-post__likes">
         <div class="moment-post__like-avatars">
           <Avatar
-            v-for="user in displayLikeAuthors"
-            :key="user.id"
-            :id="user.id"
+            v-for="like in displayLikes"
+            :key="like.id"
+            :id="like.userId"
             class="moment-post__like-avatar size-28px rounded-full bg-#FFF" />
           <div v-if="likeMoreCount > 0" class="moment-post__like-more">+{{ likeMoreCount }}</div>
         </div>
         <span class="moment-post__likes-text">
-          <strong>{{ post.likeAuthors[0]?.name }}</strong>
-          {{ t('moment.post.likesSuffix', { count: post.likeCount }) }}
+          <strong>{{ likes[0]?.username }}</strong>
+          {{ t('moment.post.likesSuffix', { count: likeCount }) }}
         </span>
       </div>
 
-      <div v-if="post.comments.length" class="moment-post__comments">
+      <div v-if="commentCount > 0" class="moment-post__comments">
         <div v-for="comment in previewComments" :key="comment.id" class="moment-post__comment">
-          <Avatar :id="comment.author.id" class="size-28px rounded-full bg-#FFF flex-shrink-0" />
+          <Avatar :id="comment.userId" class="size-28px rounded-full bg-#FFF flex-shrink-0" />
           <div class="moment-post__comment-body">
             <div class="moment-post__comment-content">
-              <span class="moment-post__comment-name">{{ comment.author.name }}</span>
+              <div class="moment-post__comment-name">{{ comment.username }}:</div>
               <div class="moment-post__comment-text">
-                <span v-if="comment.replyTo" class="moment-post__reply-to">@{{ comment.replyTo }}</span>
-                {{ comment.text }}
+                <span v-if="comment.replyUsername" class="moment-post__reply-to">@{{ comment.replyUsername }}</span>
+                {{ comment.content }}
               </div>
             </div>
             <div class="moment-post__comment-meta">
-              <span>{{ comment.time }}</span>
-              <span class="moment-post__comment-action">{{ t('moment.post.reply') }}</span>
+              <span>{{ formatTime(comment.createdAt) }}</span>
+              <span class="moment-post__comment-action" @click="startReply(comment)">{{ t('moment.post.reply') }}</span>
+              <span
+                v-if="canDeleteComment(comment)"
+                class="moment-post__comment-action moment-post__comment-action--delete"
+                @click="onDeleteComment(comment)">
+                {{ t('moment.post.deleteComment') }}
+              </span>
             </div>
           </div>
         </div>
         <button
-          v-if="post.commentCount > previewComments.length"
+          v-if="commentCount > previewComments.length"
           type="button"
           class="moment-post__more-comments"
-          @click="emit('viewAllComments', post.id)">
+          @click="emit('viewAllComments', moment.id)">
           {{ t('moment.post.viewAllComments') }}
         </button>
       </div>
@@ -114,7 +117,8 @@
         <n-input
           v-model:value="commentDraft"
           round
-          :placeholder="t('moment.post.commentPlaceholder')"
+          :placeholder="commentPlaceholder"
+          class="font-size-12px"
           @keyup.enter="submitComment" />
         <n-button
           type="primary"
@@ -132,32 +136,74 @@
 </template>
 
 <script setup lang="ts">
-  import type { MomentPost } from '@/types/api/moment'
-  import { imageGridClass, parseMomentContent } from '@/utils/moment'
+  import type { MomentComment, MomentRecord } from '@/types/api/moment'
+  import { formatTime } from '@/utils/time'
+  import { imageGridClass, parseMomentContent, sortMomentMedia } from '@/utils/moment'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{
-    post: MomentPost
+    record: MomentRecord
     currentUserId: string
   }>()
 
   const emit = defineEmits<{
-    toggleLike: [postId: string]
-    toggleCommentLike: [postId: string, commentId: string]
-    viewAllComments: [postId: string]
-    addComment: [postId: string, text: string]
-    delete: [postId: string]
+    toggleLike: [momentId: string]
+    viewAllComments: [momentId: string]
+    addComment: [momentId: string, content: string, parentId?: string]
+    deleteComment: [momentId: string, commentId: string]
+    delete: [momentId: string]
   }>()
 
   const { t } = useI18n()
   const showCommentInput = ref(false)
   const commentDraft = ref('')
+  const replyParentId = ref('')
 
-  const contentParts = computed(() => parseMomentContent(props.post.content))
+  const moment = computed(() => props.record.moment)
+  const comments = computed(() => props.record.comments ?? [])
+  const likes = computed(() => props.record.likes ?? [])
+  const media = computed(() => sortMomentMedia(moment.value.mediaType))
+  const likeCount = computed(() => likes.value.length)
+  const commentCount = computed(() => comments.value.length)
+  const liked = computed(() => likes.value.some((l) => l.userId === props.currentUserId))
+  const isMomentMine = computed(() => moment.value.userId === props.currentUserId)
 
-  const displayLikeAuthors = computed(() => props.post.likeAuthors.slice(0, 5))
-  const likeMoreCount = computed(() => Math.max(0, props.post.likeCount - displayLikeAuthors.value.length))
-  const previewComments = computed(() => props.post.comments.slice(0, 1))
+  const canDeleteComment = (comment: MomentComment) => isMomentMine.value || comment.userId === props.currentUserId
+
+  const contentParts = computed(() => parseMomentContent(moment.value.textContent))
+
+  const displayLikes = computed(() => likes.value.slice(0, 5))
+  const likeMoreCount = computed(() => Math.max(0, likeCount.value - displayLikes.value.length))
+  const previewComments = computed(() => comments.value.slice(-5))
+
+  const commentPlaceholder = computed(() => {
+    if (!replyParentId.value) return t('moment.post.commentPlaceholder')
+    const parent = comments.value.find((c) => c.id === replyParentId.value)
+    return parent ? t('moment.post.replyPlaceholder', { name: parent.username }) : t('moment.post.commentPlaceholder')
+  })
+
+  const toggleCommentInput = () => {
+    if (showCommentInput.value) {
+      showCommentInput.value = false
+      replyParentId.value = ''
+      return
+    }
+    replyParentId.value = ''
+    showCommentInput.value = true
+  }
+
+  const startReply = (comment: MomentComment) => {
+    replyParentId.value = comment.id
+    showCommentInput.value = true
+  }
+
+  const onDeleteComment = (comment: MomentComment) => {
+    if (replyParentId.value === comment.id) {
+      replyParentId.value = ''
+      showCommentInput.value = false
+    }
+    emit('deleteComment', moment.value.id, comment.id)
+  }
 
   const moreOptions = computed(() => [
     { label: () => t('moment.post.more.report'), key: 'report' },
@@ -167,15 +213,17 @@
   ])
 
   const onMoreSelect = (key: string) => {
-    if (key === 'delete') emit('delete', props.post.id)
+    if (key === 'delete') emit('delete', moment.value.id)
     else window.$message.info(t('moment.post.more.todo'))
   }
 
   const submitComment = () => {
-    const text = commentDraft.value.trim()
-    if (!text) return
-    emit('addComment', props.post.id, text)
+    const content = commentDraft.value.trim()
+    if (!content) return
+    const parentId = replyParentId.value || undefined
+    emit('addComment', moment.value.id, content, parentId)
     commentDraft.value = ''
+    replyParentId.value = ''
     showCommentInput.value = false
   }
 </script>
@@ -441,6 +489,7 @@
       margin-top: 16px;
       padding-top: 16px;
       border-top: 1px solid var(--border-color);
+      user-select: none;
     }
 
     &__likes {
@@ -515,25 +564,25 @@
       background: var(--card-bg-secondary-color);
       border-radius: 10px;
       padding: 8px 12px;
+      display: flex;
+      align-items: center;
     }
 
     &__comment-name {
       font-size: 12px;
-      font-weight: 600;
       color: var(--text-muted-color);
+      margin-right: 8px;
     }
 
     &__comment-text {
       font-size: 12px;
       color: var(--text-color);
       line-height: 1.5;
-      margin-top: 2px;
     }
 
     &__reply-to {
       color: var(--primary-color);
       font-weight: 500;
-      margin-right: 4px;
     }
 
     &__comment-meta {
@@ -553,6 +602,10 @@
 
       &:hover {
         color: var(--primary-color);
+      }
+
+      &--delete:hover {
+        color: var(--red);
       }
     }
 
