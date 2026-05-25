@@ -46,14 +46,35 @@
     "process:default",
     "shell:default",
     "fs:default",
+    "fs:allow-read-file",
     "fs:allow-appdata-read-recursive",
     "fs:allow-appdata-write-recursive",
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$APPDATA/**" },
-        { "path": "$APPDATA/" }
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$APPDATA/"
+        },
+        {
+          "path": "$DESKTOP/**"
+        },
+        {
+          "path": "$DOCUMENT/**"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        },
+        {
+          "path": "$PICTURE/**"
+        },
+        {
+          "path": "$HOME/**"
+        }
       ]
-    }
+    },
+    "dialog:default"
   ]
 }

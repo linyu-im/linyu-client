@@ -24,8 +24,7 @@
               @delete="onDeletePost" />
 
             <div v-if="!loading && filteredRecords.length === 0" class="moment__empty">
-              <LinyuEmpty :size="80" />
-              <p class="moment__empty-text">{{ t('moment.empty') }}</p>
+              <n-divider class="moment__empty-text">{{ t('moment.empty') }}</n-divider>
             </div>
           </div>
         </n-scrollbar>
@@ -36,18 +35,18 @@
       v-model:show="showCompose"
       :user-id="userStore.userInfo.id"
       :username="userStore.userInfo.username"
-      @submit="onComposeSubmit" />
+      @success="onComposeSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { momentApi } from '@/api'
-  import MomentCover from '@/components/moment/MomentCover.vue'
-  import MomentFloatNav from '@/components/moment/MomentFloatNav.vue'
-  import MomentPostCard from '@/components/moment/MomentPostCard.vue'
-  import MomentComposeModal from '@/components/moment/MomentComposeModal.vue'
+  import MomentCover from '@/components/Moment/MomentCover.vue'
+  import MomentFloatNav from '@/components/Moment/MomentFloatNav.vue'
+  import MomentPostCard from '@/components/Moment/MomentPostCard.vue'
+  import MomentComposeModal from '@/components/Moment/MomentComposeModal.vue'
   import { useUserStore } from '@/stores/user'
-  import type { MomentFilter, MomentLike, MomentRecord, MomentVisibleType } from '@/types/api/moment'
+  import type { MomentFilter, MomentLike, MomentPageParam, MomentRecord } from '@/types/api/moment'
   import { useI18n } from 'vue-i18n'
 
   const PAGE_SIZE = 20
@@ -61,20 +60,27 @@
   const records = ref<MomentRecord[]>([])
 
   const filteredRecords = computed(() => {
-    switch (activeFilter.value) {
-      case 'mine':
-        return records.value.filter((r) => r.moment.userId === userStore.userInfo.id)
-      case 'special':
-        return []
-      default:
-        return records.value
-    }
+    if (activeFilter.value === 'special') return []
+    return records.value
   })
 
+  const buildPageParam = (): MomentPageParam => {
+    const param: MomentPageParam = { page: 1, PageSize: PAGE_SIZE }
+    if (activeFilter.value === 'mine') {
+      param.viewUserId = userStore.userInfo.id
+    }
+    return param
+  }
+
   const fetchMoments = async () => {
+    if (activeFilter.value === 'special') {
+      records.value = []
+      return
+    }
+
     loading.value = true
     try {
-      const res = await momentApi.page({ page: 1, PageSize: PAGE_SIZE })
+      const res = await momentApi.page(buildPageParam())
       if (res.code === 0 && res.data) {
         records.value = res.data.records
       } else {
@@ -150,14 +156,18 @@
     record.comments = comments.filter((c) => c.id !== commentId)
   }
 
-  const onDeletePost = (momentId: string) => {
+  const onDeletePost = async (momentId: string) => {
+    const res = await momentApi.remove({ momentId })
+    if (res.code !== 0) {
+      window.$message.error(res.msg)
+      return
+    }
     records.value = records.value.filter((r) => r.moment.id !== momentId)
     window.$message.success(t('moment.post.deleted'))
   }
 
-  const onComposeSubmit = (payload: { content: string; visibility: MomentVisibleType; images: string[] }) => {
-    window.$message.info(t('moment.compose.publishTodo'))
-    void payload
+  const onComposeSuccess = () => {
+    fetchMoments()
   }
 
   const onRefresh = () => {
@@ -174,9 +184,13 @@
     window.$message.info(t('moment.cover.todo'))
   }
 
-  onMounted(() => {
-    fetchMoments()
-  })
+  watch(
+    activeFilter,
+    () => {
+      fetchMoments()
+    },
+    { immediate: true }
+  )
 </script>
 
 <style scoped lang="scss">
@@ -258,8 +272,10 @@
     }
 
     &__empty-text {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-secondary-color);
+      width: 80%;
+      user-select: none;
     }
   }
 

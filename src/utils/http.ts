@@ -83,4 +83,34 @@ export function post<T = any, D = any>(url: string, data?: D): Promise<ApiRespon
   })
 }
 
-export default { get, post }
+export async function formData<T = any>(
+  url: string,
+  data: FormData,
+  headers?: Record<string, string>
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(buildUrl(url), {
+      method: 'POST',
+      body: data,
+      headers: {
+        'Accept-Language': getLang(),
+        Authorization: getToken(),
+        ...headers
+      }
+    })
+
+    if (!response.ok) {
+      return {
+        code: response.status,
+        msg: `HTTP Error: ${response.status}`
+      }
+    }
+
+    return (await response.json()) as ApiResponse<T>
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    return { code: 1, msg: message }
+  }
+}
+
+export default { get, post, formData }

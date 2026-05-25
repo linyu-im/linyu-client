@@ -207,9 +207,12 @@
 
   const moreOptions = computed(() => [
     { label: () => t('moment.post.more.report'), key: 'report' },
-    { label: () => t('moment.post.more.hide'), key: 'hide' },
-    { type: 'divider' as const, key: 'd1' },
-    { label: () => t('moment.post.more.delete'), key: 'delete' }
+    ...(isMomentMine.value
+      ? [
+          { type: 'divider' as const, key: 'd1' },
+          { label: () => t('moment.post.more.delete'), key: 'delete' }
+        ]
+      : [])
   ])
 
   const onMoreSelect = (key: string) => {

@@ -10,9 +10,6 @@
           <svg v-if="item.key === 'all'" class="moment-float-nav__icon" aria-hidden="true">
             <use href="#home"></use>
           </svg>
-          <svg v-else-if="item.key === 'special'" class="moment-float-nav__icon" aria-hidden="true">
-            <use href="#heart"></use>
-          </svg>
           <svg v-else class="moment-float-nav__icon" aria-hidden="true">
             <use href="#user"></use>
           </svg>
@@ -65,7 +62,6 @@
 
   const filterItems = computed(() => [
     { key: 'all' as MomentFilter, label: t('moment.nav.all') },
-    { key: 'special' as MomentFilter, label: t('moment.nav.special') },
     { key: 'mine' as MomentFilter, label: t('moment.nav.mine') }
   ])
 </script>

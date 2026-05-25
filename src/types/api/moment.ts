@@ -52,6 +52,10 @@ export interface MomentLikeParam {
   momentId: string
 }
 
+export interface MomentDeleteParam {
+  momentId: string
+}
+
 export interface MomentCommentAddParam {
   momentId: string
   content: string
@@ -65,6 +69,22 @@ export interface MomentCommentDelParam {
 export interface MomentPageParam {
   page: number
   PageSize: number
+  viewUserId?: string
+}
+
+export interface MomentCreateMediaItem {
+  url: string
+  thumbUrl: string
+  mediaType: string
+  Sort: number
+}
+
+export interface MomentCreateParam {
+  textContent: string
+  MediaContent?: MomentCreateMediaItem[]
+  visibleType: MomentVisibleType
+  visibleUserIds?: string[]
+  location?: string
 }
 
 export interface MomentPageResult {

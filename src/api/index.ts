@@ -5,5 +5,7 @@ import * as authApi from './auth'
 import * as chatApi from './chat'
 import * as messageApi from './message'
 import * as momentApi from './moment'
+import * as storageApi from './storage'
+import * as contactsApi from './contacts'
 
-export { userApi, oauth2Api, emotionApi, authApi, chatApi, messageApi, momentApi }
+export { userApi, oauth2Api, emotionApi, authApi, chatApi, messageApi, momentApi, storageApi, contactsApi }

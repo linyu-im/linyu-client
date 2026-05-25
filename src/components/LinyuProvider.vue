@@ -89,7 +89,9 @@
       boxShadowError: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       colorSuccess: 'var(--bg-muted-color)',
       textColorSuccess: 'var(--text-color)',
-      boxShadowSuccess: '0 0 0 1px rgba(var(--primary-rgb),0.3)'
+      boxShadowSuccess: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      iconColorInfo: 'var(--primary-color)',
+      iconColorSuccess: 'var(--primary-color)'
     },
     Divider: {
       color: 'var(--divider-color)'

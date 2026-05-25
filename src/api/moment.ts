@@ -2,12 +2,18 @@ import type {
   MomentComment,
   MomentCommentAddParam,
   MomentCommentDelParam,
+  MomentCreateParam,
+  MomentDeleteParam,
   MomentLike,
   MomentLikeParam,
   MomentPageParam,
   MomentPageResult
 } from '@/types/api/moment'
 import { ApiResponse, post } from '@/utils/http'
+
+export function create(data: MomentCreateParam): Promise<ApiResponse<void>> {
+  return post<void, MomentCreateParam>('/api/basic/v1/moment/create', data)
+}
 
 export function page(data: MomentPageParam): Promise<ApiResponse<MomentPageResult>> {
   return post<MomentPageResult, MomentPageParam>('/api/basic/v1/moment/page', data)
@@ -27,4 +33,8 @@ export function commentAdd(data: MomentCommentAddParam): Promise<ApiResponse<Mom
 
 export function commentDel(data: MomentCommentDelParam): Promise<ApiResponse<void>> {
   return post<void, MomentCommentDelParam>('/api/basic/v1/moment/comment/del', data)
+}
+
+export function remove(data: MomentDeleteParam): Promise<ApiResponse<void>> {
+  return post<void, MomentDeleteParam>('/api/basic/v1/moment/delete', data)
 }
