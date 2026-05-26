@@ -1,4 +1,4 @@
-import type { EditorSegment } from '@/components/MessageEditor/index.vue'
+import type { EditorSegment } from '@/components/Message/MessageEditor/index.vue'
 import type { FileContent, ImageContent, SendMessageMention, SendMessageToUserParam } from '@/types/api/message'
 
 export type EditorSendUnit =

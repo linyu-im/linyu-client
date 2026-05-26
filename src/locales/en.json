@@ -69,6 +69,7 @@
   },
   "message": {
     "noChat": "No new messages",
+    "newMessages": "Receive {count} new messages",
     "msgType": {
       "text": "Text",
       "image": "Image",
@@ -109,13 +110,11 @@
       "dragDropHint": "Drop to add image or file",
       "mentionEmpty": "No matches",
       "send": "Send",
-      "sendSuccess": "Sent ({count} segments)",
       "imageTooLarge": "Image exceeds size limit",
       "fileTooLarge": "File exceeds size limit",
       "noChatTarget": "Please select a chat first",
       "mediaUploadPending": "Images and files must be uploaded before sending",
-      "sendFailed": "Failed to send",
-      "sendPartial": "Sent {sent}/{total}; some messages were not sent"
+      "sendFailed": "Failed to send"
     }
   },
   "moment": {

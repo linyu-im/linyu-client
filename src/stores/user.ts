@@ -1,4 +1,5 @@
 import { UserInfoResult } from '@/types/api/user'
+import { disconnectWebSocket } from '@/utils/websocket'
 import { defineStore } from 'pinia'
 
 type UserStore = {
@@ -46,6 +47,7 @@ export const useUserStore = defineStore('user', {
       })
     },
     removeAuthInfo() {
+      void disconnectWebSocket()
       this.$patch((state) => {
         state.authInfo.token = ''
         state.authInfo.userId = ''

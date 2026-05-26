@@ -69,6 +69,7 @@
   },
   "message": {
     "noChat": "暂无新的消息",
+    "newMessages": "收到 {count} 条新消息",
     "msgType": {
       "text": "文本",
       "image": "图片",
@@ -109,13 +110,11 @@
       "dragDropHint": "松开添加：图片/文件",
       "mentionEmpty": "无匹配内容",
       "send": "发送",
-      "sendSuccess": "已发送，共 {count} 段内容",
       "imageTooLarge": "图片大小超出限制",
       "fileTooLarge": "文件大小超出限制",
       "noChatTarget": "请先选择聊天对象",
       "mediaUploadPending": "图片/文件需上传后才能发送",
-      "sendFailed": "发送失败",
-      "sendPartial": "已发送 {sent}/{total} 条，部分消息未发送"
+      "sendFailed": "发送失败"
     }
   },
   "moment": {

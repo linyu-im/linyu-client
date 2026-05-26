@@ -23,16 +23,21 @@
       fixed="second"
       :min-size="180"
       :max-size="440"
-      :default-size="260">
+      :default-size="220">
       <template #first>
         <div class="chat-session__content">
           <MessageList
+            ref="messageListRef"
             :key="props.toId"
             :messages="messages"
             :loading="loading"
             :loading-more="loadingMore"
             :has-more="hasMore"
-            @reach-top="onLoadMore" />
+            @reach-top="onLoadMore"
+            @at-bottom-change="onAtBottomChange" />
+          <button v-if="pendingNewCount > 0" type="button" class="chat-session__new-msg" @click="scrollToLatest">
+            {{ t('message.newMessages', { count: pendingNewCount }) }}
+          </button>
         </div>
       </template>
       <template #second>
@@ -69,11 +74,13 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { messageApi, userApi } from '@/api'
+  import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
   import { buildSendParamsFromSegments, buildSendUnitsFromSegments } from '@/utils/editorMessage'
-  import MessageEditor, { type EditorPayload } from './MessageEditor/index.vue'
-  import type { MentionItem } from './MessageEditor/MentionList.vue'
+  import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
+  import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
+  import MessageList from './Message/MessageList/index.vue'
 
   interface Props {
     toId?: string
@@ -84,8 +91,10 @@
   })
 
   const { t } = useI18n()
+  const userStore = useUserStore()
 
   const PAGE_SIZE = 20
+  const pendingNewCount = ref(0)
   const messages = ref<Message[]>([])
   const page = ref(0)
   const totalPage = ref(0)
@@ -96,6 +105,7 @@
 
   const draft = ref('')
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
+  const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
   const peerInfo = ref<UserInfoResult | null>(null)
 
   type ApiMessage = Message & { MsgScene?: string }
@@ -120,12 +130,52 @@
     return [...map.values()]
   }
 
+  const isSelfMessage = (msg: Message) => {
+    const uid = userStore.authInfo.userId
+    return !!uid && msg.fromId === uid
+  }
+
+  const isPeerMessage = (msg: Message) => !!props.toId && msg.fromId === props.toId
+
+  const onAtBottomChange = (atBottom: boolean) => {
+    if (atBottom) pendingNewCount.value = 0
+  }
+
+  const scrollToLatest = () => {
+    pendingNewCount.value = 0
+    messageListRef.value?.scrollToBottom()
+  }
+
+  /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提示 */
+  const appendMessage = (raw: Message) => {
+    const msg = normalizeMessage(raw as ApiMessage)
+    if (messages.value.some((item) => item.id === msg.id)) return
+
+    const atBottom = messageListRef.value?.isAtBottom() ?? false
+    const fromSelf = isSelfMessage(msg)
+    const fromPeer = isPeerMessage(msg)
+
+    messages.value = [...messages.value, msg]
+
+    nextTick(() => {
+      if (fromSelf || atBottom) {
+        messageListRef.value?.scrollToBottom()
+        pendingNewCount.value = 0
+      } else if (fromPeer) {
+        pendingNewCount.value += 1
+      }
+    })
+  }
+
+  defineExpose({ appendMessage })
+
   const resetMessages = () => {
     messages.value = []
     page.value = 0
     totalPage.value = 0
     loading.value = false
     loadingMore.value = false
+    pendingNewCount.value = 0
   }
 
   const fetchMessagePage = async (targetPage: number) => {
@@ -169,6 +219,7 @@
       totalPage.value = result.totalPage
     } finally {
       loading.value = false
+      nextTick(() => messageListRef.value?.scrollToBottom())
     }
   }
 
@@ -258,28 +309,19 @@
     }
 
     let sent = 0
-    let lastError = ''
 
     for (const param of params) {
-      console.log(param)
       const res = await messageApi.sendToUser(param)
-      if (res.code === 0) {
+      if (res.code === 0 && res.data) {
+        appendMessage(res.data)
         sent += 1
       } else {
-        lastError = res.msg
         window.$message?.error(res.msg)
       }
     }
 
     if (sent > 0) {
       editorRef.value.clear()
-      if (skippedMedia > 0) {
-        window.$message?.warning(t('message.editor.sendPartial', { sent, total: units.length }))
-      } else {
-        window.$message?.success(t('message.editor.sendSuccess', { count: sent }))
-      }
-    } else if (lastError) {
-      window.$message?.error(lastError || t('message.editor.sendFailed'))
     }
   }
 
@@ -311,11 +353,36 @@
     }
 
     .chat-session__content {
+      position: relative;
       height: 100%;
       min-height: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
+    }
+
+    .chat-session__new-msg {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      z-index: 2;
+      transform: translateX(-50%);
+      padding: 4px 24px;
+      border: none;
+      border-radius: 18px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--bg-primary-color) 80%, transparent);
+      backdrop-filter: blur(5px);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+
+      &:hover {
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-muted-color));
+      }
     }
 
     .chat-session__input {

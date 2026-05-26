@@ -69,7 +69,7 @@
         </div>
       </template>
       <template #second>
-        <chat-session :to-id="activePeerId" />
+        <chat-session ref="chatSessionRef" :to-id="activePeerId" />
       </template>
     </Split>
     <n-dropdown
@@ -86,6 +86,8 @@
 <script setup lang="tsx">
   import { chatApi } from '@/api'
   import { useGlobalStore } from '@/stores/global'
+  import ChatSession from '@/components/ChatSession.vue'
+  import { useWebSocketStore } from '@/stores/websocket'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
   import { formatTime } from '@/utils/time'
@@ -93,6 +95,8 @@
 
   const { t } = useI18n()
   const globalStore = useGlobalStore()
+  const wsStore = useWebSocketStore()
+  const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
 
   const chatList = ref<Chat[]>([])
 
@@ -145,6 +149,15 @@
       }
     ]
   })
+
+  watch(
+    () => wsStore.lastServerMessage,
+    (msg) => {
+      if (!msg) return
+      if (msg.fromId !== activePeerId.value) return
+      chatSessionRef.value?.appendMessage(msg)
+    }
+  )
 
   const onContextMenu = (e: MouseEvent, item: Chat) => {
     e.preventDefault()

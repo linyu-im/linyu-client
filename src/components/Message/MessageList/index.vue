@@ -19,6 +19,7 @@
           </div>
         </div>
       </template>
+      <div ref="bottomAnchorRef" class="message-list__bottom-anchor" aria-hidden="true" />
     </div>
   </n-scrollbar>
 </template>
@@ -27,6 +28,7 @@
   import type { ScrollbarInst } from 'naive-ui'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
+  import { onBeforeUnmount, onMounted } from 'vue'
 
   const userStore = useUserStore()
 
@@ -51,36 +53,109 @@
 
   const emit = defineEmits<{
     'reach-top': []
+    'at-bottom-change': [atBottom: boolean]
   }>()
 
   const scrollbarRef = ref<ScrollbarInst | null>(null)
+  const bottomAnchorRef = ref<HTMLElement | null>(null)
   const reachTopLocked = ref(false)
+  const atBottomRef = ref(true)
   let savedScrollHeight = 0
   let savedScrollTop = 0
+  let scrollContainerEl: HTMLElement | null = null
+  let pendingScrollToBottom = false
+  let resizeObserver: ResizeObserver | null = null
 
   const SCROLL_TOP_THRESHOLD = 48
+  const SCROLL_BOTTOM_THRESHOLD = 48
 
-  const getScrollContainer = (): HTMLElement | null => {
-    const inst = scrollbarRef.value
-    if (!inst) return null
-    return (inst as ScrollbarInst & { containerRef?: HTMLElement | null }).containerRef ?? null
+  const computeAtBottom = (container: HTMLElement): boolean => {
+    const distance = container.scrollHeight - container.scrollTop - container.clientHeight
+    return distance <= SCROLL_BOTTOM_THRESHOLD
   }
 
+  const getScrollContainer = (): HTMLElement | null => {
+    if (scrollContainerEl) return scrollContainerEl
+
+    const inst = scrollbarRef.value as { $el?: HTMLElement } | null
+    if (!inst?.$el) return null
+
+    return inst.$el.querySelector<HTMLElement>('.n-scrollbar-container')
+  }
+
+  const syncAtBottom = (container: HTMLElement) => {
+    scrollContainerEl = container
+    const atBottom = computeAtBottom(container)
+    atBottomRef.value = atBottom
+    emit('at-bottom-change', atBottom)
+    return atBottom
+  }
+
+  const isAtBottom = (): boolean => {
+    const container = getScrollContainer()
+    if (!container) return atBottomRef.value
+    return computeAtBottom(container)
+  }
+
+  const applyScrollToBottom = (): boolean => {
+    scrollbarRef.value?.scrollTo({ top: Number.MAX_SAFE_INTEGER, behavior: 'auto' })
+
+    const container = getScrollContainer()
+    if (container) {
+      container.scrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
+      syncAtBottom(container)
+      return computeAtBottom(container)
+    }
+
+    bottomAnchorRef.value?.scrollIntoView({ block: 'end' })
+    return false
+  }
+
+  const tryScrollToBottom = () => {
+    if (!pendingScrollToBottom) return
+    if (applyScrollToBottom()) {
+      pendingScrollToBottom = false
+    }
+  }
+
+  /** 等待布局完成后再滚到底部（首屏加载、切换会话） */
   const scrollToBottom = () => {
+    pendingScrollToBottom = true
     nextTick(() => {
-      const container = getScrollContainer()
-      if (container) {
-        container.scrollTop = container.scrollHeight
-        return
-      }
-      scrollbarRef.value?.scrollTo({ top: Number.MAX_SAFE_INTEGER })
+      tryScrollToBottom()
+      requestAnimationFrame(() => {
+        tryScrollToBottom()
+        requestAnimationFrame(tryScrollToBottom)
+      })
     })
   }
 
-  const onScroll = (e: Event) => {
-    if (!props.hasMore || props.loadingMore || props.loading) return
+  onMounted(() => {
+    resizeObserver = new ResizeObserver(() => {
+      tryScrollToBottom()
+    })
+    nextTick(() => {
+      if (bottomAnchorRef.value) {
+        resizeObserver?.observe(bottomAnchorRef.value)
+      }
+    })
+  })
 
-    const target = e.target as HTMLElement
+  onBeforeUnmount(() => {
+    resizeObserver?.disconnect()
+    resizeObserver = null
+    scrollContainerEl = null
+    pendingScrollToBottom = false
+  })
+
+  const onScroll = (e: Event) => {
+    const target = e.target
+    if (target instanceof HTMLElement) {
+      syncAtBottom(target)
+    }
+
+    if (!props.hasMore || props.loadingMore || props.loading) return
+    if (!(target instanceof HTMLElement)) return
     if (target.scrollTop > SCROLL_TOP_THRESHOLD) {
       reachTopLocked.value = false
       return
@@ -104,19 +179,21 @@
         newMessages.length > (oldMessages?.length ?? 0) &&
         newMessages[0]?.id !== oldMessages?.[0]?.id
 
+      const isInitialFill = (oldMessages?.length ?? 0) === 0 && newMessages.length > 0
+
       nextTick(() => {
         const container = getScrollContainer()
-        if (!container) {
-          if (!prepended) scrollToBottom()
-          return
-        }
 
-        if (prepended) {
+        if (prepended && container) {
           const newHeight = container.scrollHeight
           container.scrollTop = newHeight - savedScrollHeight + savedScrollTop
           reachTopLocked.value = false
-        } else {
-          container.scrollTop = container.scrollHeight
+          syncAtBottom(container)
+          return
+        }
+
+        if (isInitialFill) {
+          scrollToBottom()
         }
       })
     },
@@ -132,7 +209,16 @@
     }
   )
 
-  defineExpose({ scrollToBottom })
+  watch(
+    () => props.loading,
+    (loading, wasLoading) => {
+      if (wasLoading && !loading && props.messages.length > 0) {
+        scrollToBottom()
+      }
+    }
+  )
+
+  defineExpose({ scrollToBottom, isAtBottom })
 
   const isSelf = (message: Message) => {
     const uid = userStore.authInfo.userId
@@ -152,11 +238,7 @@
     }
 
     :deep(.n-scrollbar-content) {
-      min-height: 100%;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
     }
 
     &__inner {
@@ -165,6 +247,11 @@
       gap: 20px;
       padding: 12px 16px 16px;
       font-size: 12px;
+    }
+
+    &__bottom-anchor {
+      height: 1px;
+      flex-shrink: 0;
     }
 
     &__row {

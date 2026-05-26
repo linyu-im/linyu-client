@@ -27,6 +27,7 @@
     "@tauri-apps/plugin-process": "~2.3.1",
     "@tauri-apps/plugin-shell": "~2.3.5",
     "@tauri-apps/plugin-upload": "~2.4.0",
+    "@tauri-apps/plugin-websocket": "~2.4.2",
     "@tiptap/core": "^3.23.4",
     "@tiptap/extension-dropcursor": "^3.23.4",
     "@tiptap/extension-image": "^3.23.4",

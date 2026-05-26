@@ -13,6 +13,7 @@ declare module 'spark-md5' {
 }
 interface ImportMetaEnv {
   readonly VITE_SERVICE_URL: string
+  readonly VITE_WEBSOCKET_URL: string
 }
 
 interface ImportMeta {

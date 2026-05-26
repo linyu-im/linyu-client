@@ -73,6 +73,7 @@
 <script setup lang="ts">
   import { userApi } from '@/api'
   import { useUserStore } from '@/stores/user'
+  import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
   import {
     createEmotionWinodw,
     hideCurrentWindow,
@@ -173,7 +174,12 @@
   }
 
   onMounted(() => {
+    void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     onCurrentUserInfo()
+  })
+
+  onUnmounted(() => {
+    void disconnectWebSocket().catch((err) => console.error('[WebSocket] disconnect failed:', err))
   })
 </script>
 
