@@ -112,28 +112,31 @@
           break
         case 'image': {
           const imgUrl = node.attrs?.src ?? ''
+          const imgSize = Number(node.attrs?.fileSize) || 0
           segments.push({
             type: 'image',
             content: {
               imgUrl,
               imgThumbUrl: imgUrl,
               imgName: node.attrs?.alt ?? '',
-              imgSize: node.attrs?.fileSize != null ? String(node.attrs.fileSize) : '0'
+              imgSize
             }
           })
           break
         }
-        case 'fileChip':
+        case 'fileChip': {
+          const fileSize = Number(node.attrs?.size) || 0
           segments.push({
             type: 'file',
             content: {
               fileUrl: node.attrs?.url ?? '',
               fileType: node.attrs?.mime ?? '',
               fileName: node.attrs?.name ?? '',
-              fileSize: node.attrs?.size != null ? String(node.attrs.size) : '0'
+              fileSize
             }
           })
           break
+        }
       }
     }
     walk(json)

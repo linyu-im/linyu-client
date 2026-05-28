@@ -77,7 +77,7 @@
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
-  import { buildSendParamsFromSegments, buildSendUnitsFromSegments } from '@/utils/editorMessage'
+  import { buildSendParamsFromSegments } from '@/utils/editorMessage'
   import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
   import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
   import MessageList from './Message/MessageList/index.vue'
@@ -295,18 +295,8 @@
       return
     }
 
-    const units = buildSendUnitsFromSegments(payload.segments)
-    if (!units.length) return
-
     const params = await buildSendParamsFromSegments(payload.segments, toUserId)
-    const skippedMedia = units.length - params.length
-
-    if (!params.length) {
-      if (skippedMedia > 0) {
-        window.$message?.warning(t('message.editor.mediaUploadPending'))
-      }
-      return
-    }
+    if (!params.length) return
 
     let sent = 0
 

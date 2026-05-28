@@ -1,5 +1,7 @@
 import type { EditorSegment } from '@/components/Message/MessageEditor/index.vue'
 import type { FileContent, ImageContent, SendMessageMention, SendMessageToUserParam } from '@/types/api/message'
+import { messageApi } from '@/api'
+import { calculateFileSha256, splitFileToChunks } from '@/utils/fileChunk'
 
 export type EditorSendUnit =
   | { msgType: 'text'; content: { text: string }; mentions: SendMessageMention[] }
@@ -82,15 +84,76 @@ export const buildSendUnitsFromSegments = (segments: EditorSegment[]): EditorSen
 }
 
 const isRemoteUrl = (url: string) => /^https?:\/\//i.test(url)
+const uploadUrlCache = new Map<string, Promise<string | null>>()
+
+const getBlobFromUrl = async (url: string): Promise<Blob | null> => {
+  try {
+    const res = await fetch(url)
+    if (!res.ok) return null
+    return await res.blob()
+  } catch {
+    return null
+  }
+}
+
+const normalizeUploadFileName = (fileName: string | undefined, msgType: 'image' | 'file') => {
+  const normalized = fileName?.trim()
+  if (normalized) return normalized
+  return msgType === 'image' ? 'image.png' : 'file.bin'
+}
+
+const uploadLocalMediaByUrl = async (
+  url: string,
+  fileName: string | undefined,
+  fileSize: number | undefined,
+  msgType: 'image' | 'file'
+): Promise<string | null> => {
+  const blob = await getBlobFromUrl(url)
+  if (!blob) return null
+
+  const fileHash = await calculateFileSha256(blob)
+  const chunks = splitFileToChunks(blob)
+  if (!chunks.length) return null
+
+  for (const item of chunks) {
+    const uploadRes = await messageApi.uploadFileChunk({
+      fileHash,
+      chunkIndex: String(item.index),
+      file: item.chunk
+    })
+    if (uploadRes.code !== 0) return null
+  }
+
+  const mergeRes = await messageApi.mergeFileChunks({
+    fileHash,
+    fileSize: fileSize || blob.size,
+    fileName: normalizeUploadFileName(fileName, msgType),
+    totalChunk: chunks.length
+  })
+  console.log('mergeRes', mergeRes)
+  if (mergeRes.code !== 0 || !mergeRes.data) return null
+  return mergeRes.data
+}
 
 /**
- * 本地 blob 需先上传后才能发送；当前无上传接口时返回 null。
+ * 本地媒体 URL 需先上传后才能发送；返回上传后的真实 URL。
  */
-export const resolveSegmentMediaUrl = async (url: string): Promise<string | null> => {
+export const resolveSegmentMediaUrl = async (
+  url: string,
+  options?: {
+    fileName?: string
+    fileSize?: number
+    msgType?: 'image' | 'file'
+  }
+): Promise<string | null> => {
   if (!url) return null
   if (isRemoteUrl(url)) return url
   if (url.startsWith('blob:') || url.startsWith('data:')) {
-    return null
+    const cached = uploadUrlCache.get(url)
+    if (cached) return cached
+    const task = uploadLocalMediaByUrl(url, options?.fileName, options?.fileSize, options?.msgType ?? 'file')
+    uploadUrlCache.set(url, task)
+    return task
   }
   return url
 }
@@ -113,21 +176,35 @@ export const buildSendParam = async (
   }
 
   if (unit.msgType === 'image') {
-    const imgUrl = await resolveSegmentMediaUrl(unit.content.imgUrl)
+    const imgUrl = await resolveSegmentMediaUrl(unit.content.imgUrl, {
+      fileName: unit.content.imgName,
+      fileSize: unit.content.imgSize,
+      msgType: 'image'
+    })
     if (!imgUrl) return null
+    const imgThumbUrl =
+      (await resolveSegmentMediaUrl(unit.content.imgThumbUrl, {
+        fileName: unit.content.imgName,
+        fileSize: unit.content.imgSize,
+        msgType: 'image'
+      })) || imgUrl
     return {
       toUserId,
       msgType: 'image',
       content: {
         ...unit.content,
         imgUrl,
-        imgThumbUrl: unit.content.imgThumbUrl || imgUrl
+        imgThumbUrl
       }
     }
   }
 
   if (unit.msgType === 'file') {
-    const fileUrl = await resolveSegmentMediaUrl(unit.content.fileUrl)
+    const fileUrl = await resolveSegmentMediaUrl(unit.content.fileUrl, {
+      fileName: unit.content.fileName,
+      fileSize: unit.content.fileSize,
+      msgType: 'file'
+    })
     if (!fileUrl) return null
     return {
       toUserId,

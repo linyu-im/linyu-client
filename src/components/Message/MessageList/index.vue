@@ -77,10 +77,20 @@
   const getScrollContainer = (): HTMLElement | null => {
     if (scrollContainerEl) return scrollContainerEl
 
-    const inst = scrollbarRef.value as { $el?: HTMLElement } | null
-    if (!inst?.$el) return null
+    const inst = scrollbarRef.value as {
+      $el?: unknown
+      containerRef?: { value?: unknown } | unknown
+    } | null
 
-    return inst.$el.querySelector<HTMLElement>('.n-scrollbar-container')
+    const rootEl = inst?.$el instanceof HTMLElement ? inst.$el : null
+    const fromRoot = rootEl?.querySelector<HTMLElement>('.n-scrollbar-container') ?? null
+    if (fromRoot) return fromRoot
+
+    const containerRef = inst?.containerRef as { value?: unknown } | undefined
+    const containerEl = containerRef?.value
+    if (containerEl instanceof HTMLElement) return containerEl
+
+    return null
   }
 
   const syncAtBottom = (container: HTMLElement) => {

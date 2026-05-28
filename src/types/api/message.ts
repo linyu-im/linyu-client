@@ -6,21 +6,21 @@ export interface ImageContent {
   imgUrl: string
   imgThumbUrl: string
   imgName: string
-  imgSize: string
+  imgSize: number
 }
 
 export interface VideoContent {
   videoUrl: string
   videoThumbUrl: string
   videoName: string
-  videoSize: string
+  videoSize: number
 }
 
 export interface FileContent {
   fileUrl: string
   fileType: string
   fileName: string
-  fileSize: string
+  fileSize: number
 }
 
 export interface ECardContent {
@@ -76,6 +76,19 @@ export interface SendMessageToUserParam {
   content: SendMessageContent
   /** 文本消息中的 @ 提及列表（与 content.text 中的 @昵称 对应） */
   mentions?: SendMessageMention[]
+}
+
+export interface UploadMessageFileChunkParam {
+  fileHash: string
+  chunkIndex: string
+  file: File | Blob
+}
+
+export interface MergeMessageFileParam {
+  fileHash: string
+  fileSize: number
+  fileName: string
+  totalChunk: number
 }
 
 export interface MessagePageParam {

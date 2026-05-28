@@ -39,9 +39,9 @@
     maxWidth: '308px'
   }
 
-  const formatSize = (size: string) => {
+  const formatSize = (size: number | string) => {
     const bytes = Number(size)
-    if (!Number.isFinite(bytes) || bytes <= 0) return size
+    if (!Number.isFinite(bytes) || bytes <= 0) return String(size)
     if (bytes < 1024) return `${bytes} B`
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`

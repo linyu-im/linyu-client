@@ -268,25 +268,27 @@
       case 'text':
         return <span class="text-[var(--text-secondary-color)] text-12px truncate">{msg.content.text}</span>
       case 'image':
-        return <span>[{t('message.msgType.image')}]</span>
+        return <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.image')}]</span>
       case 'video':
-        return <span>[{t('message.msgType.video')}]</span>
+        return <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.video')}]</span>
       case 'file':
         return (
-          <span>
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">
             [{t('message.msgType.file')}] {msg.content.fileName}
           </span>
         )
       case 'ecard':
         return (
-          <span>
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">
             [{t('message.msgType.ecard')}] {msg.content.userName}
           </span>
         )
       case 'voice':
-        return <span>[{t('message.msgType.voice')}]</span>
+        return <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.voice')}]</span>
       default:
-        return <span>[{t('message.msgType.unknown')}]</span>
+        return (
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.unknown')}]</span>
+        )
     }
   }
 
