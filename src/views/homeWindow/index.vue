@@ -113,18 +113,18 @@
       path: '/home/moment'
     },
     {
-      id: 'drive',
-      label: t('home.options.drive'),
-      icon: '#drive',
-      activeIcon: '#drive-active',
-      path: '/home/drive'
-    },
-    {
       id: 'ai',
       label: t('home.options.ai'),
       icon: '#ai',
       activeIcon: '#ai-active',
       path: '/home/ai'
+    },
+    {
+      id: 'drive',
+      label: t('home.options.drive'),
+      icon: '#drive',
+      activeIcon: '#drive-active',
+      path: '/home/drive'
     },
     {
       id: 'application ',

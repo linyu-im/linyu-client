@@ -55,12 +55,17 @@
 <style scoped>
   .icon-wrapper {
     background: v-bind(bg);
+    position: relative;
+    overflow: hidden;
   }
 
   svg {
     color: v-bind(color);
     fill: currentColor;
-    transition: color 0.2s;
+    transition:
+      color 0.2s ease,
+      transform 0.22s ease,
+      opacity 0.22s ease;
     width: v-bind(iconSize);
     height: v-bind(iconSize);
   }
@@ -75,9 +80,58 @@
 
   .icon-wrapper.is-active {
     background: rgba(var(--primary-rgb), 0.1) !important;
+    transition: background-color 0.22s ease;
+  }
+
+  .icon-wrapper::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 42%;
+    height: 42%;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.75);
+    background: radial-gradient(circle, rgba(var(--primary-rgb), 0.28) 0%, rgba(var(--primary-rgb), 0) 72%);
+  }
+
+  .icon-wrapper.is-active::after {
+    animation: icon-ripple 0.34s ease-out;
   }
 
   .icon-wrapper.is-active svg {
     color: var(--icon-active-color);
+    animation: icon-activate 0.24s cubic-bezier(0.2, 0.75, 0.2, 1);
+  }
+
+  @keyframes icon-activate {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.84);
+    }
+
+    65% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes icon-ripple {
+    0% {
+      opacity: 0.34;
+      transform: translate(-50%, -50%) scale(0.75);
+    }
+
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.85);
+    }
   }
 </style>
