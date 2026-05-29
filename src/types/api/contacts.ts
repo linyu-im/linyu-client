@@ -3,11 +3,12 @@ export interface Contact {
   userId: string
   peerId: string
   remark: string
+  tag: string
   isBack: boolean
   isTop: boolean
   isConcern: boolean
   isMute: boolean
-  type: string
+  peerType: string
   status: string
   createdAt: string
   updatedAt: string
@@ -16,6 +17,8 @@ export interface Contact {
   userLevel: number
   emotionName: string
   emotionUrl: string
+  groupName?: string
+  memberNum?: number
 }
 
 export type ContactsListResult = Contact[]

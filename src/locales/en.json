@@ -121,6 +121,7 @@
     "searchPlaceholder": "Search",
     "loading": "Loading...",
     "emptyFriends": "No friends yet",
+    "emptyGroups": "No groups yet",
     "menu": {
       "newFriend": "New Friends",
       "groupNotice": "Group Notices",

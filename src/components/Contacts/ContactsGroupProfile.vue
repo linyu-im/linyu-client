@@ -1,17 +1,17 @@
 <template>
   <div class="contacts-profile">
     <div class="contacts-profile__head">
-      <Avatar class="size-62px rounded-10px bg-#FFF" :id="profile.avatarId" />
+      <Avatar class="size-62px rounded-10px bg-#FFF" type="group" :id="contact.peerId" />
       <div>
-        <div class="text-26px font-700">{{ profile.name }}</div>
-        <div class="contacts-profile__id">{{ t('contacts.fields.groupId') }} {{ profile.code }}</div>
+        <div class="text-26px font-700">{{ contact.groupName }}</div>
+        <div class="contacts-profile__id">{{ t('contacts.fields.groupId') }} {{ contact.peerId }}</div>
       </div>
     </div>
     <div class="contacts-profile__line" />
     <div class="contacts-profile__meta">
       <div class="contacts-profile__row">
         <span>{{ t('contacts.fields.remark') }}</span>
-        <span>{{ mockProfileText.setRemark }}</span>
+        <span>{{ contact.remark || t('contacts.placeholders.setRemark') }}</span>
       </div>
       <div class="contacts-profile__row">
         <span>{{ t('contacts.fields.groupAlias') }}</span>
@@ -30,17 +30,16 @@
 </template>
 
 <script setup lang="ts">
-  import type { ContactsSectionEntry } from '@/types/api/contacts'
+  import type { Contact } from '@/types/api/contacts'
   import { useI18n } from 'vue-i18n'
 
   defineProps<{
-    profile: ContactsSectionEntry
+    contact: Contact
   }>()
 
   const { t } = useI18n()
 
   const mockProfileText = {
-    setRemark: '设置备注名称',
     editAlias: '编辑本群昵称',
     groupIntro: '这是一个娱乐群，欢迎大家加入~'
   }

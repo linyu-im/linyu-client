@@ -121,6 +121,7 @@
     "searchPlaceholder": "搜索",
     "loading": "加载中...",
     "emptyFriends": "暂无好友",
+    "emptyGroups": "暂无群聊",
     "menu": {
       "newFriend": "新的好友",
       "groupNotice": "群聊通知",

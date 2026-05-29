@@ -10,10 +10,11 @@
 
 <script setup lang="ts">
   import { useAvatarStore } from '@/stores/avatar'
+  import type { AvatarType } from '@/types/common'
 
   interface Props {
     id: string
-    type?: string
+    type?: AvatarType
     size?: number | 'small' | 'medium' | 'large'
     round?: boolean
   }

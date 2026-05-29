@@ -4,7 +4,10 @@ import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
 import { fetch } from '@tauri-apps/plugin-http'
 import SparkMD5 from 'spark-md5'
 import { defineStore } from 'pinia'
-import { userApi } from '@/api'
+import { groupApi, userApi } from '@/api'
+import type { AvatarType } from '@/types/common'
+
+export type { AvatarType } from '@/types/common'
 
 const AVATAR_SRC_CACHE_MAX = 100
 
@@ -103,19 +106,19 @@ export const useAvatarStore = defineStore('avatar', () => {
     return new Uint8Array(arrayBuffer)
   }
 
-  const fetchRemoteAvatar = async (type: string, id: string): Promise<string> => {
-    if (type !== 'user' || !id) return ''
+  const fetchRemoteAvatar = async (type: AvatarType, id: string): Promise<string> => {
+    if (!id) return ''
 
-    const res = await userApi.getUserAvatar(id)
+    const res = type === 'group' ? await groupApi.getGroupAvatar(id) : await userApi.getUserAvatar(id)
     if (res.code !== 0 || !res.data) return ''
 
     const imageData = await downloadImage(res.data)
     return saveAvatarToLocal(type, id, imageData)
   }
 
-  const getCachedSrc = (type: string, id: string) => cacheGet(getCacheKey(type, id))
+  const getCachedSrc = (type: AvatarType, id: string) => cacheGet(getCacheKey(type, id))
 
-  const resolveSrc = async (type: string, id: string): Promise<string> => {
+  const resolveSrc = async (type: AvatarType, id: string): Promise<string> => {
     if (!id) return ''
 
     const localUrl = await loadLocalAvatar(type, id)
@@ -124,9 +127,9 @@ export const useAvatarStore = defineStore('avatar', () => {
     return fetchRemoteAvatar(type, id)
   }
 
-  const prefetch = (id: string, type = 'user') => loadLocalAvatar(type, id)
+  const prefetch = (id: string, type: AvatarType = 'user') => loadLocalAvatar(type, id)
 
-  const prefetchMany = (ids: string[], type = 'user') => {
+  const prefetchMany = (ids: string[], type: AvatarType = 'user') => {
     const unique = [...new Set(ids.filter(Boolean))]
     void Promise.all(unique.map((id) => prefetch(id, type)))
   }

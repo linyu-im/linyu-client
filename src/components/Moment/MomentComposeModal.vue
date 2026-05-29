@@ -259,7 +259,7 @@
     if (contactsLoading.value) return
     contactsLoading.value = true
     try {
-      const res = await contactsApi.list()
+      const res = await contactsApi.friendList()
       if (res.code === 0 && res.data) {
         contacts.value = res.data
       } else {

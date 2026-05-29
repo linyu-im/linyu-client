@@ -82,19 +82,23 @@
                   </div>
                   <span class="contacts__group-count">{{ groupList.length }}</span>
                 </div>
-                <div
-                  v-if="expandedGroups.group"
-                  v-for="entry in groupList"
-                  :key="entry.id"
-                  class="contacts__entry"
-                  :class="{ active: selectedId === entry.id }"
-                  @click="onSelect(entry.id)">
-                  <Avatar class="size-34px rounded-5px bg-#FFF" :id="entry.avatarId" />
-                  <div class="min-w-0 flex-1">
-                    <div class="text-14px truncate">{{ entry.name }}</div>
-                    <div class="contacts__sub">{{ entry.sub }}</div>
+                <template v-if="expandedGroups.group">
+                  <div v-if="groupListLoading" class="contacts__loading">{{ t('contacts.loading') }}</div>
+                  <div v-else-if="groupList.length === 0" class="contacts__empty">{{ t('contacts.emptyGroups') }}</div>
+                  <div
+                    v-else
+                    v-for="contact in groupList"
+                    :key="contact.id"
+                    class="contacts__entry"
+                    :class="{ active: selectedId === contact.id }"
+                    @click="onSelect(contact.id)">
+                    <Avatar class="size-34px rounded-5px bg-#FFF" type="group" :id="contact.peerId" />
+                    <div class="min-w-0 flex-1">
+                      <div class="text-14px truncate">{{ contact.groupName }}</div>
+                      <div v-if="contact.memberNum != null" class="contacts__sub">({{ contact.memberNum }})</div>
+                    </div>
                   </div>
-                </div>
+                </template>
               </div>
               <div class="contacts__group">
                 <div class="contacts__group-title" @click="toggleGroup('friend')">
@@ -144,7 +148,7 @@
         <div class="contacts__detail">
           <ContactsNewFriend v-if="activeView === 'newFriend'" />
           <ContactsGroupNotice v-else-if="activeView === 'groupNotice'" />
-          <ContactsGroupProfile v-else-if="activeView === 'groupProfile' && activeProfile" :profile="activeProfile" />
+          <ContactsGroupProfile v-else-if="activeView === 'groupProfile' && activeGroup" :contact="activeGroup" />
           <ContactsFriendProfile
             v-else-if="activeFriendUserId"
             :user-id="activeFriendUserId"
@@ -188,24 +192,8 @@
     }
   ])
 
-  const groupList = ref<ContactsSectionEntry[]>([
-    {
-      id: 'group-1',
-      name: '爱国敬业先锋群',
-      avatarId: 'group-1',
-      sub: '(1540)',
-      view: 'groupProfile',
-      code: 'Linyu-n0e29pK'
-    },
-    {
-      id: 'group-2',
-      name: '林语售后群',
-      avatarId: 'group-2',
-      sub: '(404)',
-      view: 'groupProfile',
-      code: 'Linyu-3e3o1q'
-    }
-  ])
+  const groupList = ref<Contact[]>([])
+  const groupListLoading = ref(false)
 
   const friendList = ref<Contact[]>([])
   const friendListLoading = ref(false)
@@ -228,11 +216,26 @@
     return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([letter, items]) => ({ letter, items }))
   })
 
+  const fetchGroupList = async () => {
+    if (groupListLoading.value) return
+    groupListLoading.value = true
+    try {
+      const res = await contactsApi.groupList()
+      if (res.code === 0 && res.data) {
+        groupList.value = res.data
+      } else {
+        window.$message.error(res.msg)
+      }
+    } finally {
+      groupListLoading.value = false
+    }
+  }
+
   const fetchFriendList = async () => {
     if (friendListLoading.value) return
     friendListLoading.value = true
     try {
-      const res = await contactsApi.list()
+      const res = await contactsApi.friendList()
       if (res.code === 0 && res.data) {
         friendList.value = res.data
       } else {
@@ -244,12 +247,15 @@
   }
 
   onMounted(() => {
+    void fetchGroupList()
     void fetchFriendList()
   })
 
-  const flatEntries = computed(() => [...enterpriseList.value, ...groupList.value])
+  const flatEntries = computed(() => [...enterpriseList.value])
 
   const activeEntry = computed(() => flatEntries.value.find((item) => item.id === selectedId.value))
+
+  const activeGroup = computed(() => groupList.value.find((item) => item.id === selectedId.value))
 
   const activeContact = computed(() => friendList.value.find((item) => item.id === selectedId.value))
 
@@ -259,11 +265,10 @@
     if (selectedId.value === 'new-friend') return 'newFriend'
     if (selectedId.value === 'group-notice') return 'groupNotice'
     if (activeFriendUserId.value) return 'friendProfile'
+    if (activeGroup.value) return 'groupProfile'
     if (activeEntry.value) return activeEntry.value.view
     return 'newFriend'
   })
-
-  const activeProfile = computed(() => activeEntry.value)
 
   const onSelect = (id: string) => {
     selectedId.value = id
