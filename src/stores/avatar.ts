@@ -1,0 +1,140 @@
+import { exists, mkdir, writeFile } from '@tauri-apps/plugin-fs'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
+import { fetch } from '@tauri-apps/plugin-http'
+import SparkMD5 from 'spark-md5'
+import { defineStore } from 'pinia'
+import { userApi } from '@/api'
+
+const AVATAR_SRC_CACHE_MAX = 100
+
+export const useAvatarStore = defineStore('avatar', () => {
+  /** 全应用共用的内存 LRU，不 persist（convertFileSrc URL 仅运行时有效） */
+  const srcCache = new Map<string, string>()
+  const inflightLocal = new Map<string, Promise<string>>()
+
+  const getCacheKey = (type: string, id: string) => `${type}:${id}`
+
+  const cacheGet = (key: string) => {
+    const url = srcCache.get(key)
+    if (url === undefined) return undefined
+    srcCache.delete(key)
+    srcCache.set(key, url)
+    return url
+  }
+
+  const cacheSet = (key: string, url: string) => {
+    if (!url) return
+    if (srcCache.has(key)) {
+      srcCache.delete(key)
+    } else if (srcCache.size >= AVATAR_SRC_CACHE_MAX) {
+      const oldest = srcCache.keys().next().value
+      if (oldest !== undefined) srcCache.delete(oldest)
+    }
+    srcCache.set(key, url)
+  }
+
+  const getAvatarHash = (id: string) => SparkMD5.hash(id)
+
+  const getAvatarRelativePath = (type: string, id: string) => {
+    const hash = getAvatarHash(id)
+    return `avatar/${type}/${hash.slice(0, 2)}/${hash}`
+  }
+
+  const toAssetUrl = async (relativePath: string) => {
+    const dir = await appDataDir()
+    const absolutePath = await join(dir, relativePath)
+    return convertFileSrc(absolutePath)
+  }
+
+  const readLocalAvatar = async (type: string, id: string): Promise<string> => {
+    const cacheKey = getCacheKey(type, id)
+    const memCached = cacheGet(cacheKey)
+    if (memCached) return memCached
+
+    try {
+      const avatarPath = getAvatarRelativePath(type, id)
+      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppData })
+      if (isExist) {
+        const url = await toAssetUrl(avatarPath)
+        cacheSet(cacheKey, url)
+        return url
+      }
+    } catch {
+      // 本地文件不存在
+    }
+    return ''
+  }
+
+  const loadLocalAvatar = (type: string, id: string): Promise<string> => {
+    if (!id) return Promise.resolve('')
+
+    const cacheKey = getCacheKey(type, id)
+    const cached = cacheGet(cacheKey)
+    if (cached) return Promise.resolve(cached)
+
+    const pending = inflightLocal.get(cacheKey)
+    if (pending) return pending
+
+    const task = readLocalAvatar(type, id).finally(() => {
+      inflightLocal.delete(cacheKey)
+    })
+    inflightLocal.set(cacheKey, task)
+    return task
+  }
+
+  const saveAvatarToLocal = async (type: string, id: string, imageData: Uint8Array) => {
+    const avatarPath = getAvatarRelativePath(type, id)
+    const hash = getAvatarHash(id)
+    const fullDir = `avatar/${type}/${hash.slice(0, 2)}`
+    const dirExist = await exists(fullDir, { baseDir: BaseDirectory.AppData })
+    if (!dirExist) {
+      await mkdir(fullDir, { baseDir: BaseDirectory.AppData, recursive: true })
+    }
+    await writeFile(avatarPath, imageData, { baseDir: BaseDirectory.AppData })
+    const url = await toAssetUrl(avatarPath)
+    cacheSet(getCacheKey(type, id), url)
+    return url
+  }
+
+  const downloadImage = async (url: string): Promise<Uint8Array> => {
+    const response = await fetch(url)
+    const arrayBuffer = await response.arrayBuffer()
+    return new Uint8Array(arrayBuffer)
+  }
+
+  const fetchRemoteAvatar = async (type: string, id: string): Promise<string> => {
+    if (type !== 'user' || !id) return ''
+
+    const res = await userApi.getUserAvatar(id)
+    if (res.code !== 0 || !res.data) return ''
+
+    const imageData = await downloadImage(res.data)
+    return saveAvatarToLocal(type, id, imageData)
+  }
+
+  const getCachedSrc = (type: string, id: string) => cacheGet(getCacheKey(type, id))
+
+  const resolveSrc = async (type: string, id: string): Promise<string> => {
+    if (!id) return ''
+
+    const localUrl = await loadLocalAvatar(type, id)
+    if (localUrl) return localUrl
+
+    return fetchRemoteAvatar(type, id)
+  }
+
+  const prefetch = (id: string, type = 'user') => loadLocalAvatar(type, id)
+
+  const prefetchMany = (ids: string[], type = 'user') => {
+    const unique = [...new Set(ids.filter(Boolean))]
+    void Promise.all(unique.map((id) => prefetch(id, type)))
+  }
+
+  return {
+    getCachedSrc,
+    resolveSrc,
+    prefetch,
+    prefetchMany
+  }
+})

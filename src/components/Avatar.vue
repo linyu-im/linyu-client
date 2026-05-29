@@ -1,14 +1,15 @@
 <template>
-  <n-avatar :src="src" :round="round" :size="size" fallback-src="/avatar.png" />
+  <n-avatar
+    class="user-select-none avatar"
+    :class="{ 'avatar--visible': visible }"
+    :src="src || undefined"
+    :round="round"
+    :size="size"
+    fallback-src="/avatar.png" />
 </template>
 
 <script setup lang="ts">
-  import { exists, mkdir, writeFile } from '@tauri-apps/plugin-fs'
-  import { convertFileSrc } from '@tauri-apps/api/core'
-  import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
-  import { fetch } from '@tauri-apps/plugin-http'
-  import SparkMD5 from 'spark-md5'
-  import { userApi } from '@/api'
+  import { useAvatarStore } from '@/stores/avatar'
 
   interface Props {
     id: string
@@ -23,81 +24,58 @@
     round: false
   })
 
+  const avatarStore = useAvatarStore()
+
   const src = ref('')
+  const visible = ref(false)
 
-  const getAvatarHash = (id: string) => {
-    return SparkMD5.hash(id)
-  }
+  let loadSeq = 0
 
-  const getAvatarRelativeDir = (type: string) => {
-    return `avatar/${type}`
-  }
+  const isStale = (seq: number, id: string, type: string) => seq !== loadSeq || props.id !== id || props.type !== type
 
-  const getAvatarRelativePath = (type: string, id: string) => {
-    const hash = getAvatarHash(id)
-    return `${getAvatarRelativeDir(type)}/${hash.slice(0, 2)}/${hash}`
-  }
+  const loadAvatar = async () => {
+    const id = props.id
+    const type = props.type
 
-  const toAssetUrl = async (relativePath: string) => {
-    const dir = await appDataDir()
-    const absolutePath = await join(dir, relativePath)
-    return convertFileSrc(absolutePath)
-  }
-
-  const loadLocalAvatar = async (type: string, id: string) => {
-    try {
-      const avatarPath = getAvatarRelativePath(type, id)
-      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppData })
-      if (isExist) {
-        return toAssetUrl(avatarPath)
-      }
-    } catch {
-      // file or directory does not exist
+    if (!id) {
+      src.value = ''
+      visible.value = true
+      return
     }
-    return ''
-  }
 
-  const saveAvatarToLocal = async (type: string, id: string, imageData: Uint8Array) => {
-    const avatarPath = getAvatarRelativePath(type, id)
-    const hash = getAvatarHash(id)
-    const fullDir = `${getAvatarRelativeDir(type)}/${hash.slice(0, 2)}`
-    const dirExist = await exists(fullDir, { baseDir: BaseDirectory.AppData })
-    if (!dirExist) {
-      await mkdir(fullDir, { baseDir: BaseDirectory.AppData, recursive: true })
+    const cached = avatarStore.getCachedSrc(type, id)
+    if (cached) {
+      src.value = cached
+      visible.value = true
+      return
     }
-    await writeFile(avatarPath, imageData, { baseDir: BaseDirectory.AppData })
-    return toAssetUrl(avatarPath)
+
+    const seq = ++loadSeq
+    visible.value = false
+
+    const url = await avatarStore.resolveSrc(type, id)
+    if (isStale(seq, id, type)) return
+
+    src.value = url
+    visible.value = true
   }
 
-  const downloadImage = async (url: string): Promise<Uint8Array> => {
-    const response = await fetch(url)
-    const arrayBuffer = await response.arrayBuffer()
-    return new Uint8Array(arrayBuffer)
-  }
-
-  const loadAvatar = () => {
-    if (!props.id) return
-    loadLocalAvatar(props.type, props.id).then((localUrl) => {
-      if (localUrl) {
-        src.value = localUrl
-        return
-      }
-
-      if (props.type === 'user') {
-        userApi.getUserAvatar(props.id).then((res) => {
-          if (res.code === 0 && res.data) {
-            downloadImage(res.data).then((imageData) => {
-              saveAvatarToLocal(props.type, props.id, imageData).then((savedUrl) => {
-                src.value = savedUrl
-              })
-            })
-          }
-        })
-      }
-    })
-  }
-
-  onMounted(() => {
-    loadAvatar()
-  })
+  watch(
+    () => [props.id, props.type] as const,
+    () => {
+      void loadAvatar()
+    },
+    { immediate: true }
+  )
 </script>
+
+<style scoped lang="scss">
+  .avatar {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+
+    &--visible {
+      opacity: 1;
+    }
+  }
+</style>

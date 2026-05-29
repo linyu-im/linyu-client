@@ -117,6 +117,56 @@
       "sendFailed": "发送失败"
     }
   },
+  "contacts": {
+    "searchPlaceholder": "搜索",
+    "loading": "加载中...",
+    "emptyFriends": "暂无好友",
+    "menu": {
+      "newFriend": "新的好友",
+      "groupNotice": "群聊通知",
+      "myEnterprise": "我的企业",
+      "myGroup": "我的群聊",
+      "myFriends": "我的好友"
+    },
+    "views": {
+      "newFriend": {
+        "title": "新的好友",
+        "source": "通讯录好友推荐"
+      },
+      "groupNotice": {
+        "title": "群聊通知",
+        "inviteTag": "申请加入"
+      }
+    },
+    "actions": {
+      "agree": "同意",
+      "reject": "拒绝",
+      "completed": "已同意",
+      "share": "分享",
+      "sendMessage": "发消息",
+      "audioVideo": "音视频通话",
+      "acceptAndAddTag": "同意并添加标签",
+      "acceptAndSetRemark": "同意并设置备注"
+    },
+    "fields": {
+      "linyuId": "林语号：",
+      "groupId": "群号：",
+      "remark": "备注",
+      "groupAlias": "我的本群昵称",
+      "groupIntro": "群简介",
+      "tag": "好友标签",
+      "signature": "个性签名",
+      "friendMoments": "ta的过往"
+    },
+    "placeholders": {
+      "setRemark": "设置好友备注名称",
+      "setTag": "添加好友标签"
+    },
+    "gender": {
+      "female": "女",
+      "male": "男"
+    }
+  },
   "moment": {
     "empty": "暂无动态",
     "refreshed": "已刷新",

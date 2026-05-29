@@ -1,5 +1,5 @@
-import { UserInfoParam, UserInfoResult } from '@/types/api/user'
-import { ApiResponse, post } from '@/utils/http'
+import type { UserInfoParam, UserInfoResult } from '@/types/api/user'
+import { type ApiResponse, post } from '@/utils/http'
 
 export function currentUserInfo(): Promise<ApiResponse<UserInfoResult>> {
   return post<UserInfoResult, void>('/api/basic/v1/user/current/info')

@@ -203,10 +203,12 @@
     }
 
     .home__layout {
-      flex: 1;
+      flex: 1 1 0;
+      min-width: 0;
       display: flex;
       height: calc(100% - 38px);
       background-color: var(--toolbar-bg-color);
+      overflow: hidden;
 
       .home__sider {
         width: 50px;
@@ -216,6 +218,7 @@
         justify-content: space-between;
         padding: 10px 0;
         align-items: center;
+        flex-shrink: 0;
 
         .home__sider-btn {
           height: 34px;
@@ -229,7 +232,9 @@
       }
 
       .home__content {
-        flex: 1;
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
         background-color: var(--bg-secondary-color);
         border-radius: 5px 0 0 0;
       }

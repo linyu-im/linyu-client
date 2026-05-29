@@ -43,7 +43,7 @@
     if (props.fixed === 'second') {
       return { [sizeProp.value]: panelSize.value + 'px', flexShrink: 0 }
     }
-    return { flex: '1' }
+    return { flex: '1 1 0', minWidth: 0 }
   })
 
   const onResizeStart = (e: MouseEvent) => {
@@ -79,6 +79,8 @@
     display: flex;
     height: 100%;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
 
     &--vertical {
       flex-direction: column;

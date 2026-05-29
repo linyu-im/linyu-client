@@ -117,6 +117,56 @@
       "sendFailed": "Failed to send"
     }
   },
+  "contacts": {
+    "searchPlaceholder": "Search",
+    "loading": "Loading...",
+    "emptyFriends": "No friends yet",
+    "menu": {
+      "newFriend": "New Friends",
+      "groupNotice": "Group Notices",
+      "myEnterprise": "My Enterprise",
+      "myGroup": "My Groups",
+      "myFriends": "My Friends"
+    },
+    "views": {
+      "newFriend": {
+        "title": "New Friends",
+        "source": "Recommended from contacts"
+      },
+      "groupNotice": {
+        "title": "Group Notices",
+        "inviteTag": "Join Request"
+      }
+    },
+    "actions": {
+      "agree": "Agree",
+      "reject": "Reject",
+      "completed": "Accepted",
+      "share": "Share",
+      "sendMessage": "Send Message",
+      "audioVideo": "Audio/Video Call",
+      "acceptAndAddTag": "Accept and add tag",
+      "acceptAndSetRemark": "Accept and set remark"
+    },
+    "fields": {
+      "linyuId": "Linyu ID:",
+      "groupId": "Group ID:",
+      "remark": "Remark",
+      "groupAlias": "My Group Alias",
+      "groupIntro": "Group Intro",
+      "tag": "Contact Tag",
+      "signature": "Signature",
+      "friendMoments": "Their Moments"
+    },
+    "placeholders": {
+      "setRemark": "Set friend's remark",
+      "setTag": "Add contact tags"
+    },
+    "gender": {
+      "female": "Female",
+      "male": "Male"
+    }
+  },
   "moment": {
     "empty": "No moments yet",
     "refreshed": "Refreshed",

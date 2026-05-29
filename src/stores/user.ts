@@ -1,4 +1,4 @@
-import { UserInfoResult } from '@/types/api/user'
+import type { UserInfoResult } from '@/types/api/user'
 import { disconnectWebSocket } from '@/utils/websocket'
 import { defineStore } from 'pinia'
 
@@ -23,19 +23,25 @@ export const useUserStore = defineStore('user', {
       id: '',
       username: '',
       account: '',
-      phone: '',
-      email: '',
-      gitee: '',
+      phone: null,
+      email: null,
+      gitee: null,
       gender: '',
       avatar: '',
+      userLevel: 0,
+      signature: '',
+      location: '',
+      momentBgUrl: '',
       birthday: '',
       emotionId: '',
       status: '',
+      createdAt: '',
+      updatedAt: '',
+      deletedAt: null,
       emotionName: '',
       emotionUrl: '',
-      signature: '',
-      momentBgUrl: '',
-      remark: ''
+      remark: '',
+      moment: null
     }
   }),
   actions: {

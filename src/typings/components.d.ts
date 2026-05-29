@@ -14,6 +14,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     Avatar: typeof import('./../components/Avatar.vue')['default']
     ChatSession: typeof import('./../components/ChatSession.vue')['default']
+    ContactsFriendProfile: typeof import('./../components/Contacts/ContactsFriendProfile.vue')['default']
+    ContactsGroupNotice: typeof import('./../components/Contacts/ContactsGroupNotice.vue')['default']
+    ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
+    ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
     Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
     File: typeof import('./../components/Message/MessageList/Item/File.vue')['default']
     Images: typeof import('./../components/Message/MessageList/Item/Images.vue')['default']
@@ -58,6 +62,10 @@ declare module 'vue' {
 declare global {
   const Avatar: typeof import('./../components/Avatar.vue')['default']
   const ChatSession: typeof import('./../components/ChatSession.vue')['default']
+  const ContactsFriendProfile: typeof import('./../components/Contacts/ContactsFriendProfile.vue')['default']
+  const ContactsGroupNotice: typeof import('./../components/Contacts/ContactsGroupNotice.vue')['default']
+  const ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
+  const ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
   const Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
   const File: typeof import('./../components/Message/MessageList/Item/File.vue')['default']
   const Images: typeof import('./../components/Message/MessageList/Item/Images.vue')['default']
