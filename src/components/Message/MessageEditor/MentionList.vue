@@ -91,24 +91,6 @@
     color: var(--text-color);
     max-height: 240px;
     overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--scrollbar-color) 60%, transparent) transparent;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
-    }
-    &::-webkit-scrollbar-track,
-    &::-webkit-scrollbar-corner {
-      background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: color-mix(in srgb, var(--scrollbar-color) 60%, transparent);
-      border-radius: 2px;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background-color: var(--scrollbar-color);
-    }
 
     &--empty {
       min-width: 120px;

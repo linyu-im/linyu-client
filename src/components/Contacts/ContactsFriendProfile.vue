@@ -1,139 +1,143 @@
 <template>
   <n-spin :show="loading" class="contacts-profile-spin">
-    <div class="contacts-profile">
-      <div class="contacts-profile__head">
-        <Avatar class="size-72px rounded-10px bg-#FFF shrink-0" :id="userId" />
-        <div class="min-w-0 flex-1">
-          <div class="text-18px font-700 truncate">{{ userInfo?.username ?? '' }}</div>
-          <div class="contacts-profile__id truncate">
-            <span class="select-none">{{ t('contacts.fields.linyuId') }}</span>
-            {{ accountText }}
+    <n-scrollbar class="contacts-profile__scroll">
+      <div class="contacts-profile">
+        <div class="contacts-profile__content">
+          <div class="contacts-profile__head">
+            <Avatar class="size-72px rounded-10px bg-#FFF shrink-0" :id="userId" />
+            <div class="min-w-0 flex-1">
+              <div class="text-18px font-700 truncate">{{ userInfo?.username ?? '' }}</div>
+              <div class="contacts-profile__id truncate">
+                <span class="select-none">{{ t('contacts.fields.linyuId') }}</span>
+                {{ accountText }}
+              </div>
+              <div v-if="showMetaRow" class="contacts-profile__meta-row">
+                <template v-if="emotionName">
+                  <span class="contacts-profile__meta-item">
+                    <span>[</span>
+                    <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
+                    <span>{{ emotionName }}</span>
+                    <span>]</span>
+                  </span>
+                </template>
+                <n-divider v-if="emotionName && showGender" vertical class="contacts-profile__meta-divider" />
+                <span v-if="showGender" class="contacts-profile__meta-item contacts-profile__gender">
+                  <svg v-if="genderIconHref" class="contacts-profile__gender-icon size-14px" :class="genderClass">
+                    <use :href="genderIconHref" />
+                  </svg>
+                  <span>{{ genderLabel }}</span>
+                </span>
+                <n-divider
+                  v-if="(emotionName || showGender) && locationText"
+                  vertical
+                  class="contacts-profile__meta-divider" />
+                <span v-if="locationText" class="contacts-profile__meta-item">{{ locationText }}</span>
+              </div>
+            </div>
           </div>
-          <div v-if="showMetaRow" class="contacts-profile__meta-row">
-            <template v-if="emotionName">
-              <span class="contacts-profile__meta-item">
-                <span>[</span>
-                <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
-                <span>{{ emotionName }}</span>
-                <span>]</span>
-              </span>
-            </template>
-            <n-divider v-if="emotionName && showGender" vertical class="contacts-profile__meta-divider" />
-            <span v-if="showGender" class="contacts-profile__meta-item contacts-profile__gender">
-              <svg v-if="genderIconHref" class="contacts-profile__gender-icon size-14px" :class="genderClass">
-                <use :href="genderIconHref" />
-              </svg>
-              <span>{{ genderLabel }}</span>
-            </span>
-            <n-divider
-              v-if="(emotionName || showGender) && locationText"
-              vertical
-              class="contacts-profile__meta-divider" />
-            <span v-if="locationText" class="contacts-profile__meta-item">{{ locationText }}</span>
+
+          <n-divider class="contacts-profile__divider" />
+
+          <div class="contacts-profile__meta">
+            <div class="contacts-profile__row">
+              <div class="contacts-profile__row-label">
+                <svg class="size-14px text-[var(--text-muted-color)]">
+                  <use href="#edit"></use>
+                </svg>
+                <span>{{ t('contacts.fields.remark') }}</span>
+              </div>
+              <div class="contacts-profile__value-slot">
+                <n-input
+                  v-if="remarkEditing"
+                  ref="remarkInputRef"
+                  v-model:value="remarkDraft"
+                  size="small"
+                  :placeholder="t('contacts.placeholders.setRemark')"
+                  :disabled="remarkSaving"
+                  class="contacts-profile__remark-input"
+                  @blur="commitRemark"
+                  @keyup.enter="commitRemark" />
+                <span
+                  v-else
+                  class="contacts-profile__row-value contacts-profile__row-value--clickable"
+                  :class="{ 'contacts-profile__placeholder': remarkIsPlaceholder }"
+                  @click="startRemarkEdit">
+                  {{ remarkIsPlaceholder ? t('contacts.placeholders.setRemark') : remarkText }}
+                </span>
+              </div>
+            </div>
+
+            <div class="contacts-profile__row">
+              <div class="contacts-profile__row-label">
+                <svg class="size-14px text-[var(--text-muted-color)]">
+                  <use href="#user"></use>
+                </svg>
+                <span>{{ t('contacts.fields.tag') }}</span>
+              </div>
+              <div class="contacts-profile__value-slot">
+                <n-input
+                  v-if="tagEditing"
+                  ref="tagInputRef"
+                  v-model:value="tagDraft"
+                  size="small"
+                  :placeholder="t('contacts.placeholders.setTag')"
+                  :disabled="tagSaving"
+                  class="contacts-profile__remark-input"
+                  @blur="commitTag"
+                  @keyup.enter="commitTag" />
+                <span
+                  v-else
+                  class="contacts-profile__row-value contacts-profile__row-value--clickable"
+                  :class="{ 'contacts-profile__placeholder': tagIsPlaceholder }"
+                  @click="startTagEdit">
+                  {{ tagIsPlaceholder ? t('contacts.placeholders.setTag') : tagText }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="signatureText" class="contacts-profile__row contacts-profile__row--signature">
+              <div class="contacts-profile__row-label">
+                <svg class="size-14px text-[var(--text-muted-color)]">
+                  <use href="#signature"></use>
+                </svg>
+                <span>{{ t('contacts.fields.signature') }}</span>
+              </div>
+              <div class="contacts-profile__value-slot">
+                <n-tooltip trigger="hover" placement="top" :content-style="signatureTooltipStyle">
+                  <template #trigger>
+                    <span class="contacts-profile__row-value">{{ signatureText }}</span>
+                  </template>
+                  {{ signatureText }}
+                </n-tooltip>
+              </div>
+            </div>
+
+            <div v-if="momentThumbs.length > 0" class="contacts-profile__moments">
+              <div class="contacts-profile__row-label">
+                <svg class="size-14px text-[var(--text-muted-color)]">
+                  <use href="#moment"></use>
+                </svg>
+                <span>{{ t('contacts.fields.friendMoments') }}</span>
+              </div>
+              <div class="contacts-profile__thumbs">
+                <img
+                  v-for="(url, index) in momentThumbs"
+                  :key="`${url}-${index}`"
+                  class="contacts-profile__thumb"
+                  :src="url"
+                  alt="" />
+              </div>
+            </div>
           </div>
+        </div>
+
+        <div class="contacts-profile__actions">
+          <n-button class="w-100px" round>{{ t('contacts.actions.share') }}</n-button>
+          <n-button class="w-100px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
+          <n-button class="w-100px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
         </div>
       </div>
-
-      <n-divider class="contacts-profile__divider" />
-
-      <div class="contacts-profile__meta">
-        <div class="contacts-profile__row">
-          <div class="contacts-profile__row-label">
-            <svg class="size-14px text-[var(--text-muted-color)]">
-              <use href="#edit"></use>
-            </svg>
-            <span>{{ t('contacts.fields.remark') }}</span>
-          </div>
-          <div class="contacts-profile__value-slot">
-            <n-input
-              v-if="remarkEditing"
-              ref="remarkInputRef"
-              v-model:value="remarkDraft"
-              size="small"
-              :placeholder="t('contacts.placeholders.setRemark')"
-              :disabled="remarkSaving"
-              class="contacts-profile__remark-input"
-              @blur="commitRemark"
-              @keyup.enter="commitRemark" />
-            <span
-              v-else
-              class="contacts-profile__row-value contacts-profile__row-value--clickable"
-              :class="{ 'contacts-profile__placeholder': remarkIsPlaceholder }"
-              @click="startRemarkEdit">
-              {{ remarkIsPlaceholder ? t('contacts.placeholders.setRemark') : remarkText }}
-            </span>
-          </div>
-        </div>
-
-        <div class="contacts-profile__row">
-          <div class="contacts-profile__row-label">
-            <svg class="size-14px text-[var(--text-muted-color)]">
-              <use href="#user"></use>
-            </svg>
-            <span>{{ t('contacts.fields.tag') }}</span>
-          </div>
-          <div class="contacts-profile__value-slot">
-            <n-input
-              v-if="tagEditing"
-              ref="tagInputRef"
-              v-model:value="tagDraft"
-              size="small"
-              :placeholder="t('contacts.placeholders.setTag')"
-              :disabled="tagSaving"
-              class="contacts-profile__remark-input"
-              @blur="commitTag"
-              @keyup.enter="commitTag" />
-            <span
-              v-else
-              class="contacts-profile__row-value contacts-profile__row-value--clickable"
-              :class="{ 'contacts-profile__placeholder': tagIsPlaceholder }"
-              @click="startTagEdit">
-              {{ tagIsPlaceholder ? t('contacts.placeholders.setTag') : tagText }}
-            </span>
-          </div>
-        </div>
-
-        <div v-if="signatureText" class="contacts-profile__row contacts-profile__row--signature">
-          <div class="contacts-profile__row-label">
-            <svg class="size-14px text-[var(--text-muted-color)]">
-              <use href="#signature"></use>
-            </svg>
-            <span>{{ t('contacts.fields.signature') }}</span>
-          </div>
-          <div class="contacts-profile__value-slot">
-            <n-tooltip trigger="hover" placement="top" :content-style="signatureTooltipStyle">
-              <template #trigger>
-                <span class="contacts-profile__row-value">{{ signatureText }}</span>
-              </template>
-              {{ signatureText }}
-            </n-tooltip>
-          </div>
-        </div>
-
-        <div v-if="momentThumbs.length > 0" class="contacts-profile__moments">
-          <div class="contacts-profile__row-label">
-            <svg class="size-14px text-[var(--text-muted-color)]">
-              <use href="#moment"></use>
-            </svg>
-            <span>{{ t('contacts.fields.friendMoments') }}</span>
-          </div>
-          <div class="contacts-profile__thumbs">
-            <img
-              v-for="(url, index) in momentThumbs"
-              :key="`${url}-${index}`"
-              class="contacts-profile__thumb"
-              :src="url"
-              alt="" />
-          </div>
-        </div>
-      </div>
-
-      <div class="contacts-profile__actions">
-        <n-button class="w-100px" round>{{ t('contacts.actions.share') }}</n-button>
-        <n-button class="w-100px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
-        <n-button class="w-100px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
-      </div>
-    </div>
+    </n-scrollbar>
   </n-spin>
 </template>
 
@@ -324,15 +328,29 @@
     }
   }
 
+  .contacts-profile__scroll {
+    height: 100%;
+
+    :deep(.n-scrollbar-container) {
+      height: 100%;
+    }
+
+    :deep(.n-scrollbar-content) {
+      box-sizing: border-box;
+    }
+  }
+
   .contacts-profile {
     width: 100%;
     min-width: 0;
     max-width: 560px;
-    height: 100%;
-    margin: 60px auto 0;
-    padding: 0 40px;
+    margin: 0 auto;
     box-sizing: border-box;
-    overflow: hidden;
+
+    &__content {
+      padding: 60px 40px 16px;
+      box-sizing: border-box;
+    }
 
     &__head {
       display: flex;
@@ -517,9 +535,9 @@
       display: flex;
       gap: 12px;
       justify-content: center;
-      margin-top: 26px;
-      flex-wrap: wrap;
       margin-top: 40px;
+      padding: 0 40px 24px;
+      flex-wrap: wrap;
     }
   }
 </style>

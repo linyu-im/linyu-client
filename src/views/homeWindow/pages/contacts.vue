@@ -148,7 +148,9 @@
         <div class="contacts__detail">
           <ContactsNewFriend v-if="activeView === 'newFriend'" />
           <ContactsGroupNotice v-else-if="activeView === 'groupNotice'" />
-          <ContactsGroupProfile v-else-if="activeView === 'groupProfile' && activeGroup" :contact="activeGroup" />
+          <ContactsGroupProfile
+            v-else-if="activeView === 'groupProfile' && activeGroup"
+            :group-id="activeGroup.peerId" />
           <ContactsFriendProfile
             v-else-if="activeFriendUserId"
             :user-id="activeFriendUserId"

@@ -542,15 +542,6 @@
       max-width: 100%;
       overflow-x: auto;
       padding-bottom: 2px;
-
-      &::-webkit-scrollbar {
-        height: 4px;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: var(--scrollbar-color);
-        border-radius: 2px;
-      }
     }
 
     &__selected-tag {

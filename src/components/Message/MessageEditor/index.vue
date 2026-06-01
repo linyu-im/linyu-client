@@ -451,19 +451,9 @@
       white-space: normal;
       overflow-wrap: break-word;
       word-break: break-word;
-      scrollbar-width: thin;
-      scrollbar-color: var(--scrollbar-color) transparent;
       caret-color: var(--primary-color);
       line-height: 28px;
       font-size: 14px;
-
-      &::-webkit-scrollbar {
-        width: 6px;
-      }
-      &::-webkit-scrollbar-thumb {
-        background-color: var(--scrollbar-color);
-        border-radius: 3px;
-      }
 
       p {
         margin: 0;

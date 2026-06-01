@@ -153,6 +153,7 @@
       "linyuId": "林语号：",
       "groupId": "群号：",
       "remark": "备注",
+      "groupRemark": "群备注",
       "groupAlias": "我的本群昵称",
       "groupIntro": "群简介",
       "tag": "好友标签",
@@ -161,7 +162,12 @@
     },
     "placeholders": {
       "setRemark": "设置好友备注名称",
-      "setTag": "添加好友标签"
+      "setGroupRemark": "设置群备注名称",
+      "setTag": "添加好友标签",
+      "noData": "暂无"
+    },
+    "sections": {
+      "activeTop": "活跃TOP榜"
     },
     "gender": {
       "female": "女",

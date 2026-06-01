@@ -153,6 +153,7 @@
       "linyuId": "Linyu ID:",
       "groupId": "Group ID:",
       "remark": "Remark",
+      "groupRemark": "Group Remark",
       "groupAlias": "My Group Alias",
       "groupIntro": "Group Intro",
       "tag": "Contact Tag",
@@ -161,7 +162,12 @@
     },
     "placeholders": {
       "setRemark": "Set friend's remark",
-      "setTag": "Add contact tags"
+      "setGroupRemark": "Set group remark",
+      "setTag": "Add contact tags",
+      "noData": "No data"
+    },
+    "sections": {
+      "activeTop": "Active TOP"
     },
     "gender": {
       "female": "Female",
