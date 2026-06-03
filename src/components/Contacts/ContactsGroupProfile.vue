@@ -11,7 +11,7 @@
                 <span class="contacts-profile__count">({{ groupInfo?.memberNum ?? 0 }})</span>
               </div>
               <div class="contacts-profile__id truncate">
-                {{ t('contacts.fields.groupId') }} {{ groupInfo?.groupNumber || '-' }}
+                {{ t('contacts.group.groupId') }} {{ groupInfo?.groupNumber || '-' }}
               </div>
             </div>
           </div>
@@ -24,11 +24,25 @@
                 <svg class="size-14px text-[var(--text-muted-color)]">
                   <use href="#edit"></use>
                 </svg>
-                <span>{{ t('contacts.fields.groupRemark') }}</span>
+                <span>{{ t('contacts.group.remark') }}</span>
               </div>
               <div class="contacts-profile__value-slot">
-                <span class="contacts-profile__row-value" :class="{ 'contacts-profile__placeholder': !groupRemark }">
-                  {{ groupRemark || t('contacts.placeholders.setGroupRemark') }}
+                <n-input
+                  v-if="remarkEditing"
+                  ref="remarkInputRef"
+                  v-model:value="remarkDraft"
+                  size="small"
+                  :placeholder="t('contacts.group.placeholders.setRemark')"
+                  :disabled="remarkSaving"
+                  class="contacts-profile__remark-input"
+                  @blur="commitRemark"
+                  @keyup.enter="commitRemark" />
+                <span
+                  v-else
+                  class="contacts-profile__row-value contacts-profile__row-value--clickable"
+                  :class="{ 'contacts-profile__placeholder': remarkIsPlaceholder }"
+                  @click="startRemarkEdit">
+                  {{ remarkIsPlaceholder ? t('contacts.group.placeholders.setRemark') : groupRemarkText }}
                 </span>
               </div>
             </div>
@@ -37,34 +51,63 @@
                 <svg class="size-14px text-[var(--text-muted-color)]">
                   <use href="#user"></use>
                 </svg>
-                <span>{{ t('contacts.fields.groupAlias') }}</span>
+                <span>{{ t('contacts.group.alias') }}</span>
               </div>
               <div class="contacts-profile__value-slot">
-                <span class="contacts-profile__row-value" :class="{ 'contacts-profile__placeholder': !groupAlias }">
-                  {{ groupAlias || t('contacts.placeholders.noData') }}
+                <n-input
+                  v-if="aliasEditing"
+                  ref="aliasInputRef"
+                  v-model:value="aliasDraft"
+                  size="small"
+                  :placeholder="t('contacts.group.placeholders.setAlias')"
+                  :disabled="aliasSaving"
+                  class="contacts-profile__remark-input"
+                  @blur="commitAlias"
+                  @keyup.enter="commitAlias" />
+                <span
+                  v-else
+                  class="contacts-profile__row-value contacts-profile__row-value--clickable"
+                  :class="{ 'contacts-profile__placeholder': aliasIsPlaceholder }"
+                  @click="startAliasEdit">
+                  {{ aliasIsPlaceholder ? t('contacts.group.placeholders.setAlias') : groupAliasText }}
                 </span>
               </div>
             </div>
             <div class="contacts-profile__row contacts-profile__row--intro">
               <div class="contacts-profile__row-label">
                 <svg class="size-14px text-[var(--text-muted-color)]">
-                  <use href="#signature"></use>
+                  <use href="#document"></use>
                 </svg>
-                <span>{{ t('contacts.fields.groupIntro') }}</span>
+                <span>{{ t('contacts.group.intro') }}</span>
               </div>
               <div class="contacts-profile__value-slot contacts-profile__value-slot--intro">
                 <span
-                  class="contacts-profile__row-value contacts-profile__row-value--intro"
-                  :class="{ 'contacts-profile__placeholder': !groupInfo?.describe }">
-                  {{ groupInfo?.describe || t('contacts.placeholders.noData') }}
+                  v-if="!groupIntroText"
+                  class="contacts-profile__row-value contacts-profile__row-value--intro contacts-profile__placeholder">
+                  {{ t('contacts.placeholders.noData') }}
                 </span>
+                <n-tooltip
+                  v-else
+                  trigger="hover"
+                  placement="top"
+                  :disabled="!isIntroOverflow"
+                  :content-style="introTooltipStyle">
+                  <template #trigger>
+                    <span
+                      :ref="bindIntroOverflowRef"
+                      class="contacts-profile__row-value contacts-profile__row-value--intro">
+                      {{ groupIntroText }}
+                    </span>
+                  </template>
+                  {{ groupIntroText }}
+                </n-tooltip>
               </div>
             </div>
           </div>
 
           <div class="contacts-profile__top">
             <div class="contacts-profile__row-label contacts-profile__row-label--top">
-              <span>{{ t('contacts.sections.activeTop') }}</span>
+              <span>{{ t('contacts.group.sections.activeTop') }}</span>
             </div>
             <div v-if="topList.length > 0" class="contacts-profile__top-grid">
               <div
@@ -113,17 +156,45 @@
 
 <script setup lang="ts">
   import { groupApi } from '@/api'
+  import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { useUserStore } from '@/stores/user'
   import type { GroupInfoResult } from '@/types/api/group'
+  import type { GroupMember } from '@/types/api/groupMember'
+  import type { InputInst } from 'naive-ui'
+  import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
+
+  const introTooltipStyle: CSSProperties = {
+    maxWidth: '360px',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    lineHeight: '1.2'
+  }
 
   const props = defineProps<{
     groupId: string
+    remark?: string
+  }>()
+
+  const emit = defineEmits<{
+    remarkUpdated: [payload: { peerId: string; remark: string }]
   }>()
 
   const { t } = useI18n()
+  const userStore = useUserStore()
 
   const loading = ref(false)
   const groupProfile = ref<GroupInfoResult | null>(null)
+  const groupRemarkText = ref('')
+  const remarkEditing = ref(false)
+  const remarkDraft = ref('')
+  const remarkSaving = ref(false)
+  const remarkInputRef = ref<InputInst | null>(null)
+  const groupAliasText = ref('')
+  const aliasEditing = ref(false)
+  const aliasDraft = ref('')
+  const aliasSaving = ref(false)
+  const aliasInputRef = ref<InputInst | null>(null)
 
   const fetchGroupInfo = async () => {
     if (!props.groupId) return
@@ -141,20 +212,105 @@
     }
   }
 
+  const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
+
+  const getCurrentMember = (): GroupMember | undefined => {
+    const profile = groupProfile.value
+    if (!profile) return undefined
+    return profile.tops?.find((item) => item.userId === currentUserId.value)
+  }
+
+  const syncRemarkFromProfile = () => {
+    const member = getCurrentMember()
+    groupRemarkText.value = member?.groupRemark?.trim() || props.remark?.trim() || ''
+  }
+
+  const syncAliasFromProfile = () => {
+    groupAliasText.value = getCurrentMember()?.groupNickName?.trim() || ''
+  }
+
   watch(
     () => props.groupId,
     () => {
+      remarkEditing.value = false
+      aliasEditing.value = false
       void fetchGroupInfo()
     },
     { immediate: true }
   )
 
+  watch([groupProfile, () => props.remark], syncRemarkFromProfile, { immediate: true })
+  watch(groupProfile, syncAliasFromProfile, { immediate: true })
+
+  const remarkIsPlaceholder = computed(() => !groupRemarkText.value)
+
+  const startRemarkEdit = () => {
+    if (remarkEditing.value || remarkSaving.value) return
+    aliasEditing.value = false
+    remarkDraft.value = groupRemarkText.value
+    remarkEditing.value = true
+    nextTick(() => remarkInputRef.value?.focus())
+  }
+
+  const commitRemark = async () => {
+    if (!remarkEditing.value || remarkSaving.value) return
+
+    const next = remarkDraft.value.trim()
+    remarkEditing.value = false
+
+    if (next === groupRemarkText.value) return
+
+    remarkSaving.value = true
+    try {
+      groupRemarkText.value = next
+      const member = getCurrentMember()
+      if (member) {
+        member.groupRemark = next
+      }
+      emit('remarkUpdated', { peerId: props.groupId, remark: next })
+    } finally {
+      remarkSaving.value = false
+    }
+  }
+
+  const aliasIsPlaceholder = computed(() => !groupAliasText.value)
+
+  const startAliasEdit = () => {
+    if (aliasEditing.value || aliasSaving.value) return
+    remarkEditing.value = false
+    aliasDraft.value = groupAliasText.value
+    aliasEditing.value = true
+    nextTick(() => aliasInputRef.value?.focus())
+  }
+
+  const commitAlias = async () => {
+    if (!aliasEditing.value || aliasSaving.value) return
+
+    const next = aliasDraft.value.trim()
+    aliasEditing.value = false
+
+    if (next === groupAliasText.value) return
+
+    aliasSaving.value = true
+    try {
+      groupAliasText.value = next
+      const member = getCurrentMember()
+      if (member) {
+        member.groupNickName = next
+      }
+    } finally {
+      aliasSaving.value = false
+    }
+  }
+
   const groupInfo = computed(() => groupProfile.value?.info)
+  const groupIntroText = computed(() => groupInfo.value?.describe?.trim() ?? '')
   const topList = computed(() => (groupProfile.value?.tops || []).slice(0, 9))
-  const groupRemark = computed(() => topList.value.find((item) => item.groupRemark?.trim())?.groupRemark?.trim() || '')
-  const groupAlias = computed(
-    () => topList.value.find((item) => item.groupNickName?.trim())?.groupNickName?.trim() || ''
-  )
+
+  const { bindTargetRef: bindIntroOverflowRef, isOverflow: isIntroOverflow } = useOverflowTooltip([
+    groupIntroText,
+    loading
+  ])
 </script>
 
 <style scoped lang="scss">
@@ -324,15 +480,44 @@
       white-space: nowrap;
       box-sizing: border-box;
 
+      &--clickable {
+        cursor: pointer;
+      }
+
       &--intro {
         display: -webkit-box;
         height: auto;
         line-height: 1.5;
+        color: var(--text-color);
         -webkit-line-clamp: 3;
         line-clamp: 3;
         -webkit-box-orient: vertical;
         white-space: normal;
         text-overflow: unset;
+      }
+    }
+
+    &__remark-input {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 28px;
+
+      :deep(.n-input) {
+        height: 28px;
+      }
+
+      :deep(.n-input-wrapper) {
+        height: 28px;
+        min-height: 28px;
+        padding-top: 0;
+        padding-bottom: 0;
+        box-sizing: border-box;
+        justify-content: flex-start;
+      }
+
+      :deep(.n-input__input) {
+        text-align: left;
       }
     }
 

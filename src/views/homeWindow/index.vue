@@ -62,9 +62,13 @@
           </n-dropdown>
         </div>
       </ToolBar>
-      <!-- 内容 -->
+      <!-- 内容：keep-alive 缓存各子页面状态（滚动位置、表单等） -->
       <div class="home__content">
-        <router-view />
+        <router-view v-slot="{ Component, route }">
+          <keep-alive :max="menuOptions.length">
+            <component :is="Component" v-if="Component" :key="route.name" />
+          </keep-alive>
+        </router-view>
       </div>
     </div>
   </div>
@@ -81,7 +85,7 @@
     restoreOrMaximizeCurrentWindow
   } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
-  import { useRouter } from 'vue-router'
+  import { useRoute, useRouter } from 'vue-router'
 
   const userStore = useUserStore()
 
@@ -89,6 +93,7 @@
   const seletedMenuOption = ref('message')
   const { t } = useI18n()
   const router = useRouter()
+  const route = useRoute()
 
   const menuOptions = computed(() => [
     {
@@ -127,7 +132,7 @@
       path: '/home/drive'
     },
     {
-      id: 'application ',
+      id: 'application',
       label: t('home.options.application'),
       icon: '#application',
       activeIcon: '#application-active',
@@ -158,10 +163,22 @@
     }
   ])
 
+  const syncMenuFromRoute = () => {
+    const match = menuOptions.value.find((item) => item.path === route.path)
+    if (match) {
+      seletedMenuOption.value = match.id
+    }
+  }
+
   const onClickMenu = (item: { id: string; path: string }) => {
+    if (seletedMenuOption.value === item.id && route.path === item.path) {
+      return
+    }
     seletedMenuOption.value = item.id
     router.push(item.path)
   }
+
+  watch(() => route.path, syncMenuFromRoute, { immediate: true })
 
   const onCurrentUserInfo = () => {
     userApi.currentUserInfo().then((res) => {

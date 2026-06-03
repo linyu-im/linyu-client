@@ -1,4 +1,4 @@
-import type { GroupMember } from './group_member'
+import type { GroupMember } from './groupMember'
 
 export interface GroupInfoRequest {
   groupId: string

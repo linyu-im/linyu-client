@@ -4,7 +4,7 @@ import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
 import { fetch } from '@tauri-apps/plugin-http'
 import SparkMD5 from 'spark-md5'
 import { defineStore } from 'pinia'
-import { groupApi, userApi } from '@/api'
+import { enterpriseApi, groupApi, userApi } from '@/api'
 import type { AvatarType } from '@/types/common'
 
 export type { AvatarType } from '@/types/common'
@@ -109,7 +109,12 @@ export const useAvatarStore = defineStore('avatar', () => {
   const fetchRemoteAvatar = async (type: AvatarType, id: string): Promise<string> => {
     if (!id) return ''
 
-    const res = type === 'group' ? await groupApi.getGroupAvatar(id) : await userApi.getUserAvatar(id)
+    const res =
+      type === 'group'
+        ? await groupApi.getGroupAvatar(id)
+        : type === 'enterprise'
+          ? await enterpriseApi.getEnterpriseAvatar(id)
+          : await userApi.getUserAvatar(id)
     if (res.code !== 0 || !res.data) return ''
 
     const imageData = await downloadImage(res.data)

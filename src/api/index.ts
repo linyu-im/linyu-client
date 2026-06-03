@@ -8,5 +8,18 @@ import * as momentApi from './moment'
 import * as storageApi from './storage'
 import * as contactsApi from './contacts'
 import * as groupApi from './group'
+import * as enterpriseApi from './enterprise'
 
-export { userApi, oauth2Api, emotionApi, authApi, chatApi, messageApi, momentApi, storageApi, contactsApi, groupApi }
+export {
+  userApi,
+  oauth2Api,
+  emotionApi,
+  authApi,
+  chatApi,
+  messageApi,
+  momentApi,
+  storageApi,
+  contactsApi,
+  groupApi,
+  enterpriseApi
+}

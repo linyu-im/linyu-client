@@ -151,23 +151,38 @@
     },
     "fields": {
       "linyuId": "Linyu ID:",
-      "groupId": "Group ID:",
       "remark": "Remark",
-      "groupRemark": "Group Remark",
-      "groupAlias": "My Group Alias",
-      "groupIntro": "Group Intro",
       "tag": "Contact Tag",
       "signature": "Signature",
       "friendMoments": "Their Moments"
     },
+    "group": {
+      "groupId": "Group ID:",
+      "remark": "Group Remark",
+      "alias": "My Group Alias",
+      "intro": "Group Intro",
+      "placeholders": {
+        "setRemark": "Set group remark",
+        "setAlias": "Set my group nickname"
+      },
+      "sections": {
+        "activeTop": "Active TOP"
+      }
+    },
+    "enterprise": {
+      "actions": {
+        "leave": "Leave Enterprise",
+        "inviteMember": "Invite Members",
+        "removeMember": "Remove"
+      },
+      "labels": {
+        "joinedDays": "Joined {days} days"
+      }
+    },
     "placeholders": {
       "setRemark": "Set friend's remark",
-      "setGroupRemark": "Set group remark",
       "setTag": "Add contact tags",
       "noData": "No data"
-    },
-    "sections": {
-      "activeTop": "Active TOP"
     },
     "gender": {
       "female": "Female",

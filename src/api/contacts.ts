@@ -8,3 +8,7 @@ export function friendList(): Promise<ApiResponse<ContactsListResult>> {
 export function groupList(): Promise<ApiResponse<ContactsListResult>> {
   return post<ContactsListResult, void>('/api/basic/v1/contacts/group/list')
 }
+
+export function enterpriseList(): Promise<ApiResponse<ContactsListResult>> {
+  return post<ContactsListResult, void>('/api/basic/v1/contacts/enterprise/list')
+}

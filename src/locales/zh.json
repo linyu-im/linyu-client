@@ -151,23 +151,38 @@
     },
     "fields": {
       "linyuId": "林语号：",
-      "groupId": "群号：",
       "remark": "备注",
-      "groupRemark": "群备注",
-      "groupAlias": "我的本群昵称",
-      "groupIntro": "群简介",
       "tag": "好友标签",
       "signature": "个性签名",
       "friendMoments": "ta的过往"
     },
+    "group": {
+      "groupId": "群号：",
+      "remark": "群备注",
+      "alias": "我的本群昵称",
+      "intro": "群简介",
+      "placeholders": {
+        "setRemark": "设置群备注名称",
+        "setAlias": "设置我的本群昵称"
+      },
+      "sections": {
+        "activeTop": "活跃TOP榜"
+      }
+    },
+    "enterprise": {
+      "actions": {
+        "leave": "退出该企业",
+        "inviteMember": "邀请企业成员",
+        "removeMember": "移除组织"
+      },
+      "labels": {
+        "joinedDays": "已加入{days}天"
+      }
+    },
     "placeholders": {
       "setRemark": "设置好友备注名称",
-      "setGroupRemark": "设置群备注名称",
       "setTag": "添加好友标签",
       "noData": "暂无"
-    },
-    "sections": {
-      "activeTop": "活跃TOP榜"
     },
     "gender": {
       "female": "女",

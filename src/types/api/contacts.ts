@@ -18,12 +18,14 @@ export interface Contact {
   emotionName: string
   emotionUrl: string
   groupName?: string
-  memberNum?: number
+  groupMemberNum?: number
+  enterpriseName?: string
+  enterpriseMemberNum?: number
 }
 
 export type ContactsListResult = Contact[]
 
-export type ContactsMenuView = 'newFriend' | 'groupNotice' | 'groupProfile' | 'friendProfile'
+export type ContactsMenuView = 'newFriend' | 'groupNotice' | 'groupProfile' | 'friendProfile' | 'enterpriseProfile'
 
 export interface ContactsSectionEntry {
   id: string

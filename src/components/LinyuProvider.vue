@@ -119,6 +119,11 @@
     },
     Spin: {
       color: 'var(--primary-color)'
+    },
+    Breadcrumb: {
+      itemTextColor: 'var(--text-color)',
+      itemTextColorHover: 'var(--primary-color)',
+      separatorColor: 'var(--text-muted-color)'
     }
   }
 

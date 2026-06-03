@@ -103,9 +103,13 @@
                 <span>{{ t('contacts.fields.signature') }}</span>
               </div>
               <div class="contacts-profile__value-slot">
-                <n-tooltip trigger="hover" placement="top" :content-style="signatureTooltipStyle">
+                <n-tooltip
+                  trigger="hover"
+                  placement="top"
+                  :disabled="!isSignatureOverflow"
+                  :content-style="signatureTooltipStyle">
                   <template #trigger>
-                    <span class="contacts-profile__row-value">{{ signatureText }}</span>
+                    <span :ref="bindSignatureOverflowRef" class="contacts-profile__row-value">{{ signatureText }}</span>
                   </template>
                   {{ signatureText }}
                 </n-tooltip>
@@ -143,6 +147,7 @@
 
 <script setup lang="ts">
   import { userApi } from '@/api'
+  import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
   import type { UserInfoResult } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'
@@ -262,6 +267,10 @@
   }
 
   const signatureText = computed(() => userInfo.value?.signature?.trim() ?? '')
+  const { bindTargetRef: bindSignatureOverflowRef, isOverflow: isSignatureOverflow } = useOverflowTooltip([
+    signatureText,
+    loading
+  ])
 
   const locationText = computed(() => {
     const info = userInfo.value

@@ -184,6 +184,10 @@
     window.$message.info(t('moment.cover.todo'))
   }
 
+  onActivated(() => {
+    void fetchMoments()
+  })
+
   watch(
     activeFilter,
     () => {
