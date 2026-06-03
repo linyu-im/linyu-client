@@ -144,7 +144,8 @@
       },
       "groupNotice": {
         "title": "Group Notices",
-        "inviteTag": "Join Request"
+        "inviteTag": "Request to join",
+        "empty": "No group notices yet"
       }
     },
     "actions": {

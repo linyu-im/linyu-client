@@ -144,7 +144,8 @@
       },
       "groupNotice": {
         "title": "群聊通知",
-        "inviteTag": "申请加入"
+        "inviteTag": "申请加入",
+        "empty": "暂无群聊通知"
       }
     },
     "actions": {

@@ -1,4 +1,4 @@
-import type { ApplySourceEnum } from '@/constants/apply.ts'
+import type { ApplySourceEnum } from '@/constants/apply'
 
 export interface Apply {
   id: string
@@ -12,6 +12,9 @@ export interface Apply {
   updatedAt: string
   deletedAt: string | null
   peerName: string
+  userName?: string
 }
 
 export type FriendApplyListResult = Apply[]
+
+export type GroupApplyListResult = Apply[]
