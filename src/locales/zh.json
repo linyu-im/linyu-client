@@ -132,7 +132,15 @@
     "views": {
       "newFriend": {
         "title": "新的好友",
-        "source": "通讯录好友推荐"
+        "source": "通讯录好友推荐",
+        "empty": "暂无好友申请",
+        "applySource": {
+          "account": "通过账号添加",
+          "ecard": "通过名片添加",
+          "phone": "通过手机号搜索",
+          "qrcode": "通过扫一扫添加",
+          "unknown": "好友申请"
+        }
       },
       "groupNotice": {
         "title": "群聊通知",
@@ -143,11 +151,10 @@
       "agree": "同意",
       "reject": "拒绝",
       "completed": "已同意",
+      "rejected": "已拒绝",
       "share": "分享",
       "sendMessage": "发消息",
-      "audioVideo": "音视频通话",
-      "acceptAndAddTag": "同意并添加标签",
-      "acceptAndSetRemark": "同意并设置备注"
+      "audioVideo": "音视频通话"
     },
     "fields": {
       "linyuId": "林语号：",
@@ -177,6 +184,12 @@
       },
       "labels": {
         "joinedDays": "已加入{days}天"
+      },
+      "roles": {
+        "owner": "Boos",
+        "admin": "管理员",
+        "subadmin": "子管理员",
+        "leader": "负责人"
       }
     },
     "placeholders": {

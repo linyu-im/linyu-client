@@ -136,9 +136,9 @@
         </div>
 
         <div class="contacts-profile__actions">
-          <n-button class="w-100px" round>{{ t('contacts.actions.share') }}</n-button>
-          <n-button class="w-100px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
-          <n-button class="w-100px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
+          <n-button class="w-110px" round>{{ t('contacts.actions.share') }}</n-button>
+          <n-button class="w-110px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
+          <n-button class="w-110px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
         </div>
       </div>
     </n-scrollbar>

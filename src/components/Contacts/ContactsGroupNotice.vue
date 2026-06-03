@@ -12,9 +12,7 @@
           </div>
           <div class="contacts-apply-card__msg">{{ item.message }}</div>
         </div>
-        <n-dropdown :options="applyActionOptions">
-          <n-button size="small" type="primary">{{ t('contacts.actions.agree') }}</n-button>
-        </n-dropdown>
+        <n-button size="small" type="primary">{{ t('contacts.actions.agree') }}</n-button>
       </div>
     </div>
   </div>
@@ -42,11 +40,6 @@
       message: '群名而来'
     }
   ]
-
-  const applyActionOptions = computed(() => [
-    { label: t('contacts.actions.acceptAndAddTag'), key: 'acceptAndAddTag' },
-    { label: t('contacts.actions.acceptAndSetRemark'), key: 'acceptAndSetRemark' }
-  ])
 </script>
 
 <style scoped lang="scss">

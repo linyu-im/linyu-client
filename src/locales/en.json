@@ -132,7 +132,15 @@
     "views": {
       "newFriend": {
         "title": "New Friends",
-        "source": "Recommended from contacts"
+        "source": "Recommended from contacts",
+        "empty": "No friend requests yet",
+        "applySource": {
+          "account": "Added via account",
+          "ecard": "Added via contact card",
+          "phone": "Found via phone number",
+          "qrcode": "Added via QR code scan",
+          "unknown": "Friend request"
+        }
       },
       "groupNotice": {
         "title": "Group Notices",
@@ -143,11 +151,10 @@
       "agree": "Agree",
       "reject": "Reject",
       "completed": "Accepted",
+      "rejected": "Rejected",
       "share": "Share",
       "sendMessage": "Send Message",
-      "audioVideo": "Audio/Video Call",
-      "acceptAndAddTag": "Accept and add tag",
-      "acceptAndSetRemark": "Accept and set remark"
+      "audioVideo": "Audio/Video Call"
     },
     "fields": {
       "linyuId": "Linyu ID:",
@@ -177,6 +184,12 @@
       },
       "labels": {
         "joinedDays": "Joined {days} days"
+      },
+      "roles": {
+        "owner": "Boos",
+        "admin": "Admin",
+        "subadmin": "Sub-admin",
+        "leader": "Leader"
       }
     },
     "placeholders": {

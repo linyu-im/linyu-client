@@ -103,6 +103,11 @@
 <script setup lang="ts">
   import ColorTag from '@/components/ColorTag.vue'
   import { enterpriseApi } from '@/api'
+  import {
+    ENTERPRISE_MEMBER_ROLE_COLORS,
+    hasEnterpriseMemberRoleTag,
+    isEnterpriseMemberRole
+  } from '@/constants/enterprise'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { EnterpriseDepartment } from '@/types/api/enterpriseDepartment'
   import type { EnterpriseMember } from '@/types/api/enterpriseMember'
@@ -222,20 +227,13 @@
   }
 
   const getRoleTagLabel = (role?: string) => {
-    if (!role) return ''
-    if (role === 'owner') return 'Boos'
-    if (role === 'admin') return '管理员'
-    if (role === 'subadmin') return '子管理员'
-    if (role === 'leader') return '负责人'
-    return ''
+    if (!hasEnterpriseMemberRoleTag(role)) return ''
+    return t(`contacts.enterprise.roles.${role}`)
   }
 
   const getRoleTagColor = (role?: string) => {
-    if (role === 'owner') return 'var(--gold)'
-    if (role === 'admin') return 'var(--primary-color)'
-    if (role === 'subadmin') return 'var(--pink)'
-    if (role === 'leader') return 'var(--green)'
-    return ''
+    if (!role || !isEnterpriseMemberRole(role)) return ''
+    return ENTERPRISE_MEMBER_ROLE_COLORS[role] || ''
   }
 </script>
 

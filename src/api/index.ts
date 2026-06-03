@@ -9,6 +9,7 @@ import * as storageApi from './storage'
 import * as contactsApi from './contacts'
 import * as groupApi from './group'
 import * as enterpriseApi from './enterprise'
+import * as applyApi from './apply'
 
 export {
   userApi,
@@ -21,5 +22,6 @@ export {
   storageApi,
   contactsApi,
   groupApi,
-  enterpriseApi
+  enterpriseApi,
+  applyApi
 }
