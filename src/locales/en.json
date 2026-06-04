@@ -324,5 +324,40 @@
       "list": "List view",
       "grid": "Grid view"
     }
+  },
+  "ai": {
+    "searchPlaceholder": "Search chats",
+    "menu": {
+      "newChat": "New chat",
+      "tasks": "My tasks",
+      "skills": "Skill square"
+    },
+    "history": {
+      "title": "Chat history",
+      "empty": "No chats yet",
+      "more": "More actions"
+    },
+    "welcome": {
+      "title": "Hello, I'm Nana",
+      "subtitle": "How can I help you be more productive today?"
+    },
+    "input": {
+      "placeholder": "Enter instructions, questions, or long-form analysis needs...",
+      "attach": "Add attachment",
+      "deepSearch": "Deep search",
+      "codeMode": "Code mode",
+      "hint": "Enter to send · Shift + Enter for new line"
+    },
+    "todo": "Coming soon",
+    "messageBubble": {
+      "assistantName": "Nana",
+      "generating": "Generating",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Failed to copy",
+      "copyCode": "Copy code",
+      "regenerate": "Regenerate",
+      "imageAlt": "Image"
+    }
   }
 }

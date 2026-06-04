@@ -1,0 +1,85 @@
+/* lowlight / highlight.js — 勿用 :deep()，本文件为全局样式 */
+.ai-code-block__pre {
+  .hljs-comment,
+  .hljs-quote {
+    color: color-mix(in srgb, var(--text-secondary-color) 95%, transparent);
+    font-style: italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-literal,
+  .hljs-section,
+  .hljs-link {
+    color: var(--primary-color);
+  }
+
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-addition,
+  .hljs-attribute,
+  .hljs-meta-string {
+    color: #0d8a6a;
+  }
+
+  html[data-theme='dark'] & .hljs-string,
+  html[data-theme='dark'] & .hljs-regexp,
+  html[data-theme='dark'] & .hljs-addition,
+  html[data-theme='dark'] & .hljs-attribute,
+  html[data-theme='dark'] & .hljs-meta-string {
+    color: #7ec89b;
+  }
+
+  .hljs-number,
+  .hljs-symbol,
+  .hljs-bullet,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-deletion {
+    color: #c45c26;
+  }
+
+  html[data-theme='dark'] & .hljs-number,
+  html[data-theme='dark'] & .hljs-symbol,
+  html[data-theme='dark'] & .hljs-bullet,
+  html[data-theme='dark'] & .hljs-variable,
+  html[data-theme='dark'] & .hljs-template-variable,
+  html[data-theme='dark'] & .hljs-deletion {
+    color: #e8a87c;
+  }
+
+  .hljs-title,
+  .hljs-title.function_,
+  .hljs-title.class_,
+  .hljs-title.class_.inherited__,
+  .hljs-built_in,
+  .hljs-type {
+    color: #8250df;
+  }
+
+  html[data-theme='dark'] & .hljs-title,
+  html[data-theme='dark'] & .hljs-title.function_,
+  html[data-theme='dark'] & .hljs-title.class_,
+  html[data-theme='dark'] & .hljs-built_in,
+  html[data-theme='dark'] & .hljs-type {
+    color: #c9a0ff;
+  }
+
+  .hljs-function,
+  .hljs-params {
+    color: var(--text-color);
+  }
+
+  .hljs-meta,
+  .hljs-meta .hljs-keyword {
+    color: var(--text-secondary-color);
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    font-weight: 600;
+  }
+}

@@ -324,5 +324,40 @@
       "list": "列表视图",
       "grid": "网格视图"
     }
+  },
+  "ai": {
+    "searchPlaceholder": "搜索对话",
+    "menu": {
+      "newChat": "新建对话",
+      "tasks": "我的任务",
+      "skills": "技能广场"
+    },
+    "history": {
+      "title": "历史对话",
+      "empty": "暂无对话",
+      "more": "更多操作"
+    },
+    "welcome": {
+      "title": "你好，我是 Nana",
+      "subtitle": "我该如何协助您提高今日的工作效率?"
+    },
+    "input": {
+      "placeholder": "在此输入您的指令、问题或长篇内容分析需求...",
+      "attach": "添加附件",
+      "deepSearch": "深度搜索",
+      "codeMode": "代码模式",
+      "hint": "按 Enter 发送 / Shift + Enter 换行"
+    },
+    "todo": "功能开发中",
+    "messageBubble": {
+      "assistantName": "Nana",
+      "generating": "正在生成",
+      "copy": "复制",
+      "copied": "已复制",
+      "copyFailed": "复制失败",
+      "copyCode": "复制代码",
+      "regenerate": "重新生成",
+      "imageAlt": "图片"
+    }
   }
 }
