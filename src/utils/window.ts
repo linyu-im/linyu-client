@@ -101,7 +101,7 @@ export const exitApp = async () => {
 
 export const createHomeWinodw = () =>
   createWebviewWindow('林语', 'home', {
-    width: 900,
+    width: 960,
     height: 675,
     minWidth: 800,
     minHeight: 600,

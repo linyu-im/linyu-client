@@ -272,5 +272,57 @@
         "todo": "Coming soon"
       }
     }
+  },
+  "drive": {
+    "searchPlaceholder": "Search files",
+    "sidebar": {
+      "myDrive": "My Cloud Drive",
+      "shortcuts": "Shortcuts",
+      "recent": "Recently accessed",
+      "deleted": "Recently deleted"
+    },
+    "title": "My Cloud Drive",
+    "path": {
+      "label": "Current location",
+      "allFiles": "All files",
+      "collapsed": "Show intermediate folders"
+    },
+    "storage": {
+      "label": "Storage",
+      "summary": "{used} / {total}"
+    },
+    "actions": {
+      "upload": "Upload",
+      "newFolder": "New folder",
+      "share": "Share",
+      "download": "Download",
+      "delete": "Delete"
+    },
+    "categories": {
+      "images": "Images",
+      "videos": "Videos",
+      "documents": "Documents",
+      "audio": "Audio",
+      "meta": "{count} · {size}"
+    },
+    "files": {
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "modified": "Modified",
+        "size": "Size",
+        "owner": "Owner"
+      },
+      "types": {
+        "folder": "Folder",
+        "image": "Image",
+        "pdf": "PDF",
+        "archive": "Archive"
+      }
+    },
+    "view": {
+      "list": "List view",
+      "grid": "Grid view"
+    }
   }
 }

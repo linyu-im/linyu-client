@@ -11,8 +11,12 @@ const FILE_ICON_NAMES = [
   'audio',
   'video',
   'img',
+  'file',
   'unknown'
 ] as const
+
+/** 列表/消息中文件类型图标的统一展示尺寸（px） */
+export const FILE_TYPE_ICON_SIZE = 32
 
 export type FileIconName = (typeof FILE_ICON_NAMES)[number]
 
@@ -167,4 +171,12 @@ export const getFileIconUrl = (fileName: string, fileType?: string) => {
     return `${FILE_ICON_BASE}/unknown.png`
   }
   return `${FILE_ICON_BASE}/${name}.png`
+}
+
+/** 文件夹图标（public/file/file.png） */
+export const getFolderIconUrl = () => `${FILE_ICON_BASE}/file.png`
+
+export const getDriveListFileIconUrl = (fileName: string, isFolder = false) => {
+  if (isFolder) return getFolderIconUrl()
+  return getFileIconUrl(fileName)
 }

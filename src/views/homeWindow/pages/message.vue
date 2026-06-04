@@ -1,6 +1,6 @@
 <template>
   <div class="message">
-    <Split :min-size="180" :max-size="300" :default-size="240">
+    <Split :min-size="180" :max-size="300" :default-size="270">
       <template #first>
         <div class="chatlist">
           <div class="chatlist__title">

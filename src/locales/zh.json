@@ -272,5 +272,57 @@
         "todo": "功能开发中"
       }
     }
+  },
+  "drive": {
+    "searchPlaceholder": "搜索文件",
+    "sidebar": {
+      "myDrive": "我的云盘",
+      "shortcuts": "快捷",
+      "recent": "最近访问",
+      "deleted": "最近删除"
+    },
+    "title": "我的云盘",
+    "path": {
+      "label": "当前位置",
+      "allFiles": "全部文件",
+      "collapsed": "查看中间路径"
+    },
+    "storage": {
+      "label": "存储空间",
+      "summary": "{used} / {total}"
+    },
+    "actions": {
+      "upload": "上传文件",
+      "newFolder": "新建文件夹",
+      "share": "分享",
+      "download": "下载",
+      "delete": "删除"
+    },
+    "categories": {
+      "images": "图片",
+      "videos": "视频",
+      "documents": "文档",
+      "audio": "音频",
+      "meta": "{count} · {size}"
+    },
+    "files": {
+      "columns": {
+        "name": "名称",
+        "type": "类型",
+        "modified": "修改日期",
+        "size": "大小",
+        "owner": "拥有者"
+      },
+      "types": {
+        "folder": "文件夹",
+        "image": "图片",
+        "pdf": "PDF",
+        "archive": "压缩包"
+      }
+    },
+    "view": {
+      "list": "列表视图",
+      "grid": "网格视图"
+    }
   }
 }
