@@ -359,5 +359,94 @@
       "regenerate": "重新生成",
       "imageAlt": "图片"
     }
+  },
+  "settings": {
+    "todo": "功能开发中",
+    "menu": {
+      "account": "账号与存储",
+      "general": "通用",
+      "shortcuts": "快捷键",
+      "notification": "通知",
+      "plugins": "插件",
+      "about": "关于"
+    },
+    "account": {
+      "logout": "退出登录",
+      "logoutSuccess": "已退出登录",
+      "loggedDevices": "已登录设备",
+      "mobileDevices": "手机设备",
+      "desktopDevices": "桌面设备",
+      "platformAndroid": "Android端",
+      "platformIos": "iOS端",
+      "platformWindows": "Windows端",
+      "platformMacos": "macOS端",
+      "deviceLogout": "退出登录",
+      "deviceLogoutSuccess": "已退出该设备",
+      "currentDevice": "当前设备",
+      "keepHistory": "保留聊天记录",
+      "storage": "存储空间",
+      "manage": "管理",
+      "storagePath": "存储位置",
+      "change": "更改",
+      "autoDownload": "自动下载文件（小于）",
+      "clearHistory": "清空全部聊天记录"
+    },
+    "general": {
+      "languageSection": "语言",
+      "language": "语言",
+      "translateTo": "将文字翻译为",
+      "autoTranslate": "自动翻译聊天中收到的消息",
+      "autoTranslateDesc": "开启后，非当前语言的消息将自动翻译",
+      "appearanceSection": "外观",
+      "appearance": "外观",
+      "fontSize": "字体大小",
+      "fontSmall": "小",
+      "fontStandard": "标准",
+      "fontLarge": "大",
+      "autoLaunchOnStartup": "开机时自动打开林语",
+      "closeMainPanel": "关闭主面板时",
+      "closeMinimizeToTray": "最小化至托盘",
+      "closeExitApp": "退出林语",
+      "voiceToText": "聊天中的语音消息自动转成文字",
+      "langZh": "中文",
+      "langEn": "English"
+    },
+    "shortcuts": {
+      "sendMessage": "发送消息",
+      "sendVoice": "发语音消息",
+      "openUnread": "打开未读消息",
+      "screenshot": "截图",
+      "lock": "锁定",
+      "toggleWindow": "显示/隐藏窗口",
+      "hold": "按住",
+      "clear": "清除快捷键",
+      "restore": "恢复默认设置"
+    },
+    "notification": {
+      "soundSection": "声音",
+      "messageSound": "新消息通知声音",
+      "callSound": "语音和视频通话声音",
+      "badgeSection": "通知标记",
+      "badgeMoments": "过往",
+      "momentsSection": "过往提醒",
+      "momentsInteraction": "仅提醒好友与我的互动",
+      "momentsInteractionDesc": "仅在过往出现与我相关的点赞、评论时出现标记"
+    },
+    "plugins": {
+      "emptyTitle": "暂无插件",
+      "emptyDesc": "插件功能即将上线，敬请期待"
+    },
+    "about": {
+      "version": "版本信息",
+      "help": "帮助",
+      "checkUpdate": "检查更新",
+      "viewHelp": "查看帮助",
+      "terms": "服务协议",
+      "privacy": "隐私政策",
+      "feedback": "意见反馈",
+      "uploadLogs": "上传日志",
+      "copyright": "Linyu Team 版权所有",
+      "rights": "Copyright © 2026 Linyu. All Rights Reserved."
+    }
   }
 }

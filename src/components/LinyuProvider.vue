@@ -124,6 +124,58 @@
       itemTextColor: 'var(--text-color)',
       itemTextColorHover: 'var(--primary-color)',
       separatorColor: 'var(--text-muted-color)'
+    },
+    Switch: {
+      railColor: 'color-mix(in srgb, var(--border-color) 80%, transparent)',
+      railColorActive: 'var(--primary-color)',
+      buttonColor: '#FFF',
+      loadingColor: 'var(--primary-color)',
+      iconColor: 'var(--text-secondary-color)',
+      boxShadowFocus: '0 0 0 2px rgba(var(--primary-rgb), 0.28)'
+    },
+    Select: {
+      peers: {
+        InternalSelection: {
+          borderRadius: '8px',
+          heightSmall: '28px',
+          textColor: 'var(--text-color)',
+          placeholderColor: 'var(--text-secondary-color)',
+          color: 'var(--input-soft-bg)',
+          colorActive: 'var(--input-soft-bg)',
+          colorDisabled: 'var(--input-soft-bg)',
+          border: '1px solid color-mix(in srgb, var(--border-color) 75%, transparent)',
+          borderHover: '1px solid color-mix(in srgb, var(--border-color) 75%, transparent)',
+          borderActive: '1px solid var(--primary-color)',
+          borderFocus: '1px solid var(--primary-color)',
+          boxShadowHover: 'none',
+          boxShadowActive: 'none',
+          boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb), 0.28)',
+          arrowColor: 'var(--text-secondary-color)',
+          arrowColorDisabled: 'var(--text-secondary-color)',
+          caretColor: 'var(--primary-color)',
+          loadingColor: 'var(--primary-color)'
+        },
+        InternalSelectMenu: {
+          borderRadius: '8px',
+          color: 'var(--bg-muted-color)',
+          optionTextColor: 'var(--text-color)',
+          optionTextColorActive: 'var(--primary-color)',
+          optionTextColorPressed: 'var(--primary-color)',
+          optionColorPending: 'color-mix(in srgb, var(--icon-hover-color) 85%, transparent)',
+          optionColorActive: 'color-mix(in srgb, var(--primary-color) 10%, transparent)',
+          optionColorActivePending: 'color-mix(in srgb, var(--primary-color) 10%, transparent)',
+          optionCheckColor: 'var(--primary-color)',
+          groupHeaderTextColor: 'var(--text-secondary-color)',
+          actionDividerColor: 'var(--divider-color)'
+        }
+      }
+    },
+    Slider: {
+      fillColor: 'var(--primary-color)',
+      fillColorHover: 'var(--primary-color)',
+      handleSize: '14px',
+      railColor: 'color-mix(in srgb, var(--border-color) 70%, transparent)',
+      railHeight: '4px'
     }
   }
 

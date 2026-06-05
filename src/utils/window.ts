@@ -111,3 +111,5 @@ export const createHomeWinodw = () =>
 
 export const createEmotionWinodw = () =>
   createWebviewWindow('心情', 'emotion', { width: 320, height: 525, transparent: true })
+
+export const createSetWinodw = () => createWebviewWindow('设置', 'set', { width: 800, height: 600, transparent: true })

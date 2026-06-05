@@ -1,0 +1,53 @@
+/* 设置页 n-select：高度与 n-input-number size="small" 一致（heightSmall = 28px） */
+.settings-page__select {
+  .n-base-selection {
+    min-height: 28px;
+    --n-border-radius: 8px;
+    --n-color: var(--input-soft-bg);
+    --n-color-active: var(--input-soft-bg);
+    --n-color-disabled: var(--input-soft-bg);
+    --n-text-color: var(--text-color);
+    --n-placeholder-color: var(--text-secondary-color);
+    --n-border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+    --n-border-hover: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+    --n-border-active: 1px solid var(--primary-color);
+    --n-border-focus: 1px solid var(--primary-color);
+    --n-box-shadow-hover: none;
+    --n-box-shadow-active: none;
+    --n-box-shadow-focus: 0 0 0 1px rgba(var(--primary-rgb), 0.28);
+    --n-arrow-color: var(--text-secondary-color);
+    --n-caret-color: var(--primary-color);
+    --n-loading-color: var(--primary-color);
+  }
+
+  .n-base-selection-label {
+    height: 28px !important;
+    min-height: 28px;
+    color: var(--text-color);
+  }
+
+  .n-base-selection-overlay,
+  .n-base-selection-input {
+    padding: 0 30px 0 12px !important;
+  }
+
+  .n-base-selection-placeholder {
+    color: var(--text-secondary-color);
+  }
+
+  /* 已有选中值时 hover 不改变文字/背景色 */
+  .n-base-selection:hover .n-base-selection-label,
+  .n-base-selection.n-base-selection--active:hover .n-base-selection-label {
+    background-color: var(--input-soft-bg);
+    color: var(--text-color);
+  }
+
+  .n-base-selection:hover .n-base-selection-label .n-base-selection-input,
+  .n-base-selection:hover .n-base-selection-overlay {
+    color: var(--text-color);
+  }
+
+  .n-base-selection:hover .n-base-suffix .n-base-selection-arrow {
+    color: var(--text-secondary-color);
+  }
+}

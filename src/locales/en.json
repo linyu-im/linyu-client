@@ -359,5 +359,94 @@
       "regenerate": "Regenerate",
       "imageAlt": "Image"
     }
+  },
+  "settings": {
+    "todo": "Coming soon",
+    "menu": {
+      "account": "Account & Storage",
+      "general": "General",
+      "shortcuts": "Shortcuts",
+      "notification": "Notifications",
+      "plugins": "Plugins",
+      "about": "About"
+    },
+    "account": {
+      "logout": "Log out",
+      "logoutSuccess": "Logged out",
+      "loggedDevices": "Logged-in devices",
+      "mobileDevices": "Mobile devices",
+      "desktopDevices": "Desktop devices",
+      "platformAndroid": "Android",
+      "platformIos": "iOS",
+      "platformWindows": "Windows",
+      "platformMacos": "macOS",
+      "deviceLogout": "Sign out",
+      "deviceLogoutSuccess": "Signed out from device",
+      "currentDevice": "Current device",
+      "keepHistory": "Keep chat history",
+      "storage": "Storage",
+      "manage": "Manage",
+      "storagePath": "Storage location",
+      "change": "Change",
+      "autoDownload": "Auto-download files (less than)",
+      "clearHistory": "Clear all chat history"
+    },
+    "general": {
+      "languageSection": "Language",
+      "language": "Language",
+      "translateTo": "Translate text to",
+      "autoTranslate": "Auto-translate incoming messages",
+      "autoTranslateDesc": "Messages not in your language will be translated automatically",
+      "appearanceSection": "Appearance",
+      "appearance": "Appearance",
+      "fontSize": "Font size",
+      "fontSmall": "Small",
+      "fontStandard": "Standard",
+      "fontLarge": "Large",
+      "autoLaunchOnStartup": "Launch Linyu on startup",
+      "closeMainPanel": "When closing main window",
+      "closeMinimizeToTray": "Minimize to tray",
+      "closeExitApp": "Exit Linyu",
+      "voiceToText": "Auto-convert voice messages to text",
+      "langZh": "Chinese",
+      "langEn": "English"
+    },
+    "shortcuts": {
+      "sendMessage": "Send message",
+      "sendVoice": "Send voice message",
+      "openUnread": "Open unread messages",
+      "screenshot": "Screenshot",
+      "lock": "Lock",
+      "toggleWindow": "Show/hide window",
+      "hold": "Hold",
+      "clear": "Clear shortcut",
+      "restore": "Restore defaults"
+    },
+    "notification": {
+      "soundSection": "Sound",
+      "messageSound": "New message sound",
+      "callSound": "Voice & video call sound",
+      "badgeSection": "Badges",
+      "badgeMoments": "Moment",
+      "momentsSection": "Moment alerts",
+      "momentsInteraction": "Friends' interactions only",
+      "momentsInteractionDesc": "Show badge only for likes and comments on your Moment posts"
+    },
+    "plugins": {
+      "emptyTitle": "No plugins yet",
+      "emptyDesc": "Plugins are coming soon"
+    },
+    "about": {
+      "version": "Version",
+      "help": "Help",
+      "checkUpdate": "Check for updates",
+      "viewHelp": "View help",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "feedback": "Feedback",
+      "uploadLogs": "Upload logs",
+      "copyright": "Linyu Team. All rights reserved.",
+      "rights": "Copyright © 2026 Linyu. All Rights Reserved."
+    }
   }
 }

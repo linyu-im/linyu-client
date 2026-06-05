@@ -53,6 +53,11 @@ const routes: RouteRecordRaw[] = [
     path: '/emotion',
     name: 'emotion',
     component: () => import('@/views/emotionWindow/index.vue')
+  },
+  {
+    path: '/set',
+    name: 'set',
+    component: () => import('@/views/SetWindow/index.vue')
   }
 ]
 

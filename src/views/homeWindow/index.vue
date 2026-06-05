@@ -29,7 +29,7 @@
           <SvgIconButton
             :href="isMaximize ? '#restore' : '#maximize'"
             @click="() => restoreOrMaximizeCurrentWindow().then((v) => (isMaximize = !v))" />
-          <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="hideCurrentWindow" />
+          <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="onCloseMainWindow" />
         </div>
       </div>
     </ToolBar>
@@ -52,7 +52,13 @@
           </n-popover>
         </div>
         <div>
-          <n-dropdown :z-index="100" :options="moreOptions" trigger="click" placement="right" transfer>
+          <n-dropdown
+            :z-index="100"
+            :options="moreOptions"
+            trigger="click"
+            placement="right"
+            transfer
+            @select="onMoreMenuSelect">
             <n-popover :z-index="99" :show-arrow="false" placement="right" trigger="hover">
               <template #trigger>
                 <SvgIconButton :size="34" :radius="5" href="#list" icon-size="22px" />
@@ -76,10 +82,13 @@
 
 <script setup lang="ts">
   import { userApi } from '@/api'
+  import { useAppSettingsStore } from '@/stores/appSettings'
   import { useUserStore } from '@/stores/user'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
   import {
     createEmotionWinodw,
+    createSetWinodw,
+    exitApp,
     hideCurrentWindow,
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow
@@ -88,8 +97,17 @@
   import { useRoute, useRouter } from 'vue-router'
 
   const userStore = useUserStore()
+  const appSettings = useAppSettingsStore()
 
   const isMaximize = ref(false)
+
+  const onCloseMainWindow = () => {
+    if (appSettings.general.closeMainPanelAction === 'exit') {
+      exitApp()
+    } else {
+      hideCurrentWindow()
+    }
+  }
   const seletedMenuOption = ref('message')
   const { t } = useI18n()
   const router = useRouter()
@@ -167,6 +185,12 @@
     const match = menuOptions.value.find((item) => item.path === route.path)
     if (match) {
       seletedMenuOption.value = match.id
+    }
+  }
+
+  const onMoreMenuSelect = (key: string) => {
+    if (key === 'setting') {
+      createSetWinodw()
     }
   }
 
