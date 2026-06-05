@@ -59,7 +59,6 @@
         "update": "检查更新",
         "feedback": "意见反馈",
         "setting": "设置",
-        "about": "关于",
         "exit": "退出"
       }
     },
@@ -448,5 +447,11 @@
       "copyright": "Linyu Team 版权所有",
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
+  },
+  "update": {
+    "title": "版本更新",
+    "versionDownloaded": "新版本 {version} 已下载",
+    "later": "稍后更新",
+    "now": "立即更新"
   }
 }

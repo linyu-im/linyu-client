@@ -59,7 +59,6 @@
         "update": "Check Update",
         "feedback": "Feedback",
         "setting": "Settings",
-        "about": "About",
         "exit": "Exit"
       }
     },
@@ -448,5 +447,11 @@
       "copyright": "Linyu Team. All rights reserved.",
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
+  },
+  "update": {
+    "title": "Version Update",
+    "versionDownloaded": "New version {version} has been downloaded",
+    "later": "Update Later",
+    "now": "Update Now"
   }
 }

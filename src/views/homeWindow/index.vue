@@ -70,6 +70,7 @@
       </ToolBar>
       <!-- 内容：keep-alive 缓存各子页面状态（滚动位置、表单等） -->
       <div class="home__content">
+        <UpdateModal v-model:show="showUpdateModal" />
         <router-view v-slot="{ Component, route }">
           <keep-alive :max="menuOptions.length">
             <component :is="Component" v-if="Component" :key="route.name" />
@@ -81,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+  import UpdateModal from '@/components/UpdateModal.vue'
   import { userApi } from '@/api'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useUserStore } from '@/stores/user'
@@ -100,6 +102,7 @@
   const appSettings = useAppSettingsStore()
 
   const isMaximize = ref(false)
+  const showUpdateModal = ref(false)
 
   const onCloseMainWindow = () => {
     if (appSettings.general.closeMainPanelAction === 'exit') {
@@ -172,10 +175,6 @@
       key: 'setting'
     },
     {
-      label: () => t('home.options.more.about'),
-      key: 'about'
-    },
-    {
       label: () => t('home.options.more.exit'),
       key: 'exit'
     }
@@ -191,6 +190,8 @@
   const onMoreMenuSelect = (key: string) => {
     if (key === 'setting') {
       createSetWinodw()
+    } else if (key === 'update') {
+      showUpdateModal.value = true
     }
   }
 

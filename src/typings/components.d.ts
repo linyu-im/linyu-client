@@ -73,6 +73,7 @@ declare module 'vue' {
     Text: typeof import('./../components/Message/MessageList/Item/Text.vue')['default']
     Time: typeof import('./../components/Message/MessageList/Item/Time.vue')['default']
     ToolBar: typeof import('./../components/ToolBar.vue')['default']
+    UpdateModal: typeof import('./../components/UpdateModal.vue')['default']
     Voice: typeof import('./../components/Message/MessageList/Item/Voice.vue')['default']
   }
 }
@@ -140,5 +141,6 @@ declare global {
   const Text: typeof import('./../components/Message/MessageList/Item/Text.vue')['default']
   const Time: typeof import('./../components/Message/MessageList/Item/Time.vue')['default']
   const ToolBar: typeof import('./../components/ToolBar.vue')['default']
+  const UpdateModal: typeof import('./../components/UpdateModal.vue')['default']
   const Voice: typeof import('./../components/Message/MessageList/Item/Voice.vue')['default']
 }
