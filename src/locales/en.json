@@ -359,6 +359,15 @@
       "imageAlt": "Image"
     }
   },
+  "application": {
+    "title": "App Center",
+    "subtitle": "Connect enterprise apps to boost team productivity",
+    "searchPlaceholder": "Search apps",
+    "sectionAll": "All apps",
+    "count": "{count} apps",
+    "empty": "No matching apps",
+    "todo": "Coming soon"
+  },
   "settings": {
     "todo": "Coming soon",
     "menu": {

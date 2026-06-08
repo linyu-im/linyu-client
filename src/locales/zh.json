@@ -359,6 +359,15 @@
       "imageAlt": "图片"
     }
   },
+  "application": {
+    "title": "应用中心",
+    "subtitle": "连接企业应用，提升团队协作效率",
+    "searchPlaceholder": "搜索应用",
+    "sectionAll": "全部应用",
+    "count": "共 {count} 个",
+    "empty": "未找到相关应用",
+    "todo": "功能开发中"
+  },
   "settings": {
     "todo": "功能开发中",
     "menu": {
