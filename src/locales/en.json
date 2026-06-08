@@ -448,6 +448,26 @@
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
   },
+  "feedback": {
+    "title": "Feedback",
+    "fieldTitle": "Title",
+    "fieldTitlePlaceholder": "Briefly describe the issue",
+    "fieldDescription": "Description",
+    "fieldDescriptionPlaceholder": "Scenario, issue, and expected outcome",
+    "fieldImages": "Screenshots or images",
+    "fieldImagesCount": "({count}/5)",
+    "uploadPhoto": "Upload photo",
+    "uploading": "Uploading...",
+    "uploadFailed": "Failed to upload image",
+    "submit": "Submit",
+    "submitSuccess": "Feedback submitted",
+    "submitFailed": "Failed to submit feedback",
+    "todo": "Coming soon",
+    "validation": {
+      "titleRequired": "Please enter a title",
+      "descriptionRequired": "Please enter a description"
+    }
+  },
   "update": {
     "title": "Version Update",
     "versionDownloaded": "New version {version} has been downloaded",

@@ -89,6 +89,7 @@
   import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
   import {
     createEmotionWinodw,
+    createFeedbackWinodw,
     createSetWinodw,
     exitApp,
     hideCurrentWindow,
@@ -192,6 +193,10 @@
       createSetWinodw()
     } else if (key === 'update') {
       showUpdateModal.value = true
+    } else if (key === 'feedback') {
+      createFeedbackWinodw()
+    } else if (key === 'exit') {
+      exitApp()
     }
   }
 

@@ -113,3 +113,13 @@ export const createEmotionWinodw = () =>
   createWebviewWindow('心情', 'emotion', { width: 320, height: 525, transparent: true })
 
 export const createSetWinodw = () => createWebviewWindow('设置', 'set', { width: 800, height: 600, transparent: true })
+
+export const createFeedbackWinodw = () =>
+  createWebviewWindow('意见反馈', 'feedback', {
+    width: 600,
+    height: 640,
+    minWidth: 480,
+    minHeight: 520,
+    resizable: true,
+    transparent: true
+  })

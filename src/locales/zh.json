@@ -448,6 +448,26 @@
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
   },
+  "feedback": {
+    "title": "意见反馈",
+    "fieldTitle": "标题",
+    "fieldTitlePlaceholder": "简要描述问题",
+    "fieldDescription": "补充描述",
+    "fieldDescriptionPlaceholder": "说明使用场景、遇到的问题和期望效果",
+    "fieldImages": "相关截图或图片",
+    "fieldImagesCount": "({count}/5)",
+    "uploadPhoto": "上传照片",
+    "uploading": "上传中...",
+    "uploadFailed": "图片上传失败",
+    "submit": "提交",
+    "submitSuccess": "反馈提交成功",
+    "submitFailed": "反馈提交失败",
+    "todo": "功能开发中",
+    "validation": {
+      "titleRequired": "请输入标题",
+      "descriptionRequired": "请输入补充描述"
+    }
+  },
   "update": {
     "title": "版本更新",
     "versionDownloaded": "新版本 {version} 已下载",
