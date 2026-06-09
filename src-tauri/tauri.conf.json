@@ -43,6 +43,18 @@
         "decorations": false,
         "transparent": true,
         "dragDropEnabled": false
+      },
+      {
+        "title": "截图",
+        "label": "screenshot",
+        "url": "/screenshot",
+        "resizable": false,
+        "center": false,
+        "visible": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "transparent": true,
+        "fullscreen": true
       }
     ],
     "security": {

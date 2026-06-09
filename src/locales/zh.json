@@ -482,5 +482,26 @@
     "versionDownloaded": "新版本 {version} 已下载",
     "later": "稍后更新",
     "now": "立即更新"
+  },
+  "screenshot": {
+    "size": "{width} × {height}",
+    "roundedCorner": "圆角",
+    "undo": "撤销",
+    "redo": "重做",
+    "download": "保存",
+    "cancel": "取消",
+    "confirm": "完成",
+    "todo": "功能开发中",
+    "strokeWidth": "粗细",
+    "strokeColor": "颜色",
+    "textPlaceholder": "输入文字",
+    "tools": {
+      "move": "移动选区",
+      "rectangle": "矩形",
+      "arrow": "箭头",
+      "brush": "画笔",
+      "text": "文字",
+      "mosaic": "马赛克"
+    }
   }
 }

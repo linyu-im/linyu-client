@@ -74,6 +74,14 @@ export const closeCurrentWindow = async () => {
   await webview.close()
 }
 
+export const openAndFocusWindow = async (label: string) => {
+  const webview = await WebviewWindow.getByLabel(label)
+  if (webview) {
+    await webview.show()
+    await webview.setFocus()
+  }
+}
+
 export const minimizeCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
   await webview.minimize()

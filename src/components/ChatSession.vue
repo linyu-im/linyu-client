@@ -53,7 +53,7 @@
           <div class="flex w-full items-center justify-between m-t-10px">
             <div class="flex items-center gap-5px">
               <SvgIconButton href="#emotion" />
-              <SvgIconButton href="#scissor" />
+              <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
               <SvgIconButton href="#folder" />
               <SvgIconButton href="#image" />
               <SvgIconButton href="#microphone" />
@@ -81,6 +81,7 @@
   import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
   import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
   import MessageList from './Message/MessageList/index.vue'
+  import { openAndFocusWindow } from '@/utils/window.ts'
 
   interface Props {
     toId?: string

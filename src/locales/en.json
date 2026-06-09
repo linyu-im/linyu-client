@@ -482,5 +482,26 @@
     "versionDownloaded": "New version {version} has been downloaded",
     "later": "Update Later",
     "now": "Update Now"
+  },
+  "screenshot": {
+    "size": "{width} × {height}",
+    "roundedCorner": "Rounded corners",
+    "undo": "Undo",
+    "redo": "Redo",
+    "download": "Save",
+    "cancel": "Cancel",
+    "confirm": "Done",
+    "todo": "Coming soon",
+    "strokeWidth": "Thickness",
+    "strokeColor": "Color",
+    "textPlaceholder": "Enter text",
+    "tools": {
+      "move": "Move selection",
+      "rectangle": "Rectangle",
+      "arrow": "Arrow",
+      "brush": "Brush",
+      "text": "Text",
+      "mosaic": "Mosaic"
+    }
   }
 }

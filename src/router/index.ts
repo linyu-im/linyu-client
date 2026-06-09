@@ -63,6 +63,11 @@ const routes: RouteRecordRaw[] = [
     path: '/feedback',
     name: 'feedback',
     component: () => import('@/views/feedbackWindow/index.vue')
+  },
+  {
+    path: '/screenshot',
+    name: 'screenshot',
+    component: () => import('@/views/screenshotWindow/index.vue')
   }
 ]
 
