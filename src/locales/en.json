@@ -491,6 +491,8 @@
     "download": "Save",
     "cancel": "Cancel",
     "confirm": "Done",
+    "copied": "Screenshot copied to clipboard",
+    "copyFailed": "Failed to copy screenshot, please try again",
     "todo": "Coming soon",
     "strokeWidth": "Thickness",
     "strokeColor": "Color",

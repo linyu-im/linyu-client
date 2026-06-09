@@ -76,6 +76,8 @@
       ]
     },
     "dialog:default",
-    "websocket:default"
+    "websocket:default",
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-image"
   ]
 }

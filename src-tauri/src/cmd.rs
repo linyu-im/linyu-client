@@ -1,7 +1,11 @@
+use base64::{engine::general_purpose::STANDARD, Engine as _};
+use screenshots::image::ImageFormat as ScreenshotImageFormat;
+use screenshots::Screen;
 use serde_json::json;
+use std::io::Cursor;
 use std::sync::Mutex;
 use tauri::async_runtime::JoinHandle;
-use tauri::{AppHandle, Emitter, Manager, Runtime, State};
+use tauri::{AppHandle, Emitter, Manager, Runtime, State, WebviewWindow};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use url::Url;
@@ -14,6 +18,34 @@ impl Default for OauthServerState {
     fn default() -> Self {
         Self { handle: Mutex::new(None) }
     }
+}
+
+#[tauri::command]
+pub fn capture_screen(window: WebviewWindow) -> Result<String, String> {
+    let monitor = window
+        .current_monitor()
+        .map_err(|error| error.to_string())?
+        .ok_or_else(|| "no monitor found".to_string())?;
+    let monitor_position = monitor.position();
+
+    let screens = Screen::all().map_err(|error| error.to_string())?;
+    let screen = screens
+        .iter()
+        .find(|screen| {
+            let info = screen.display_info;
+            info.x == monitor_position.x && info.y == monitor_position.y
+        })
+        .or_else(|| screens.first())
+        .ok_or_else(|| "no screen found".to_string())?;
+
+    let image = screen.capture().map_err(|error| error.to_string())?;
+
+    let mut png_bytes = Vec::new();
+    image
+        .write_to(&mut Cursor::new(&mut png_bytes), ScreenshotImageFormat::Png)
+        .map_err(|error| error.to_string())?;
+
+    Ok(STANDARD.encode(png_bytes))
 }
 
 #[tauri::command]

@@ -1,6 +1,6 @@
 pub mod cmd;
 
-use cmd::start_oauth_server;
+use cmd::{capture_screen, start_oauth_server};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -14,7 +14,8 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![start_oauth_server])
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .invoke_handler(tauri::generate_handler![capture_screen, start_oauth_server])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

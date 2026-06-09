@@ -79,6 +79,7 @@
   import { SCREENSHOT_DEFAULT_STROKE_STYLE, SCREENSHOT_DRAW_TOOLS } from '@/constants/screenshot'
   import { useScreenshotAnnotations } from '@/composables/useScreenshotAnnotations'
   import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
+  import { exportScreenshotToClipboard } from '@/utils/screenshotExport'
   import type { AnnotationDrawTool, ResizeHandle, ScreenshotTool } from '@/types/screenshot'
 
   const emit = defineEmits<{
@@ -132,6 +133,7 @@
     }
   })
   const cornerRadius = ref(0)
+  const isExporting = ref(false)
 
   const resizeHandles: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
 
@@ -197,8 +199,28 @@
     emit('close')
   }
 
-  const onConfirm = () => {
-    window.$message.info(t('screenshot.todo'))
+  const onConfirm = async () => {
+    if (isExporting.value || !selection.value || !previewRef.value) return
+
+    if (textDraft.value) {
+      cancelTextDraft()
+    }
+
+    isExporting.value = true
+    try {
+      await exportScreenshotToClipboard({
+        selection: selection.value,
+        previewElement: previewRef.value,
+        cornerRadius: cornerRadius.value
+      })
+      window.$message.success(t('screenshot.copied'))
+      emit('close')
+    } catch (error) {
+      console.error('screenshot export failed', error)
+      window.$message.error(t('screenshot.copyFailed'))
+    } finally {
+      isExporting.value = false
+    }
   }
 </script>
 

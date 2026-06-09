@@ -491,6 +491,8 @@
     "download": "保存",
     "cancel": "取消",
     "confirm": "完成",
+    "copied": "截图已复制到剪贴板",
+    "copyFailed": "截图复制失败，请重试",
     "todo": "功能开发中",
     "strokeWidth": "粗细",
     "strokeColor": "颜色",
