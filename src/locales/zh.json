@@ -483,6 +483,18 @@
     "later": "稍后更新",
     "now": "立即更新"
   },
+  "imgViewer": {
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetScale": "原始比例",
+    "rotate": "旋转",
+    "saveAs": "另存为",
+    "prev": "上一张",
+    "next": "下一张",
+    "saveSuccess": "图片保存成功",
+    "saveFailed": "图片保存失败",
+    "empty": "暂无图片"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "圆角",

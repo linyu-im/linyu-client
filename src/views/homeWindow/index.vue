@@ -96,6 +96,7 @@
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow
   } from '@/utils/window'
+  import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
   import { useRoute, useRouter } from 'vue-router'
 
@@ -104,6 +105,7 @@
 
   const isMaximize = ref(false)
   const showUpdateModal = ref(false)
+  let unlistenCloseRequested: (() => void) | undefined
 
   const onCloseMainWindow = () => {
     if (appSettings.general.closeMainPanelAction === 'exit') {
@@ -112,6 +114,7 @@
       hideCurrentWindow()
     }
   }
+
   const seletedMenuOption = ref('message')
   const { t } = useI18n()
   const router = useRouter()
@@ -223,9 +226,18 @@
   onMounted(() => {
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     onCurrentUserInfo()
+    void WebviewWindow.getCurrent()
+      .onCloseRequested((event) => {
+        event.preventDefault()
+        onCloseMainWindow()
+      })
+      .then((unlisten) => {
+        unlistenCloseRequested = unlisten
+      })
   })
 
   onUnmounted(() => {
+    unlistenCloseRequested?.()
     void disconnectWebSocket().catch((err) => console.error('[WebSocket] disconnect failed:', err))
   })
 </script>

@@ -1,37 +1,36 @@
 <template>
-  <n-image
-    class="message-image"
-    :src="content.imgThumbUrl || content.imgUrl"
-    :preview-src="content.imgUrl"
-    :height="FIXED_IMAGE_HEIGHT"
-    object-fit="cover"
-    :img-props="{ alt: content.imgName }" />
+  <img class="message-image" :src="content.imgThumbUrl || content.imgUrl" :alt="content.imgName" @click="onPreview" />
 </template>
 
 <script setup lang="ts">
   import type { ImageContent } from '@/types/api/message'
+  import { openImgViewer } from '@/utils/imgViewer'
 
-  const FIXED_IMAGE_HEIGHT = 160
-
-  defineProps<{
+  const props = defineProps<{
     content: ImageContent
   }>()
+
+  const onPreview = () => {
+    openImgViewer(
+      [
+        {
+          url: props.content.imgUrl,
+          name: props.content.imgName
+        }
+      ],
+      0
+    )
+  }
 </script>
 
 <style scoped lang="scss">
   .message-image {
-    display: inline-block;
+    display: block;
+    height: 160px;
+    width: auto;
     max-width: 320px;
     border-radius: 6px;
-    overflow: hidden;
     cursor: pointer;
-
-    :deep(img) {
-      display: block;
-      height: 160px;
-      width: auto;
-      max-width: 320px;
-      border-radius: 6px;
-    }
+    object-fit: cover;
   }
 </style>

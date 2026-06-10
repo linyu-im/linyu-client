@@ -483,6 +483,18 @@
     "later": "Update Later",
     "now": "Update Now"
   },
+  "imgViewer": {
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetScale": "Original size",
+    "rotate": "Rotate",
+    "saveAs": "Save as",
+    "prev": "Previous",
+    "next": "Next",
+    "saveSuccess": "Image saved successfully",
+    "saveFailed": "Failed to save image",
+    "empty": "No images"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "Rounded corners",

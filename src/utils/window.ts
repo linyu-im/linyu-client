@@ -70,8 +70,7 @@ export const createWebviewWindow = async (
 }
 
 export const closeCurrentWindow = async () => {
-  const webview = WebviewWindow.getCurrent()
-  await webview.close()
+  hideCurrentWindow()
 }
 
 export const openAndFocusWindow = async (label: string) => {
@@ -128,6 +127,16 @@ export const createFeedbackWinodw = () =>
     height: 640,
     minWidth: 480,
     minHeight: 520,
+    resizable: true,
+    transparent: true
+  })
+
+export const createImgViewerWindow = () =>
+  createWebviewWindow('图片', 'imgViewer', {
+    width: 900,
+    height: 640,
+    minWidth: 640,
+    minHeight: 480,
     resizable: true,
     transparent: true
   })
