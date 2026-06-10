@@ -235,7 +235,8 @@
     return !!uid && message.fromId === uid
   }
 
-  const isPlainBubble = (message: Message) => message.msgType === 'image' || message.msgType === 'video'
+  const isPlainBubble = (message: Message) =>
+    message.msgType === 'image' || message.msgType === 'video' || message.msgType === 'sticker'
 </script>
 
 <style scoped lang="scss">

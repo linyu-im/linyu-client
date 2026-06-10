@@ -52,7 +52,21 @@
           </div>
           <div class="flex w-full items-center justify-between m-t-10px">
             <div class="flex items-center gap-5px">
-              <SvgIconButton href="#emotion" />
+              <n-popover
+                v-model:show="emojiPickerVisible"
+                trigger="click"
+                placement="top-start"
+                display-directive="show"
+                :animated="false"
+                :duration="0"
+                :show-arrow="false"
+                raw
+                :z-index="2000">
+                <template #trigger>
+                  <SvgIconButton href="#emotion" :active="emojiPickerVisible" />
+                </template>
+                <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
+              </n-popover>
               <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
               <SvgIconButton href="#folder" />
               <SvgIconButton href="#image" />
@@ -81,6 +95,8 @@
   import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
   import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
   import MessageList from './Message/MessageList/index.vue'
+  import EmojiPicker from './Message/EmojiPicker/index.vue'
+  import type { Sticker } from '@/types/api/sticker'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
   interface Props {
@@ -105,6 +121,26 @@
   const hasMore = computed(() => page.value > 0 && page.value < totalPage.value)
 
   const draft = ref('')
+  const emojiPickerVisible = ref(false)
+
+  const onEmojiPickerEscape = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape' || !emojiPickerVisible.value) return
+    emojiPickerVisible.value = false
+    event.preventDefault()
+  }
+
+  watch(emojiPickerVisible, (visible) => {
+    if (visible) {
+      window.addEventListener('keydown', onEmojiPickerEscape)
+    } else {
+      window.removeEventListener('keydown', onEmojiPickerEscape)
+    }
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onEmojiPickerEscape)
+  })
+
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
   const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
   const peerInfo = ref<UserInfoResult | null>(null)
@@ -319,6 +355,36 @@
   const onFileRejected = ({ file, reason }: { file: File; reason: string }) => {
     const tip = reason === 'image-too-large' ? t('message.editor.imageTooLarge') : t('message.editor.fileTooLarge')
     window.$message?.warning(`${tip}：${file.name}`)
+  }
+
+  const onEmojiSelect = (item: Sticker) => {
+    emojiPickerVisible.value = false
+    if (item.type === 'unicode') {
+      if (!editorRef.value) return
+      editorRef.value.insertText(item.iconValue)
+      return
+    }
+    const toUserId = resolveToUserId()
+    if (!toUserId) {
+      window.$message?.warning(t('message.editor.noChatTarget'))
+      return
+    }
+    messageApi
+      .sendToUser({
+        toUserId,
+        msgType: 'sticker',
+        content: {
+          stickerUrl: item.iconUrl,
+          stickerName: item.name
+        }
+      })
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          appendMessage(res.data)
+        } else {
+          window.$message?.error(res.msg)
+        }
+      })
   }
 </script>
 <style scoped lang="scss">

@@ -36,6 +36,11 @@ export interface VoiceContent {
   voiceDuration: string
 }
 
+export interface StickerContent {
+  stickerUrl: string
+  stickerName: string
+}
+
 type MsgTypeMap = {
   text: TextContent
   image: ImageContent
@@ -43,6 +48,7 @@ type MsgTypeMap = {
   file: FileContent
   ecard: ECardContent
   voice: VoiceContent
+  sticker: StickerContent
 }
 
 export type Message = {

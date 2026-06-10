@@ -10,6 +10,7 @@ import * as contactsApi from './contacts'
 import * as groupApi from './group'
 import * as enterpriseApi from './enterprise'
 import * as applyApi from './apply'
+import * as stickerApi from './sticker'
 
 export {
   userApi,
@@ -23,5 +24,6 @@ export {
   contactsApi,
   groupApi,
   enterpriseApi,
-  applyApi
+  applyApi,
+  stickerApi
 }

@@ -76,6 +76,7 @@
       "file": "文件",
       "ecard": "名片",
       "voice": "语音",
+      "sticker": "表情",
       "unknown": "未知类型"
     },
     "contextMenu": {
@@ -114,6 +115,16 @@
       "noChatTarget": "请先选择聊天对象",
       "mediaUploadPending": "图片/文件需上传后才能发送",
       "sendFailed": "发送失败"
+    },
+    "emojiPicker": {
+      "recent": "最近使用",
+      "default": "所有表情",
+      "tabDefault": "默认表情",
+      "tabFavorite": "收藏",
+      "morePacks": "更多表情集",
+      "emptyDefault": "暂无表情",
+      "emptyFavorite": "暂无收藏表情",
+      "emptyPack": "该表情集暂无内容"
     }
   },
   "contacts": {

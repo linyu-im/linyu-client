@@ -285,6 +285,10 @@
         )
       case 'voice':
         return <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.voice')}]</span>
+      case 'sticker':
+        return (
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.sticker')}]</span>
+        )
       default:
         return (
           <span class="text-[var(--text-secondary-color)] text-12px truncate">[{t('message.msgType.unknown')}]</span>

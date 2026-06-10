@@ -31,6 +31,7 @@
   import File from './File.vue'
   import Ecard from './Ecard.vue'
   import Voice from './Voice.vue'
+  import Sticker from './Sticker.vue'
 
   const props = defineProps<{
     message: Message
@@ -43,7 +44,7 @@
   const menuX = ref(0)
   const menuY = ref(0)
 
-  const plainTypes = new Set(['image', 'video'])
+  const plainTypes = new Set(['image', 'video', 'sticker'])
 
   const isPlain = computed(() => plainTypes.has(props.message.msgType))
 
@@ -59,6 +60,8 @@
         return Ecard
       case 'voice':
         return Voice
+      case 'sticker':
+        return Sticker
       case 'video':
         return Images
       default:

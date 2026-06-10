@@ -76,6 +76,7 @@
       "file": "File",
       "ecard": "Ecard",
       "voice": "Voice",
+      "sticker": "Sticker",
       "unknown": "Unknown Type"
     },
     "contextMenu": {
@@ -114,6 +115,16 @@
       "noChatTarget": "Please select a chat first",
       "mediaUploadPending": "Images and files must be uploaded before sending",
       "sendFailed": "Failed to send"
+    },
+    "emojiPicker": {
+      "recent": "Recently Used",
+      "default": "All Emojis",
+      "tabDefault": "Default",
+      "tabFavorite": "Favorites",
+      "morePacks": "More sticker packs",
+      "emptyDefault": "No emojis available",
+      "emptyFavorite": "No favorite stickers yet",
+      "emptyPack": "This pack is empty"
     }
   },
   "contacts": {
