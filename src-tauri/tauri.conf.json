@@ -27,7 +27,8 @@
         "windowEffects":{
           "effects": ["acrylic"],
           "state": "active"
-        }
+        },
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
       },
       {
         "title": "linyu",
@@ -42,7 +43,8 @@
         "skipTaskbar": true,
         "decorations": false,
         "transparent": true,
-        "dragDropEnabled": false
+        "dragDropEnabled": false,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
       },
       {
         "title": "截图",
@@ -54,7 +56,8 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "transparent": true,
-        "fullscreen": true
+        "fullscreen": true,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
       }
     ],
     "security": {

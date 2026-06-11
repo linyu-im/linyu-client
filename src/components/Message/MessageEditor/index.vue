@@ -399,7 +399,17 @@
     revokeBlobs()
   })
 
-  defineExpose({ focus, clear, insertText, insertMention, submit: handleSubmit, getEditor: () => editor.value })
+  defineExpose({
+    focus,
+    clear,
+    insertText,
+    insertMention,
+    insertImage,
+    insertFile: insertFileChip,
+    insertFileOrImage,
+    submit: handleSubmit,
+    getEditor: () => editor.value
+  })
 </script>
 
 <style lang="scss">

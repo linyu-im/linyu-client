@@ -1,6 +1,11 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { Effect, EffectState } from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
+import { WEBVIEW_ADDITIONAL_BROWSER_ARGS } from '@/constants/webview'
+
+type WebviewWindowCreateOptions = NonNullable<ConstructorParameters<typeof WebviewWindow>[1]> & {
+  additionalBrowserArgs?: string
+}
 
 const defaultOptions = {
   width: 900,
@@ -34,7 +39,7 @@ export const createWebviewWindow = async (
     return webview
   }
 
-  webview = new WebviewWindow(label, {
+  const webviewOptions: WebviewWindowCreateOptions = {
     title,
     url: `/${label}`,
     fullscreen: opts.fullscreen,
@@ -52,8 +57,11 @@ export const createWebviewWindow = async (
     windowEffects: {
       effects: [Effect.Acrylic],
       state: EffectState.Active
-    }
-  })
+    },
+    additionalBrowserArgs: WEBVIEW_ADDITIONAL_BROWSER_ARGS
+  }
+
+  webview = new WebviewWindow(label, webviewOptions)
 
   webview.once('tauri://created', async () => {
     if (opts.closeWindow) {

@@ -1,5 +1,10 @@
 <template>
-  <n-modal v-model:show="visible" :mask-closable="false" transform-origin="center" @after-leave="resetForm">
+  <n-modal
+    v-model:show="visible"
+    :mask-closable="false"
+    :close-on-esc="false"
+    transform-origin="center"
+    @after-leave="resetForm">
     <div class="moment-compose">
       <div class="moment-compose__header">
         <span class="moment-compose__title">{{ t('moment.compose.title') }}</span>
@@ -164,9 +169,14 @@
   import { contactsApi, momentApi, storageApi } from '@/api'
   import type { Contact } from '@/types/api/contacts'
   import type { MomentCreateParam, MomentVisibleType } from '@/types/api/moment'
+  import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { useI18n } from 'vue-i18n'
 
   const visible = defineModel<boolean>('show', { default: false })
+
+  useEscapeOverlay(() => {
+    visible.value = false
+  }, visible)
 
   defineProps<{
     userId: string
@@ -186,6 +196,11 @@
   const contactSearch = ref('')
   const contactsLoading = ref(false)
   const showContactPicker = ref(false)
+
+  useEscapeOverlay(() => {
+    showContactPicker.value = false
+  }, showContactPicker)
+
   const mediaList = ref<string[]>([])
   const uploadingMedia = ref(false)
   const submitting = ref(false)

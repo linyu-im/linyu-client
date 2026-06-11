@@ -83,6 +83,7 @@
 
 <script setup lang="ts">
   import UpdateModal from '@/components/UpdateModal.vue'
+  import { dismissTopEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { userApi } from '@/api'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useUserStore } from '@/stores/user'
@@ -113,6 +114,18 @@
     } else {
       hideCurrentWindow()
     }
+  }
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== 'Escape') return
+
+    if (dismissTopEscapeOverlay()) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+
+    onCloseMainWindow()
   }
 
   const seletedMenuOption = ref('message')
@@ -226,6 +239,7 @@
   onMounted(() => {
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     onCurrentUserInfo()
+    window.addEventListener('keydown', onKeyDown)
     void WebviewWindow.getCurrent()
       .onCloseRequested((event) => {
         event.preventDefault()
@@ -238,6 +252,7 @@
 
   onUnmounted(() => {
     unlistenCloseRequested?.()
+    window.removeEventListener('keydown', onKeyDown)
     void disconnectWebSocket().catch((err) => console.error('[WebSocket] disconnect failed:', err))
   })
 </script>

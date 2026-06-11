@@ -89,6 +89,7 @@ declare module 'vue' {
     ToolBar: typeof import('./../components/ToolBar.vue')['default']
     UpdateModal: typeof import('./../components/UpdateModal.vue')['default']
     Voice: typeof import('./../components/Message/MessageList/Item/Voice.vue')['default']
+    VoiceRecordBar: typeof import('./../components/Message/VoiceRecordBar.vue')['default']
   }
 }
 
@@ -171,4 +172,5 @@ declare global {
   const ToolBar: typeof import('./../components/ToolBar.vue')['default']
   const UpdateModal: typeof import('./../components/UpdateModal.vue')['default']
   const Voice: typeof import('./../components/Message/MessageList/Item/Voice.vue')['default']
+  const VoiceRecordBar: typeof import('./../components/Message/VoiceRecordBar.vue')['default']
 }

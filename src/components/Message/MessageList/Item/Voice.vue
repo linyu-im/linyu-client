@@ -28,27 +28,9 @@
 
   const isPlaying = ref(false)
   const audioRef = ref<HTMLAudioElement | null>(null)
-  let demoTimer: ReturnType<typeof setTimeout> | null = null
-
-  const stopDemoTimer = () => {
-    if (demoTimer) {
-      clearTimeout(demoTimer)
-      demoTimer = null
-    }
-  }
 
   const resetPlaying = () => {
     isPlaying.value = false
-    stopDemoTimer()
-  }
-
-  const playDemoAnimation = () => {
-    resetPlaying()
-    isPlaying.value = true
-    const durationSec = Number(props.content.voiceDuration)
-    const ms = Number.isFinite(durationSec) && durationSec > 0 ? durationSec * 1000 : 3000
-    demoTimer = setTimeout(resetPlaying, ms)
-    window.$message?.info('语音播放暂不可用（演示数据）')
   }
 
   const onPlay = () => {
@@ -59,7 +41,6 @@
     }
 
     if (!props.content.voiceUrl) {
-      playDemoAnimation()
       return
     }
 
@@ -69,14 +50,9 @@
       audioRef.value.addEventListener('pause', resetPlaying)
     }
 
-    audioRef.value
-      .play()
-      .then(() => {
-        isPlaying.value = true
-      })
-      .catch(() => {
-        playDemoAnimation()
-      })
+    audioRef.value.play().then(() => {
+      isPlaying.value = true
+    })
   }
 
   onBeforeUnmount(() => {
@@ -114,7 +90,7 @@
     &__bar {
       fill: currentColor;
       transform-box: fill-box;
-      transform-origin: center bottom;
+      transform-origin: center center;
     }
 
     &__icon--playing &__bar {

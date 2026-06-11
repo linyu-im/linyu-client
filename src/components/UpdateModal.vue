@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-model:show="visible" :mask-closable="false" transform-origin="center">
+  <n-modal v-model:show="visible" :mask-closable="false" :close-on-esc="false" transform-origin="center">
     <div class="update-modal">
       <div class="update-modal__decor">
         <div class="update-modal__decor-circle update-modal__decor-circle--1" />
@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+  import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { useI18n } from 'vue-i18n'
 
   export interface ChangelogGroup {
@@ -43,6 +44,10 @@
   }
 
   const visible = defineModel<boolean>('show', { default: false })
+
+  useEscapeOverlay(() => {
+    visible.value = false
+  }, visible)
 
   withDefaults(
     defineProps<{

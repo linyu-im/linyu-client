@@ -114,7 +114,19 @@
       "fileTooLarge": "File exceeds size limit",
       "noChatTarget": "Please select a chat first",
       "mediaUploadPending": "Images and files must be uploaded before sending",
-      "sendFailed": "Failed to send"
+      "sendFailed": "Failed to send",
+      "pickImage": "Select images",
+      "pickFile": "Select files",
+      "pickFailed": "Failed to read file"
+    },
+    "voiceRecord": {
+      "cancel": "Cancel recording",
+      "send": "Send voice message",
+      "sendVoice": "Send voice",
+      "startFailed": "Unable to access microphone",
+      "tooShort": "Recording is too short",
+      "uploadFailed": "Failed to upload voice message",
+      "remaining": "{remaining}s left"
     },
     "emojiPicker": {
       "recent": "Recently Used",

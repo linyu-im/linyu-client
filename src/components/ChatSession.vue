@@ -50,8 +50,8 @@
               @submit="onSend"
               @file-rejected="onFileRejected" />
           </div>
-          <div class="flex w-full items-center justify-between m-t-10px">
-            <div class="flex items-center gap-5px">
+          <div class="flex w-full items-center justify-between m-t-10px gap-8px">
+            <div class="flex items-center gap-5px flex-1 min-w-0">
               <n-popover
                 v-model:show="emojiPickerVisible"
                 trigger="click"
@@ -68,11 +68,20 @@
                 <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
               </n-popover>
               <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
-              <SvgIconButton href="#folder" />
-              <SvgIconButton href="#image" />
-              <SvgIconButton href="#microphone" />
+              <SvgIconButton href="#folder" @click="onPickFiles" />
+              <SvgIconButton href="#image" @click="onPickImages" />
+              <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
+              <VoiceRecordBar
+                v-if="voiceRecordingVisible"
+                class="chat-session__voice-bar"
+                :duration="voiceDurationSec"
+                :max-duration="VOICE_RECORD_MAX_DURATION"
+                :warn-remaining="VOICE_RECORD_WARN_REMAINING"
+                :sending="voiceSending"
+                @cancel="onVoiceRecordCancel"
+                @send="onVoiceRecordSend" />
             </div>
-            <div class="flex items-center gap-5px">
+            <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
               <SvgIconButton href="#phone" />
               <SvgIconButton href="#video" />
               <n-button size="tiny" type="primary" class="w-56px m-l-20px p-y-12px" @click="onSend()">
@@ -96,7 +105,17 @@
   import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
   import MessageList from './Message/MessageList/index.vue'
   import EmojiPicker from './Message/EmojiPicker/index.vue'
+  import VoiceRecordBar from './Message/VoiceRecordBar.vue'
   import type { Sticker } from '@/types/api/sticker'
+  import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
+  import {
+    buildVoiceFileName,
+    useVoiceRecorder,
+    VOICE_RECORD_MAX_DURATION,
+    VOICE_RECORD_WARN_REMAINING
+  } from '@/composables/useVoiceRecorder'
+  import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/filePick'
+  import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
   interface Props {
@@ -122,24 +141,41 @@
 
   const draft = ref('')
   const emojiPickerVisible = ref(false)
+  const voiceRecordingVisible = ref(false)
+  const voiceSending = ref(false)
+  const {
+    durationSec: voiceDurationSec,
+    start: startVoiceRecord,
+    stop: stopVoiceRecord,
+    cancel: cancelVoiceRecord
+  } = useVoiceRecorder()
 
-  const onEmojiPickerEscape = (event: KeyboardEvent) => {
-    if (event.key !== 'Escape' || !emojiPickerVisible.value) return
-    emojiPickerVisible.value = false
-    event.preventDefault()
+  let voiceMaxDurationHandled = false
+
+  const resetVoiceRecordLimitState = () => {
+    voiceMaxDurationHandled = false
   }
 
-  watch(emojiPickerVisible, (visible) => {
-    if (visible) {
-      window.addEventListener('keydown', onEmojiPickerEscape)
-    } else {
-      window.removeEventListener('keydown', onEmojiPickerEscape)
-    }
-  })
+  watch(
+    voiceDurationSec,
+    (sec) => {
+      if (!voiceRecordingVisible.value || voiceSending.value || voiceMaxDurationHandled) return
 
-  onBeforeUnmount(() => {
-    window.removeEventListener('keydown', onEmojiPickerEscape)
-  })
+      if (sec >= VOICE_RECORD_MAX_DURATION) {
+        voiceMaxDurationHandled = true
+        onVoiceRecordCancel()
+      }
+    },
+    { flush: 'sync' }
+  )
+
+  useEscapeOverlay(() => {
+    emojiPickerVisible.value = false
+  }, emojiPickerVisible)
+
+  useEscapeOverlay(() => {
+    onVoiceRecordCancel()
+  }, voiceRecordingVisible)
 
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
   const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
@@ -284,6 +320,17 @@
     { immediate: true }
   )
 
+  watch(
+    () => props.toId,
+    () => {
+      if (!voiceRecordingVisible.value) return
+      cancelVoiceRecord()
+      voiceSending.value = false
+      voiceRecordingVisible.value = false
+      resetVoiceRecordLimitState()
+    }
+  )
+
   const loadPeerInfo = () => {
     if (!props.toId) {
       peerInfo.value = null
@@ -355,6 +402,127 @@
   const onFileRejected = ({ file, reason }: { file: File; reason: string }) => {
     const tip = reason === 'image-too-large' ? t('message.editor.imageTooLarge') : t('message.editor.fileTooLarge')
     window.$message?.warning(`${tip}：${file.name}`)
+  }
+
+  const insertPickedFiles = (files: File[], mode: 'image' | 'file') => {
+    if (!files.length || !editorRef.value) return
+    for (const file of files) {
+      if (mode === 'image') {
+        editorRef.value.insertImage(file)
+      } else {
+        editorRef.value.insertFile(file)
+      }
+    }
+    editorRef.value.focus()
+  }
+
+  const onPickImages = () => {
+    pickFiles({
+      title: t('message.editor.pickImage'),
+      multiple: true,
+      filters: [{ name: 'Images', extensions: IMAGE_FILE_EXTENSIONS }]
+    })
+      .then((files) => insertPickedFiles(files, 'image'))
+      .catch(() => {
+        window.$message?.error(t('message.editor.pickFailed'))
+      })
+  }
+
+  const onPickFiles = () => {
+    pickFiles({
+      title: t('message.editor.pickFile'),
+      multiple: true,
+      filters: [{ name: 'All Files', extensions: ['*'] }]
+    })
+      .then((files) => insertPickedFiles(files, 'file'))
+      .catch(() => {
+        window.$message?.error(t('message.editor.pickFailed'))
+      })
+  }
+
+  const onToggleVoiceRecording = () => {
+    if (voiceRecordingVisible.value) {
+      onVoiceRecordCancel()
+      return
+    }
+
+    const toUserId = resolveToUserId()
+    if (!toUserId) {
+      window.$message?.warning(t('message.editor.noChatTarget'))
+      return
+    }
+
+    startVoiceRecord()
+      .then(() => {
+        resetVoiceRecordLimitState()
+        voiceRecordingVisible.value = true
+      })
+      .catch(() => {
+        window.$message?.error(t('message.voiceRecord.startFailed'))
+      })
+  }
+
+  const onVoiceRecordCancel = () => {
+    cancelVoiceRecord()
+    voiceSending.value = false
+    voiceRecordingVisible.value = false
+    resetVoiceRecordLimitState()
+  }
+
+  const onVoiceRecordSend = () => {
+    if (voiceSending.value) return
+
+    const toUserId = resolveToUserId()
+    if (!toUserId) {
+      window.$message?.warning(t('message.editor.noChatTarget'))
+      onVoiceRecordCancel()
+      return
+    }
+
+    voiceSending.value = true
+    stopVoiceRecord()
+      .then((result) => {
+        if (!result) {
+          window.$message?.warning(t('message.voiceRecord.tooShort'))
+          voiceSending.value = false
+          onVoiceRecordCancel()
+          return
+        }
+
+        const fileName = buildVoiceFileName(result.mimeType)
+        return uploadMessageMediaBlob(result.blob, fileName).then((voiceUrl) => {
+          if (!voiceUrl) {
+            window.$message?.error(t('message.voiceRecord.uploadFailed'))
+            voiceSending.value = false
+            onVoiceRecordCancel()
+            return
+          }
+
+          return messageApi
+            .sendToUser({
+              toUserId,
+              msgType: 'voice',
+              content: {
+                voiceUrl,
+                voiceDuration: String(result.durationSec)
+              }
+            })
+            .then((res) => {
+              voiceSending.value = false
+              onVoiceRecordCancel()
+              if (res.code === 0 && res.data) {
+                appendMessage(res.data)
+              } else {
+                window.$message?.error(res.msg)
+              }
+            })
+        })
+      })
+      .catch(() => {
+        voiceSending.value = false
+        onVoiceRecordCancel()
+        window.$message?.error(t('message.voiceRecord.uploadFailed'))
+      })
   }
 
   const onEmojiSelect = (item: Sticker) => {
@@ -451,6 +619,11 @@
       height: 100%;
       min-height: 0;
       overflow: hidden;
+
+      .chat-session__voice-bar {
+        flex: 1;
+        min-width: 0;
+      }
     }
   }
 </style>

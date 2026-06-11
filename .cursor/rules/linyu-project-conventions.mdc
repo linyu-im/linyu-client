@@ -420,7 +420,14 @@ export const useExampleStore = defineStore('example', {
 </style>
 ```
 
-## 十三、禁止事项
+## 十三、国际化维护
+
+新增或删除代码时，必须同步维护语言包，避免遗漏或残留：
+
+- **新增代码**：所有用户可见文本必须走 i18n，并在 `src/locales/zh.json` 与 `src/locales/en.json` 中**同步添加**对应词条
+- **删除代码**：移除功能或文案时，必须**同步删除** `zh.json` 与 `en.json` 中不再使用的 key，保持双语文件一致、无冗余
+
+## 十四、禁止事项
 
 1. **禁止**使用 Options API
 2. **禁止**使用 axios（使用 `@tauri-apps/plugin-http`）
