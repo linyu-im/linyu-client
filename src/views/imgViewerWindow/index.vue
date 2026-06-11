@@ -7,7 +7,7 @@
         <SvgIconButton
           :href="isMaximized ? '#restore' : '#maximize'"
           @click="() => restoreOrMaximizeCurrentWindow().then((v) => (isMaximized = !v))" />
-        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeCurrentWindow" />
+        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="hideCurrentWindow" />
       </div>
     </ToolBar>
 
@@ -156,7 +156,7 @@
   import { writeFile } from '@tauri-apps/plugin-fs'
   import { useI18n } from 'vue-i18n'
   import { useImgViewerStore } from '@/stores/imgViewer'
-  import { closeCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import { hideCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
 
   const { t } = useI18n()
   const imgViewerStore = useImgViewerStore()
@@ -399,7 +399,7 @@
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      closeCurrentWindow()
+      hideCurrentWindow()
       return
     }
 

@@ -112,7 +112,6 @@
       "send": "发送",
       "imageTooLarge": "图片大小超出限制",
       "fileTooLarge": "文件大小超出限制",
-      "noChatTarget": "请先选择聊天对象",
       "mediaUploadPending": "图片/文件需上传后才能发送",
       "sendFailed": "发送失败",
       "pickImage": "选择图片",

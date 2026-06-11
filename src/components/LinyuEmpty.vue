@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full w-full justify-center items-center flex-1">
+  <div class="flex h-full w-full justify-center items-center flex-1 bg-[var(--bg-secondary-color)]">
     <svg>
       <use href="#linyu2"></use>
     </svg>

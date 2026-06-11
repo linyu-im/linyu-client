@@ -78,7 +78,8 @@ export const createWebviewWindow = async (
 }
 
 export const closeCurrentWindow = async () => {
-  hideCurrentWindow()
+  const webview = WebviewWindow.getCurrent()
+  await webview.close()
 }
 
 export const openAndFocusWindow = async (label: string) => {

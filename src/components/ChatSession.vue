@@ -118,13 +118,9 @@
   import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
-  interface Props {
-    toId?: string
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
-    toId: ''
-  })
+  const props = defineProps<{
+    toId: string
+  }>()
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -362,8 +358,6 @@
     return mentionableMembers.filter((m) => m.label.toLowerCase().includes(q))
   }
 
-  const resolveToUserId = () => props.toId
-
   const onSend = async (payload?: EditorPayload) => {
     if (!editorRef.value) return
     if (!payload) {
@@ -373,13 +367,7 @@
 
     if (payload.isEmpty) return
 
-    const toUserId = resolveToUserId()
-    if (!toUserId) {
-      window.$message?.warning(t('message.editor.noChatTarget'))
-      return
-    }
-
-    const params = await buildSendParamsFromSegments(payload.segments, toUserId)
+    const params = await buildSendParamsFromSegments(payload.segments, props.toId)
     if (!params.length) return
 
     let sent = 0
@@ -446,12 +434,6 @@
       return
     }
 
-    const toUserId = resolveToUserId()
-    if (!toUserId) {
-      window.$message?.warning(t('message.editor.noChatTarget'))
-      return
-    }
-
     startVoiceRecord()
       .then(() => {
         resetVoiceRecordLimitState()
@@ -471,13 +453,6 @@
 
   const onVoiceRecordSend = () => {
     if (voiceSending.value) return
-
-    const toUserId = resolveToUserId()
-    if (!toUserId) {
-      window.$message?.warning(t('message.editor.noChatTarget'))
-      onVoiceRecordCancel()
-      return
-    }
 
     voiceSending.value = true
     stopVoiceRecord()
@@ -500,7 +475,7 @@
 
           return messageApi
             .sendToUser({
-              toUserId,
+              toUserId: props.toId,
               msgType: 'voice',
               content: {
                 voiceUrl,
@@ -532,14 +507,9 @@
       editorRef.value.insertText(item.iconValue)
       return
     }
-    const toUserId = resolveToUserId()
-    if (!toUserId) {
-      window.$message?.warning(t('message.editor.noChatTarget'))
-      return
-    }
     messageApi
       .sendToUser({
-        toUserId,
+        toUserId: props.toId,
         msgType: 'sticker',
         content: {
           stickerUrl: item.iconUrl,

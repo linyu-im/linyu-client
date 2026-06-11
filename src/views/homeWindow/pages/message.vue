@@ -69,7 +69,10 @@
         </div>
       </template>
       <template #second>
-        <chat-session ref="chatSessionRef" :to-id="activePeerId" />
+        <chat-session v-if="hasActiveChat" ref="chatSessionRef" :to-id="activePeerId" />
+        <div v-else class="message__empty">
+          <LinyuEmpty />
+        </div>
       </template>
     </Split>
     <n-dropdown
@@ -301,7 +304,13 @@
     return chat?.peerId ?? ''
   })
 
+  const hasActiveChat = computed(() => Boolean(activePeerId.value))
+
   const onSelectChat = (item: Chat) => {
+    if (globalStore.selectedChatId === item.id) {
+      globalStore.setSelectedChatId('')
+      return
+    }
     globalStore.setSelectedChatId(item.id)
   }
 
@@ -323,6 +332,15 @@
   .message {
     display: flex;
     height: 100%;
+
+    .message__empty {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-primary-color);
+    }
 
     .chatlist {
       display: flex;

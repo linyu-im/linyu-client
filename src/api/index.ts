@@ -11,6 +11,7 @@ import * as groupApi from './group'
 import * as enterpriseApi from './enterprise'
 import * as applyApi from './apply'
 import * as stickerApi from './sticker'
+import * as feedbackApi from './feedback'
 
 export {
   userApi,
@@ -25,5 +26,6 @@ export {
   groupApi,
   enterpriseApi,
   applyApi,
-  stickerApi
+  stickerApi,
+  feedbackApi
 }

@@ -28,7 +28,7 @@
 
   const props = withDefaults(defineProps<Props>(), {
     size: 32,
-    radius: 2,
+    radius: 5,
     color: 'var(--text-muted-color)',
     hoverColor: 'var(--text-muted-color)',
     bg: 'transparent',

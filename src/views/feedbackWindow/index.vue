@@ -81,6 +81,7 @@
 <script setup lang="ts">
   import { open } from '@tauri-apps/plugin-dialog'
   import type { FormInst, FormRules } from 'naive-ui'
+  import { feedbackApi } from '@/api'
   import { closeCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
 
@@ -118,51 +119,79 @@
   }))
 
   const canSubmit = computed(() => {
-    return form.title.trim().length > 0 && form.description.trim().length > 0 && !submitting.value
+    return (
+      form.title.trim().length > 0 && form.description.trim().length > 0 && !submitting.value && !uploadingImage.value
+    )
   })
 
-  const pickAndUploadImage = async () => {
+  const uploadImagesSequentially = (paths: string[], index = 0) => {
+    if (index >= paths.length) {
+      uploadingImage.value = false
+      return
+    }
+
+    feedbackApi.uploadImage(paths[index]).then((res) => {
+      if (res.code === 0 && res.data) {
+        imageList.value.push(res.data)
+        uploadImagesSequentially(paths, index + 1)
+        return
+      }
+
+      uploadingImage.value = false
+      window.$message.error(res.msg || t('feedback.uploadFailed'))
+    })
+  }
+
+  const pickAndUploadImage = () => {
     const remaining = maxImages - imageList.value.length
     if (remaining <= 0 || uploadingImage.value) return
 
-    const selected = await open({
+    open({
       multiple: true,
       title: t('feedback.uploadPhoto'),
       filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'] }]
-    })
-    if (!selected) return
+    }).then((selected) => {
+      if (!selected) return
 
-    const paths = (Array.isArray(selected) ? selected : [selected]).slice(0, remaining)
-    uploadingImage.value = true
-    try {
-      for (const path of paths) {
-        imageList.value.push(path)
-      }
-    } catch {
-      window.$message.error(t('feedback.uploadFailed'))
-    } finally {
-      uploadingImage.value = false
-    }
+      const paths = (Array.isArray(selected) ? selected : [selected]).slice(0, remaining)
+      uploadingImage.value = true
+      uploadImagesSequentially(paths)
+    })
   }
 
   const removeImage = (index: number) => {
     imageList.value.splice(index, 1)
   }
 
-  const onSubmit = async () => {
-    try {
-      await formRef.value?.validate()
-    } catch {
-      return
-    }
+  const resetForm = () => {
+    form.title = ''
+    form.description = ''
+    imageList.value = []
+  }
 
-    submitting.value = true
-    try {
-      // TODO: 接入反馈提交接口
-      window.$message.info(t('feedback.todo'))
-    } finally {
-      submitting.value = false
-    }
+  const onSubmit = () => {
+    formRef.value
+      ?.validate()
+      .then(() => {
+        submitting.value = true
+        feedbackApi
+          .create({
+            title: form.title.trim(),
+            description: form.description.trim(),
+            images: imageList.value
+          })
+          .then((res) => {
+            submitting.value = false
+            if (res.code === 0) {
+              window.$message.success(t('feedback.submitSuccess'))
+              resetForm()
+              closeCurrentWindow()
+              return
+            }
+            window.$message.error(res.msg || t('feedback.submitFailed'))
+          })
+      })
+      .catch(() => {})
   }
 </script>
 

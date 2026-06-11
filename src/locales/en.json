@@ -112,7 +112,6 @@
       "send": "Send",
       "imageTooLarge": "Image exceeds size limit",
       "fileTooLarge": "File exceeds size limit",
-      "noChatTarget": "Please select a chat first",
       "mediaUploadPending": "Images and files must be uploaded before sending",
       "sendFailed": "Failed to send",
       "pickImage": "Select images",
