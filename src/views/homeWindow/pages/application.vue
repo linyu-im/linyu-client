@@ -21,7 +21,17 @@
 
     <section class="application-center__section">
       <div class="application-center__section-head">
-        <h2 class="application-center__section-title">{{ t('application.sectionAll') }}</h2>
+        <div class="application-center__tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            type="button"
+            class="application-center__tab"
+            :class="{ 'application-center__tab--active': activeTab === tab.value }"
+            @click="activeTab = tab.value">
+            {{ tab.label }}
+          </button>
+        </div>
         <span class="application-center__section-count">
           {{ t('application.count', { count: filteredAppList.length }) }}
         </span>
@@ -29,27 +39,91 @@
 
       <n-scrollbar class="application-center__scroll">
         <div v-if="filteredAppList.length > 0" class="application-center__grid">
-          <button
+          <div
             v-for="app in filteredAppList"
             :key="app.id"
-            type="button"
             class="application-center__card"
-            @click="onOpenApp(app)">
-            <div
-              class="application-center__icon"
-              :class="{ 'application-center__icon--image': hasIconUrl(app) }"
-              :style="hasIconUrl(app) ? undefined : { backgroundColor: app.iconBg }">
-              <img v-if="hasIconUrl(app)" class="application-center__icon-img" :src="app.iconUrl" alt="" />
-              <span v-else class="application-center__icon-text">{{ app.iconText }}</span>
-            </div>
-            <div class="application-center__info">
-              <div class="application-center__title-row">
-                <span class="application-center__name" :title="app.name">{{ app.name }}</span>
-                <span v-if="app.tag" class="application-center__tag">{{ app.tag }}</span>
+            role="button"
+            tabindex="0"
+            @click="onOpenApp(app)"
+            @keydown.enter="onOpenApp(app)">
+            <div class="application-center__top">
+              <div
+                class="application-center__icon"
+                :class="{
+                  'application-center__icon--image': hasIconUrl(app),
+                  'application-center__icon--fallback': !hasIconUrl(app)
+                }">
+                <img v-if="hasIconUrl(app)" class="application-center__icon-img" :src="app.iconUrl" alt="" />
+                <span v-else class="application-center__icon-text">{{ app.appName.slice(0, 2) }}</span>
               </div>
-              <div class="application-center__desc" :title="app.description">{{ app.description }}</div>
+
+              <div class="application-center__info">
+                <div class="application-center__info-top">
+                  <div class="application-center__name-group" :title="`${app.appName} ${app.version}`">
+                    <span class="application-center__name">{{ app.appName }}</span>
+                    <span class="application-center__version">{{ app.version }}</span>
+                  </div>
+                  <div class="application-center__metrics">
+                    <span
+                      class="application-center__metric application-center__metric--score"
+                      :title="t('application.score', { score: app.score })">
+                      <svg class="size-11px" aria-hidden="true">
+                        <use href="#five-star"></use>
+                      </svg>
+                      <span>{{ app.score }}</span>
+                    </span>
+                    <span
+                      class="application-center__metric"
+                      :title="t('application.getCount', { count: app.getCount })">
+                      <svg class="size-11px" aria-hidden="true">
+                        <use href="#download"></use>
+                      </svg>
+                      <span>{{ app.getCount }}</span>
+                    </span>
+                  </div>
+                </div>
+                <span class="application-center__author" :title="t('application.author', { name: app.author })">
+                  {{ t('application.authorBy', { name: app.author }) }}
+                </span>
+              </div>
             </div>
-          </button>
+
+            <div class="application-center__bottom">
+              <div class="application-center__bottom-main">
+                <div v-if="app.tags.length > 0" class="application-center__tags">
+                  <span v-for="tag in app.tags" :key="tag" class="application-center__tag">
+                    {{ tag }}
+                  </span>
+                </div>
+                <p class="application-center__desc" :title="app.description">{{ app.description }}</p>
+              </div>
+
+              <div class="application-center__actions">
+                <template v-if="acquiredIds.has(app.id)">
+                  <button
+                    type="button"
+                    class="application-center__action application-center__action--open"
+                    @click.stop="onOpenAppAction(app)">
+                    {{ t('application.actionOpen') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="application-center__action application-center__action--uninstall"
+                    @click.stop="onUninstallApp(app)">
+                    {{ t('application.actionUninstall') }}
+                  </button>
+                </template>
+                <button
+                  v-else
+                  type="button"
+                  class="application-center__action application-center__action--get"
+                  @click.stop="onGetApp(app)">
+                  {{ t('application.actionGet') }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-else class="application-center__empty">
@@ -64,95 +138,73 @@
 </template>
 
 <script setup lang="ts">
+  import { applicationApi } from '@/api'
+  import type { Application } from '@/types/api/application'
   import { useI18n } from 'vue-i18n'
-
-  export interface AppItem {
-    id: string
-    name: string
-    description: string
-    tag: string
-    iconUrl?: string
-    iconBg?: string
-    iconText?: string
-  }
 
   const { t } = useI18n()
   const searchKeyword = ref('')
+  const appList = ref<Application[]>([])
+  const acquiredIds = ref(new Set<string>())
+  const activeTab = ref<'all' | 'acquired' | 'unacquired'>('all')
 
-  const hasIconUrl = (app: AppItem) => Boolean(app.iconUrl?.trim())
-
-  // TODO: 后续通过接口获取应用列表
-  const appList = ref<AppItem[]>([
-    {
-      id: 'schedule',
-      name: '团队日程',
-      description: '在聊天中快速创建会议与提醒，同步团队日程安排',
-      tag: '效率',
-      iconUrl: '/file/doc.png',
-      iconBg: '#4C9BFF',
-      iconText: '日程'
-    },
-    {
-      id: 'task',
-      name: '任务协作',
-      description: '将聊天消息一键转为待办，跟踪任务进度与完成情况',
-      tag: '协作',
-      iconUrl: '',
-      iconBg: '#31b36b',
-      iconText: '任务'
-    },
-    {
-      id: 'docs',
-      name: '云文档',
-      description: '多人实时协作编辑文档，支持在会话中直接分享与预览',
-      tag: '文档',
-      iconUrl: '',
-      iconBg: '#ff7d00',
-      iconText: '文档'
-    },
-    {
-      id: 'approval',
-      name: '审批中心',
-      description: '请假、报销等审批流程在线发起，进度实时推送到聊天',
-      tag: '办公',
-      iconUrl: '',
-      iconBg: '#5b45c3',
-      iconText: '审批'
-    },
-    {
-      id: 'meeting',
-      name: '视频会议',
-      description: '一键发起音视频会议，支持屏幕共享与群组快速入会',
-      tag: '会议',
-      iconUrl: '',
-      iconBg: '#003E8C',
-      iconText: '会议'
-    },
-    {
-      id: 'poll',
-      name: '投票问卷',
-      description: '在群聊中发起投票与问卷，快速收集成员意见与反馈',
-      tag: '互动',
-      iconUrl: '',
-      iconBg: '#14b8a6',
-      iconText: '投票'
-    }
+  const tabs = computed(() => [
+    { value: 'all' as const, label: t('application.tabAll') },
+    { value: 'acquired' as const, label: t('application.tabAcquired') },
+    { value: 'unacquired' as const, label: t('application.tabUnacquired') }
   ])
 
   const filteredAppList = computed(() => {
-    const keyword = searchKeyword.value.trim().toLowerCase()
-    if (!keyword) return appList.value
-    return appList.value.filter(
-      (app) =>
-        app.name.toLowerCase().includes(keyword) ||
-        app.description.toLowerCase().includes(keyword) ||
-        app.tag.toLowerCase().includes(keyword)
-    )
+    if (activeTab.value === 'acquired') {
+      return appList.value.filter((app) => acquiredIds.value.has(app.id))
+    }
+    if (activeTab.value === 'unacquired') {
+      return appList.value.filter((app) => !acquiredIds.value.has(app.id))
+    }
+    return appList.value
   })
 
-  const onOpenApp = (_app: AppItem) => {
+  const hasIconUrl = (app: Application) => Boolean(app.iconUrl?.trim())
+
+  const fetchAppList = () => {
+    applicationApi.list({ keyword: searchKeyword.value.trim() }).then((res) => {
+      if (res.code === 0 && res.data) {
+        appList.value = res.data
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  const onOpenApp = (_app: Application) => {
     window.$message?.info(t('application.todo'))
   }
+
+  const onGetApp = (app: Application) => {
+    acquiredIds.value = new Set([...acquiredIds.value, app.id])
+  }
+
+  const onOpenAppAction = (_app: Application) => {
+    window.$message?.info(t('application.todo'))
+  }
+
+  const onUninstallApp = (app: Application) => {
+    const next = new Set(acquiredIds.value)
+    next.delete(app.id)
+    acquiredIds.value = next
+  }
+
+  watch(searchKeyword, () => {
+    fetchAppList()
+  })
+
+  onMounted(() => {
+    fetchAppList()
+  })
+
+  onActivated(() => {
+    fetchAppList()
+  })
 </script>
 
 <style scoped lang="scss">
@@ -204,7 +256,7 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      padding: 16px 24px 0;
+      padding: 16px 24px;
     }
 
     &__section-head {
@@ -215,16 +267,46 @@
       margin-bottom: 14px;
     }
 
-    &__section-title {
-      margin: 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-
     &__section-count {
       font-size: 12px;
       color: var(--text-secondary-color);
+    }
+
+    &__tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      border-radius: 8px;
+      background-color: color-mix(in srgb, var(--bg-secondary-color) 60%, var(--border-color) 40%);
+      width: fit-content;
+    }
+
+    &__tab {
+      padding: 4px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text-secondary-color);
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      outline: none;
+      transition:
+        color 0.15s ease,
+        background-color 0.15s ease;
+
+      &:hover {
+        color: var(--text-color);
+      }
+
+      &--active {
+        color: var(--text-color);
+        background-color: var(--bg-primary-color);
+        box-shadow: 0 1px 3px color-mix(in srgb, #000 8%, transparent);
+      }
     }
 
     &__scroll {
@@ -239,40 +321,46 @@
 
     &__grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      padding: 0 4px 24px 0;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 4px 4px 20px 0;
       box-sizing: border-box;
     }
 
     &__card {
       display: flex;
-      align-items: center;
-      gap: 14px;
+      flex-direction: column;
+      gap: 10px;
       min-width: 0;
       padding: 14px 16px;
-      border: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--bg-primary-color) 88%, var(--bg-secondary-color));
+      border: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+      border-radius: 12px;
+      background: var(--bg-primary-color);
       text-align: left;
       cursor: pointer;
       transition:
-        border-color 0.15s ease,
-        background-color 0.15s ease,
-        box-shadow 0.15s ease;
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 
       &:hover {
-        border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
-        background: color-mix(in srgb, var(--primary-color) 4%, var(--bg-primary-color));
-        box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-color) 8%, transparent);
+        border-color: color-mix(in srgb, var(--primary-color) 30%, var(--border-color));
+        box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-color) 8%, transparent);
       }
+    }
+
+    // ---- 上半部：图标 + 信息 ----
+    &__top {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      min-width: 0;
     }
 
     &__icon {
       flex-shrink: 0;
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -280,14 +368,22 @@
     }
 
     &__icon--image {
-      background-color: var(--bg-primary-color);
-      border: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+      background-color: color-mix(in srgb, var(--bg-secondary-color) 50%, var(--bg-primary-color));
+      border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
 
       .application-center__icon-img {
         object-fit: contain;
         padding: 6px;
         box-sizing: border-box;
       }
+    }
+
+    &__icon--fallback {
+      background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--primary-color) 85%, var(--bg-primary-color)),
+        var(--primary-color)
+      );
     }
 
     &__icon-img {
@@ -299,7 +395,7 @@
     &__icon-text {
       font-size: 12px;
       font-weight: 700;
-      color: #fff;
+      color: var(--bg-primary-color);
       line-height: 1;
       user-select: none;
     }
@@ -309,45 +405,187 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      justify-content: space-between;
+      gap: 2px;
     }
 
-    &__title-row {
+    &__info-top {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       min-width: 0;
     }
 
-    &__name {
-      flex: 1;
+    &__name-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       min-width: 0;
+      overflow: hidden;
+    }
+
+    &__name {
       font-size: 14px;
       font-weight: 600;
-      color: var(--text-color);
       line-height: 1.4;
+      color: var(--text-color);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    &__version {
+      flex-shrink: 0;
+      padding: 0 5px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: var(--text-secondary-color);
+      background-color: color-mix(in srgb, var(--border-color) 25%, transparent);
+      white-space: nowrap;
+    }
+
+    &__metrics {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    &__metric {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text-secondary-color);
+      background-color: color-mix(in srgb, var(--bg-secondary-color) 70%, var(--border-color) 30%);
+      white-space: nowrap;
+
+      svg {
+        opacity: 0.8;
+      }
+
+      &--score {
+        color: var(--gold);
+        background-color: color-mix(in srgb, var(--gold) 10%, transparent);
+
+        svg {
+          color: var(--gold);
+        }
+      }
+    }
+
+    &__author {
+      font-size: 11px;
+      line-height: 1.4;
+      color: color-mix(in srgb, var(--text-secondary-color) 65%, transparent);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    // ---- 下半部：标签 + 描述 + 操作 ----
+    &__bottom {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    &__bottom-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    &__actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    &__action {
+      padding: 4px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.4;
+      cursor: pointer;
+      white-space: nowrap;
+      outline: none;
+      transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+
+      &:focus-visible {
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 30%, transparent);
+      }
+
+      &--get {
+        color: #fff;
+        background-color: var(--primary-color);
+
+        &:hover {
+          background-color: color-mix(in srgb, var(--primary-color) 85%, #000);
+        }
+      }
+
+      &--open {
+        color: var(--primary-color);
+        background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+
+        &:hover {
+          background-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
+        }
+      }
+
+      &--uninstall {
+        color: var(--text-secondary-color);
+        background-color: color-mix(in srgb, var(--border-color) 25%, transparent);
+
+        &:hover {
+          color: #e5484d;
+          background-color: color-mix(in srgb, #e5484d 10%, transparent);
+        }
+      }
+    }
+
+    &__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 0;
     }
 
     &__tag {
-      flex-shrink: 0;
-      padding: 1px 6px;
-      border-radius: 4px;
+      padding: 2px 8px;
+      border-radius: 6px;
       font-size: 11px;
+      font-weight: 500;
       line-height: 1.5;
       color: var(--primary-color);
-      background-color: color-mix(in srgb, var(--primary-color) 12%, transparent);
+      background-color: color-mix(in srgb, var(--primary-color) 8%, transparent);
     }
 
     &__desc {
+      margin: 0;
       font-size: 12px;
       line-height: 1.5;
       color: var(--text-secondary-color);
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     &__empty {
@@ -371,6 +609,14 @@
     }
   }
 
+  @media (min-width: 1200px) {
+    .application-center {
+      &__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  }
+
   @media (max-width: 960px) {
     .application-center {
       &__header {
@@ -381,10 +627,6 @@
       &__search {
         width: 100%;
         margin-top: 0;
-      }
-
-      &__grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   }
@@ -399,6 +641,11 @@
 
       &__grid {
         grid-template-columns: minmax(0, 1fr);
+      }
+
+      &__info-top {
+        flex-direction: column;
+        gap: 4px;
       }
     }
   }

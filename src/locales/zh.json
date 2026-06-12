@@ -386,8 +386,18 @@
     "subtitle": "连接企业应用，提升团队协作效率",
     "searchPlaceholder": "搜索应用",
     "sectionAll": "全部应用",
+    "tabAll": "全部",
+    "tabAcquired": "已获取",
+    "tabUnacquired": "未获取",
     "count": "共 {count} 个",
     "empty": "未找到相关应用",
+    "author": "作者：{name}",
+    "authorBy": "由 {name}",
+    "score": "评分 {score}",
+    "getCount": "下载 {count}",
+    "actionGet": "获取",
+    "actionOpen": "打开",
+    "actionUninstall": "卸载",
     "todo": "功能开发中"
   },
   "settings": {

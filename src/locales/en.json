@@ -386,8 +386,18 @@
     "subtitle": "Connect enterprise apps to boost team productivity",
     "searchPlaceholder": "Search apps",
     "sectionAll": "All apps",
+    "tabAll": "All",
+    "tabAcquired": "Installed",
+    "tabUnacquired": "Not installed",
     "count": "{count} apps",
     "empty": "No matching apps",
+    "author": "By {name}",
+    "authorBy": "by {name}",
+    "score": "Rating {score}",
+    "getCount": "{count} downloads",
+    "actionGet": "Get",
+    "actionOpen": "Open",
+    "actionUninstall": "Uninstall",
     "todo": "Coming soon"
   },
   "settings": {

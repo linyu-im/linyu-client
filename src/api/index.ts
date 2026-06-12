@@ -12,6 +12,7 @@ import * as enterpriseApi from './enterprise'
 import * as applyApi from './apply'
 import * as stickerApi from './sticker'
 import * as feedbackApi from './feedback'
+import * as applicationApi from './application'
 
 export {
   userApi,
@@ -27,5 +28,6 @@ export {
   enterpriseApi,
   applyApi,
   stickerApi,
-  feedbackApi
+  feedbackApi,
+  applicationApi
 }
