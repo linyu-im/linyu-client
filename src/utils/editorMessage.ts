@@ -1,11 +1,18 @@
 import type { EditorSegment } from '@/components/Message/MessageEditor/index.vue'
-import type { FileContent, ImageContent, SendMessageMention, SendMessageToUserParam } from '@/types/api/message'
+import type {
+  FileContent,
+  ImageContent,
+  SendMessageMention,
+  SendMessageToUserParam,
+  VideoContent
+} from '@/types/api/message'
 import { messageApi } from '@/api'
 import { calculateFileSha256, splitFileToChunks } from '@/utils/fileChunk'
 
 export type EditorSendUnit =
   | { msgType: 'text'; content: { text: string }; mentions: SendMessageMention[] }
   | { msgType: 'image'; content: ImageContent }
+  | { msgType: 'video'; content: VideoContent }
   | { msgType: 'file'; content: FileContent }
 
 const MENTION_TYPE_USER = 'user'
@@ -72,6 +79,10 @@ export const buildSendUnitsFromSegments = (segments: EditorSegment[]): EditorSen
         flushText()
         units.push({ msgType: 'image', content: seg.content })
         break
+      case 'video':
+        flushText()
+        units.push({ msgType: 'video', content: seg.content })
+        break
       case 'file':
         flushText()
         units.push({ msgType: 'file', content: seg.content })
@@ -96,17 +107,19 @@ const getBlobFromUrl = async (url: string): Promise<Blob | null> => {
   }
 }
 
-const normalizeUploadFileName = (fileName: string | undefined, msgType: 'image' | 'file') => {
+const normalizeUploadFileName = (fileName: string | undefined, msgType: 'image' | 'video' | 'file') => {
   const normalized = fileName?.trim()
   if (normalized) return normalized
-  return msgType === 'image' ? 'image.png' : 'file.bin'
+  if (msgType === 'image') return 'image.png'
+  if (msgType === 'video') return 'video.mp4'
+  return 'file.bin'
 }
 
 const uploadLocalMediaByUrl = async (
   url: string,
   fileName: string | undefined,
   fileSize: number | undefined,
-  msgType: 'image' | 'file'
+  msgType: 'image' | 'video' | 'file'
 ): Promise<string | null> => {
   const blob = await getBlobFromUrl(url)
   if (!blob) return null
@@ -143,7 +156,7 @@ export const resolveSegmentMediaUrl = async (
   options?: {
     fileName?: string
     fileSize?: number
-    msgType?: 'image' | 'file'
+    msgType?: 'image' | 'video' | 'file'
   }
 ): Promise<string | null> => {
   if (!url) return null
@@ -195,6 +208,30 @@ export const buildSendParam = async (
         ...unit.content,
         imgUrl,
         imgThumbUrl
+      }
+    }
+  }
+
+  if (unit.msgType === 'video') {
+    const videoUrl = await resolveSegmentMediaUrl(unit.content.videoUrl, {
+      fileName: unit.content.videoName,
+      fileSize: unit.content.videoSize,
+      msgType: 'video'
+    })
+    if (!videoUrl) return null
+    const videoThumbUrl =
+      (await resolveSegmentMediaUrl(unit.content.videoThumbUrl, {
+        fileName: unit.content.videoName,
+        fileSize: unit.content.videoSize,
+        msgType: 'video'
+      })) || videoUrl
+    return {
+      toUserId,
+      msgType: 'video',
+      content: {
+        ...unit.content,
+        videoUrl,
+        videoThumbUrl
       }
     }
   }

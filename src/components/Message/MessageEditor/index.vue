@@ -24,12 +24,14 @@
   import { FileChip } from './extensions/FileChip'
   import { buildMentionSuggestion } from './extensions/suggestion'
   import type { MentionItem } from './MentionList.vue'
-  import type { FileContent, ImageContent } from '@/types/api/message'
+  import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
+  import { isVideoFile } from '@/utils/fileIcon'
 
   export type EditorSegment =
     | { type: 'text'; text: string }
     | { type: 'mention'; id: string; label: string }
     | { type: 'image'; content: ImageContent }
+    | { type: 'video'; content: VideoContent }
     | { type: 'file'; content: FileContent }
 
   export interface EditorPayload {
@@ -126,15 +128,30 @@
         }
         case 'fileChip': {
           const fileSize = Number(node.attrs?.size) || 0
-          segments.push({
-            type: 'file',
-            content: {
-              fileUrl: node.attrs?.url ?? '',
-              fileType: node.attrs?.mime ?? '',
-              fileName: node.attrs?.name ?? '',
-              fileSize
-            }
-          })
+          const fileName = node.attrs?.name ?? ''
+          const fileType = node.attrs?.mime ?? ''
+          const fileUrl = node.attrs?.url ?? ''
+          if (isVideoFile(fileName, fileType)) {
+            segments.push({
+              type: 'video',
+              content: {
+                videoUrl: fileUrl,
+                videoThumbUrl: fileUrl,
+                videoName: fileName,
+                videoSize: fileSize
+              }
+            })
+          } else {
+            segments.push({
+              type: 'file',
+              content: {
+                fileUrl,
+                fileType,
+                fileName,
+                fileSize
+              }
+            })
+          }
           break
         }
       }

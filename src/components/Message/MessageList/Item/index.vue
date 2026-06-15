@@ -28,6 +28,7 @@
   import type { Message } from '@/types/api/message'
   import Text from './Text.vue'
   import Images from './Images.vue'
+  import Video from './Video.vue'
   import File from './File.vue'
   import Ecard from './Ecard.vue'
   import Voice from './Voice.vue'
@@ -63,7 +64,7 @@
       case 'sticker':
         return Sticker
       case 'video':
-        return Images
+        return Video
       default:
         return null
     }
@@ -73,16 +74,6 @@
     const msg = props.message
     if (msg.msgType === 'voice') {
       return { content: msg.content, isSelf: props.isSelf }
-    }
-    if (msg.msgType === 'video') {
-      return {
-        content: {
-          imgUrl: msg.content.videoUrl,
-          imgThumbUrl: msg.content.videoThumbUrl,
-          imgName: msg.content.videoName,
-          imgSize: msg.content.videoSize
-        }
-      }
     }
     return { content: msg.content }
   })

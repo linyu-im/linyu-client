@@ -7,7 +7,7 @@ export interface FileChunkOptions {
   chunkSize?: number
 }
 
-export const DEFAULT_FILE_CHUNK_SIZE = 1024 * 1024
+export const DEFAULT_FILE_CHUNK_SIZE = 5 * 1024 * 1024
 
 export const splitFileToChunks = (file: Blob, options?: FileChunkOptions): FileChunkItem[] => {
   const chunkSize = Math.max(1, options?.chunkSize ?? DEFAULT_FILE_CHUNK_SIZE)

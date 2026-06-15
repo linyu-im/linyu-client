@@ -165,6 +165,10 @@ export const resolveFileIconName = (fileName: string, fileType?: string): FileIc
   return 'unknown'
 }
 
+export const isVideoFile = (fileName: string, fileType?: string) => {
+  return resolveFileIconName(fileName, fileType) === 'video'
+}
+
 export const getFileIconUrl = (fileName: string, fileType?: string) => {
   const name = resolveFileIconName(fileName, fileType)
   if (!FILE_ICON_NAMES.includes(name)) {

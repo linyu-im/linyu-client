@@ -537,6 +537,16 @@
     "saveFailed": "图片保存失败",
     "empty": "暂无图片"
   },
+  "videoViewer": {
+    "play": "播放",
+    "pause": "暂停",
+    "speed": "倍速",
+    "speedValue": "{speed}x",
+    "download": "下载",
+    "saveSuccess": "视频保存成功",
+    "saveFailed": "视频保存失败",
+    "empty": "暂无视频"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "圆角",

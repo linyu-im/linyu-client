@@ -73,6 +73,11 @@ const routes: RouteRecordRaw[] = [
     path: '/imgViewer',
     name: 'imgViewer',
     component: () => import('@/views/imgViewerWindow/index.vue')
+  },
+  {
+    path: '/videoViewer',
+    name: 'videoViewer',
+    component: () => import('@/views/videoViewerWindow/index.vue')
   }
 ]
 

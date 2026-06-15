@@ -537,6 +537,16 @@
     "saveFailed": "Failed to save image",
     "empty": "No images"
   },
+  "videoViewer": {
+    "play": "Play",
+    "pause": "Pause",
+    "speed": "Speed",
+    "speedValue": "{speed}x",
+    "download": "Download",
+    "saveSuccess": "Video saved successfully",
+    "saveFailed": "Failed to save video",
+    "empty": "No videos"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "Rounded corners",

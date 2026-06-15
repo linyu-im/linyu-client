@@ -149,3 +149,13 @@ export const createImgViewerWindow = () =>
     resizable: true,
     transparent: true
   })
+
+export const createVideoViewerWindow = () =>
+  createWebviewWindow('视频', 'videoViewer', {
+    width: 900,
+    height: 640,
+    minWidth: 640,
+    minHeight: 480,
+    resizable: true,
+    transparent: true
+  })
