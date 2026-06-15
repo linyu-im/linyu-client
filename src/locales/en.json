@@ -179,7 +179,7 @@
       "audioVideo": "Audio/Video Call"
     },
     "fields": {
-      "linyuId": "Linyu ID:",
+      "linyuId": "Linyu ID",
       "remark": "Remark",
       "tag": "Contact Tag",
       "signature": "Signature",
@@ -223,6 +223,16 @@
       "female": "Female",
       "male": "Male"
     }
+  },
+  "avatarProfile": {
+    "nickname": "Nickname",
+    "emotion": "Mood",
+    "region": "Region",
+    "friendProfile": "Friend Profile",
+    "voiceChat": "Voice Chat",
+    "videoChat": "Video Chat",
+    "enterpriseIntro": "About",
+    "memberCount": "{count} members"
   },
   "moment": {
     "empty": "No moments yet",

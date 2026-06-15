@@ -12,7 +12,7 @@
         <!-- 头像状态 -->
         <div class="m-l-10px flex items-center pointer-events-auto">
           <div class="flex position-relative items-center">
-            <Avatar :id="userStore.userInfo.id" class="size-24px rounded-5px bg-#FFF" />
+            <Avatar :id="userStore.userInfo.id" class="size-24px rounded-5px bg-#FFF" :profile-enabled="true" />
           </div>
           <div class="m-l-8px text-14px font-bold">{{ userStore.userInfo.username }}</div>
           <div

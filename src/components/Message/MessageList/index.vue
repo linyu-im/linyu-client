@@ -4,7 +4,12 @@
       <template v-for="message in messages" :key="message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
         <div class="message-list__row" :class="{ 'message-list__row--self': isSelf(message) }">
-          <Avatar class="message-list__avatar" :id="message.fromId" :type="message.fromType" :size="32" />
+          <Avatar
+            class="message-list__avatar"
+            :id="message.fromId"
+            :type="message.fromType"
+            :size="32"
+            :profile-enabled="true" />
           <div
             class="message-list__bubble"
             :class="{

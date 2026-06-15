@@ -15,6 +15,8 @@ export const useAvatarStore = defineStore('avatar', () => {
   /** 全应用共用的内存 LRU，不 persist（convertFileSrc URL 仅运行时有效） */
   const srcCache = new Map<string, string>()
   const inflightLocal = new Map<string, Promise<string>>()
+  /** 每次远程刷新成功后记录时间戳，用于通知所有 Avatar 实例同步更新 */
+  const lastRefresh = reactive(new Map<string, number>())
 
   const getCacheKey = (type: string, id: string) => `${type}:${id}`
 
@@ -132,6 +134,26 @@ export const useAvatarStore = defineStore('avatar', () => {
     return fetchRemoteAvatar(type, id)
   }
 
+  const refreshSrc = async (type: AvatarType, id: string): Promise<string> => {
+    if (!id) return ''
+
+    const cacheKey = getCacheKey(type, id)
+    srcCache.delete(cacheKey)
+
+    const url = await fetchRemoteAvatar(type, id)
+    if (url) {
+      lastRefresh.set(cacheKey, Date.now())
+      return url
+    }
+
+    return loadLocalAvatar(type, id)
+  }
+
+  /** 获取指定头像的最后刷新时间戳（响应式，用于跨实例同步） */
+  const getLastRefresh = (type: AvatarType, id: string): number => {
+    return lastRefresh.get(getCacheKey(type, id)) ?? 0
+  }
+
   const prefetch = (id: string, type: AvatarType = 'user') => loadLocalAvatar(type, id)
 
   const prefetchMany = (ids: string[], type: AvatarType = 'user') => {
@@ -142,6 +164,8 @@ export const useAvatarStore = defineStore('avatar', () => {
   return {
     getCachedSrc,
     resolveSrc,
+    refreshSrc,
+    getLastRefresh,
     prefetch,
     prefetchMany
   }

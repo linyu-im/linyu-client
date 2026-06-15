@@ -179,7 +179,7 @@
       "audioVideo": "音视频通话"
     },
     "fields": {
-      "linyuId": "林语号：",
+      "linyuId": "林语号",
       "remark": "备注",
       "tag": "好友标签",
       "signature": "个性签名",
@@ -223,6 +223,16 @@
       "female": "女",
       "male": "男"
     }
+  },
+  "avatarProfile": {
+    "nickname": "昵称",
+    "emotion": "心情",
+    "region": "地区",
+    "friendProfile": "朋友资料",
+    "voiceChat": "语音聊天",
+    "videoChat": "视频聊天",
+    "enterpriseIntro": "企业简介",
+    "memberCount": "{count}人"
   },
   "moment": {
     "empty": "暂无动态",

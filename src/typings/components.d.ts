@@ -13,6 +13,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Avatar: typeof import('./../components/Avatar.vue')['default']
+    AvatarProfileCard: typeof import('./../components/AvatarProfileCard.vue')['default']
     ChatSession: typeof import('./../components/ChatSession.vue')['default']
     CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']
     ColorTag: typeof import('./../components/ColorTag.vue')['default']
@@ -96,6 +97,7 @@ declare module 'vue' {
 // For TSX support
 declare global {
   const Avatar: typeof import('./../components/Avatar.vue')['default']
+  const AvatarProfileCard: typeof import('./../components/AvatarProfileCard.vue')['default']
   const ChatSession: typeof import('./../components/ChatSession.vue')['default']
   const CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']
   const ColorTag: typeof import('./../components/ColorTag.vue')['default']
