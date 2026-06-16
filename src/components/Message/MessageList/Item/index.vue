@@ -75,6 +75,9 @@
     if (msg.msgType === 'voice') {
       return { content: msg.content, isSelf: props.isSelf }
     }
+    if (msg.msgType === 'image' || msg.msgType === 'video' || msg.msgType === 'file') {
+      return { messageId: msg.id, content: msg.content }
+    }
     return { content: msg.content }
   })
 

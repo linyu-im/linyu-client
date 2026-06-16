@@ -122,7 +122,10 @@ export const createHomeWinodw = () =>
     minWidth: 800,
     minHeight: 600,
     resizable: true,
-    transparent: true
+    transparent: true,
+    // 开启 Tauri 原生拖拽，OS 级 file drop 会带真实磁盘路径（消息编辑器据此免去临时拷贝）。
+    // 编辑器内通过 onDragDropEvent 自行驱动拖拽样式与文件插入。
+    dragDropEnabled: true
   })
 
 export const createEmotionWinodw = () =>

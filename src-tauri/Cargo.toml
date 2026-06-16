@@ -34,3 +34,5 @@ tauri-plugin-websocket = "2"
 tauri-plugin-clipboard-manager = "2"
 screenshots = "0.8"
 base64 = "0.22"
+reqwest = { version = "0.12", features = ["multipart"] }
+sha2 = "0.10"

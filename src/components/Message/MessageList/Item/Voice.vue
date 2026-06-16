@@ -1,5 +1,5 @@
 <template>
-  <button type="button" class="message-voice" @click="onPlay">
+  <button type="button" class="message-voice" :disabled="uploading" @click="onPlay">
     <svg
       class="message-voice__icon"
       :class="{
@@ -24,6 +24,8 @@
   const props = defineProps<{
     content: VoiceContent
     isSelf?: boolean
+    uploading?: boolean
+    uploadProgress?: number
   }>()
 
   const isPlaying = ref(false)
@@ -34,6 +36,8 @@
   }
 
   const onPlay = () => {
+    if (props.uploading) return
+
     if (isPlaying.value) {
       audioRef.value?.pause()
       resetPlaying()

@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="editorRootRef"
     class="message-editor"
     :class="{ 'is-disabled': disabled, 'is-dragover': isDragOver }"
     @click="focus"
@@ -13,8 +14,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import { convertFileSrc } from '@tauri-apps/api/core'
+  import { getCurrentWebview } from '@tauri-apps/api/webview'
+  import type { UnlistenFn } from '@tauri-apps/api/event'
   import { Editor, EditorContent, useEditor } from '@tiptap/vue-3'
   import StarterKit from '@tiptap/starter-kit'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -26,6 +30,8 @@
   import type { MentionItem } from './MentionList.vue'
   import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
   import { isVideoFile } from '@/utils/fileIcon'
+  import { getFilePath, getFileSize, readPathAsFile } from '@/utils/filePick'
+  import { registerBlobFilePath } from '@/utils/blobFilePath'
 
   export type EditorSegment =
     | { type: 'text'; text: string }
@@ -64,7 +70,7 @@
     disabled: false,
     fetchMentions: undefined,
     maxImageSize: 20 * 1024 * 1024,
-    maxFileSize: 100 * 1024 * 1024,
+    maxFileSize: 200 * 1024 * 1024,
     submitOnEnter: true
   })
 
@@ -80,6 +86,7 @@
   const isDragOver = ref(false)
   const dragCounter = ref(0)
   const blobUrls = shallowRef<Set<string>>(new Set())
+  const editorRootRef = ref<HTMLElement | null>(null)
 
   const trackBlob = (url: string) => {
     if (url.startsWith('blob:')) {
@@ -266,35 +273,47 @@
   })
 
   const insertImage = (file: File) => {
-    if (file.size > props.maxImageSize) {
+    const fileSize = getFileSize(file)
+    if (fileSize > props.maxImageSize) {
       emit('file-rejected', { file, reason: 'image-too-large' })
       return
     }
-    const url = URL.createObjectURL(file)
-    trackBlob(url)
+    const filePath = getFilePath(file)
+    const url = filePath ? convertFileSrc(filePath) : URL.createObjectURL(file)
+    if (!filePath) {
+      trackBlob(url)
+    }
+    console.log('[editor] insertImage | url:', url, '| filePath:', filePath)
+    if (filePath) registerBlobFilePath(url, filePath)
     editor.value
       ?.chain()
       .focus()
       .insertContent({
         type: 'image',
-        attrs: { src: url, alt: file.name, fileSize: file.size }
+        attrs: { src: url, alt: file.name, fileSize }
       })
       .run()
   }
 
   const insertFileChip = (file: File) => {
-    if (file.size > props.maxFileSize) {
+    const fileSize = getFileSize(file)
+    if (fileSize > props.maxFileSize) {
       emit('file-rejected', { file, reason: 'file-too-large' })
       return
     }
-    const url = URL.createObjectURL(file)
-    trackBlob(url)
+    const filePath = getFilePath(file)
+    const url = filePath ? `local-file://${encodeURIComponent(filePath)}` : URL.createObjectURL(file)
+    if (!filePath) {
+      trackBlob(url)
+    }
+    console.log('[editor] insertFileChip | url:', url, '| filePath:', filePath)
+    if (filePath) registerBlobFilePath(url, filePath)
     editor.value
       ?.chain()
       .focus()
       .insertFileChip({
         name: file.name,
-        size: file.size,
+        size: fileSize,
         mime: file.type,
         url
       })
@@ -352,6 +371,55 @@
     return Array.from(types).includes('Files')
   }
 
+  /**
+   * Tauri 原生拖拽：position 是相对窗口的物理像素，需换算成 CSS 像素后与编辑器可视区域比对，
+   * 判断拖拽是否落在输入框内。
+   */
+  const isPositionOverEditor = (position: { x: number; y: number }) => {
+    const root = editorRootRef.value
+    if (!root) return false
+    const dpr = window.devicePixelRatio || 1
+    const x = position.x / dpr
+    const y = position.y / dpr
+    const rect = root.getBoundingClientRect()
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+  }
+
+  const handleTauriDropPaths = async (paths: string[]) => {
+    for (const path of paths) {
+      try {
+        const file = await readPathAsFile(path)
+        insertFileOrImage(file)
+      } catch (err) {
+        console.error('[editor] read dropped file failed:', path, err)
+      }
+    }
+    restoreFocusAfterDrop()
+  }
+
+  let unlistenDragDrop: UnlistenFn | null = null
+
+  onMounted(async () => {
+    try {
+      unlistenDragDrop = await getCurrentWebview().onDragDropEvent((event) => {
+        const payload = event.payload
+        if (payload.type === 'enter' || payload.type === 'over') {
+          isDragOver.value = isPositionOverEditor(payload.position)
+        } else if (payload.type === 'drop') {
+          const over = isPositionOverEditor(payload.position)
+          isDragOver.value = false
+          if (over && payload.paths?.length) {
+            void handleTauriDropPaths(payload.paths)
+          }
+        } else {
+          isDragOver.value = false
+        }
+      })
+    } catch (err) {
+      console.error('[editor] register drag-drop listener failed:', err)
+    }
+  })
+
   const handleSubmit = () => {
     if (!editor.value) return
     const payload = buildPayload(editor.value)
@@ -360,9 +428,11 @@
   }
 
   const focus = () => editor.value?.chain().focus().run()
-  const clear = () => {
+  const clear = (options?: { keepBlobs?: boolean }) => {
     editor.value?.commands.clearContent(true)
-    revokeBlobs()
+    if (!options?.keepBlobs) {
+      revokeBlobs()
+    }
   }
   const insertText = (text: string) => editor.value?.chain().focus().insertContent(text).run()
   const insertMention = (item: MentionItem) =>
@@ -414,6 +484,10 @@
 
   onBeforeUnmount(() => {
     revokeBlobs()
+    if (unlistenDragDrop) {
+      unlistenDragDrop()
+      unlistenDragDrop = null
+    }
   })
 
   defineExpose({

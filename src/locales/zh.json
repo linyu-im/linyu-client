@@ -105,6 +105,12 @@
       "multiSelect": "多选（开发中）",
       "delete": "删除（开发中）"
     },
+    "sendStatus": {
+      "blocked": "对方已拉黑您",
+      "network": "请您检查网络",
+      "uploadFailed": "文件上传失败",
+      "unknown": "发送失败"
+    },
     "editor": {
       "placeholder": "请输入消息，支持 {'@'} 提及、粘贴/拖拽图片与文件…",
       "dragDropHint": "松开添加：图片/文件",

@@ -105,7 +105,6 @@ export async function formData<T = any>(
         msg: `HTTP Error: ${response.status}`
       }
     }
-
     return (await response.json()) as ApiResponse<T>
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)

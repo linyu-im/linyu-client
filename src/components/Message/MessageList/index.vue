@@ -21,6 +21,14 @@
               'message-list__bubble--ecard': message.msgType === 'ecard'
             }">
             <Item :message="message" :is-self="isSelf(message)" />
+            <n-tooltip v-if="isSendFailed(message)" placement="top" :show-arrow="false">
+              <template #trigger>
+                <button type="button" class="message-list__fail-btn" aria-label="send failed" @click.stop>
+                  <span class="message-list__fail-icon">!</span>
+                </button>
+              </template>
+              {{ getFailReason(message) }}
+            </n-tooltip>
           </div>
         </div>
       </template>
@@ -31,10 +39,12 @@
 
 <script setup lang="ts">
   import type { ScrollbarInst } from 'naive-ui'
+  import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import { onBeforeUnmount, onMounted } from 'vue'
 
+  const { t } = useI18n()
   const userStore = useUserStore()
 
   const props = defineProps({
@@ -242,6 +252,10 @@
 
   const isPlainBubble = (message: Message) =>
     message.msgType === 'image' || message.msgType === 'video' || message.msgType === 'sticker'
+
+  const isSendFailed = (message: Message) => isSelf(message) && message.status === 'failed'
+
+  const getFailReason = (message: Message) => message.failReason?.trim() || t('message.sendStatus.unknown')
 </script>
 
 <style scoped lang="scss">
@@ -287,7 +301,39 @@
       overflow: hidden;
     }
 
+    &__fail-btn {
+      position: absolute;
+      left: -22px;
+      bottom: 2px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    &__fail-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 1px 4px color-mix(in srgb, var(--red) 35%, transparent);
+    }
+
     &__bubble {
+      position: relative;
       padding: 8px 10px;
       border-radius: 8px;
       font-size: 14px;

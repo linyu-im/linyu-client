@@ -1,5 +1,8 @@
 import { open } from '@tauri-apps/plugin-dialog'
-import { readFile } from '@tauri-apps/plugin-fs'
+import { stat } from '@tauri-apps/plugin-fs'
+
+export const FILE_PATH_KEY = '__filePath'
+const FILE_SIZE_KEY = '__fileSize'
 
 const MIME_BY_EXT: Record<string, string> = {
   png: 'image/png',
@@ -32,10 +35,24 @@ const guessMimeFromName = (name: string) => {
 }
 
 export const readPathAsFile = async (path: string) => {
-  const bytes = await readFile(path)
+  const fileStat = await stat(path)
   const name = getFileNameFromPath(path)
   const type = guessMimeFromName(name)
-  return new File([bytes], name, { type })
+  const file = new File([], name, { type })
+  Object.defineProperty(file, FILE_PATH_KEY, { value: path, enumerable: false })
+  Object.defineProperty(file, FILE_SIZE_KEY, { value: fileStat.size ?? 0, enumerable: false })
+  console.log('[filePick] readPathAsFile(meta only) | name:', name, '| path:', path, '| size:', fileStat.size ?? 0)
+  return file
+}
+
+export const getFilePath = (file: File): string | undefined => (file as any)[FILE_PATH_KEY]
+
+export const getFileSize = (file: File): number => {
+  const metadataSize = (file as any)[FILE_SIZE_KEY]
+  if (typeof metadataSize === 'number' && Number.isFinite(metadataSize) && metadataSize >= 0) {
+    return metadataSize
+  }
+  return file.size
 }
 
 interface PickFilesOptions {

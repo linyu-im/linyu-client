@@ -1,32 +1,40 @@
 <template>
-  <div class="message-video" @click="onPreview">
-    <img v-if="useImageThumb" class="message-video__cover" :src="content.videoThumbUrl" :alt="content.videoName" />
-    <video
-      v-else
-      ref="videoRef"
-      class="message-video__cover"
-      :src="content.videoUrl"
-      preload="auto"
-      muted
-      playsinline
-      @loadeddata="seekToFirstFrame"
-      @canplay="seekToFirstFrame"
-      @seeked="freezeOnFirstFrame" />
-    <div class="message-video__overlay">
-      <div class="message-video__play" />
+  <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="media">
+    <div class="message-video" @click="onPreview">
+      <img v-if="useImageThumb" class="message-video__cover" :src="content.videoThumbUrl" :alt="content.videoName" />
+      <video
+        v-else
+        ref="videoRef"
+        class="message-video__cover"
+        :src="content.videoUrl"
+        preload="auto"
+        muted
+        playsinline
+        @loadeddata="seekToFirstFrame"
+        @canplay="seekToFirstFrame"
+        @seeked="freezeOnFirstFrame" />
+      <div class="message-video__overlay">
+        <div class="message-video__play" />
+      </div>
     </div>
-  </div>
+  </UploadProgress>
 </template>
 
 <script setup lang="ts">
   import type { VideoContent } from '@/types/api/message'
   import { openVideoViewer } from '@/utils/videoViewer'
+  import UploadProgress from '@/components/Message/UploadProgress.vue'
+  import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
 
   const props = defineProps<{
+    messageId: string
     content: VideoContent
   }>()
 
+  const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
+
   const onPreview = () => {
+    if (uploading.value) return
     openVideoViewer(
       [
         {

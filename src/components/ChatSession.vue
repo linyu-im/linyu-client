@@ -100,7 +100,10 @@
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
-  import { buildSendParamsFromSegments } from '@/utils/editorMessage'
+  import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
+  import { createLocalMessageFromUnit, patchMessageById, resolveMessageFailReason } from '@/utils/messageSend'
+  import { useMessageUploadStore } from '@/stores/messageUpload'
+  import { useSendingMessagesStore } from '@/stores/sendingMessages'
   import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
   import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
   import MessageList from './Message/MessageList/index.vue'
@@ -124,6 +127,8 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const messageUploadStore = useMessageUploadStore()
+  const sendingMessagesStore = useSendingMessagesStore()
 
   const PAGE_SIZE = 20
   const pendingNewCount = ref(0)
@@ -283,7 +288,12 @@
       const result = await fetchMessagePage(1)
       if (!result) return
 
-      messages.value = toDisplayOrder(result.records)
+      const serverMessages = toDisplayOrder(result.records)
+      const pendingMessages = sendingMessagesStore.getMessages(props.toId)
+      const serverIds = new Set(serverMessages.map((m) => m.id))
+      const uniquePending = pendingMessages.filter((m) => !serverIds.has(m.id))
+
+      messages.value = [...serverMessages, ...uniquePending]
       page.value = result.page
       totalPage.value = result.totalPage
     } finally {
@@ -358,7 +368,53 @@
     return mentionableMembers.filter((m) => m.label.toLowerCase().includes(q))
   }
 
-  const onSend = async (payload?: EditorPayload) => {
+  const replaceLocalMessage = (localId: string, serverMsg: Message) => {
+    messageUploadStore.clearProgress(localId)
+    sendingMessagesStore.removeMessage(props.toId, localId)
+    messages.value = messages.value.map((item) =>
+      item.id === localId ? normalizeMessage(serverMsg as ApiMessage) : item
+    )
+  }
+
+  const markLocalMessageFailed = (localId: string, reason: string) => {
+    messageUploadStore.clearProgress(localId)
+    sendingMessagesStore.updateMessage(props.toId, localId, {
+      status: 'failed',
+      failReason: reason
+    })
+    messages.value = patchMessageById(messages.value, localId, {
+      status: 'failed',
+      failReason: reason
+    })
+  }
+
+  const sendLocalMessage = (localId: string, unit: ReturnType<typeof buildSendUnitsFromSegments>[number]) => {
+    if (unitNeedsMediaUpload(unit)) {
+      messageUploadStore.setProgress(localId, 0)
+    }
+
+    const onProgress = (progress: number) => {
+      messageUploadStore.setProgress(localId, progress)
+    }
+
+    return buildSendParam(unit, props.toId, { onProgress }).then((param) => {
+      messageUploadStore.clearProgress(localId)
+      if (!param) {
+        markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'))
+        return
+      }
+
+      return messageApi.sendToUser(param).then((res) => {
+        if (res.code === 0 && res.data) {
+          replaceLocalMessage(localId, res.data)
+        } else {
+          markLocalMessageFailed(localId, resolveMessageFailReason(res.code, res.msg, t))
+        }
+      })
+    })
+  }
+
+  const onSend = (payload?: EditorPayload) => {
     if (!editorRef.value) return
     if (!payload) {
       editorRef.value.submit()
@@ -367,24 +423,26 @@
 
     if (payload.isEmpty) return
 
-    const params = await buildSendParamsFromSegments(payload.segments, props.toId)
-    if (!params.length) return
+    const fromId = userStore.authInfo.userId
+    if (!fromId || !props.toId) return
 
-    let sent = 0
+    const units = buildSendUnitsFromSegments(payload.segments)
+    if (!units.length) return
 
-    for (const param of params) {
-      const res = await messageApi.sendToUser(param)
-      if (res.code === 0 && res.data) {
-        appendMessage(res.data)
-        sent += 1
-      } else {
-        window.$message?.error(res.msg)
-      }
+    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.toId))
+
+    for (const localMsg of localMessages) {
+      appendMessage(localMsg)
+      sendingMessagesStore.addMessage(props.toId, localMsg)
     }
 
-    if (sent > 0) {
-      editorRef.value.clear()
-    }
+    editorRef.value.clear({ keepBlobs: true })
+
+    const sendTasks = units.map((unit, index) => sendLocalMessage(localMessages[index].id, unit))
+
+    Promise.all(sendTasks).then(() => {
+      editorRef.value?.clear()
+    })
   }
 
   const onFileRejected = ({ file, reason }: { file: File; reason: string }) => {

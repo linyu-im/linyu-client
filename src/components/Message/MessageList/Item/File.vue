@@ -1,29 +1,39 @@
 <template>
-  <a class="message-file" target="_blank" rel="noopener noreferrer">
-    <img class="message-file__icon" :src="iconUrl" :alt="content.fileName" />
-    <div class="message-file__info">
-      <n-tooltip trigger="hover" placement="top" :disabled="!isNameTruncated" :content-style="tooltipContentStyle">
-        <template #trigger>
-          <p class="message-file__name">
-            <span class="message-file__name-base">{{ displayBase }}</span>
-            <span v-if="fileNameParts.suffix" class="message-file__name-suffix">{{ fileNameParts.suffix }}</span>
-          </p>
-        </template>
-        {{ content.fileName }}
-      </n-tooltip>
-      <span class="message-file__size">{{ formatSize(content.fileSize) }}</span>
-    </div>
-  </a>
+  <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="file">
+    <a class="message-file" target="_blank" rel="noopener noreferrer">
+      <img class="message-file__icon" :src="iconUrl" :alt="content.fileName" />
+      <div class="message-file__info">
+        <n-tooltip trigger="hover" placement="top" :disabled="!isNameTruncated" :content-style="tooltipContentStyle">
+          <template #trigger>
+            <p class="message-file__name">
+              <span class="message-file__name-base">{{ displayBase }}</span>
+              <span v-if="fileNameParts.suffix" class="message-file__name-suffix">{{ fileNameParts.suffix }}</span>
+            </p>
+          </template>
+          {{ content.fileName }}
+        </n-tooltip>
+        <span class="message-file__size" :class="{ 'message-file__size--uploading': uploading }">
+          <template v-if="uploading">{{ uploadProgress }}%</template>
+          <template v-else>{{ formatSize(content.fileSize) }}</template>
+        </span>
+      </div>
+    </a>
+  </UploadProgress>
 </template>
 
 <script setup lang="ts">
   import type { CSSProperties } from 'vue'
   import type { FileContent } from '@/types/api/message'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/fileIcon'
+  import UploadProgress from '@/components/Message/UploadProgress.vue'
+  import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
 
   const props = defineProps<{
+    messageId: string
     content: FileContent
   }>()
+
+  const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
 
   const iconUrl = computed(() => getFileIconUrl(props.content.fileName, props.content.fileType))
 
@@ -55,6 +65,8 @@
     --file-card-padding-x: 10px;
     --file-card-padding-y: 10px;
 
+    position: relative;
+    overflow: hidden;
     box-sizing: border-box;
     width: var(--file-card-width);
     padding: var(--file-card-padding-y) var(--file-card-padding-x);
@@ -103,6 +115,11 @@
       line-height: 1;
       color: var(--text-secondary-color);
       font-size: 12px;
+      font-variant-numeric: tabular-nums;
+
+      &--uploading {
+        color: var(--primary-color);
+      }
     }
   }
 </style>

@@ -105,6 +105,12 @@
       "multiSelect": "Multi-select (coming soon)",
       "delete": "Delete (coming soon)"
     },
+    "sendStatus": {
+      "blocked": "You have been blocked",
+      "network": "Please check your network",
+      "uploadFailed": "File upload failed",
+      "unknown": "Failed to send"
+    },
     "editor": {
       "placeholder": "Type a message. {'@'}mention, paste or drag images and files…",
       "dragDropHint": "Drop to add image or file",

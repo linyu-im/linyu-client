@@ -6,8 +6,12 @@ import type {
   SendMessageToUserParam,
   VideoContent
 } from '@/types/api/message'
-import { messageApi } from '@/api'
-import { calculateFileSha256, splitFileToChunks } from '@/utils/fileChunk'
+import {
+  isLocalMediaUrl,
+  uploadMessageMediaByUrl,
+  type UploadErrorHandler,
+  type UploadProgressHandler
+} from '@/utils/messageMediaUpload'
 
 export type EditorSendUnit =
   | { msgType: 'text'; content: { text: string }; mentions: SendMessageMention[] }
@@ -97,16 +101,6 @@ export const buildSendUnitsFromSegments = (segments: EditorSegment[]): EditorSen
 const isRemoteUrl = (url: string) => /^https?:\/\//i.test(url)
 const uploadUrlCache = new Map<string, Promise<string | null>>()
 
-const getBlobFromUrl = async (url: string): Promise<Blob | null> => {
-  try {
-    const res = await fetch(url)
-    if (!res.ok) return null
-    return await res.blob()
-  } catch {
-    return null
-  }
-}
-
 const normalizeUploadFileName = (fileName: string | undefined, msgType: 'image' | 'video' | 'file') => {
   const normalized = fileName?.trim()
   if (normalized) return normalized
@@ -115,68 +109,65 @@ const normalizeUploadFileName = (fileName: string | undefined, msgType: 'image' 
   return 'file.bin'
 }
 
-const uploadLocalMediaByUrl = async (
-  url: string,
-  fileName: string | undefined,
-  fileSize: number | undefined,
-  msgType: 'image' | 'video' | 'file'
-): Promise<string | null> => {
-  const blob = await getBlobFromUrl(url)
-  if (!blob) return null
-
-  const fileHash = await calculateFileSha256(blob)
-  const chunks = splitFileToChunks(blob)
-  if (!chunks.length) return null
-
-  for (const item of chunks) {
-    const uploadRes = await messageApi.uploadFileChunk({
-      fileHash,
-      chunkIndex: String(item.index),
-      file: item.chunk
-    })
-    if (uploadRes.code !== 0) return null
+export const unitNeedsMediaUpload = (unit: EditorSendUnit): boolean => {
+  switch (unit.msgType) {
+    case 'text':
+      return false
+    case 'image':
+      return isLocalMediaUrl(unit.content.imgUrl) || isLocalMediaUrl(unit.content.imgThumbUrl)
+    case 'video':
+      return isLocalMediaUrl(unit.content.videoUrl) || isLocalMediaUrl(unit.content.videoThumbUrl)
+    case 'file':
+      return isLocalMediaUrl(unit.content.fileUrl)
   }
-
-  const mergeRes = await messageApi.mergeFileChunks({
-    fileHash,
-    fileSize: fileSize || blob.size,
-    fileName: normalizeUploadFileName(fileName, msgType),
-    totalChunk: chunks.length
-  })
-  console.log('mergeRes', mergeRes)
-  if (mergeRes.code !== 0 || !mergeRes.data) return null
-  return mergeRes.data
 }
 
 /**
  * 本地媒体 URL 需先上传后才能发送；返回上传后的真实 URL。
  */
-export const resolveSegmentMediaUrl = async (
+export const resolveSegmentMediaUrl = (
   url: string,
   options?: {
     fileName?: string
     fileSize?: number
     msgType?: 'image' | 'video' | 'file'
+    onProgress?: UploadProgressHandler
+    onError?: UploadErrorHandler
   }
 ): Promise<string | null> => {
-  if (!url) return null
-  if (isRemoteUrl(url)) return url
-  if (url.startsWith('blob:') || url.startsWith('data:')) {
-    const cached = uploadUrlCache.get(url)
+  if (!url) return Promise.resolve(null)
+  if (isRemoteUrl(url)) return Promise.resolve(url)
+  if (isLocalMediaUrl(url)) {
+    const cacheKey = `${url}:${options?.fileName ?? ''}`
+    const cached = uploadUrlCache.get(cacheKey)
     if (cached) return cached
-    const task = uploadLocalMediaByUrl(url, options?.fileName, options?.fileSize, options?.msgType ?? 'file')
-    uploadUrlCache.set(url, task)
+
+    const fileName = normalizeUploadFileName(options?.fileName, options?.msgType ?? 'file')
+    const task = uploadMessageMediaByUrl(url, fileName, {
+      onProgress: options?.onProgress,
+      onError: options?.onError
+    }).then((result) => {
+      if (!result) {
+        uploadUrlCache.delete(cacheKey)
+      }
+      return result
+    })
+    uploadUrlCache.set(cacheKey, task)
     return task
   }
-  return url
+  return Promise.resolve(url)
 }
 
-export const buildSendParam = async (
+export const buildSendParam = (
   unit: EditorSendUnit,
-  toUserId: string
+  toUserId: string,
+  options?: { onProgress?: UploadProgressHandler; onError?: UploadErrorHandler }
 ): Promise<SendMessageToUserParam | null> => {
+  const onProgress = options?.onProgress
+  const onError = options?.onError
+
   if (unit.msgType === 'text') {
-    if (!unit.content.text.trim()) return null
+    if (!unit.content.text.trim()) return Promise.resolve(null)
     const param: SendMessageToUserParam = {
       toUserId,
       msgType: 'text',
@@ -185,88 +176,122 @@ export const buildSendParam = async (
     if (unit.mentions.length) {
       param.mentions = unit.mentions
     }
-    return param
+    return Promise.resolve(param)
   }
 
   if (unit.msgType === 'image') {
-    const imgUrl = await resolveSegmentMediaUrl(unit.content.imgUrl, {
+    return resolveSegmentMediaUrl(unit.content.imgUrl, {
       fileName: unit.content.imgName,
       fileSize: unit.content.imgSize,
-      msgType: 'image'
-    })
-    if (!imgUrl) return null
-    const imgThumbUrl =
-      (await resolveSegmentMediaUrl(unit.content.imgThumbUrl, {
+      msgType: 'image',
+      onProgress,
+      onError
+    }).then((imgUrl) => {
+      if (!imgUrl) return null
+      const thumbIsSame = unit.content.imgThumbUrl === unit.content.imgUrl
+      if (thumbIsSame || !isLocalMediaUrl(unit.content.imgThumbUrl)) {
+        return {
+          toUserId,
+          msgType: 'image' as const,
+          content: {
+            ...unit.content,
+            imgUrl,
+            imgThumbUrl: imgUrl
+          }
+        }
+      }
+      return resolveSegmentMediaUrl(unit.content.imgThumbUrl, {
         fileName: unit.content.imgName,
         fileSize: unit.content.imgSize,
         msgType: 'image'
-      })) || imgUrl
-    return {
-      toUserId,
-      msgType: 'image',
-      content: {
-        ...unit.content,
-        imgUrl,
-        imgThumbUrl
-      }
-    }
+      }).then((imgThumbUrl) => ({
+        toUserId,
+        msgType: 'image' as const,
+        content: {
+          ...unit.content,
+          imgUrl,
+          imgThumbUrl: imgThumbUrl || imgUrl
+        }
+      }))
+    })
   }
 
   if (unit.msgType === 'video') {
-    const videoUrl = await resolveSegmentMediaUrl(unit.content.videoUrl, {
+    return resolveSegmentMediaUrl(unit.content.videoUrl, {
       fileName: unit.content.videoName,
       fileSize: unit.content.videoSize,
-      msgType: 'video'
-    })
-    if (!videoUrl) return null
-    const videoThumbUrl =
-      (await resolveSegmentMediaUrl(unit.content.videoThumbUrl, {
+      msgType: 'video',
+      onProgress,
+      onError
+    }).then((videoUrl) => {
+      if (!videoUrl) return null
+      const thumbIsSame = unit.content.videoThumbUrl === unit.content.videoUrl
+      if (thumbIsSame || !isLocalMediaUrl(unit.content.videoThumbUrl)) {
+        return {
+          toUserId,
+          msgType: 'video' as const,
+          content: {
+            ...unit.content,
+            videoUrl,
+            videoThumbUrl: videoUrl
+          }
+        }
+      }
+      return resolveSegmentMediaUrl(unit.content.videoThumbUrl, {
         fileName: unit.content.videoName,
         fileSize: unit.content.videoSize,
         msgType: 'video'
-      })) || videoUrl
-    return {
-      toUserId,
-      msgType: 'video',
-      content: {
-        ...unit.content,
-        videoUrl,
-        videoThumbUrl
-      }
-    }
+      }).then((videoThumbUrl) => ({
+        toUserId,
+        msgType: 'video' as const,
+        content: {
+          ...unit.content,
+          videoUrl,
+          videoThumbUrl: videoThumbUrl || videoUrl
+        }
+      }))
+    })
   }
 
   if (unit.msgType === 'file') {
-    const fileUrl = await resolveSegmentMediaUrl(unit.content.fileUrl, {
+    return resolveSegmentMediaUrl(unit.content.fileUrl, {
       fileName: unit.content.fileName,
       fileSize: unit.content.fileSize,
-      msgType: 'file'
-    })
-    if (!fileUrl) return null
-    return {
-      toUserId,
       msgType: 'file',
-      content: {
-        ...unit.content,
-        fileUrl
+      onProgress,
+      onError
+    }).then((fileUrl) => {
+      if (!fileUrl) return null
+      return {
+        toUserId,
+        msgType: 'file' as const,
+        content: {
+          ...unit.content,
+          fileUrl
+        }
       }
-    }
+    })
   }
 
-  return null
+  return Promise.resolve(null)
 }
 
-export const buildSendParamsFromSegments = async (
+export const buildSendParamsFromSegments = (
   segments: EditorSegment[],
-  toUserId: string
+  toUserId: string,
+  options?: { onProgress?: UploadProgressHandler }
 ): Promise<SendMessageToUserParam[]> => {
   const units = buildSendUnitsFromSegments(segments)
-  const params: SendMessageToUserParam[] = []
+  let chain: Promise<SendMessageToUserParam[]> = Promise.resolve([])
 
   for (const unit of units) {
-    const param = await buildSendParam(unit, toUserId)
-    if (param) params.push(param)
+    chain = chain.then((params) =>
+      buildSendParam(unit, toUserId, options).then((param) => {
+        if (param) params.push(param)
+        return params
+      })
+    )
   }
 
-  return params
+  return chain
 }
