@@ -1,6 +1,6 @@
 <template>
   <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="file">
-    <a class="message-file" target="_blank" rel="noopener noreferrer">
+    <a class="message-file" href="#" @click.prevent="onDownload">
       <img class="message-file__icon" :src="iconUrl" :alt="content.fileName" />
       <div class="message-file__info">
         <n-tooltip trigger="hover" placement="top" :disabled="!isNameTruncated" :content-style="tooltipContentStyle">
@@ -12,8 +12,9 @@
           </template>
           {{ content.fileName }}
         </n-tooltip>
-        <span class="message-file__size" :class="{ 'message-file__size--uploading': uploading }">
+        <span class="message-file__size" :class="{ 'message-file__size--uploading': uploading || downloading }">
           <template v-if="uploading">{{ uploadProgress }}%</template>
+          <template v-else-if="downloading">{{ downloadProgress }}%</template>
           <template v-else>{{ formatSize(content.fileSize) }}</template>
         </span>
       </div>
@@ -23,6 +24,8 @@
 
 <script setup lang="ts">
   import type { CSSProperties } from 'vue'
+  import { save } from '@tauri-apps/plugin-dialog'
+  import { writeFile } from '@tauri-apps/plugin-fs'
   import type { FileContent } from '@/types/api/message'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/fileIcon'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
@@ -34,6 +37,8 @@
   }>()
 
   const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
+  const downloading = ref(false)
+  const downloadProgress = ref(0)
 
   const iconUrl = computed(() => getFileIconUrl(props.content.fileName, props.content.fileType))
 
@@ -56,6 +61,50 @@
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
     if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
     return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
+  }
+
+  const requestBinary = (url: string) =>
+    new Promise<ArrayBuffer>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', url, true)
+      xhr.responseType = 'arraybuffer'
+
+      xhr.onprogress = (event) => {
+        if (!event.lengthComputable || event.total <= 0) return
+        downloadProgress.value = Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100)))
+      }
+
+      xhr.onerror = () => reject(new Error('network error'))
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+          resolve(xhr.response as ArrayBuffer)
+          return
+        }
+        reject(new Error(`http ${xhr.status}`))
+      }
+      xhr.send()
+    })
+
+  const onDownload = () => {
+    if (uploading.value || downloading.value || !props.content.fileUrl) return
+    save({
+      defaultPath: props.content.fileName
+    }).then((path) => {
+      if (!path) return
+      downloading.value = true
+      downloadProgress.value = 0
+      return requestBinary(props.content.fileUrl)
+        .then((buffer) => writeFile(path, new Uint8Array(buffer)))
+        .then(() => {
+          downloadProgress.value = 100
+        })
+        .catch(() => {
+          downloadProgress.value = 0
+        })
+        .finally(() => {
+          downloading.value = false
+        })
+    })
   }
 </script>
 
