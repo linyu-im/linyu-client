@@ -1,97 +1,103 @@
 <template>
   <div class="chat-session">
     <!-- 相关用户信息 -->
-    <div class="chat-session__header">
-      <div v-if="peerInfo" class="flex select-none">
+    <div class="chat-session__header" @click="onHeaderClick">
+      <div v-if="peerInfo" class="chat-session__header-info">
         <div class="text-16px font-bold truncate">{{ peerInfo.remark || peerInfo.username }}</div>
         <div class="flex items-center justify-center text-12px text-[var(--text-muted-color)] m-l-10px">
           <img class="size-14px" :src="peerInfo.emotionUrl" alt="" />
           <div class="m-l-2px">{{ peerInfo.emotionName }}</div>
         </div>
       </div>
-      <div v-else class="flex select-none">
+      <div v-else class="chat-session__header-info">
         <div class="text-16px font-bold truncate"></div>
       </div>
-      <div class="flex items-center">
+      <div class="chat-session__header-actions" @click.stop>
         <SvgIconButton href="#record" />
-        <SvgIconButton href="#more" />
+        <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
       </div>
     </div>
-    <Split
-      class="chat-session__split"
-      direction="vertical"
-      fixed="second"
-      :min-size="180"
-      :max-size="440"
-      :default-size="220">
-      <template #first>
-        <div class="chat-session__content">
-          <MessageList
-            ref="messageListRef"
-            :key="props.toId"
-            :messages="messages"
-            :loading="loading"
-            :loading-more="loadingMore"
-            :has-more="hasMore"
-            @reach-top="onLoadMore"
-            @at-bottom-change="onAtBottomChange" />
-          <button v-if="pendingNewCount > 0" type="button" class="chat-session__new-msg" @click="scrollToLatest">
-            {{ t('message.newMessages', { count: pendingNewCount }) }}
-          </button>
-        </div>
-      </template>
-      <template #second>
-        <div class="chat-session__input">
-          <div class="flex-1 flex w-full min-h-0">
-            <MessageEditor
-              ref="editorRef"
-              v-model="draft"
-              :fetch-mentions="onFetchMentions"
-              @submit="onSend"
-              @file-rejected="onFileRejected" />
+    <div class="chat-session__body">
+      <Split
+        class="chat-session__split"
+        direction="vertical"
+        fixed="second"
+        :min-size="180"
+        :max-size="440"
+        :default-size="220">
+        <template #first>
+          <div class="chat-session__content">
+            <MessageList
+              ref="messageListRef"
+              :key="props.toId"
+              :messages="messages"
+              :loading="loading"
+              :loading-more="loadingMore"
+              :has-more="hasMore"
+              @reach-top="onLoadMore"
+              @at-bottom-change="onAtBottomChange" />
+            <button v-if="pendingNewCount > 0" type="button" class="chat-session__new-msg" @click="scrollToLatest">
+              {{ t('message.newMessages', { count: pendingNewCount }) }}
+            </button>
           </div>
-          <div class="flex w-full items-center justify-between m-t-10px gap-8px">
-            <div class="flex items-center gap-5px flex-1 min-w-0">
-              <n-popover
-                v-model:show="emojiPickerVisible"
-                trigger="click"
-                placement="top-start"
-                display-directive="show"
-                :animated="false"
-                :duration="0"
-                :show-arrow="false"
-                raw
-                :z-index="2000">
-                <template #trigger>
-                  <SvgIconButton href="#emotion" :active="emojiPickerVisible" />
-                </template>
-                <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
-              </n-popover>
-              <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
-              <SvgIconButton href="#folder" @click="onPickFiles" />
-              <SvgIconButton href="#image" @click="onPickImages" />
-              <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
-              <VoiceRecordBar
-                v-if="voiceRecordingVisible"
-                class="chat-session__voice-bar"
-                :duration="voiceDurationSec"
-                :max-duration="VOICE_RECORD_MAX_DURATION"
-                :warn-remaining="VOICE_RECORD_WARN_REMAINING"
-                :sending="voiceSending"
-                @cancel="onVoiceRecordCancel"
-                @send="onVoiceRecordSend" />
+        </template>
+        <template #second>
+          <div class="chat-session__input">
+            <div class="flex-1 flex w-full min-h-0">
+              <MessageEditor
+                ref="editorRef"
+                v-model="draft"
+                :fetch-mentions="onFetchMentions"
+                @submit="onSend"
+                @file-rejected="onFileRejected" />
             </div>
-            <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
-              <SvgIconButton href="#phone" />
-              <SvgIconButton href="#video" />
-              <n-button size="tiny" type="primary" class="w-56px m-l-20px p-y-12px" @click="onSend()">
-                {{ t('message.editor.send') }}
-              </n-button>
+            <div class="flex w-full items-center justify-between m-t-10px gap-8px">
+              <div class="flex items-center gap-5px flex-1 min-w-0">
+                <n-popover
+                  v-model:show="emojiPickerVisible"
+                  trigger="click"
+                  placement="top-start"
+                  display-directive="show"
+                  :animated="false"
+                  :duration="0"
+                  :show-arrow="false"
+                  raw
+                  :z-index="2000">
+                  <template #trigger>
+                    <SvgIconButton href="#emotion" :active="emojiPickerVisible" />
+                  </template>
+                  <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
+                </n-popover>
+                <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
+                <SvgIconButton href="#folder" @click="onPickFiles" />
+                <SvgIconButton href="#image" @click="onPickImages" />
+                <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
+                <VoiceRecordBar
+                  v-if="voiceRecordingVisible"
+                  class="chat-session__voice-bar"
+                  :duration="voiceDurationSec"
+                  :max-duration="VOICE_RECORD_MAX_DURATION"
+                  :warn-remaining="VOICE_RECORD_WARN_REMAINING"
+                  :sending="voiceSending"
+                  @cancel="onVoiceRecordCancel"
+                  @send="onVoiceRecordSend" />
+              </div>
+              <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
+                <SvgIconButton href="#phone" />
+                <SvgIconButton href="#video" />
+                <n-button size="tiny" type="primary" class="w-56px m-l-20px p-y-12px" @click="onSend()">
+                  {{ t('message.editor.send') }}
+                </n-button>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-    </Split>
+        </template>
+      </Split>
+      <ChatSessionSettingsDrawer
+        :show="settingsDrawerVisible"
+        :peer-info="peerInfo"
+        @close="settingsDrawerVisible = false" />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -109,6 +115,7 @@
   import MessageList from './Message/MessageList/index.vue'
   import EmojiPicker from './Message/EmojiPicker/index.vue'
   import VoiceRecordBar from './Message/VoiceRecordBar.vue'
+  import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer.vue'
   import type { Sticker } from '@/types/api/sticker'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import {
@@ -170,6 +177,21 @@
     { flush: 'sync' }
   )
 
+  const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
+  const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
+  const peerInfo = ref<UserInfoResult | null>(null)
+  const settingsDrawerVisible = ref(false)
+
+  const onHeaderClick = () => {
+    if (settingsDrawerVisible.value) {
+      settingsDrawerVisible.value = false
+    }
+  }
+
+  const onMoreClick = () => {
+    settingsDrawerVisible.value = !settingsDrawerVisible.value
+  }
+
   useEscapeOverlay(() => {
     emojiPickerVisible.value = false
   }, emojiPickerVisible)
@@ -178,9 +200,9 @@
     onVoiceRecordCancel()
   }, voiceRecordingVisible)
 
-  const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
-  const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
-  const peerInfo = ref<UserInfoResult | null>(null)
+  useEscapeOverlay(() => {
+    settingsDrawerVisible.value = false
+  }, settingsDrawerVisible)
 
   type ApiMessage = Message & { MsgScene?: string }
 
@@ -329,6 +351,8 @@
   watch(
     () => props.toId,
     () => {
+      settingsDrawerVisible.value = false
+
       if (!voiceRecordingVisible.value) return
       cancelVoiceRecord()
       voiceSending.value = false
@@ -585,12 +609,16 @@
 </script>
 <style scoped lang="scss">
   .chat-session {
+    position: relative;
     height: 100%;
     width: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 
     .chat-session__header {
+      position: relative;
+      z-index: 2;
       height: 48px;
       display: flex;
       align-items: center;
@@ -598,6 +626,28 @@
       padding: 0 10px;
       justify-content: space-between;
       flex-shrink: 0;
+    }
+
+    .chat-session__header-info {
+      display: flex;
+      align-items: center;
+      align-self: stretch;
+      min-width: 0;
+      flex: 1;
+      user-select: none;
+    }
+
+    .chat-session__header-actions {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .chat-session__body {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .chat-session__split {

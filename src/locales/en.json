@@ -124,6 +124,17 @@
       "pickFile": "Select files",
       "pickFailed": "Failed to read file"
     },
+    "chatSettings": {
+      "exclusiveRobot": "Exclusive Robot",
+      "exclusiveRobotDesc": "Use categorized assistant robots",
+      "add": "Add",
+      "pinChat": "Pin Chat",
+      "mute": "Mute Notifications",
+      "viewHistory": "View Chat History",
+      "deleteHistory": "Delete Chat History",
+      "deleteFriend": "Delete Friend",
+      "share": "Share"
+    },
     "voiceRecord": {
       "cancel": "Cancel recording",
       "send": "Send voice message",

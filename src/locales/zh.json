@@ -124,6 +124,17 @@
       "pickFile": "选择文件",
       "pickFailed": "读取文件失败"
     },
+    "chatSettings": {
+      "exclusiveRobot": "专属机器人",
+      "exclusiveRobotDesc": "使用分类辅助机器人",
+      "add": "添加",
+      "pinChat": "置顶聊天",
+      "mute": "消息免打扰",
+      "viewHistory": "查看聊天记录",
+      "deleteHistory": "删除聊天记录",
+      "deleteFriend": "删除好友",
+      "share": "分享"
+    },
     "voiceRecord": {
       "cancel": "取消录音",
       "send": "发送语音",
