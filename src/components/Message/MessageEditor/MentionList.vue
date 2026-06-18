@@ -9,12 +9,14 @@
         @mousedown.prevent="selectItem(index)"
         @mouseenter="activeIndex = index">
         <div class="mention-list__avatar">
-          <img v-if="item.avatar" :src="item.avatar" :alt="item.label" />
-          <span v-else>{{ item.label.slice(0, 1).toUpperCase() }}</span>
+          <Avatar v-if="item.type" :id="item.id" :type="item.type" :size="24" round />
+          <span v-else>{{ item.name.slice(0, 1).toUpperCase() }}</span>
         </div>
         <div class="mention-list__meta">
-          <div class="mention-list__name">{{ item.label }}</div>
-          <div v-if="item.desc" class="mention-list__desc">{{ item.desc }}</div>
+          <div class="mention-list__name-row">
+            <span class="mention-list__name">{{ item.name }}</span>
+            <span v-if="item.tag" class="mention-list__tag">{{ item.tag }}</span>
+          </div>
         </div>
       </div>
     </template>
@@ -25,19 +27,20 @@
 <script setup lang="ts">
   import { ref, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import type { FromType } from '@/types/common'
 
   const { t } = useI18n()
 
   export interface MentionItem {
     id: string
-    label: string
-    avatar?: string
-    desc?: string
+    name: string
+    type?: FromType
+    tag?: string
   }
 
   interface Props {
     items: MentionItem[]
-    command: (item: { id: string; label: string }) => void
+    command: (item: { id: string; label: string; mentionType: FromType }) => void
   }
 
   const props = defineProps<Props>()
@@ -54,7 +57,7 @@
   const selectItem = (index: number) => {
     const target = props.items[index]
     if (!target) return
-    props.command({ id: target.id, label: target.label })
+    props.command({ id: target.id, label: target.name, mentionType: target.type ?? 'user' })
   }
 
   const onKeyDown = ({ event }: { event: KeyboardEvent }) => {
@@ -140,6 +143,13 @@
       min-width: 0;
       flex: 1;
 
+      .mention-list__name-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+      }
+
       .mention-list__name {
         font-size: 13px;
         line-height: 1.2;
@@ -148,14 +158,18 @@
         white-space: nowrap;
       }
 
-      .mention-list__desc {
-        font-size: 11px;
-        color: var(--text-secondary-color);
-        line-height: 1.2;
-        margin-top: 2px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      .mention-list__tag {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        padding: 1px 6px;
+        border-radius: 999px;
+        font-size: 10px;
+        line-height: 1.35;
+        user-select: none;
+        color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+        border: 1px solid color-mix(in srgb, var(--primary-color) 36%, transparent);
       }
     }
 

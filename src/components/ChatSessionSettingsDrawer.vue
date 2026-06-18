@@ -6,12 +6,7 @@
         <n-scrollbar class="chat-settings-drawer__scroll">
           <div class="chat-settings-drawer__inner">
             <section v-if="peerInfo" class="chat-settings-drawer__card chat-settings-drawer__user">
-              <Avatar
-                :id="peerInfo.id"
-                :size="36"
-                round
-                class="chat-settings-drawer__user-avatar"
-                :profile-enabled="true" />
+              <Avatar :id="peerInfo.id" :size="36" class="chat-settings-drawer__user-avatar" :profile-enabled="true" />
               <div class="chat-settings-drawer__user-info">
                 <div class="chat-settings-drawer__user-name">{{ peerInfo.remark || peerInfo.username }}</div>
                 <span v-if="peerInfo.account" class="chat-settings-drawer__user-id">{{ peerInfo.account }}</span>
@@ -30,16 +25,14 @@
                 <span class="chat-settings-drawer__subtitle">{{ t('message.chatSettings.exclusiveRobotDesc') }}</span>
               </div>
               <div class="chat-settings-drawer__robot-list">
-                <div v-for="robot in mockRobots" :key="robot.id" class="chat-settings-drawer__robot-item">
-                  <n-avatar
-                    class="chat-settings-drawer__robot-avatar"
-                    :size="36"
-                    round
-                    :src="robot.avatar"
-                    fallback-src="/avatar.png" />
-                  <span class="chat-settings-drawer__robot-name">{{ robot.name }}</span>
+                <div v-for="robot in robots" :key="robot.id" class="chat-settings-drawer__robot-item">
+                  <Avatar class="chat-settings-drawer__robot-avatar" :id="robot.id" type="robot" :size="36" round />
+                  <span class="chat-settings-drawer__robot-name">{{ robot.robotName }}</span>
                 </div>
-                <button type="button" class="chat-settings-drawer__robot-item chat-settings-drawer__robot-add">
+                <button
+                  type="button"
+                  class="chat-settings-drawer__robot-item chat-settings-drawer__robot-add"
+                  @click="onAddRobot">
                   <span class="chat-settings-drawer__robot-add-icon" aria-hidden="true">
                     <svg class="size-14px">
                       <use href="#plus" />
@@ -83,11 +76,13 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
+  import { robotApi } from '@/api'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
+  import type { Robot } from '@/types/api/robot'
   import type { UserInfoResult } from '@/types/api/user'
 
-  defineProps<{
+  const props = defineProps<{
     show: boolean
     peerInfo: UserInfoResult | null
   }>()
@@ -102,16 +97,33 @@
     emit('close')
   }
 
+  const onAddRobot = () => {
+    window.$message.info(t('message.chatSettings.addTodo'))
+  }
+
   const pinChat = ref(true)
   const muteChat = ref(false)
+  const robots = ref<Robot[]>([])
 
-  const mockRobots = [
-    {
-      id: '1',
-      name: '吃沙小宝',
-      avatar: '/avatar.png'
-    }
-  ]
+  const fetchRobots = () => {
+    robotApi.listRobots().then((res) => {
+      if (res.code === 0 && res.data) {
+        robots.value = res.data
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  watch(
+    () => props.show,
+    (visible) => {
+      if (visible) {
+        fetchRobots()
+      }
+    },
+    { immediate: true }
+  )
 </script>
 
 <style scoped lang="scss">

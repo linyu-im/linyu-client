@@ -1,7 +1,7 @@
 import type { ComposerTranslation } from 'vue-i18n'
 import type { EditorSendUnit } from '@/utils/editorMessage'
 import type { Message, SendMessageContent, SendMessageMsgType } from '@/types/api/message'
-import type { AvatarType } from '@/types/common'
+import type { FromType } from '@/types/common'
 
 const createLocalId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
@@ -12,7 +12,7 @@ const createLocalMessageBase = (fromId: string, toId: string) => {
     sessionId: '',
     fromId,
     toId,
-    fromType: 'user' as AvatarType,
+    fromType: 'user' as FromType,
     isShowTime: false,
     status: 'sending',
     msgScene: '',

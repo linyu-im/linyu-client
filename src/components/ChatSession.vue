@@ -102,7 +102,7 @@
 </template>
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { messageApi, userApi } from '@/api'
+  import { messageApi, robotApi, userApi } from '@/api'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
@@ -130,6 +130,7 @@
 
   const props = defineProps<{
     toId: string
+    msgScene: string
   }>()
 
   const { t } = useI18n()
@@ -376,21 +377,30 @@
 
   watch(() => props.toId, loadPeerInfo, { immediate: true })
 
-  const mentionableMembers: MentionItem[] = [
-    { id: '1', label: '阿如', desc: '在线' },
-    { id: '2', label: '小明', desc: '在线' },
-    { id: '3', label: '小红', desc: '离线' },
-    { id: '4', label: '产品经理', desc: '在线' },
-    { id: '5', label: '设计师', desc: '勿扰' },
-    { id: '6', label: '前端开发', desc: '在线' },
-    { id: '7', label: '后端开发', desc: '离线' }
-  ]
+  const mentionableRobots = ref<MentionItem[]>([])
+
+  const loadMentionableRobots = () => {
+    robotApi.listRobots().then((res) => {
+      if (res.code === 0 && res.data) {
+        mentionableRobots.value = res.data.map((robot) => ({
+          id: robot.id,
+          name: robot.robotName,
+          type: 'robot' as const,
+          tag: t('message.robotTag')
+        }))
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
 
   const onFetchMentions = (query: string) => {
     const q = query.trim().toLowerCase()
-    if (!q) return mentionableMembers
-    return mentionableMembers.filter((m) => m.label.toLowerCase().includes(q))
+    if (!q) return mentionableRobots.value
+    return mentionableRobots.value.filter((item) => item.name.toLowerCase().includes(q))
   }
+
+  loadMentionableRobots()
 
   const replaceLocalMessage = (localId: string, serverMsg: Message) => {
     messageUploadStore.clearProgress(localId)
@@ -438,6 +448,34 @@
     })
   }
 
+  const sendRobotAnswers = (
+    unit: Extract<ReturnType<typeof buildSendUnitsFromSegments>[number], { msgType: 'text' }>
+  ) => {
+    if (!props.toId) return []
+
+    const question = unit.content.text.trim()
+    if (!question) return []
+
+    return unit.mentions
+      .filter((mention) => mention.mentionType === 'robot')
+      .map((mention) =>
+        robotApi
+          .answers({
+            peerId: props.toId,
+            robotId: mention.id,
+            question,
+            msgScene: props.msgScene
+          })
+          .then((res) => {
+            if (res.code === 0 && res.data) {
+              appendMessage(res.data)
+            } else {
+              window.$message.error(res.msg)
+            }
+          })
+      )
+  }
+
   const onSend = (payload?: EditorPayload) => {
     if (!editorRef.value) return
     if (!payload) {
@@ -462,7 +500,13 @@
 
     editorRef.value.clear({ keepBlobs: true })
 
-    const sendTasks = units.map((unit, index) => sendLocalMessage(localMessages[index].id, unit))
+    const sendTasks = units.flatMap((unit, index) => {
+      const tasks: Promise<void | undefined>[] = [sendLocalMessage(localMessages[index].id, unit)]
+      if (unit.msgType === 'text') {
+        tasks.push(...sendRobotAnswers(unit))
+      }
+      return tasks
+    })
 
     Promise.all(sendTasks).then(() => {
       editorRef.value?.clear()

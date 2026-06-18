@@ -90,6 +90,9 @@
       colorSuccess: 'var(--bg-muted-color)',
       textColorSuccess: 'var(--text-color)',
       boxShadowSuccess: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      colorInfo: 'var(--bg-muted-color)',
+      textColorInfo: 'var(--text-color)',
+      boxShadowInfo: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       iconColorInfo: 'var(--primary-color)',
       iconColorSuccess: 'var(--primary-color)'
     },

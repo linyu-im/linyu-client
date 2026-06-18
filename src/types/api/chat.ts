@@ -4,6 +4,7 @@ export interface Chat {
   id: string
   userId: string
   peerId: string
+  sessionId: string
   unreadNum: number
   lastMsgContent: Message | null
   type?: string

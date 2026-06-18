@@ -19,8 +19,6 @@ export type EditorSendUnit =
   | { msgType: 'video'; content: VideoContent }
   | { msgType: 'file'; content: FileContent }
 
-const MENTION_TYPE_USER = 'user'
-
 const formatMentionToken = (seg: Extract<EditorSegment, { type: 'mention' }>) => {
   const label = seg.label?.trim()
   return `@${label}`
@@ -75,7 +73,7 @@ export const buildSendUnitsFromSegments = (segments: EditorSegment[]): EditorSen
         if (seg.id) {
           mentions.push({
             id: seg.id,
-            mentionType: MENTION_TYPE_USER
+            mentionType: seg.mentionType ?? 'user'
           })
         }
         break

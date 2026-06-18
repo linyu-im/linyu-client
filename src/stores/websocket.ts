@@ -1,4 +1,5 @@
 import { Message } from '@/types/api/message'
+import { useUserStore } from '@/stores/user'
 import { defineStore } from 'pinia'
 
 export const useWebSocketStore = defineStore('websocket', {
@@ -8,6 +9,8 @@ export const useWebSocketStore = defineStore('websocket', {
   }),
   actions: {
     receiveMsg(msg: Message | null) {
+      const currentUserId = useUserStore().authInfo.userId
+      if (msg?.fromId === currentUserId) return
       this.$patch((state) => {
         state.lastServerMessage = msg
       })

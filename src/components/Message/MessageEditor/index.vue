@@ -29,13 +29,14 @@
   import { buildMentionSuggestion } from './extensions/suggestion'
   import type { MentionItem } from './MentionList.vue'
   import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
+  import type { FromType } from '@/types/common'
   import { isVideoFile } from '@/utils/fileIcon'
   import { getFilePath, getFileSize, readPathAsFile } from '@/utils/filePick'
   import { registerBlobFilePath } from '@/utils/blobFilePath'
 
   export type EditorSegment =
     | { type: 'text'; text: string }
-    | { type: 'mention'; id: string; label: string }
+    | { type: 'mention'; id: string; label: string; mentionType: FromType }
     | { type: 'image'; content: ImageContent }
     | { type: 'video'; content: VideoContent }
     | { type: 'file'; content: FileContent }
@@ -116,7 +117,8 @@
           segments.push({
             type: 'mention',
             id: node.attrs?.id ?? '',
-            label: node.attrs?.label ?? ''
+            label: node.attrs?.label ?? '',
+            mentionType: node.attrs?.mentionType ?? 'user'
           })
           break
         case 'image': {
@@ -221,7 +223,19 @@
         HTMLAttributes: { class: 'message-editor__image' }
       }),
       FileChip,
-      Mention.configure({
+      Mention.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            mentionType: {
+              default: 'user',
+              parseHTML: (element) => element.getAttribute('data-mention-type') ?? 'user',
+              renderHTML: (attributes) =>
+                attributes.mentionType ? { 'data-mention-type': attributes.mentionType } : {}
+            }
+          }
+        }
+      }).configure({
         HTMLAttributes: { class: 'message-editor__mention' },
         deleteTriggerWithBackspace: true,
         renderText: ({ node }) => `@${node.attrs.label ?? node.attrs.id}`,
@@ -440,7 +454,7 @@
       ?.chain()
       .focus()
       .insertContent([
-        { type: 'mention', attrs: { id: item.id, label: item.label } },
+        { type: 'mention', attrs: { id: item.id, label: item.name, mentionType: item.type ?? 'user' } },
         { type: 'text', text: ' ' }
       ])
       .run()

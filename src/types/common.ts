@@ -1,1 +1,1 @@
-export type AvatarType = 'user' | 'group' | 'enterprise'
+export type FromType = 'user' | 'group' | 'enterprise' | 'robot'

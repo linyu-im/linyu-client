@@ -111,6 +111,7 @@
       "uploadFailed": "File upload failed",
       "unknown": "Failed to send"
     },
+    "robotTag": "Robot",
     "editor": {
       "placeholder": "Type a message. {'@'}mention, paste or drag images and files…",
       "dragDropHint": "Drop to add image or file",
@@ -126,8 +127,9 @@
     },
     "chatSettings": {
       "exclusiveRobot": "Exclusive Robot",
-      "exclusiveRobotDesc": "Use categorized assistant robots",
+      "exclusiveRobotDesc": "Use {'@'} to wake up robots",
       "add": "Add",
+      "addTodo": "Coming soon",
       "pinChat": "Pin Chat",
       "mute": "Mute Notifications",
       "viewHistory": "View Chat History",

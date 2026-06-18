@@ -9,26 +9,34 @@
             :id="message.fromId"
             :type="message.fromType"
             :size="32"
-            :profile-enabled="true" />
-          <div
-            class="message-list__bubble"
-            :class="{
-              'message-list__bubble--self':
-                isSelf(message) && message.msgType !== 'file' && message.msgType !== 'ecard',
-              'message-list__bubble--plain': isPlainBubble(message),
-              'message-list__bubble--text': message.msgType === 'text',
-              'message-list__bubble--file': message.msgType === 'file',
-              'message-list__bubble--ecard': message.msgType === 'ecard'
-            }">
-            <Item :message="message" :is-self="isSelf(message)" />
-            <n-tooltip v-if="isSendFailed(message)" placement="top" :show-arrow="false">
-              <template #trigger>
-                <button type="button" class="message-list__fail-btn" aria-label="send failed" @click.stop>
-                  <span class="message-list__fail-icon">!</span>
-                </button>
-              </template>
-              {{ getFailReason(message) }}
-            </n-tooltip>
+            :profile-enabled="message.fromType === 'user'" />
+          <div class="message-list__main" :class="{ 'message-list__main--text': message.msgType === 'text' }">
+            <Name
+              v-if="message.fromType === 'robot'"
+              class="message-list__name"
+              :id="message.fromId"
+              type="robot"
+              :tag="t('message.robotTag')" />
+            <div
+              class="message-list__bubble"
+              :class="{
+                'message-list__bubble--self':
+                  isSelf(message) && message.msgType !== 'file' && message.msgType !== 'ecard',
+                'message-list__bubble--plain': isPlainBubble(message),
+                'message-list__bubble--text': message.msgType === 'text',
+                'message-list__bubble--file': message.msgType === 'file',
+                'message-list__bubble--ecard': message.msgType === 'ecard'
+              }">
+              <Item :message="message" :is-self="isSelf(message)" />
+              <n-tooltip v-if="isSendFailed(message)" placement="top" :show-arrow="false">
+                <template #trigger>
+                  <button type="button" class="message-list__fail-btn" aria-label="send failed" @click.stop>
+                    <span class="message-list__fail-icon">!</span>
+                  </button>
+                </template>
+                {{ getFailReason(message) }}
+              </n-tooltip>
+            </div>
           </div>
         </div>
       </template>
@@ -301,6 +309,26 @@
       overflow: hidden;
     }
 
+    &__main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      width: fit-content;
+      max-width: 100%;
+
+      &--text {
+        max-width: 70%;
+      }
+    }
+
+    &__name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary-color);
+      line-height: 1.2;
+    }
+
     &__fail-btn {
       position: absolute;
       left: -22px;
@@ -348,7 +376,6 @@
 
       &--text {
         box-sizing: border-box;
-        max-width: 70%;
         width: fit-content;
       }
 

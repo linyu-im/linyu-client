@@ -69,7 +69,11 @@
         </div>
       </template>
       <template #second>
-        <chat-session v-if="hasActiveChat" ref="chatSessionRef" :to-id="activePeerId" />
+        <chat-session
+          v-if="hasActiveChat"
+          ref="chatSessionRef"
+          :to-id="activeChat?.peerId ?? ''"
+          :msg-scene="activeChat?.type ?? ''" />
         <div v-else class="message__empty">
           <LinyuEmpty />
         </div>
@@ -157,7 +161,8 @@
     () => wsStore.lastServerMessage,
     (msg) => {
       if (!msg) return
-      if (msg.fromId !== activePeerId.value) return
+      const chat = activeChat.value
+      if (!chat || msg.sessionId !== chat.sessionId) return
       chatSessionRef.value?.appendMessage(msg)
     }
   )
@@ -299,12 +304,11 @@
     }
   }
 
-  const activePeerId = computed(() => {
-    const chat = chatList.value.find((item) => item.id === globalStore.selectedChatId)
-    return chat?.peerId ?? ''
+  const activeChat = computed(() => {
+    return chatList.value.find((item) => item.id === globalStore.selectedChatId) ?? null
   })
 
-  const hasActiveChat = computed(() => Boolean(activePeerId.value))
+  const hasActiveChat = computed(() => Boolean(activeChat.value))
 
   const onSelectChat = (item: Chat) => {
     if (globalStore.selectedChatId === item.id) {

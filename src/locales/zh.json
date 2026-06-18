@@ -111,6 +111,7 @@
       "uploadFailed": "文件上传失败",
       "unknown": "发送失败"
     },
+    "robotTag": "机器人",
     "editor": {
       "placeholder": "请输入消息，支持 {'@'} 提及、粘贴/拖拽图片与文件…",
       "dragDropHint": "松开添加：图片/文件",
@@ -126,8 +127,9 @@
     },
     "chatSettings": {
       "exclusiveRobot": "专属机器人",
-      "exclusiveRobotDesc": "使用分类辅助机器人",
+      "exclusiveRobotDesc": "使用{'@'}唤醒机器人",
       "add": "添加",
+      "addTodo": "敬请期待",
       "pinChat": "置顶聊天",
       "mute": "消息免打扰",
       "viewHistory": "查看聊天记录",

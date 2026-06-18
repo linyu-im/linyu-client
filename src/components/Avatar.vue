@@ -42,14 +42,14 @@
   import { useDismissOnScroll } from '@/composables/useDismissOnScroll'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { useAvatarStore } from '@/stores/avatar'
-  import type { AvatarType } from '@/types/common'
+  import type { FromType } from '@/types/common'
   import type { CSSProperties } from 'vue'
 
   defineOptions({ inheritAttrs: false })
 
   interface Props {
     id: string
-    type?: AvatarType
+    type?: FromType
     size?: number | 'small' | 'medium' | 'large'
     round?: boolean
     /** 是否启用点击头像查看资料 */
@@ -94,7 +94,8 @@
 
   const avatarStateClass = computed(() => ({
     'avatar--visible': visible.value,
-    'avatar--clickable': props.profileEnabled && !!props.id
+    'avatar--clickable': props.profileEnabled && !!props.id,
+    'avatar--radius': !props.round
   }))
 
   let loadSeq = 0
@@ -219,7 +220,6 @@
   .avatar {
     opacity: 0;
     transition: opacity 0.12s ease;
-    border-radius: 6px;
 
     &--visible {
       opacity: 1;
@@ -227,6 +227,10 @@
 
     &--clickable {
       cursor: pointer;
+    }
+
+    &--radius {
+      border-radius: 6px;
     }
   }
 </style>

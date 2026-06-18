@@ -4,10 +4,10 @@ import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
 import { fetch } from '@tauri-apps/plugin-http'
 import SparkMD5 from 'spark-md5'
 import { defineStore } from 'pinia'
-import { enterpriseApi, groupApi, userApi } from '@/api'
-import type { AvatarType } from '@/types/common'
+import { enterpriseApi, groupApi, robotApi, userApi } from '@/api'
+import type { FromType } from '@/types/common'
 
-export type { AvatarType } from '@/types/common'
+export type { FromType } from '@/types/common'
 
 const AVATAR_SRC_CACHE_MAX = 100
 
@@ -108,24 +108,32 @@ export const useAvatarStore = defineStore('avatar', () => {
     return new Uint8Array(arrayBuffer)
   }
 
-  const fetchRemoteAvatar = async (type: AvatarType, id: string): Promise<string> => {
+  const fetchRemoteAvatar = async (type: FromType, id: string): Promise<string> => {
     if (!id) return ''
 
-    const res =
-      type === 'group'
-        ? await groupApi.getGroupAvatar(id)
-        : type === 'enterprise'
-          ? await enterpriseApi.getEnterpriseAvatar(id)
-          : await userApi.getUserAvatar(id)
+    let res
+    switch (type) {
+      case 'group':
+        res = await groupApi.getGroupAvatar(id)
+        break
+      case 'enterprise':
+        res = await enterpriseApi.getEnterpriseAvatar(id)
+        break
+      case 'robot':
+        res = await robotApi.getRobotAvatar(id)
+        break
+      default:
+        res = await userApi.getUserAvatar(id)
+    }
     if (res.code !== 0 || !res.data) return ''
 
     const imageData = await downloadImage(res.data)
     return saveAvatarToLocal(type, id, imageData)
   }
 
-  const getCachedSrc = (type: AvatarType, id: string) => cacheGet(getCacheKey(type, id))
+  const getCachedSrc = (type: FromType, id: string) => cacheGet(getCacheKey(type, id))
 
-  const resolveSrc = async (type: AvatarType, id: string): Promise<string> => {
+  const resolveSrc = async (type: FromType, id: string): Promise<string> => {
     if (!id) return ''
 
     const localUrl = await loadLocalAvatar(type, id)
@@ -134,7 +142,7 @@ export const useAvatarStore = defineStore('avatar', () => {
     return fetchRemoteAvatar(type, id)
   }
 
-  const refreshSrc = async (type: AvatarType, id: string): Promise<string> => {
+  const refreshSrc = async (type: FromType, id: string): Promise<string> => {
     if (!id) return ''
 
     const cacheKey = getCacheKey(type, id)
@@ -150,13 +158,13 @@ export const useAvatarStore = defineStore('avatar', () => {
   }
 
   /** 获取指定头像的最后刷新时间戳（响应式，用于跨实例同步） */
-  const getLastRefresh = (type: AvatarType, id: string): number => {
+  const getLastRefresh = (type: FromType, id: string): number => {
     return lastRefresh.get(getCacheKey(type, id)) ?? 0
   }
 
-  const prefetch = (id: string, type: AvatarType = 'user') => loadLocalAvatar(type, id)
+  const prefetch = (id: string, type: FromType = 'user') => loadLocalAvatar(type, id)
 
-  const prefetchMany = (ids: string[], type: AvatarType = 'user') => {
+  const prefetchMany = (ids: string[], type: FromType = 'user') => {
     const unique = [...new Set(ids.filter(Boolean))]
     void Promise.all(unique.map((id) => prefetch(id, type)))
   }

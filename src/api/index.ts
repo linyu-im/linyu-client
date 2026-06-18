@@ -13,6 +13,7 @@ import * as applyApi from './apply'
 import * as stickerApi from './sticker'
 import * as feedbackApi from './feedback'
 import * as applicationApi from './application'
+import * as robotApi from './robot'
 
 export {
   userApi,
@@ -29,5 +30,6 @@ export {
   applyApi,
   stickerApi,
   feedbackApi,
-  applicationApi
+  applicationApi,
+  robotApi
 }

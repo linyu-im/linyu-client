@@ -211,13 +211,13 @@
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { UserInfoResult } from '@/types/api/user'
-  import type { AvatarType } from '@/types/common'
+  import type { FromType } from '@/types/common'
   import { useI18n } from 'vue-i18n'
 
   const props = withDefaults(
     defineProps<{
       id: string
-      type?: AvatarType
+      type?: FromType
     }>(),
     {
       type: 'user'

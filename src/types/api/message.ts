@@ -1,4 +1,4 @@
-import type { AvatarType } from '@/types/common'
+import type { FromType } from '@/types/common'
 
 export interface TextContent {
   text: string
@@ -59,7 +59,7 @@ export type Message = {
     toId: string
     msgType: K
     content: MsgTypeMap[K]
-    fromType?: AvatarType
+    fromType?: FromType
     isShowTime: boolean
     status?: string
     failReason?: string
