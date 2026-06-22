@@ -456,24 +456,96 @@
     const question = unit.content.text.trim()
     if (!question) return []
 
+    const removeStreamPlaceholder = (streamId: string) => {
+      messages.value = messages.value.filter((item) => item.id !== streamId)
+    }
+
+    const resolveStreamDone = (streamId: string, raw: Message, streamStarted: boolean) => {
+      const msg = normalizeMessage(raw as ApiMessage)
+      if (messages.value.some((item) => item.id === msg.id)) {
+        if (streamStarted) removeStreamPlaceholder(streamId)
+        return
+      }
+      if (streamStarted) {
+        messages.value = messages.value.map((item) => (item.id === streamId ? msg : item))
+        return
+      }
+      appendMessage(msg)
+    }
+
+    const syncStreamScroll = (followScroll: { active: boolean }) => {
+      const atBottom = messageListRef.value?.isAtBottom() ?? false
+      if (!followScroll.active && atBottom) {
+        followScroll.active = true
+      } else if (followScroll.active && !atBottom) {
+        followScroll.active = false
+        return
+      }
+      if (followScroll.active) {
+        nextTick(() => scrollToLatest())
+      }
+    }
+
     return unit.mentions
       .filter((mention) => mention.mentionType === 'robot')
-      .map((mention) =>
-        robotApi
-          .answers({
-            peerId: props.toId,
-            robotId: mention.id,
-            question,
-            msgScene: props.msgScene
-          })
-          .then((res) => {
-            if (res.code === 0 && res.data) {
-              appendMessage(res.data)
-            } else {
-              window.$message.error(res.msg)
+      .map((mention) => {
+        const streamId = `robot-stream-${mention.id}-${Date.now()}`
+        let streamStarted = false
+        let accumulated = ''
+        const followScroll = { active: false }
+
+        return robotApi
+          .answersStream(
+            {
+              peerId: props.toId,
+              robotId: mention.id,
+              question,
+              msgScene: props.msgScene
+            },
+            {
+              onDelta: (content) => {
+                accumulated += content
+                if (!streamStarted) {
+                  streamStarted = true
+                  appendMessage({
+                    id: streamId,
+                    sessionId: '',
+                    fromId: mention.id,
+                    toId: props.toId,
+                    msgType: 'text',
+                    content: { text: accumulated },
+                    fromType: 'robot',
+                    isShowTime: false,
+                    msgScene: props.msgScene,
+                    createdAt: '',
+                    updatedAt: ''
+                  })
+                  nextTick(() => {
+                    followScroll.active = messageListRef.value?.isAtBottom() ?? false
+                  })
+                  return
+                }
+                messages.value = patchMessageById(messages.value, streamId, {
+                  content: { text: accumulated }
+                })
+                syncStreamScroll(followScroll)
+              },
+              onDone: (raw) => {
+                resolveStreamDone(streamId, raw, streamStarted)
+                syncStreamScroll(followScroll)
+              },
+              onError: (msg) => {
+                window.$message.error(msg)
+                if (streamStarted) removeStreamPlaceholder(streamId)
+              }
             }
+          )
+          .catch((error: unknown) => {
+            const msg = error instanceof Error ? error.message : String(error)
+            window.$message.error(msg)
+            if (streamStarted) removeStreamPlaceholder(streamId)
           })
-      )
+      })
   }
 
   const onSend = (payload?: EditorPayload) => {

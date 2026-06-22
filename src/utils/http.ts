@@ -112,4 +112,86 @@ export async function formData<T = any>(
   }
 }
 
-export default { get, post, formData }
+export type SseEventHandler = (event: string, data: string) => void
+
+function parseSseBlock(block: string): { event: string; data: string } | null {
+  const lines = block.split('\n')
+  let event = 'message'
+  let dataStart = -1
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (line.startsWith('event:')) {
+      event = line.slice(6).trim()
+    } else if (line.startsWith('data:') && dataStart === -1) {
+      dataStart = i
+    }
+  }
+
+  if (dataStart === -1) return null
+
+  const firstDataLine = lines[dataStart].slice(5).trimStart()
+  const restLines = lines.slice(dataStart + 1)
+  const data = [firstDataLine, ...restLines].join('\n').trim()
+
+  return { event, data }
+}
+
+function consumeSseBuffer(buffer: string, onEvent: SseEventHandler): string {
+  const parts = buffer.split('\n\n')
+  const remainder = parts.pop() ?? ''
+
+  for (const part of parts) {
+    if (!part.trim()) continue
+    const parsed = parseSseBlock(part)
+    if (parsed) onEvent(parsed.event, parsed.data)
+  }
+
+  return remainder
+}
+
+export async function postSse(
+  url: string,
+  data: unknown,
+  onEvent: SseEventHandler,
+  signal?: AbortSignal
+): Promise<void> {
+  const response = await fetch(buildUrl(url), {
+    method: 'POST',
+    body: JSON.stringify(data),
+    signal,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: 'text/event-stream',
+      'Accept-Language': getLang(),
+      Authorization: getToken()
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status}`)
+  }
+
+  const body = response.body
+  if (!body) {
+    throw new Error('Response body is empty')
+  }
+
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    buffer = consumeSseBuffer(buffer, onEvent)
+  }
+
+  buffer += decoder.decode()
+  if (buffer.trim()) {
+    consumeSseBuffer(`${buffer}\n\n`, onEvent)
+  }
+}
+
+export default { get, post, formData, postSse }

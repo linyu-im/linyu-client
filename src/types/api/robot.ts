@@ -17,3 +17,7 @@ export interface RobotAnswersParam {
   question: string
   msgScene: string
 }
+
+export interface RobotAnswersDeltaData {
+  content: string
+}
