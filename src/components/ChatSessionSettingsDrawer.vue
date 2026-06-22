@@ -11,7 +11,7 @@
                 <div class="chat-settings-drawer__user-name">{{ peerInfo.remark || peerInfo.username }}</div>
                 <span v-if="peerInfo.account" class="chat-settings-drawer__user-id">{{ peerInfo.account }}</span>
               </div>
-              <button type="button" class="chat-settings-drawer__share-btn">
+              <button type="button" class="chat-settings-drawer__share-btn" @click="onShare">
                 <svg class="chat-settings-drawer__share-icon" aria-hidden="true">
                   <use href="#share" />
                 </svg>
@@ -72,13 +72,16 @@
       </div>
     </aside>
   </Transition>
+  <ForwardMessageModal v-model:show="showForwardModal" :message="shareMessage" />
 </template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { robotApi } from '@/api'
+  import ForwardMessageModal from '@/components/Message/ForwardMessageModal.vue'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
+  import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
   import type { UserInfoResult } from '@/types/api/user'
 
@@ -99,6 +102,32 @@
 
   const onAddRobot = () => {
     window.$message.info(t('message.chatSettings.addTodo'))
+  }
+
+  const showForwardModal = ref(false)
+
+  const shareMessage = computed<Message | null>(() => {
+    if (!props.peerInfo) return null
+    return {
+      id: `share-${props.peerInfo.id}`,
+      sessionId: '',
+      fromId: props.peerInfo.id,
+      toId: '',
+      msgType: 'ecard',
+      content: {
+        userId: props.peerInfo.id,
+        userName: props.peerInfo.username
+      },
+      isShowTime: false,
+      msgScene: 'user',
+      createdAt: '',
+      updatedAt: ''
+    }
+  })
+
+  const onShare = () => {
+    if (!props.peerInfo) return
+    showForwardModal.value = true
   }
 
   const pinChat = ref(true)

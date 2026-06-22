@@ -1,4 +1,5 @@
 import type {
+  ForwardMessageParam,
   MergeMessageFileParam,
   Message,
   MessagePageParam,
@@ -10,6 +11,10 @@ import { ApiResponse, formData, post } from '@/utils/http'
 
 export function sendToUser(data: SendMessageToUserParam): Promise<ApiResponse<Message>> {
   return post<Message, SendMessageToUserParam>('/api/basic/v1/message/send/user', data)
+}
+
+export function forward(data: ForwardMessageParam): Promise<ApiResponse<void>> {
+  return post<void, ForwardMessageParam>('/api/basic/v1/message/forward', data)
 }
 
 export function page(data: MessagePageParam): Promise<ApiResponse<MessagePageResult>> {

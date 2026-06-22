@@ -28,7 +28,6 @@ export interface FileContent {
 export interface ECardContent {
   userId: string
   userName: string
-  userAvatar: string
 }
 
 export interface VoiceContent {
@@ -114,4 +113,14 @@ export interface MessagePageResult {
   page: number
   pageSize: number
   totalPage: number
+}
+
+export interface ForwardMessagePeerInfo {
+  peerId: string
+  PeerMessageScene: string
+}
+
+export interface ForwardMessageParam {
+  toPeerInfo: ForwardMessagePeerInfo[]
+  message: Message
 }

@@ -95,6 +95,14 @@
     "ecard": {
       "recommend": "Friend Recommendation"
     },
+    "forward": {
+      "search": "Search",
+      "sendTo": "Send to",
+      "send": "Send",
+      "cancel": "Cancel",
+      "noSearchResult": "No matches found",
+      "removeSelected": "Remove"
+    },
     "bubbleMenu": {
       "copy": "Copy",
       "copySuccess": "Copied",

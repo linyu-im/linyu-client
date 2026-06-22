@@ -95,6 +95,14 @@
     "ecard": {
       "recommend": "好友推荐"
     },
+    "forward": {
+      "search": "搜索",
+      "sendTo": "发送给",
+      "send": "发送",
+      "cancel": "取消",
+      "noSearchResult": "未找到匹配项",
+      "removeSelected": "移除"
+    },
     "bubbleMenu": {
       "copy": "复制",
       "copySuccess": "已复制",

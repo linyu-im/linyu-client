@@ -1,7 +1,7 @@
 <template>
   <div class="message-ecard" role="button" tabindex="0">
     <div class="message-ecard__main">
-      <Avatar class="message-ecard__avatar" :id="content.userId" :size="44" />
+      <Avatar class="message-ecard__avatar" :id="content.userId" :size="36" />
       <div class="message-ecard__name">{{ content.userName }}</div>
     </div>
     <div class="message-ecard__footer">{{ t('message.ecard.recommend') }}</div>
@@ -52,6 +52,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: var(--text-color);
     }
 
     &__footer {

@@ -1,4 +1,5 @@
 import { Message } from '@/types/api/message'
+import { useSendingMessagesStore } from '@/stores/sendingMessages'
 import { useUserStore } from '@/stores/user'
 import { defineStore } from 'pinia'
 
@@ -9,8 +10,17 @@ export const useWebSocketStore = defineStore('websocket', {
   }),
   actions: {
     receiveMsg(msg: Message | null) {
+      if (!msg) return
+
       const currentUserId = useUserStore().authInfo.userId
-      if (msg?.fromId === currentUserId) return
+      if (msg.fromId === currentUserId) {
+        const pending = useSendingMessagesStore().getMessages(msg.toId)
+        // 普通发送会先写入本地乐观消息；此期间忽略 WS 回推，避免与 local id 并存出现两条
+        if (pending.some((item) => item.status === 'sending')) {
+          return
+        }
+      }
+
       this.$patch((state) => {
         state.lastServerMessage = msg
       })
