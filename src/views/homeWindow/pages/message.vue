@@ -25,13 +25,13 @@
               </n-button>
             </n-dropdown>
           </div>
-          <n-scrollbar v-if="chatList.length > 0" style="margin-top: 10px">
+          <n-scrollbar v-if="chatStore.chatList.length > 0" style="margin-top: 10px">
             <div class="chatlist__content">
               <div
-                v-for="item in chatList"
+                v-for="item in chatStore.chatList"
                 :key="item.id"
                 class="chatlist__item"
-                :class="{ top: item.peerIsTop, active: globalStore.selectedChatId === item.id }"
+                :class="{ top: item.peerIsTop, active: chatStore.selectedChatId === item.id }"
                 @click="() => onSelectChat(item)"
                 @contextmenu="(e: MouseEvent) => onContextMenu(e, item)">
                 <n-badge
@@ -73,7 +73,7 @@
           v-if="hasActiveChat"
           ref="chatSessionRef"
           :to-id="activeChat?.peerId ?? ''"
-          :msg-scene="activeChat?.type ?? ''" />
+          :scene-type="activeChat?.sceneType ?? SceneType.User" />
         <div v-else class="message__empty">
           <LinyuEmpty />
         </div>
@@ -91,8 +91,9 @@
   </div>
 </template>
 <script setup lang="tsx">
-  import { chatApi } from '@/api'
-  import { useGlobalStore } from '@/stores/global'
+  defineOptions({ name: 'message' })
+  import { useChatStore } from '@/stores/chat'
+  import { SceneType } from '@/constants/common'
   import ChatSession from '@/components/ChatSession.vue'
   import { useWebSocketStore } from '@/stores/websocket'
   import { Chat } from '@/types/api/chat'
@@ -101,11 +102,9 @@
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
-  const globalStore = useGlobalStore()
+  const chatStore = useChatStore()
   const wsStore = useWebSocketStore()
   const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
-
-  const chatList = ref<Chat[]>([])
 
   const addMenuOptions = computed(() => [
     { label: () => t('message.addMenu.addContact'), key: 'addContact' },
@@ -224,33 +223,15 @@
   }
 
   const onToggleTop = (item: Chat) => {
-    chatApi.top({ chatId: item.id, isTop: !item.peerIsTop }).then((res) => {
-      if (res.code === 0) {
-        onChatList()
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    chatStore.toggleTop(item.id, !item.peerIsTop)
   }
 
   const onMarkRead = (item: Chat) => {
-    chatApi.markRead({ chatId: item.id }).then((res) => {
-      if (res.code === 0) {
-        onChatList()
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    chatStore.markRead(item.id)
   }
 
   const onToggleMute = (item: Chat) => {
-    chatApi.mute({ chatId: item.id, isMute: !item.peerIsMute }).then((res) => {
-      if (res.code === 0) {
-        onChatList()
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    chatStore.toggleMute(item.id, !item.peerIsMute)
   }
 
   const onIndependentWindow = (item: Chat) => {
@@ -258,16 +239,10 @@
   }
 
   const onDelete = (item: Chat) => {
-    chatApi.remove({ chatId: item.id }).then((res) => {
-      if (res.code === 0) {
-        if (globalStore.selectedChatId === item.id) {
-          globalStore.setSelectedChatId('')
-        }
-        onChatList()
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    if (chatStore.selectedChatId === item.id) {
+      chatStore.clearSelectedChatId()
+    }
+    chatStore.removeItem(item.id)
   }
 
   const toShowChatMessage = (msg: Message | null) => {
@@ -305,31 +280,21 @@
   }
 
   const activeChat = computed(() => {
-    return chatList.value.find((item) => item.id === globalStore.selectedChatId) ?? null
+    return chatStore.chatList.find((item) => item.id === chatStore.selectedChatId) ?? null
   })
 
   const hasActiveChat = computed(() => Boolean(activeChat.value))
 
   const onSelectChat = (item: Chat) => {
-    if (globalStore.selectedChatId === item.id) {
-      globalStore.setSelectedChatId('')
+    if (chatStore.selectedChatId === item.id) {
+      chatStore.clearSelectedChatId()
       return
     }
-    globalStore.setSelectedChatId(item.id)
-  }
-
-  const onChatList = () => {
-    chatApi.list().then((res) => {
-      if (res.code === 0 && res.data) {
-        chatList.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
+    chatStore.setSelectedChatId(item.id)
   }
 
   onMounted(() => {
-    onChatList()
+    chatStore.loadList()
   })
 </script>
 <style scoped lang="scss">

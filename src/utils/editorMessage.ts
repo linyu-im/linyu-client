@@ -7,7 +7,7 @@ import type {
   VideoContent
 } from '@/types/api/message'
 import {
-  isLocalMediaUrl,
+  needsMediaUpload,
   uploadMessageMediaByUrl,
   type UploadErrorHandler,
   type UploadProgressHandler
@@ -112,11 +112,11 @@ export const unitNeedsMediaUpload = (unit: EditorSendUnit): boolean => {
     case 'text':
       return false
     case 'image':
-      return isLocalMediaUrl(unit.content.imgUrl) || isLocalMediaUrl(unit.content.imgThumbUrl)
+      return needsMediaUpload(unit.content.imgUrl) || needsMediaUpload(unit.content.imgThumbUrl)
     case 'video':
-      return isLocalMediaUrl(unit.content.videoUrl) || isLocalMediaUrl(unit.content.videoThumbUrl)
+      return needsMediaUpload(unit.content.videoUrl) || needsMediaUpload(unit.content.videoThumbUrl)
     case 'file':
-      return isLocalMediaUrl(unit.content.fileUrl)
+      return needsMediaUpload(unit.content.fileUrl)
   }
 }
 
@@ -134,8 +134,7 @@ export const resolveSegmentMediaUrl = (
   }
 ): Promise<string | null> => {
   if (!url) return Promise.resolve(null)
-  if (isRemoteUrl(url)) return Promise.resolve(url)
-  if (isLocalMediaUrl(url)) {
+  if (needsMediaUpload(url)) {
     const cacheKey = `${url}:${options?.fileName ?? ''}`
     const cached = uploadUrlCache.get(cacheKey)
     if (cached) return cached
@@ -153,6 +152,7 @@ export const resolveSegmentMediaUrl = (
     uploadUrlCache.set(cacheKey, task)
     return task
   }
+  if (isRemoteUrl(url)) return Promise.resolve(url)
   return Promise.resolve(url)
 }
 
@@ -187,7 +187,7 @@ export const buildSendParam = (
     }).then((imgUrl) => {
       if (!imgUrl) return null
       const thumbIsSame = unit.content.imgThumbUrl === unit.content.imgUrl
-      if (thumbIsSame || !isLocalMediaUrl(unit.content.imgThumbUrl)) {
+      if (thumbIsSame || !needsMediaUpload(unit.content.imgThumbUrl)) {
         return {
           toUserId,
           msgType: 'image' as const,
@@ -224,7 +224,7 @@ export const buildSendParam = (
     }).then((videoUrl) => {
       if (!videoUrl) return null
       const thumbIsSame = unit.content.videoThumbUrl === unit.content.videoUrl
-      if (thumbIsSame || !isLocalMediaUrl(unit.content.videoThumbUrl)) {
+      if (thumbIsSame || !needsMediaUpload(unit.content.videoThumbUrl)) {
         return {
           toUserId,
           msgType: 'video' as const,

@@ -103,6 +103,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { messageApi, robotApi, userApi } from '@/api'
+  import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
@@ -130,7 +131,7 @@
 
   const props = defineProps<{
     toId: string
-    msgScene: string
+    sceneType: SceneType
   }>()
 
   const { t } = useI18n()
@@ -205,14 +206,10 @@
     settingsDrawerVisible.value = false
   }, settingsDrawerVisible)
 
-  type ApiMessage = Message & { MsgScene?: string }
-
-  const normalizeMessage = (raw: ApiMessage): Message => {
-    const { MsgScene, ...rest } = raw
+  const normalizeMessage = (raw: Message): Message => {
     return {
-      ...rest,
-      msgScene: rest.msgScene ?? MsgScene ?? '',
-      fromType: rest.fromType || 'user'
+      ...raw,
+      fromType: raw.fromType || 'user'
     }
   }
 
@@ -245,7 +242,7 @@
 
   /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提示 */
   const appendMessage = (raw: Message) => {
-    const msg = normalizeMessage(raw as ApiMessage)
+    const msg = normalizeMessage(raw as Message)
     if (messages.value.some((item) => item.id === msg.id)) return
 
     const atBottom = messageListRef.value?.isAtBottom() ?? false
@@ -290,7 +287,7 @@
       return null
     }
 
-    const records = res.data.records.map((item) => normalizeMessage(item as ApiMessage))
+    const records = res.data.records.map((item) => normalizeMessage(item as Message))
     return {
       records,
       page: res.data.page,
@@ -405,9 +402,7 @@
   const replaceLocalMessage = (localId: string, serverMsg: Message) => {
     messageUploadStore.clearProgress(localId)
     sendingMessagesStore.removeMessage(props.toId, localId)
-    messages.value = messages.value.map((item) =>
-      item.id === localId ? normalizeMessage(serverMsg as ApiMessage) : item
-    )
+    messages.value = messages.value.map((item) => (item.id === localId ? normalizeMessage(serverMsg as Message) : item))
   }
 
   const markLocalMessageFailed = (localId: string, reason: string) => {
@@ -461,7 +456,7 @@
     }
 
     const resolveStreamDone = (streamId: string, raw: Message, streamStarted: boolean) => {
-      const msg = normalizeMessage(raw as ApiMessage)
+      const msg = normalizeMessage(raw as Message)
       if (messages.value.some((item) => item.id === msg.id)) {
         if (streamStarted) removeStreamPlaceholder(streamId)
         return
@@ -500,7 +495,7 @@
               peerId: props.toId,
               robotId: mention.id,
               question,
-              msgScene: props.msgScene
+              sceneType: props.sceneType
             },
             {
               onDelta: (content) => {
@@ -516,7 +511,7 @@
                     content: { text: accumulated },
                     fromType: 'robot',
                     isShowTime: false,
-                    msgScene: props.msgScene,
+                    sceneType: props.sceneType,
                     createdAt: '',
                     updatedAt: ''
                   })
@@ -563,7 +558,7 @@
     const units = buildSendUnitsFromSegments(payload.segments)
     if (!units.length) return
 
-    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.toId))
+    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.toId, props.sceneType))
 
     for (const localMsg of localMessages) {
       appendMessage(localMsg)

@@ -175,6 +175,7 @@
 </template>
 
 <script setup lang="ts">
+  defineOptions({ name: 'contacts' })
   import ContactsEnterpriseProfile from '@/components/Contacts/ContactsEnterpriseProfile.vue'
   import ContactsFriendProfile from '@/components/Contacts/ContactsFriendProfile.vue'
   import ContactsGroupNotice from '@/components/Contacts/ContactsGroupNotice.vue'

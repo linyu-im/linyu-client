@@ -1,12 +1,14 @@
 import type { ComposerTranslation } from 'vue-i18n'
+import type { SceneType } from '@/constants/common'
 import type { EditorSendUnit } from '@/utils/editorMessage'
 import type { Message, SendMessageContent, SendMessageMsgType } from '@/types/api/message'
 import type { FromType } from '@/types/common'
+import { nowBackendDatetime } from '@/utils/time'
 
 const createLocalId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
-const createLocalMessageBase = (fromId: string, toId: string) => {
-  const now = new Date().toISOString()
+const createLocalMessageBase = (fromId: string, toId: string, sceneType: SceneType) => {
+  const now = nowBackendDatetime()
   return {
     id: createLocalId(),
     sessionId: '',
@@ -15,14 +17,19 @@ const createLocalMessageBase = (fromId: string, toId: string) => {
     fromType: 'user' as FromType,
     isShowTime: false,
     status: 'sending',
-    msgScene: '',
+    sceneType,
     createdAt: now,
     updatedAt: now
   }
 }
 
-export const createLocalMessageFromUnit = (unit: EditorSendUnit, fromId: string, toId: string): Message => {
-  const base = createLocalMessageBase(fromId, toId)
+export const createLocalMessageFromUnit = (
+  unit: EditorSendUnit,
+  fromId: string,
+  toId: string,
+  sceneType: SceneType
+): Message => {
+  const base = createLocalMessageBase(fromId, toId, sceneType)
   switch (unit.msgType) {
     case 'text':
       return { ...base, msgType: 'text', content: unit.content }
@@ -39,9 +46,10 @@ export const createLocalMessage = (
   msgType: SendMessageMsgType,
   content: SendMessageContent,
   fromId: string,
-  toId: string
+  toId: string,
+  sceneType: SceneType
 ): Message => {
-  const base = createLocalMessageBase(fromId, toId)
+  const base = createLocalMessageBase(fromId, toId, sceneType)
   return { ...base, msgType, content } as Message
 }
 

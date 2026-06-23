@@ -1,3 +1,4 @@
+import { useChatStore } from '@/stores/chat'
 import { Message } from '@/types/api/message'
 import { useSendingMessagesStore } from '@/stores/sendingMessages'
 import { useUserStore } from '@/stores/user'
@@ -11,6 +12,9 @@ export const useWebSocketStore = defineStore('websocket', {
   actions: {
     receiveMsg(msg: Message | null) {
       if (!msg) return
+
+      // 无论是否自己发的消息，都更新会话列表
+      useChatStore().onReceiveMessage(msg)
 
       const currentUserId = useUserStore().authInfo.userId
       if (msg.fromId === currentUserId) {

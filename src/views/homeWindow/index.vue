@@ -68,11 +68,11 @@
           </n-dropdown>
         </div>
       </ToolBar>
-      <!-- 内容：keep-alive 缓存各子页面状态（滚动位置、表单等） -->
+      <!-- 内容：keep-alive 缓存各子页面状态 -->
       <div class="home__content">
         <UpdateModal v-model:show="showUpdateModal" />
         <router-view v-slot="{ Component, route }">
-          <keep-alive :max="menuOptions.length">
+          <keep-alive :include="HOME_PAGE_NAMES">
             <component :is="Component" v-if="Component" :key="route.name" />
           </keep-alive>
         </router-view>
@@ -85,6 +85,7 @@
   import UpdateModal from '@/components/UpdateModal.vue'
   import { dismissTopEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { userApi } from '@/api'
+  import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useUserStore } from '@/stores/user'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
@@ -239,6 +240,7 @@
   onMounted(() => {
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     onCurrentUserInfo()
+    prefetchHomePages(route.name as string)
     window.addEventListener('keydown', onKeyDown)
     void WebviewWindow.getCurrent()
       .onCloseRequested((event) => {

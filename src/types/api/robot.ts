@@ -1,3 +1,5 @@
+import type { SceneType } from '@/constants/common'
+
 export interface Robot {
   id: string
   robotName: string
@@ -15,7 +17,7 @@ export interface RobotAnswersParam {
   peerId: string
   robotId: string
   question: string
-  msgScene: string
+  sceneType: SceneType
 }
 
 export interface RobotAnswersDeltaData {

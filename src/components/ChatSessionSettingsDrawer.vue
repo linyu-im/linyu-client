@@ -78,6 +78,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { robotApi } from '@/api'
+  import { SceneType } from '@/constants/common'
   import ForwardMessageModal from '@/components/Message/ForwardMessageModal.vue'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
@@ -119,7 +120,7 @@
         userName: props.peerInfo.username
       },
       isShowTime: false,
-      msgScene: 'user',
+      sceneType: SceneType.User,
       createdAt: '',
       updatedAt: ''
     }

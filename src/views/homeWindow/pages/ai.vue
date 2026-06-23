@@ -168,6 +168,7 @@
 </template>
 
 <script setup lang="ts">
+  defineOptions({ name: 'ai' })
   import AiMessageBubble from '@/components/AI/MessageBubble/index.vue'
   import type { AiMessageRole } from '@/components/AI/MessageBubble/index.vue'
   import { useI18n } from 'vue-i18n'

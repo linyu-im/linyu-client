@@ -14,7 +14,7 @@ export function mute(data: ChatMuteParam): Promise<ApiResponse<void>> {
 }
 
 export function markRead(data: ChatMarkReadParam): Promise<ApiResponse<void>> {
-  return post<void, ChatMarkReadParam>('/api/basic/v1/chat/markRead', data)
+  return post<void, ChatMarkReadParam>('/api/basic/v1/chat/mark-read', data)
 }
 
 export function remove(data: ChatDeleteParam): Promise<ApiResponse<void>> {

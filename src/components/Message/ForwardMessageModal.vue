@@ -151,6 +151,7 @@
 
 <script setup lang="ts">
   import { contactsApi, messageApi } from '@/api'
+  import { SceneType } from '@/constants/common'
   import MessageItem from '@/components/Message/MessageList/Item/index.vue'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import type { Contact } from '@/types/api/contacts'
@@ -308,7 +309,7 @@
     selectedContacts.value.map((item) => {
       return {
         peerId: item.peerId,
-        PeerMessageScene: item.isGroup ? 'group' : 'user'
+        peerSceneType: item.isGroup ? SceneType.Group : SceneType.User
       }
     })
 

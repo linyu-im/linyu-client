@@ -1,3 +1,4 @@
+import type { SceneType } from '@/constants/common'
 import { Message } from './message'
 
 export interface Chat {
@@ -7,7 +8,7 @@ export interface Chat {
   sessionId: string
   unreadNum: number
   lastMsgContent: Message | null
-  type?: string
+  sceneType?: SceneType
   status?: string
   updatedAt: string
   createdAt: string

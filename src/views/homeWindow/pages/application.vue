@@ -138,6 +138,7 @@
 </template>
 
 <script setup lang="ts">
+  defineOptions({ name: 'application' })
   import { applicationApi } from '@/api'
   import type { Application } from '@/types/api/application'
   import { useI18n } from 'vue-i18n'

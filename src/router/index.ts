@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { HOME_PAGES } from '@/router/home'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -11,38 +12,11 @@ const routes: RouteRecordRaw[] = [
     name: 'home',
     redirect: '/home/message',
     component: () => import('@/views/homeWindow/index.vue'),
-    children: [
-      {
-        path: '/home/message',
-        name: 'message',
-        component: () => import('@/views/homeWindow/pages/message.vue')
-      },
-      {
-        path: '/home/contacts',
-        name: 'contacts',
-        component: () => import('@/views/homeWindow/pages/contacts.vue')
-      },
-      {
-        path: '/home/moment',
-        name: 'moment',
-        component: () => import('@/views/homeWindow/pages/moment.vue')
-      },
-      {
-        path: '/home/application',
-        name: 'application',
-        component: () => import('@/views/homeWindow/pages/application.vue')
-      },
-      {
-        path: '/home/drive',
-        name: 'drive',
-        component: () => import('@/views/homeWindow/pages/drive.vue')
-      },
-      {
-        path: '/home/ai',
-        name: 'ai',
-        component: () => import('@/views/homeWindow/pages/ai.vue')
-      }
-    ]
+    children: HOME_PAGES.map((item) => ({
+      path: item.path,
+      name: item.name,
+      component: item.loader
+    }))
   },
   {
     path: '/tray',

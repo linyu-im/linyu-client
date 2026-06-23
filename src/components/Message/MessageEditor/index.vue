@@ -19,7 +19,7 @@
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { getCurrentWebview } from '@tauri-apps/api/webview'
   import type { UnlistenFn } from '@tauri-apps/api/event'
-  import { Editor, EditorContent, useEditor } from '@tiptap/vue-3'
+  import { Editor, EditorContent, mergeAttributes, useEditor } from '@tiptap/vue-3'
   import StarterKit from '@tiptap/starter-kit'
   import Placeholder from '@tiptap/extension-placeholder'
   import Image from '@tiptap/extension-image'
@@ -216,6 +216,15 @@
               renderHTML: (attributes) => (attributes.fileSize ? { 'data-file-size': String(attributes.fileSize) } : {})
             }
           }
+        },
+        renderHTML({ HTMLAttributes }) {
+          const attrs = { ...HTMLAttributes }
+          const src = attrs.src
+          if (typeof src === 'string' && src.startsWith('local-file://')) {
+            const path = decodeURIComponent(src.slice('local-file://'.length))
+            attrs.src = convertFileSrc(path)
+          }
+          return ['img', mergeAttributes(this.options.HTMLAttributes, attrs)]
         }
       }).configure({
         inline: true,
@@ -293,11 +302,10 @@
       return
     }
     const filePath = getFilePath(file)
-    const url = filePath ? convertFileSrc(filePath) : URL.createObjectURL(file)
+    const url = filePath ? `local-file://${encodeURIComponent(filePath)}` : URL.createObjectURL(file)
     if (!filePath) {
       trackBlob(url)
     }
-    console.log('[editor] insertImage | url:', url, '| filePath:', filePath)
     if (filePath) registerBlobFilePath(url, filePath)
     editor.value
       ?.chain()
@@ -320,7 +328,6 @@
     if (!filePath) {
       trackBlob(url)
     }
-    console.log('[editor] insertFileChip | url:', url, '| filePath:', filePath)
     if (filePath) registerBlobFilePath(url, filePath)
     editor.value
       ?.chain()

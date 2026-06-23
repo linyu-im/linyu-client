@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+  defineOptions({ name: 'moment' })
   import { momentApi } from '@/api'
   import MomentCover from '@/components/Moment/MomentCover.vue'
   import MomentFloatNav from '@/components/Moment/MomentFloatNav.vue'

@@ -1,3 +1,4 @@
+import type { SceneType } from '@/constants/common'
 import type { FromType } from '@/types/common'
 
 export interface TextContent {
@@ -64,7 +65,7 @@ export type Message = {
     failReason?: string
     /** 媒体上传进度 0–100，仅本地发送中的媒体消息 */
     uploadProgress?: number
-    msgScene: string
+    sceneType: SceneType
     quoteMsgId?: string
     createdAt: string
     updatedAt: string
@@ -117,7 +118,7 @@ export interface MessagePageResult {
 
 export interface ForwardMessagePeerInfo {
   peerId: string
-  PeerMessageScene: string
+  peerSceneType: SceneType
 }
 
 export interface ForwardMessageParam {

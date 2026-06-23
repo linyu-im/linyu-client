@@ -1,5 +1,21 @@
+const pad = (n: number) => String(n).padStart(2, '0')
+
+/** 解析后端时间字符串（兼容 ISO 8601） */
+export function parseBackendTime(timeStr: string): Date {
+  if (!timeStr) return new Date(Number.NaN)
+  if (timeStr.includes('T')) return new Date(timeStr)
+  return new Date(timeStr.replace(/-/g, '/'))
+}
+
+export function nowBackendDatetime(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+}
+
 export function formatTime(timeStr: string): string {
-  const inputDate = new Date(timeStr.replace(/-/g, '/'))
+  const inputDate = parseBackendTime(timeStr)
+  if (Number.isNaN(inputDate.getTime())) return ''
+
   const now = new Date()
 
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -7,7 +23,6 @@ export function formatTime(timeStr: string): string {
 
   const diffDays = Math.floor((startOfToday.getTime() - startOfInputDay.getTime()) / (24 * 60 * 60 * 1000))
 
-  const pad = (n: number) => String(n).padStart(2, '0')
   const time = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}`
 
   const weekMap = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']

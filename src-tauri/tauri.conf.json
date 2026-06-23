@@ -42,7 +42,7 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "decorations": false,
-        "transparent": true,
+        "transparent": false,
         "dragDropEnabled": false,
         "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
       },
