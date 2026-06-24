@@ -79,6 +79,9 @@
     "websocket:default",
     "clipboard-manager:default",
     "clipboard-manager:allow-write-image",
-    "upload:default"
+    "upload:default",
+    "sql:default",
+    "sql:allow-execute",
+    "sql:allow-select"
   ]
 }

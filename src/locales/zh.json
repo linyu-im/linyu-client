@@ -68,6 +68,7 @@
   },
   "message": {
     "noChat": "暂无新的消息",
+    "syncingMessages": "消息加载中...",
     "newMessages": "收到 {count} 条新消息",
     "msgType": {
       "text": "文本",

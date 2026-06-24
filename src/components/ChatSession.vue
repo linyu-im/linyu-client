@@ -107,6 +107,7 @@
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user'
   import { useChatStore } from '@/stores/chat'
+  import { useMessageDbStore } from '@/stores/messageDb'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
   import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
@@ -139,6 +140,7 @@
   const { t } = useI18n()
   const userStore = useUserStore()
   const chatStore = useChatStore()
+  const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
   const sendingMessagesStore = useSendingMessagesStore()
 
@@ -279,22 +281,17 @@
     const toId = props.toId
     if (!toId) return null
 
-    const res = await messageApi.page({
-      toId,
-      page: targetPage,
-      pageSize: PAGE_SIZE
-    })
+    // 从 chatList 中找到对应的 sessionId
+    const chat = chatStore.chatList.find((item) => item.peerId === toId)
+    if (!chat) return null
 
-    if (res.code !== 0 || !res.data) {
-      window.$message?.error(res.msg || t('message.editor.sendFailed'))
-      return null
-    }
+    const result = await messageDbStore.loadMessagesFromDb(chat.sessionId, targetPage, PAGE_SIZE)
 
-    const records = res.data.records.map((item) => normalizeMessage(item as Message))
+    const records = result.records.map((item) => normalizeMessage(item as Message))
     return {
       records,
-      page: res.data.page,
-      totalPage: res.data.totalPage
+      page: result.page,
+      totalPage: result.totalPage
     }
   }
 

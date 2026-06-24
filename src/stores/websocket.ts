@@ -1,4 +1,5 @@
 import { useChatStore } from '@/stores/chat'
+import { useMessageDbStore } from '@/stores/messageDb'
 import { Message } from '@/types/api/message'
 import { useSendingMessagesStore } from '@/stores/sendingMessages'
 import { useUserStore } from '@/stores/user'
@@ -15,6 +16,9 @@ export const useWebSocketStore = defineStore('websocket', {
 
       // 无论是否自己发的消息，都更新会话列表
       useChatStore().onReceiveMessage(msg)
+
+      // 保存消息到本地数据库
+      useMessageDbStore().saveMessages([msg])
 
       const currentUserId = useUserStore().authInfo.userId
       if (msg.fromId === currentUserId) {

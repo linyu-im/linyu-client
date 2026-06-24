@@ -125,3 +125,8 @@ export interface ForwardMessageParam {
   toPeerInfo: ForwardMessagePeerInfo[]
   message: Message
 }
+
+export interface MessageListParam {
+  toId: string
+  sinceMsgId?: string
+}

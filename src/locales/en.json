@@ -68,6 +68,7 @@
   },
   "message": {
     "noChat": "No new messages",
+    "syncingMessages": "Loading messages...",
     "newMessages": "Receive {count} new messages",
     "msgType": {
       "text": "Text",

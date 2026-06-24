@@ -2,6 +2,7 @@ import type {
   ForwardMessageParam,
   MergeMessageFileParam,
   Message,
+  MessageListParam,
   MessagePageParam,
   MessagePageResult,
   SendMessageToUserParam,
@@ -31,4 +32,8 @@ export function uploadFileChunk(data: UploadMessageFileChunkParam): Promise<ApiR
 
 export function mergeFileChunks(data: MergeMessageFileParam): Promise<ApiResponse<string>> {
   return post<string, MergeMessageFileParam>('/api/basic/v1/message/file/merge', data)
+}
+
+export function list(data: MessageListParam): Promise<ApiResponse<Message[]>> {
+  return post<Message[], MessageListParam>('/api/basic/v1/message/list', data)
 }

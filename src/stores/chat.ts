@@ -49,7 +49,7 @@ export const useChatStore = defineStore('chat', {
       })
     },
     loadList() {
-      chatApi.list().then((res) => {
+      return chatApi.list().then((res) => {
         if (res.code === 0 && res.data) {
           this.$patch((state) => {
             state.chatList = res.data!

@@ -25,6 +25,10 @@
               </n-button>
             </n-dropdown>
           </div>
+          <div v-if="messageDbStore.syncingMessages" class="chatlist__sync-tip">
+            <span class="chatlist__sync-spinner" />
+            <span>{{ t('message.syncingMessages') }}</span>
+          </div>
           <n-scrollbar v-if="chatStore.chatList.length > 0" style="margin-top: 10px">
             <div class="chatlist__content">
               <div
@@ -93,6 +97,7 @@
 <script setup lang="tsx">
   defineOptions({ name: 'message' })
   import { useChatStore } from '@/stores/chat'
+  import { useMessageDbStore } from '@/stores/messageDb'
   import { SceneType } from '@/constants/common'
   import ChatSession from '@/components/ChatSession.vue'
   import { useWebSocketStore } from '@/stores/websocket'
@@ -103,6 +108,7 @@
 
   const { t } = useI18n()
   const chatStore = useChatStore()
+  const messageDbStore = useMessageDbStore()
   const wsStore = useWebSocketStore()
   const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
 
@@ -294,7 +300,14 @@
   }
 
   onMounted(() => {
-    chatStore.loadList()
+    chatStore.loadList().then(() => {
+      messageDbStore.syncAllMessagesFromCloud(
+        chatStore.chatList.map((chat) => ({
+          peerId: chat.peerId,
+          sessionId: chat.sessionId
+        }))
+      )
+    })
   })
 </script>
 <style scoped lang="scss">
@@ -322,6 +335,39 @@
         justify-content: center;
         flex-shrink: 0;
         padding: 0 5px;
+      }
+
+      .chatlist__sync-tip {
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-shrink: 0;
+        height: 24px;
+        margin-top: 10px;
+        padding: 8px;
+        font-size: 12px;
+        line-height: 1;
+        color: var(--text-secondary-color);
+        background-color: color-mix(in srgb, var(--primary-color) 6%, var(--bg-primary-color));
+        border-radius: 3px;
+      }
+
+      .chatlist__sync-spinner {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+        border: 2px solid color-mix(in srgb, var(--primary-color) 20%, transparent);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: chatlist-sync-spin 0.8s linear infinite;
+      }
+
+      @keyframes chatlist-sync-spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       .chatlist__content {
