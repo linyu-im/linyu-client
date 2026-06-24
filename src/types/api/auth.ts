@@ -7,6 +7,7 @@ export interface AccountLoginParam {
 // 登录结果
 export interface LoginResult {
   userId: string
+  account: string
   token: string
 }
 
