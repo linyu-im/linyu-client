@@ -125,6 +125,7 @@
       font-size: 14px;
       color: var(--text-secondary-color);
       user-select: none;
+      text-align: center;
     }
 
     &__cards {

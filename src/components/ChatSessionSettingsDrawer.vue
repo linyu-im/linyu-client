@@ -45,10 +45,10 @@
 
             <SettingCard>
               <SettingRow :label="t('message.chatSettings.pinChat')">
-                <n-switch v-model:value="pinChat" size="small" />
+                <n-switch v-model:value="pinChat" size="small" :disabled="!currentChat" />
               </SettingRow>
               <SettingRow :label="t('message.chatSettings.mute')" :border="false">
-                <n-switch v-model:value="muteChat" size="small" />
+                <n-switch v-model:value="muteChat" size="small" :disabled="!currentChat" />
               </SettingRow>
             </SettingCard>
 
@@ -79,6 +79,7 @@
   import { useI18n } from 'vue-i18n'
   import { robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
+  import { useChatStore } from '@/stores/chat'
   import ForwardMessageModal from '@/components/Message/ForwardMessageModal.vue'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
@@ -89,6 +90,7 @@
   const props = defineProps<{
     show: boolean
     peerInfo: UserInfoResult | null
+    chatId: string
   }>()
 
   const emit = defineEmits<{
@@ -96,6 +98,7 @@
   }>()
 
   const { t } = useI18n()
+  const chatStore = useChatStore()
 
   const onClose = () => {
     emit('close')
@@ -131,8 +134,29 @@
     showForwardModal.value = true
   }
 
-  const pinChat = ref(true)
-  const muteChat = ref(false)
+  const currentChat = computed(() => {
+    if (!props.chatId) return null
+    return chatStore.chatList.find((item) => item.id === props.chatId) ?? null
+  })
+
+  const pinChat = computed({
+    get: () => !!currentChat.value?.peerIsTop,
+    set: (value: boolean) => {
+      if (!props.chatId || !currentChat.value) return
+      if (value === !!currentChat.value.peerIsTop) return
+      chatStore.toggleTop(props.chatId, value)
+    }
+  })
+
+  const muteChat = computed({
+    get: () => !!currentChat.value?.peerIsMute,
+    set: (value: boolean) => {
+      if (!props.chatId || !currentChat.value) return
+      if (value === !!currentChat.value.peerIsMute) return
+      chatStore.toggleMute(props.chatId, value)
+    }
+  })
+
   const robots = ref<Robot[]>([])
 
   const fetchRobots = () => {

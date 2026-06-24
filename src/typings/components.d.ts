@@ -13,7 +13,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Avatar: typeof import('./../components/Avatar.vue')['default']
-    AvatarProfileCard: typeof import('./../components/AvatarProfileCard.vue')['default']
+    AvatarProfileCard: typeof import('./../components/AvatarProfileCard/index.vue')['default']
+    AvatarProfileCardActions: typeof import('./../components/AvatarProfileCard/AvatarProfileCardActions.vue')['default']
+    AvatarProfileCardEnterprise: typeof import('./../components/AvatarProfileCard/AvatarProfileCardEnterprise.vue')['default']
+    AvatarProfileCardGroup: typeof import('./../components/AvatarProfileCard/AvatarProfileCardGroup.vue')['default']
+    AvatarProfileCardUser: typeof import('./../components/AvatarProfileCard/AvatarProfileCardUser.vue')['default']
     ChatSession: typeof import('./../components/ChatSession.vue')['default']
     ChatSessionSettingsDrawer: typeof import('./../components/ChatSessionSettingsDrawer.vue')['default']
     CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']
@@ -101,7 +105,11 @@ declare module 'vue' {
 // For TSX support
 declare global {
   const Avatar: typeof import('./../components/Avatar.vue')['default']
-  const AvatarProfileCard: typeof import('./../components/AvatarProfileCard.vue')['default']
+  const AvatarProfileCard: typeof import('./../components/AvatarProfileCard/index.vue')['default']
+  const AvatarProfileCardActions: typeof import('./../components/AvatarProfileCard/AvatarProfileCardActions.vue')['default']
+  const AvatarProfileCardEnterprise: typeof import('./../components/AvatarProfileCard/AvatarProfileCardEnterprise.vue')['default']
+  const AvatarProfileCardGroup: typeof import('./../components/AvatarProfileCard/AvatarProfileCardGroup.vue')['default']
+  const AvatarProfileCardUser: typeof import('./../components/AvatarProfileCard/AvatarProfileCardUser.vue')['default']
   const ChatSession: typeof import('./../components/ChatSession.vue')['default']
   const ChatSessionSettingsDrawer: typeof import('./../components/ChatSessionSettingsDrawer.vue')['default']
   const CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']

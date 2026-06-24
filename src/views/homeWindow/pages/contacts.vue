@@ -61,7 +61,7 @@
                 <template v-if="expandedGroups.enterprise">
                   <div v-if="enterpriseListLoading" class="contacts__loading">{{ t('contacts.loading') }}</div>
                   <div v-else-if="enterpriseList.length === 0" class="contacts__empty">
-                    {{ t('contacts.emptyGroups') }}
+                    {{ t('contacts.emptyEnterprises') }}
                   </div>
                   <div
                     v-else
@@ -432,12 +432,19 @@
       opacity: 0.7;
     }
 
-    &__loading,
+    &__loading {
+      font-size: 12px;
+      color: var(--text-secondary-color);
+      padding: 8px 10px;
+      user-select: none;
+    }
+
     &__empty {
       font-size: 12px;
       color: var(--text-secondary-color);
       padding: 8px 10px;
       user-select: none;
+      text-align: center;
     }
 
     &__group-count {

@@ -96,6 +96,7 @@
       <ChatSessionSettingsDrawer
         :show="settingsDrawerVisible"
         :peer-info="peerInfo"
+        :chat-id="chatStore.selectedChatId"
         @close="settingsDrawerVisible = false" />
     </div>
   </div>
@@ -105,6 +106,7 @@
   import { messageApi, robotApi, userApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user'
+  import { useChatStore } from '@/stores/chat'
   import type { Message } from '@/types/api/message'
   import type { UserInfoResult } from '@/types/api/user'
   import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
@@ -136,6 +138,7 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const chatStore = useChatStore()
   const messageUploadStore = useMessageUploadStore()
   const sendingMessagesStore = useSendingMessagesStore()
 

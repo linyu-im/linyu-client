@@ -1,0 +1,246 @@
+.avatar-profile-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 16px 16px;
+  background: var(--bg-primary-color);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  &__head {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+  }
+
+  &__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: var(--bg-secondary-color);
+  }
+
+  &__head-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  &__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-color);
+    min-width: 0;
+  }
+
+  &__count {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-muted-color);
+    flex-shrink: 0;
+  }
+
+  &__gender-icon {
+    flex-shrink: 0;
+
+    &.is-female {
+      color: var(--pink);
+    }
+
+    &.is-male {
+      color: var(--primary-color);
+    }
+  }
+
+  &__brief-row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  &__brief-label {
+    flex-shrink: 0;
+    color: var(--text-muted-color);
+    user-select: none;
+  }
+
+  &__brief-value {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-left: 4px;
+    color: var(--text-secondary-color);
+    text-align: left;
+  }
+
+  &__emotion {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    user-select: none;
+  }
+
+  &__meta-sep {
+    margin: 0 4px;
+    color: var(--text-muted-color);
+  }
+
+  &__divider {
+    margin: 12px 0;
+  }
+
+  &__section-title {
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-muted-color);
+    user-select: none;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 20px;
+
+    &--moments {
+      align-items: flex-start;
+    }
+
+    &--emotion {
+      .avatar-profile-card__value-slot {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+
+  &__row-label {
+    flex-shrink: 0;
+    min-width: 70px;
+    color: var(--text-muted-color);
+    user-select: none;
+  }
+
+  &__value-slot {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  &__row-value {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    color: var(--text-color);
+    text-align: left;
+
+    &--ellipsis {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      user-select: none;
+      cursor: default;
+    }
+
+    &.avatar-profile-card__emotion {
+      display: inline-flex;
+      align-items: center;
+      width: auto;
+    }
+  }
+
+  &__thumbs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    width: 100%;
+  }
+
+  &__thumb {
+    flex: 1 1 0;
+    min-width: 0;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--bg-secondary-color);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    margin: 16px -16px -16px;
+    border-top: 1px solid var(--border-color);
+    overflow: hidden;
+    border-radius: 0 0 10px 10px;
+  }
+
+  &__action {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    height: 48px;
+    padding: 0 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+
+    &:hover {
+      background: var(--button-soft-bg);
+      color: var(--primary-color);
+
+      .avatar-profile-card__action-icon {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  &__action-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary-color);
+    transition: color 0.15s ease;
+  }
+
+  &__action-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  &__action-sep {
+    flex-shrink: 0;
+    width: 1px;
+    height: 18px;
+    background: var(--border-color);
+  }
+}

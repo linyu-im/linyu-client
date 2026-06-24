@@ -142,7 +142,9 @@
                 <div class="contacts-profile__top-rank">{{ index + 1 }}</div>
               </div>
             </div>
-            <n-empty v-else size="small" :description="t('contacts.emptyGroups')" />
+            <div v-else class="contacts-profile__empty">
+              <n-empty size="small" :description="t('contacts.emptyGroups')" />
+            </div>
           </div>
         </div>
         <div class="contacts-profile__actions">
@@ -529,6 +531,12 @@
     &__top {
       margin-top: 10px;
       overflow: visible;
+    }
+
+    &__empty {
+      display: flex;
+      justify-content: center;
+      padding: 12px 0;
     }
 
     &__top-grid {
