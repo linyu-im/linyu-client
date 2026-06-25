@@ -108,6 +108,7 @@
     hasEnterpriseMemberRoleTag,
     isEnterpriseMemberRole
   } from '@/constants/enterprise'
+  import { usePeerInfoStore } from '@/stores/peerInfo'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { EnterpriseDepartment } from '@/types/api/enterpriseDepartment'
   import type { EnterpriseMember } from '@/types/api/enterpriseMember'
@@ -118,46 +119,44 @@
   }>()
 
   const { t } = useI18n()
+  const peerInfoStore = usePeerInfoStore()
 
-  const loading = ref(false)
-  const enterpriseInfo = ref<EnterprisInfo | null>(null)
+  const enterpriseInfo = computed(() => peerInfoStore.read(props.enterpriseId, 'enterprise') as EnterprisInfo | null)
   const departments = ref<EnterpriseDepartment[]>([])
   const currentDepartmentId = ref('')
+  const departmentLoading = ref(false)
 
-  const fetchEnterpriseProfile = async () => {
+  const loading = computed(() => (!!props.enterpriseId && !enterpriseInfo.value) || departmentLoading.value)
+
+  const fetchDepartments = (enterpriseId: string) => {
+    departmentLoading.value = true
+    enterpriseApi
+      .getEnterpriseDepartment({ enterpriseId })
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          departments.value = res.data
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        departmentLoading.value = false
+      })
+  }
+
+  const fetchEnterpriseProfile = () => {
     if (!props.enterpriseId) return
 
-    loading.value = true
-    enterpriseInfo.value = null
     departments.value = []
     currentDepartmentId.value = ''
-
-    try {
-      const [infoRes, deptRes] = await Promise.all([
-        enterpriseApi.getEnterpriseInfo({ enterpriseId: props.enterpriseId }),
-        enterpriseApi.getEnterpriseDepartment({ enterpriseId: props.enterpriseId })
-      ])
-
-      if (infoRes.code === 0 && infoRes.data) {
-        enterpriseInfo.value = infoRes.data
-      } else {
-        window.$message.error(infoRes.msg)
-      }
-
-      if (deptRes.code === 0 && deptRes.data) {
-        departments.value = deptRes.data
-      } else {
-        window.$message.error(deptRes.msg)
-      }
-    } finally {
-      loading.value = false
-    }
+    peerInfoStore.get(props.enterpriseId, 'enterprise')
+    fetchDepartments(props.enterpriseId)
   }
 
   watch(
     () => props.enterpriseId,
     () => {
-      void fetchEnterpriseProfile()
+      fetchEnterpriseProfile()
     },
     { immediate: true }
   )

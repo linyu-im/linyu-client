@@ -1,11 +1,5 @@
 import type { EditorSegment } from '@/components/Message/MessageEditor/index.vue'
-import type {
-  FileContent,
-  ImageContent,
-  SendMessageMention,
-  SendMessageToUserParam,
-  VideoContent
-} from '@/types/api/message'
+import type { FileContent, ImageContent, SendMessageMention, SendMessageParam, VideoContent } from '@/types/api/message'
 import {
   needsMediaUpload,
   uploadMessageMediaByUrl,
@@ -158,16 +152,16 @@ export const resolveSegmentMediaUrl = (
 
 export const buildSendParam = (
   unit: EditorSendUnit,
-  toUserId: string,
+  sessionId: string,
   options?: { onProgress?: UploadProgressHandler; onError?: UploadErrorHandler }
-): Promise<SendMessageToUserParam | null> => {
+): Promise<SendMessageParam | null> => {
   const onProgress = options?.onProgress
   const onError = options?.onError
 
   if (unit.msgType === 'text') {
     if (!unit.content.text.trim()) return Promise.resolve(null)
-    const param: SendMessageToUserParam = {
-      toUserId,
+    const param: SendMessageParam = {
+      sessionId,
       msgType: 'text',
       content: unit.content
     }
@@ -189,7 +183,7 @@ export const buildSendParam = (
       const thumbIsSame = unit.content.imgThumbUrl === unit.content.imgUrl
       if (thumbIsSame || !needsMediaUpload(unit.content.imgThumbUrl)) {
         return {
-          toUserId,
+          sessionId,
           msgType: 'image' as const,
           content: {
             ...unit.content,
@@ -203,7 +197,7 @@ export const buildSendParam = (
         fileSize: unit.content.imgSize,
         msgType: 'image'
       }).then((imgThumbUrl) => ({
-        toUserId,
+        sessionId,
         msgType: 'image' as const,
         content: {
           ...unit.content,
@@ -226,7 +220,7 @@ export const buildSendParam = (
       const thumbIsSame = unit.content.videoThumbUrl === unit.content.videoUrl
       if (thumbIsSame || !needsMediaUpload(unit.content.videoThumbUrl)) {
         return {
-          toUserId,
+          sessionId,
           msgType: 'video' as const,
           content: {
             ...unit.content,
@@ -240,7 +234,7 @@ export const buildSendParam = (
         fileSize: unit.content.videoSize,
         msgType: 'video'
       }).then((videoThumbUrl) => ({
-        toUserId,
+        sessionId,
         msgType: 'video' as const,
         content: {
           ...unit.content,
@@ -261,7 +255,7 @@ export const buildSendParam = (
     }).then((fileUrl) => {
       if (!fileUrl) return null
       return {
-        toUserId,
+        sessionId,
         msgType: 'file' as const,
         content: {
           ...unit.content,
@@ -276,15 +270,15 @@ export const buildSendParam = (
 
 export const buildSendParamsFromSegments = (
   segments: EditorSegment[],
-  toUserId: string,
+  sessionId: string,
   options?: { onProgress?: UploadProgressHandler }
-): Promise<SendMessageToUserParam[]> => {
+): Promise<SendMessageParam[]> => {
   const units = buildSendUnitsFromSegments(segments)
-  let chain: Promise<SendMessageToUserParam[]> = Promise.resolve([])
+  let chain: Promise<SendMessageParam[]> = Promise.resolve([])
 
   for (const unit of units) {
     chain = chain.then((params) =>
-      buildSendParam(unit, toUserId, options).then((param) => {
+      buildSendParam(unit, sessionId, options).then((param) => {
         if (param) params.push(param)
         return params
       })

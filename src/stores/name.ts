@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
-import { robotApi, userApi } from '@/api'
+import { robotApi } from '@/api'
+import { usePeerInfoStore } from '@/stores/peerInfo'
 import type { FromType } from '@/types/common'
 
 const NAME_CACHE_MAX = 1000
 
 export const useNameStore = defineStore('name', () => {
+  const peerInfoStore = usePeerInfoStore()
   const nameCache = new Map<string, string>()
   const inflight = new Map<string, Promise<string>>()
 
@@ -34,9 +36,9 @@ export const useNameStore = defineStore('name', () => {
 
     switch (type) {
       case 'user': {
-        const res = await userApi.getUserInfo({ userId: id })
-        if (res.code !== 0 || !res.data) return ''
-        return res.data.remark?.trim() || res.data.username || ''
+        const data = await peerInfoStore.fetchUser(id)
+        if (!data) return ''
+        return data.remark?.trim() || data.username || ''
       }
       case 'robot': {
         const res = await robotApi.getRobotInfo(id)

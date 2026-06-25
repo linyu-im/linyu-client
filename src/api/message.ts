@@ -5,13 +5,13 @@ import type {
   MessageListParam,
   MessagePageParam,
   MessagePageResult,
-  SendMessageToUserParam,
+  SendMessageParam,
   UploadMessageFileChunkParam
 } from '@/types/api/message'
 import { ApiResponse, formData, post } from '@/utils/http'
 
-export function sendToUser(data: SendMessageToUserParam): Promise<ApiResponse<Message>> {
-  return post<Message, SendMessageToUserParam>('/api/basic/v1/message/send/user', data)
+export function sendMsg(data: SendMessageParam): Promise<ApiResponse<Message>> {
+  return post<Message, SendMessageParam>('/api/basic/v1/message/send', data)
 }
 
 export function forward(data: ForwardMessageParam): Promise<ApiResponse<void>> {

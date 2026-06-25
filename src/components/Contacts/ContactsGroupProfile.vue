@@ -157,8 +157,8 @@
 </template>
 
 <script setup lang="ts">
-  import { groupApi } from '@/api'
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { usePeerInfoStore } from '@/stores/peerInfo'
   import { useUserStore } from '@/stores/user'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { GroupMember } from '@/types/api/groupMember'
@@ -184,9 +184,10 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const peerInfoStore = usePeerInfoStore()
 
-  const loading = ref(false)
-  const groupProfile = ref<GroupInfoResult | null>(null)
+  const groupProfile = computed(() => peerInfoStore.read(props.groupId, 'group') as GroupInfoResult | null)
+  const loading = computed(() => !!props.groupId && !groupProfile.value)
   const groupRemarkText = ref('')
   const remarkEditing = ref(false)
   const remarkDraft = ref('')
@@ -198,21 +199,16 @@
   const aliasSaving = ref(false)
   const aliasInputRef = ref<InputInst | null>(null)
 
-  const fetchGroupInfo = async () => {
-    if (!props.groupId) return
-    loading.value = true
-    groupProfile.value = null
-    try {
-      const res = await groupApi.getGroupInfo({ groupId: props.groupId })
-      if (res.code === 0 && res.data) {
-        groupProfile.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      loading.value = false
-    }
-  }
+  watch(
+    () => props.groupId,
+    (groupId) => {
+      remarkEditing.value = false
+      aliasEditing.value = false
+      if (!groupId) return
+      peerInfoStore.get(groupId, 'group')
+    },
+    { immediate: true }
+  )
 
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
 
@@ -230,16 +226,6 @@
   const syncAliasFromProfile = () => {
     groupAliasText.value = getCurrentMember()?.groupNickName?.trim() || ''
   }
-
-  watch(
-    () => props.groupId,
-    () => {
-      remarkEditing.value = false
-      aliasEditing.value = false
-      void fetchGroupInfo()
-    },
-    { immediate: true }
-  )
 
   watch([groupProfile, () => props.remark], syncRemarkFromProfile, { immediate: true })
   watch(groupProfile, syncAliasFromProfile, { immediate: true })

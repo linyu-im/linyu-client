@@ -79,14 +79,13 @@ export const useMessageDbStore = defineStore('messageDb', {
 
     /**
      * 从云端加载消息并保存到本地数据库
-     * @param toId 对方用户/群 ID
      * @param sessionId 会话 ID
      */
-    async syncMessagesFromCloud(toId: string, sessionId: string) {
+    async syncMessagesFromCloud(sessionId: string) {
       const latestMsgId = await this.getLatestMessageId(sessionId)
 
       const res = await messageApi.list({
-        toId,
+        sessionId,
         sinceMsgId: latestMsgId ?? undefined
       })
 
@@ -98,19 +97,23 @@ export const useMessageDbStore = defineStore('messageDb', {
     /**
      * 批量从云端同步所有会话消息到本地数据库
      */
-    async syncAllMessagesFromCloud(chats: { peerId: string; sessionId: string }[]) {
-      if (chats.length === 0) return
+    async syncAllMessagesFromCloud(sessionIds: string[], showLoading = false) {
+      if (sessionIds.length === 0) return
 
-      this.$patch((state) => {
-        state.syncingMessages = true
-      })
+      if (showLoading) {
+        this.$patch((state) => {
+          state.syncingMessages = true
+        })
+      }
 
       try {
-        await Promise.all(chats.map((chat) => this.syncMessagesFromCloud(chat.peerId, chat.sessionId)))
+        await Promise.all(sessionIds.map((sessionId) => this.syncMessagesFromCloud(sessionId)))
       } finally {
-        this.$patch((state) => {
-          state.syncingMessages = false
-        })
+        if (showLoading) {
+          this.$patch((state) => {
+            state.syncingMessages = false
+          })
+        }
       }
     }
   }

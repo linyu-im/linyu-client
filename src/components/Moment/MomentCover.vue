@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-  import { userApi } from '@/api'
+  import { usePeerInfoStore } from '@/stores/peerInfo'
   import type { UserInfoResult } from '@/types/api/user'
   import { useI18n } from 'vue-i18n'
 
@@ -51,31 +51,19 @@
   }>()
 
   const { t } = useI18n()
-  const loading = ref(false)
-  const userInfo = ref<UserInfoResult | null>(null)
+  const peerInfoStore = usePeerInfoStore()
 
-  const fetchUserInfo = () => {
-    if (!props.userId) {
-      userInfo.value = null
-      return
-    }
+  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as UserInfoResult | null)
+  const loading = computed(() => !!props.userId && !userInfo.value)
 
-    loading.value = true
-    userApi
-      .getUserInfo({ userId: props.userId })
-      .then((res) => {
-        if (res.code === 0 && res.data) {
-          userInfo.value = res.data
-        } else {
-          window.$message.error(res.msg)
-        }
-      })
-      .finally(() => {
-        loading.value = false
-      })
-  }
-
-  watch(() => props.userId, fetchUserInfo, { immediate: true })
+  watch(
+    () => props.userId,
+    (userId) => {
+      if (!userId) return
+      peerInfoStore.get(userId, 'user')
+    },
+    { immediate: true }
+  )
 </script>
 
 <style scoped lang="scss">

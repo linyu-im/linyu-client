@@ -44,7 +44,7 @@
                   :max="99"
                   class="select-none pointer-events-none p-0 text-1px"
                   :offset="[-2, 2]">
-                  <Avatar class="size-38px rounded-5px bg-#FFF" :id="item.peerId" />
+                  <Avatar class="size-38px rounded-5px bg-#FFF" :id="item.peerId" :type="item.sceneType" />
                 </n-badge>
                 <div class="flex-1 min-w-0 m-l-12px h-40px flex flex-col justify-center gap-6px">
                   <div class="flex justify-between items-center h-14px">
@@ -73,11 +73,7 @@
         </div>
       </template>
       <template #second>
-        <chat-session
-          v-if="hasActiveChat"
-          ref="chatSessionRef"
-          :to-id="activeChat?.peerId ?? ''"
-          :scene-type="activeChat?.sceneType ?? SceneType.User" />
+        <chat-session v-if="activeChat" :key="activeChat.id" ref="chatSessionRef" :chat="activeChat" />
         <div v-else class="message__empty">
           <LinyuEmpty />
         </div>
@@ -98,8 +94,7 @@
   defineOptions({ name: 'message' })
   import { useChatStore } from '@/stores/chat'
   import { useMessageDbStore } from '@/stores/messageDb'
-  import { SceneType } from '@/constants/common'
-  import ChatSession from '@/components/ChatSession.vue'
+  import ChatSession from '@/components/Chat/ChatSession.vue'
   import { useWebSocketStore } from '@/stores/websocket'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
@@ -299,15 +294,28 @@
     chatStore.setSelectedChatId(item.id)
   }
 
-  onMounted(() => {
-    chatStore.loadList().then(() => {
-      messageDbStore.syncAllMessagesFromCloud(
-        chatStore.chatList.map((chat) => ({
-          peerId: chat.peerId,
-          sessionId: chat.sessionId
-        }))
-      )
+  const reloadActiveChatMessages = () => {
+    if (!hasActiveChat.value) return
+    nextTick(() => {
+      chatSessionRef.value?.reloadMessages()
     })
+  }
+
+  watch(
+    () => messageDbStore.syncingMessages,
+    (syncing, prevSyncing) => {
+      if (prevSyncing && !syncing) {
+        reloadActiveChatMessages()
+      }
+    }
+  )
+
+  onMounted(() => {
+    chatStore.loadList(true)
+  })
+
+  onActivated(() => {
+    chatStore.loadList()
   })
 </script>
 <style scoped lang="scss">

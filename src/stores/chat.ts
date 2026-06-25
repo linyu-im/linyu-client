@@ -1,4 +1,5 @@
 import { chatApi } from '@/api'
+import { useMessageDbStore } from '@/stores/messageDb'
 import { useUserStore } from '@/stores/user'
 import type { Chat } from '@/types/api/chat'
 import type { Message } from '@/types/api/message'
@@ -48,12 +49,17 @@ export const useChatStore = defineStore('chat', {
         state.selectedChatId = ''
       })
     },
-    loadList() {
+    loadList(showSyncLoading = false) {
       return chatApi.list().then((res) => {
         if (res.code === 0 && res.data) {
           this.$patch((state) => {
             state.chatList = res.data!
           })
+
+          return useMessageDbStore().syncAllMessagesFromCloud(
+            this.chatList.map((chat) => chat.sessionId),
+            showSyncLoading
+          )
         }
       })
     },

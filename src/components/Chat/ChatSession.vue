@@ -2,16 +2,11 @@
   <div class="chat-session">
     <!-- 相关用户信息 -->
     <div class="chat-session__header" @click="onHeaderClick">
-      <div v-if="peerInfo" class="chat-session__header-info">
-        <div class="text-16px font-bold truncate">{{ peerInfo.remark || peerInfo.username }}</div>
-        <div class="flex items-center justify-center text-12px text-[var(--text-muted-color)] m-l-10px">
-          <img class="size-14px" :src="peerInfo.emotionUrl" alt="" />
-          <div class="m-l-2px">{{ peerInfo.emotionName }}</div>
-        </div>
-      </div>
-      <div v-else class="chat-session__header-info">
-        <div class="text-16px font-bold truncate"></div>
-      </div>
+      <ChatSessionPeerInfo
+        ref="peerInfoRef"
+        class="chat-session__header-info"
+        :peer-id="props.chat.peerId"
+        :scene-type="props.chat.sceneType ?? SceneType.User" />
       <div class="chat-session__header-actions" @click.stop>
         <SvgIconButton href="#record" />
         <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
@@ -29,7 +24,7 @@
           <div class="chat-session__content">
             <MessageList
               ref="messageListRef"
-              :key="props.toId"
+              :key="props.chat.sessionId"
               :messages="messages"
               :loading="loading"
               :loading-more="loadingMore"
@@ -95,31 +90,33 @@
       </Split>
       <ChatSessionSettingsDrawer
         :show="settingsDrawerVisible"
-        :peer-info="peerInfo"
-        :chat-id="chatStore.selectedChatId"
+        :chat-id="props.chat.id"
+        :scene-type="props.chat.sceneType ?? SceneType.User"
+        :user-info="peerInfo"
+        :group-info="groupInfo"
         @close="settingsDrawerVisible = false" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { messageApi, robotApi, userApi } from '@/api'
+  import { messageApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user'
-  import { useChatStore } from '@/stores/chat'
   import { useMessageDbStore } from '@/stores/messageDb'
+  import type { Chat } from '@/types/api/chat'
   import type { Message } from '@/types/api/message'
-  import type { UserInfoResult } from '@/types/api/user'
   import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
   import { createLocalMessageFromUnit, patchMessageById, resolveMessageFailReason } from '@/utils/messageSend'
   import { useMessageUploadStore } from '@/stores/messageUpload'
   import { useSendingMessagesStore } from '@/stores/sendingMessages'
-  import MessageEditor, { type EditorPayload } from './Message/MessageEditor/index.vue'
-  import type { MentionItem } from './Message/MessageEditor/MentionList.vue'
-  import MessageList from './Message/MessageList/index.vue'
-  import EmojiPicker from './Message/EmojiPicker/index.vue'
-  import VoiceRecordBar from './Message/VoiceRecordBar.vue'
-  import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer.vue'
+  import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
+  import type { MentionItem } from '../Message/MessageEditor/MentionList.vue'
+  import MessageList from '../Message/MessageList/index.vue'
+  import EmojiPicker from '../Message/EmojiPicker/index.vue'
+  import VoiceRecordBar from '../Message/VoiceRecordBar.vue'
+  import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer/index.vue'
+  import ChatSessionPeerInfo from './ChatSessionPeerInfo.vue'
   import type { Sticker } from '@/types/api/sticker'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import {
@@ -133,13 +130,11 @@
   import { openAndFocusWindow } from '@/utils/window.ts'
 
   const props = defineProps<{
-    toId: string
-    sceneType: SceneType
+    chat: Chat
   }>()
 
   const { t } = useI18n()
   const userStore = useUserStore()
-  const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
   const sendingMessagesStore = useSendingMessagesStore()
@@ -186,7 +181,9 @@
 
   const editorRef = ref<InstanceType<typeof MessageEditor> | null>(null)
   const messageListRef = ref<InstanceType<typeof MessageList> | null>(null)
-  const peerInfo = ref<UserInfoResult | null>(null)
+  const peerInfoRef = ref<InstanceType<typeof ChatSessionPeerInfo> | null>(null)
+  const peerInfo = computed(() => peerInfoRef.value?.userInfo ?? null)
+  const groupInfo = computed(() => peerInfoRef.value?.groupInfo ?? null)
   const settingsDrawerVisible = ref(false)
 
   const onHeaderClick = () => {
@@ -234,7 +231,7 @@
     return !!uid && msg.fromId === uid
   }
 
-  const isPeerMessage = (msg: Message) => !!props.toId && msg.fromId === props.toId
+  const isPeerMessage = (msg: Message) => msg.fromId === props.chat.peerId
 
   const onAtBottomChange = (atBottom: boolean) => {
     if (atBottom) pendingNewCount.value = 0
@@ -266,8 +263,6 @@
     })
   }
 
-  defineExpose({ appendMessage })
-
   const resetMessages = () => {
     messages.value = []
     page.value = 0
@@ -278,14 +273,7 @@
   }
 
   const fetchMessagePage = async (targetPage: number) => {
-    const toId = props.toId
-    if (!toId) return null
-
-    // 从 chatList 中找到对应的 sessionId
-    const chat = chatStore.chatList.find((item) => item.peerId === toId)
-    if (!chat) return null
-
-    const result = await messageDbStore.loadMessagesFromDb(chat.sessionId, targetPage, PAGE_SIZE)
+    const result = await messageDbStore.loadMessagesFromDb(props.chat.sessionId, targetPage, PAGE_SIZE)
 
     const records = result.records.map((item) => normalizeMessage(item as Message))
     return {
@@ -296,11 +284,6 @@
   }
 
   const loadInitialMessages = async () => {
-    if (!props.toId) {
-      resetMessages()
-      return
-    }
-
     resetMessages()
     loading.value = true
 
@@ -309,7 +292,7 @@
       if (!result) return
 
       const serverMessages = toDisplayOrder(result.records)
-      const pendingMessages = sendingMessagesStore.getMessages(props.toId)
+      const pendingMessages = sendingMessagesStore.getMessages(props.chat.peerId)
       const serverIds = new Set(serverMessages.map((m) => m.id))
       const uniquePending = pendingMessages.filter((m) => !serverIds.has(m.id))
 
@@ -323,7 +306,7 @@
   }
 
   const onLoadMore = async () => {
-    if (!props.toId || loading.value || loadingMore.value || !hasMore.value) return
+    if (loading.value || loadingMore.value || !hasMore.value) return
 
     loadingMore.value = true
     try {
@@ -339,15 +322,17 @@
   }
 
   watch(
-    () => props.toId,
+    () => props.chat.id,
     () => {
       loadInitialMessages()
     },
     { immediate: true }
   )
 
+  defineExpose({ appendMessage, reloadMessages: loadInitialMessages })
+
   watch(
-    () => props.toId,
+    () => props.chat.id,
     () => {
       settingsDrawerVisible.value = false
 
@@ -358,21 +343,6 @@
       resetVoiceRecordLimitState()
     }
   )
-
-  const loadPeerInfo = () => {
-    if (!props.toId) {
-      peerInfo.value = null
-      return
-    }
-
-    userApi.getUserInfo({ userId: props.toId }).then((res) => {
-      if (res.code === 0 && res.data) {
-        peerInfo.value = res.data
-      }
-    })
-  }
-
-  watch(() => props.toId, loadPeerInfo, { immediate: true })
 
   const mentionableRobots = ref<MentionItem[]>([])
 
@@ -401,13 +371,13 @@
 
   const replaceLocalMessage = (localId: string, serverMsg: Message) => {
     messageUploadStore.clearProgress(localId)
-    sendingMessagesStore.removeMessage(props.toId, localId)
+    sendingMessagesStore.removeMessage(props.chat.peerId, localId)
     messages.value = messages.value.map((item) => (item.id === localId ? normalizeMessage(serverMsg as Message) : item))
   }
 
   const markLocalMessageFailed = (localId: string, reason: string) => {
     messageUploadStore.clearProgress(localId)
-    sendingMessagesStore.updateMessage(props.toId, localId, {
+    sendingMessagesStore.updateMessage(props.chat.peerId, localId, {
       status: 'failed',
       failReason: reason
     })
@@ -426,14 +396,14 @@
       messageUploadStore.setProgress(localId, progress)
     }
 
-    return buildSendParam(unit, props.toId, { onProgress }).then((param) => {
+    return buildSendParam(unit, props.chat.sessionId, { onProgress }).then((param) => {
       messageUploadStore.clearProgress(localId)
       if (!param) {
         markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'))
         return
       }
 
-      return messageApi.sendToUser(param).then((res) => {
+      return messageApi.sendMsg(param).then((res) => {
         if (res.code === 0 && res.data) {
           replaceLocalMessage(localId, res.data)
         } else {
@@ -446,7 +416,7 @@
   const sendRobotAnswers = (
     unit: Extract<ReturnType<typeof buildSendUnitsFromSegments>[number], { msgType: 'text' }>
   ) => {
-    if (!props.toId) return []
+    if (!props.chat.peerId) return []
 
     const question = unit.content.text.trim()
     if (!question) return []
@@ -492,10 +462,10 @@
         return robotApi
           .answersStream(
             {
-              peerId: props.toId,
+              peerId: props.chat.peerId,
               robotId: mention.id,
               question,
-              sceneType: props.sceneType
+              sceneType: props.chat.sceneType ?? SceneType.User
             },
             {
               onDelta: (content) => {
@@ -506,12 +476,12 @@
                     id: streamId,
                     sessionId: '',
                     fromId: mention.id,
-                    toId: props.toId,
+                    toId: props.chat.peerId,
                     msgType: 'text',
                     content: { text: accumulated },
                     fromType: 'robot',
                     isShowTime: false,
-                    sceneType: props.sceneType,
+                    sceneType: props.chat.sceneType ?? SceneType.User,
                     createdAt: '',
                     updatedAt: ''
                   })
@@ -553,16 +523,17 @@
     if (payload.isEmpty) return
 
     const fromId = userStore.authInfo.userId
-    if (!fromId || !props.toId) return
+    if (!fromId) return
 
+    const sceneType = props.chat.sceneType ?? SceneType.User
     const units = buildSendUnitsFromSegments(payload.segments)
     if (!units.length) return
 
-    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.toId, props.sceneType))
+    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.chat.peerId, sceneType))
 
     for (const localMsg of localMessages) {
       appendMessage(localMsg)
-      sendingMessagesStore.addMessage(props.toId, localMsg)
+      sendingMessagesStore.addMessage(props.chat.peerId, localMsg)
     }
 
     editorRef.value.clear({ keepBlobs: true })
@@ -667,8 +638,8 @@
           }
 
           return messageApi
-            .sendToUser({
-              toUserId: props.toId,
+            .sendMsg({
+              sessionId: props.chat.sessionId,
               msgType: 'voice',
               content: {
                 voiceUrl,
@@ -701,8 +672,8 @@
       return
     }
     messageApi
-      .sendToUser({
-        toUserId: props.toId,
+      .sendMsg({
+        sessionId: props.chat.sessionId,
         msgType: 'sticker',
         content: {
           stickerUrl: item.iconUrl,

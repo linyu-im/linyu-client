@@ -146,8 +146,8 @@
 </template>
 
 <script setup lang="ts">
-  import { userApi } from '@/api'
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { usePeerInfoStore } from '@/stores/peerInfo'
   import type { UserInfoResult } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'
@@ -170,9 +170,10 @@
   }>()
 
   const { t } = useI18n()
+  const peerInfoStore = usePeerInfoStore()
 
-  const loading = ref(false)
-  const userInfo = ref<UserInfoResult | null>(null)
+  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as UserInfoResult | null)
+  const loading = computed(() => !!props.userId && !userInfo.value)
   const remarkEditing = ref(false)
   const remarkDraft = ref('')
   const remarkSaving = ref(false)
@@ -182,28 +183,13 @@
   const tagSaving = ref(false)
   const tagInputRef = ref<InputInst | null>(null)
 
-  const fetchUserInfo = async () => {
-    if (!props.userId) return
-    loading.value = true
-    userInfo.value = null
-    try {
-      const res = await userApi.getUserInfo({ userId: props.userId })
-      if (res.code === 0 && res.data) {
-        userInfo.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      loading.value = false
-    }
-  }
-
   watch(
     () => props.userId,
-    () => {
+    (userId) => {
       remarkEditing.value = false
       tagEditing.value = false
-      void fetchUserInfo()
+      if (!userId) return
+      peerInfoStore.get(userId, 'user')
     },
     { immediate: true }
   )
@@ -231,7 +217,7 @@
 
     remarkSaving.value = true
     try {
-      userInfo.value = { ...userInfo.value, remark: next }
+      peerInfoStore.patchUser(props.userId, { remark: next })
       emit('remarkUpdated', { peerId: props.userId, remark: next })
     } finally {
       remarkSaving.value = false
@@ -259,7 +245,7 @@
 
     tagSaving.value = true
     try {
-      userInfo.value = { ...userInfo.value, tag: next }
+      peerInfoStore.patchUser(props.userId, { tag: next })
       emit('tagUpdated', { peerId: props.userId, tag: next })
     } finally {
       tagSaving.value = false

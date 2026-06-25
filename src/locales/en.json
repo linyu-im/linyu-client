@@ -144,7 +144,16 @@
       "viewHistory": "View Chat History",
       "deleteHistory": "Delete Chat History",
       "deleteFriend": "Delete Friend",
-      "share": "Share"
+      "share": "Share",
+      "group": {
+        "searchMembers": "Search members",
+        "viewMoreMembers": "View more",
+        "collapseMembers": "Collapse",
+        "announcement": "Group Announcement",
+        "viewMoreAnnouncement": "View more",
+        "leaveGroup": "Leave Group",
+        "announcementPlaceholder": "No group announcement yet"
+      }
     },
     "voiceRecord": {
       "cancel": "Cancel recording",

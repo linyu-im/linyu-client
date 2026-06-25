@@ -14,11 +14,7 @@
 </template>
 
 <script setup lang="ts">
-  import { enterpriseApi, groupApi, userApi } from '@/api'
-  import AvatarProfileCardActions from '@/components/AvatarProfileCard/AvatarProfileCardActions.vue'
-  import AvatarProfileCardEnterprise from '@/components/AvatarProfileCard/AvatarProfileCardEnterprise.vue'
-  import AvatarProfileCardGroup from '@/components/AvatarProfileCard/AvatarProfileCardGroup.vue'
-  import AvatarProfileCardUser from '@/components/AvatarProfileCard/AvatarProfileCardUser.vue'
+  import { usePeerInfoStore } from '@/stores/peerInfo'
   import { useUserStore } from '@/stores/user'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { GroupInfoResult } from '@/types/api/group'
@@ -40,11 +36,24 @@
   }>()
 
   const userStore = useUserStore()
+  const peerInfoStore = usePeerInfoStore()
 
-  const loading = ref(false)
-  const userInfo = ref<UserInfoResult | null>(null)
-  const groupProfile = ref<GroupInfoResult | null>(null)
-  const enterpriseInfo = ref<EnterprisInfo | null>(null)
+  const userInfo = computed(() =>
+    props.type === 'user' ? (peerInfoStore.read(props.id, 'user') as UserInfoResult | null) : null
+  )
+  const groupProfile = computed(() =>
+    props.type === 'group' ? (peerInfoStore.read(props.id, 'group') as GroupInfoResult | null) : null
+  )
+  const enterpriseInfo = computed(() =>
+    props.type === 'enterprise' ? (peerInfoStore.read(props.id, 'enterprise') as EnterprisInfo | null) : null
+  )
+
+  const loading = computed(() => {
+    if (!props.id || props.type === 'robot') return false
+    if (props.type === 'user') return !userInfo.value
+    if (props.type === 'group') return !groupProfile.value
+    return !enterpriseInfo.value
+  })
 
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
 
@@ -53,57 +62,19 @@
   const showCallActions = computed(() => props.type === 'user' && !isSelf.value)
 
   const fetchProfile = () => {
-    if (!props.id) return
+    if (!props.id || props.type === 'robot') return
 
-    loading.value = true
-    userInfo.value = null
-    groupProfile.value = null
-    enterpriseInfo.value = null
-
-    if (props.type === 'user') {
-      userApi
-        .getUserInfo({ userId: props.id })
-        .then((res) => {
-          if (res.code === 0 && res.data) {
-            userInfo.value = res.data
-          } else {
-            window.$message.error(res.msg)
-          }
-        })
-        .finally(() => {
-          loading.value = false
-        })
+    if (props.type === 'enterprise') {
+      peerInfoStore.get(props.id, 'enterprise')
       return
     }
 
     if (props.type === 'group') {
-      groupApi
-        .getGroupInfo({ groupId: props.id })
-        .then((res) => {
-          if (res.code === 0 && res.data) {
-            groupProfile.value = res.data
-          } else {
-            window.$message.error(res.msg)
-          }
-        })
-        .finally(() => {
-          loading.value = false
-        })
+      peerInfoStore.get(props.id, 'group')
       return
     }
 
-    enterpriseApi
-      .getEnterpriseInfo({ enterpriseId: props.id })
-      .then((res) => {
-        if (res.code === 0 && res.data) {
-          enterpriseInfo.value = res.data
-        } else {
-          window.$message.error(res.msg)
-        }
-      })
-      .finally(() => {
-        loading.value = false
-      })
+    peerInfoStore.get(props.id, 'user')
   }
 
   watch(

@@ -144,7 +144,16 @@
       "viewHistory": "查看聊天记录",
       "deleteHistory": "删除聊天记录",
       "deleteFriend": "删除好友",
-      "share": "分享"
+      "share": "分享",
+      "group": {
+        "searchMembers": "搜索群成员",
+        "viewMoreMembers": "查看更多",
+        "collapseMembers": "收起",
+        "announcement": "群公告",
+        "viewMoreAnnouncement": "查看更多",
+        "leaveGroup": "退出群聊",
+        "announcementPlaceholder": "暂无群公告"
+      }
     },
     "voiceRecord": {
       "cancel": "取消录音",
