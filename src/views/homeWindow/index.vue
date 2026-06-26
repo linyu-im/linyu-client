@@ -96,7 +96,8 @@
     exitApp,
     hideCurrentWindow,
     minimizeCurrentWindow,
-    restoreOrMaximizeCurrentWindow
+    restoreOrMaximizeCurrentWindow,
+    ShowCurrentWindow
   } from '@/utils/window'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
@@ -250,6 +251,9 @@
       .then((unlisten) => {
         unlistenCloseRequested = unlisten
       })
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
   })
 
   onUnmounted(() => {

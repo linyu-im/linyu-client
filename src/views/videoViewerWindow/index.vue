@@ -92,7 +92,12 @@
   import { writeFile } from '@tauri-apps/plugin-fs'
   import { useI18n } from 'vue-i18n'
   import { useVideoViewerStore } from '@/stores/videoViewer'
-  import { hideCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import {
+    hideCurrentWindow,
+    minimizeCurrentWindow,
+    restoreOrMaximizeCurrentWindow,
+    ShowCurrentWindow
+  } from '@/utils/window'
 
   const { t } = useI18n()
   const videoViewerStore = useVideoViewerStore()
@@ -279,6 +284,9 @@
   onMounted(() => {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('mouseup', onWindowMouseUp)
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
   })
 
   onUnmounted(() => {

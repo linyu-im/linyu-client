@@ -82,7 +82,12 @@
   import { open } from '@tauri-apps/plugin-dialog'
   import type { FormInst, FormRules } from 'naive-ui'
   import { feedbackApi } from '@/api'
-  import { closeCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import {
+    closeCurrentWindow,
+    minimizeCurrentWindow,
+    restoreOrMaximizeCurrentWindow,
+    ShowCurrentWindow
+  } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
@@ -193,6 +198,12 @@
       })
       .catch(() => {})
   }
+
+  onMounted(() => {
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
+  })
 </script>
 
 <style scoped lang="scss">

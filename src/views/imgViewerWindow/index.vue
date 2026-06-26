@@ -156,7 +156,12 @@
   import { writeFile } from '@tauri-apps/plugin-fs'
   import { useI18n } from 'vue-i18n'
   import { useImgViewerStore } from '@/stores/imgViewer'
-  import { hideCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/window'
+  import {
+    hideCurrentWindow,
+    minimizeCurrentWindow,
+    restoreOrMaximizeCurrentWindow,
+    ShowCurrentWindow
+  } from '@/utils/window'
 
   const { t } = useI18n()
   const imgViewerStore = useImgViewerStore()
@@ -438,6 +443,9 @@
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('mousemove', onWindowMouseMove)
     window.addEventListener('mouseup', onWindowMouseUp)
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
   })
 
   onUnmounted(() => {

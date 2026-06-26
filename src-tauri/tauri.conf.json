@@ -24,6 +24,7 @@
         "transparent": true,
         "decorations": false,
         "dragDropEnabled": false,
+        "visible": false,
         "windowEffects":{
           "effects": ["acrylic"],
           "state": "active"

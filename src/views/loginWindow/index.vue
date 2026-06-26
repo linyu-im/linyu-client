@@ -165,7 +165,7 @@
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import Avatar from '@/components/Avatar.vue'
   import { authApi, oauth2Api } from '@/api'
-  import { createHomeWinodw, exitApp, minimizeCurrentWindow } from '@/utils/window'
+  import { createHomeWinodw, exitApp, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import { useGlobalStore } from '@/stores/global'
@@ -178,7 +178,7 @@
   import { useSystemSettingStore } from '@/stores/systemSetting'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { onClickOutside } from '@vueuse/core'
-  import { computed, onMounted, ref, watch, watchEffect } from 'vue'
+  import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -395,6 +395,9 @@
     if (globalStore.isAutoLogin) {
       onAutoLogin()
     }
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
   })
 
   watchEffect(() => {
@@ -489,15 +492,15 @@
         height: 72px;
         border-radius: 50%;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(var(--primary-rgb), 0.25);
+        box-shadow: 0 4px 24px rgba(var(--primary-rgb), 0.25);
         border: 1px solid var(--primary-color);
 
         &::after {
           content: '';
           position: absolute;
-          inset: -4px;
+          inset: -10px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(var(--primary-rgb), 0.1), transparent 70%);
+          background: radial-gradient(circle, rgba(var(--primary-rgb), 0.3), transparent 70%);
           z-index: -1;
         }
       }

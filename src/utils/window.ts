@@ -14,7 +14,7 @@ const defaultOptions = {
   minHeight: 0,
   resizable: false,
   fullscreen: false,
-  visible: true,
+  visible: false,
   transparent: false,
   closeWindow: null as string | null,
   skipTaskbar: false,
@@ -80,6 +80,11 @@ export const createWebviewWindow = async (
 export const closeCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
   await webview.close()
+}
+
+export const ShowCurrentWindow = async () => {
+  const webview = WebviewWindow.getCurrent()
+  await webview.show()
 }
 
 export const openAndFocusWindow = async (label: string) => {

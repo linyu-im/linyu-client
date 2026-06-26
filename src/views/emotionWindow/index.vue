@@ -36,7 +36,7 @@
   import { emotionApi, userApi } from '@/api'
   import { useUserStore } from '@/stores/user'
   import { Emotonn } from '@/types/api/emotion'
-  import { closeCurrentWindow } from '@/utils/window'
+  import { closeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
 
   const emotionList = ref<Emotonn[]>([])
   const userStore = useUserStore()
@@ -65,6 +65,9 @@
 
   onMounted(() => {
     onEmotionList()
+    nextTick(() => {
+      ShowCurrentWindow()
+    })
   })
 </script>
 
