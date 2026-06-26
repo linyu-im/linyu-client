@@ -82,6 +82,11 @@ export const closeCurrentWindow = async () => {
   await webview.close()
 }
 
+export const closeWebviewWindow = async (label: string) => {
+  const webview = await WebviewWindow.getByLabel(label)
+  await webview?.close()
+}
+
 export const ShowCurrentWindow = async () => {
   const webview = WebviewWindow.getCurrent()
   await webview.show()

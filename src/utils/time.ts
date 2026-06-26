@@ -7,6 +7,16 @@ export function parseBackendTime(timeStr: string): Date {
   return new Date(timeStr.replace(/-/g, '/'))
 }
 
+export function isValidBackendTime(timeStr?: string | null): boolean {
+  if (!timeStr?.trim()) return false
+  const normalized = timeStr.trim()
+  if (/^000[01]-/.test(normalized)) return false
+  const date = parseBackendTime(normalized)
+  const time = date.getTime()
+  if (Number.isNaN(time)) return false
+  return date.getFullYear() > 1970
+}
+
 export function nowBackendDatetime(): string {
   const now = new Date()
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`

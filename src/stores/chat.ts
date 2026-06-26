@@ -4,17 +4,29 @@ import { useUserStore } from '@/stores/user'
 import type { Chat } from '@/types/api/chat'
 import type { Message } from '@/types/api/message'
 import { defineStore } from 'pinia'
-import { nowBackendDatetime, parseBackendTime } from '@/utils/time'
+import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/time'
 
 type ChatStore = {
   chatList: Chat[]
   selectedChatId: string
 }
 
+function getChatSortTime(chat: Chat) {
+  const candidates = [chat.updatedAt, chat.lastMsgContent?.updatedAt, chat.lastMsgContent?.createdAt]
+  for (const timeStr of candidates) {
+    if (isValidBackendTime(timeStr)) {
+      return parseBackendTime(timeStr!).getTime()
+    }
+  }
+  return 0
+}
+
 function sortChatList(list: Chat[]) {
-  list.sort((a, b) => {
-    if (a.peerIsTop !== b.peerIsTop) return a.peerIsTop ? -1 : 1
-    return parseBackendTime(b.updatedAt).getTime() - parseBackendTime(a.updatedAt).getTime()
+  return [...list].sort((a, b) => {
+    const aTop = !!a.peerIsTop
+    const bTop = !!b.peerIsTop
+    if (aTop !== bTop) return aTop ? -1 : 1
+    return getChatSortTime(b) - getChatSortTime(a)
   })
 }
 
@@ -49,17 +61,16 @@ export const useChatStore = defineStore('chat', {
         state.selectedChatId = ''
       })
     },
-    loadList(showSyncLoading = false) {
+    loadList(fullSync = false) {
       return chatApi.list().then((res) => {
         if (res.code === 0 && res.data) {
           this.$patch((state) => {
-            state.chatList = res.data!
+            state.chatList = sortChatList(res.data!)
           })
 
-          return useMessageDbStore().syncAllMessagesFromCloud(
-            this.chatList.map((chat) => chat.sessionId),
-            showSyncLoading
-          )
+          if (fullSync) {
+            return useMessageDbStore().syncAllMessagesFromCloud(this.chatList.map((chat) => chat.sessionId))
+          }
         }
       })
     },
@@ -70,6 +81,7 @@ export const useChatStore = defineStore('chat', {
 
       if (index === -1) {
         this.loadList()
+        useMessageDbStore().syncMessagesFromCloud(msg.sessionId)
         return
       }
 
@@ -80,11 +92,12 @@ export const useChatStore = defineStore('chat', {
       this.$patch((state) => {
         const item = state.chatList[index]
         item.lastMsgContent = msg
-        item.updatedAt = msg.updatedAt || msg.createdAt || nowBackendDatetime()
+        const msgTime = msg.updatedAt || msg.createdAt
+        item.updatedAt = isValidBackendTime(msgTime) ? msgTime! : nowBackendDatetime()
         if (!isActive && !isFromSelf) {
           item.unreadNum += 1
         }
-        sortChatList(state.chatList)
+        state.chatList = sortChatList(state.chatList)
       })
     },
 
@@ -93,13 +106,11 @@ export const useChatStore = defineStore('chat', {
       if (index === -1) return
 
       const prevTop = this.chatList[index].peerIsTop
-      const prevUpdatedAt = this.chatList[index].updatedAt
 
       this.$patch((state) => {
         const item = state.chatList[index]
         item.peerIsTop = isTop
-        item.updatedAt = nowBackendDatetime()
-        sortChatList(state.chatList)
+        state.chatList = sortChatList(state.chatList)
       })
 
       chatApi.top({ chatId, isTop }).then((res) => {
@@ -107,8 +118,7 @@ export const useChatStore = defineStore('chat', {
           this.$patch((state) => {
             const item = state.chatList[index]
             item.peerIsTop = prevTop
-            item.updatedAt = prevUpdatedAt
-            sortChatList(state.chatList)
+            state.chatList = sortChatList(state.chatList)
           })
           window.$message.error(res.msg)
         }
@@ -120,13 +130,10 @@ export const useChatStore = defineStore('chat', {
       if (index === -1) return
 
       const prevMute = this.chatList[index].peerIsMute
-      const prevUpdatedAt = this.chatList[index].updatedAt
 
       this.$patch((state) => {
         const item = state.chatList[index]
         item.peerIsMute = isMute
-        item.updatedAt = nowBackendDatetime()
-        sortChatList(state.chatList)
       })
 
       chatApi.mute({ chatId, isMute }).then((res) => {
@@ -134,8 +141,6 @@ export const useChatStore = defineStore('chat', {
           this.$patch((state) => {
             const item = state.chatList[index]
             item.peerIsMute = prevMute
-            item.updatedAt = prevUpdatedAt
-            sortChatList(state.chatList)
           })
           window.$message.error(res.msg)
         }
@@ -181,7 +186,7 @@ export const useChatStore = defineStore('chat', {
         if (res.code !== 0) {
           this.$patch((state) => {
             state.chatList.splice(index, 0, removed)
-            sortChatList(state.chatList)
+            state.chatList = sortChatList(state.chatList)
           })
           window.$message.error(res.msg)
         }

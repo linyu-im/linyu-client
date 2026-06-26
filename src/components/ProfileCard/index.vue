@@ -1,14 +1,13 @@
 <template>
-  <n-spin :show="loading" class="avatar-profile-card__spin">
-    <div class="avatar-profile-card">
-      <AvatarProfileCardUser v-if="type === 'user'" :id="id" :user-info="userInfo" />
-      <AvatarProfileCardGroup
+  <n-spin :show="loading" class="profile-card__spin">
+    <div class="profile-card">
+      <ProfileCardUser v-if="type === 'user'" :id="id" :user-info="userInfo" />
+      <ProfileCardGroup
         v-else-if="type === 'group'"
         :id="id"
         :group-profile="groupProfile"
         :current-user-id="currentUserId" />
-      <AvatarProfileCardEnterprise v-else :id="id" :enterprise-info="enterpriseInfo" />
-      <AvatarProfileCardActions :show-call-actions="showCallActions" />
+      <ProfileCardEnterprise v-else :id="id" :enterprise-info="enterpriseInfo" />
     </div>
   </n-spin>
 </template>
@@ -57,10 +56,6 @@
 
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
 
-  const isSelf = computed(() => props.type === 'user' && props.id === currentUserId.value)
-
-  const showCallActions = computed(() => props.type === 'user' && !isSelf.value)
-
   const fetchProfile = () => {
     if (!props.id || props.type === 'robot') return
 
@@ -95,9 +90,9 @@
 </script>
 
 <style scoped lang="scss">
-  @use './avatarProfileCard.scss';
+  @use './profileCard.scss';
 
-  .avatar-profile-card__spin {
+  .profile-card__spin {
     width: 320px;
     max-width: calc(100vw - 24px);
 

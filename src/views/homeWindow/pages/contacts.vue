@@ -1,13 +1,13 @@
 <template>
   <div class="contacts">
-    <Split :min-size="220" :max-size="320" :default-size="260">
+    <Split :min-size="220" :max-size="320" :default-size="270">
       <template #first>
         <div class="contacts__sider">
           <div class="contacts__toolbar">
             <n-input
               size="small"
               type="text"
-              class="contacts__search"
+              class="contacts__search text-14px"
               :placeholder="t('contacts.searchPlaceholder')"
               clearable>
               <template #prefix>
@@ -16,7 +16,7 @@
                 </svg>
               </template>
             </n-input>
-            <n-button class="size-28px p-0 rounded-5px m-l-10px">
+            <n-button class="contacts__toolbar-btn">
               <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
                 <use href="#plus"></use>
               </svg>
@@ -338,13 +338,23 @@
     &__toolbar {
       display: flex;
       align-items: center;
-      padding: 0 4px;
       flex-shrink: 0;
+      padding: 0 5px;
     }
 
     &__search {
-      height: 28px;
       flex: 1;
+      min-width: 0;
+      height: 28px;
+    }
+
+    &__toolbar-btn {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      margin-left: 10px;
+      border-radius: 5px;
     }
 
     &__scroll {

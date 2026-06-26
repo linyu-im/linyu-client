@@ -68,6 +68,7 @@
   },
   "message": {
     "noChat": "No new messages",
+    "searchPlaceholder": "Search",
     "syncingMessages": "Loading messages...",
     "newMessages": "Receive {count} new messages",
     "msgType": {
@@ -269,6 +270,7 @@
     "friendProfile": "Friend Profile",
     "voiceChat": "Voice Chat",
     "videoChat": "Video Chat",
+    "addFriend": "Add Friend",
     "enterpriseIntro": "About",
     "memberCount": "{count} members"
   },

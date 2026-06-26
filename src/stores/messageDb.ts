@@ -1,5 +1,10 @@
 import { messageApi } from '@/api'
-import { batchInsertMessages, queryLatestMessageIdBySession, queryMessagesByPage } from '@/db/message'
+import {
+  batchInsertMessages,
+  deleteMessageById,
+  queryLatestMessageIdBySession,
+  queryMessagesByPage
+} from '@/db/message'
 import type { DbMessage } from '@/db/message'
 import type { Message } from '@/types/api/message'
 import { defineStore } from 'pinia'
@@ -33,10 +38,16 @@ export const useMessageDbStore = defineStore('messageDb', {
         sceneType: msg.sceneType,
         quoteMsgId: msg.quoteMsgId,
         createdAt: msg.createdAt,
-        updatedAt: msg.updatedAt
+        updatedAt: msg.updatedAt,
+        failReason: msg.failReason
       }))
 
       await batchInsertMessages(dbMessages)
+    },
+
+    async replaceLocalWithServer(localId: string, serverMsg: Message) {
+      await deleteMessageById(localId)
+      await this.saveMessages([serverMsg])
     },
 
     /**
@@ -58,7 +69,8 @@ export const useMessageDbStore = defineStore('messageDb', {
         sceneType: dbMsg.sceneType,
         quoteMsgId: dbMsg.quoteMsgId,
         createdAt: dbMsg.createdAt,
-        updatedAt: dbMsg.updatedAt
+        updatedAt: dbMsg.updatedAt,
+        failReason: dbMsg.failReason
       }))
 
       return {
@@ -97,23 +109,19 @@ export const useMessageDbStore = defineStore('messageDb', {
     /**
      * 批量从云端同步所有会话消息到本地数据库
      */
-    async syncAllMessagesFromCloud(sessionIds: string[], showLoading = false) {
+    async syncAllMessagesFromCloud(sessionIds: string[]) {
       if (sessionIds.length === 0) return
 
-      if (showLoading) {
-        this.$patch((state) => {
-          state.syncingMessages = true
-        })
-      }
+      this.$patch((state) => {
+        state.syncingMessages = true
+      })
 
       try {
         await Promise.all(sessionIds.map((sessionId) => this.syncMessagesFromCloud(sessionId)))
       } finally {
-        if (showLoading) {
-          this.$patch((state) => {
-            state.syncingMessages = false
-          })
-        }
+        this.$patch((state) => {
+          state.syncingMessages = false
+        })
       }
     }
   }

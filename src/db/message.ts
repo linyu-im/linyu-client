@@ -15,6 +15,7 @@ export interface DbMessage {
   isShowTime: number
   content: string
   status?: string
+  failReason?: string
   sceneType: SceneType
   quoteMsgId?: string
   createdAt: string
@@ -49,11 +50,11 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
 
   const db = await getDb()
 
-  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
+  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
 
   const sql = `
     INSERT OR REPLACE INTO t_message 
-    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, created_at, updated_at)
+    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, created_at, updated_at, fail_reason)
     VALUES ${placeholders}
   `
 
@@ -72,7 +73,8 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
       msg.sceneType,
       msg.quoteMsgId ?? null,
       msg.createdAt,
-      msg.updatedAt
+      msg.updatedAt,
+      msg.failReason ?? null
     )
   }
 
@@ -101,7 +103,7 @@ export async function queryMessagesByPage(query: MessagePageQuery): Promise<Mess
     `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
             msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
             content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            created_at AS createdAt, updated_at AS updatedAt
+            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason
      FROM t_message 
      WHERE session_id = ? 
      ORDER BY created_at DESC 
@@ -152,7 +154,7 @@ export async function queryMessageById(id: string): Promise<DbMessage | null> {
     `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
             msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
             content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            created_at AS createdAt, updated_at AS updatedAt
+            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason
      FROM t_message WHERE id = ?`,
     [id]
   )

@@ -93,6 +93,7 @@
     createEmotionWinodw,
     createFeedbackWinodw,
     createSetWinodw,
+    closeWebviewWindow,
     exitApp,
     hideCurrentWindow,
     minimizeCurrentWindow,
@@ -253,6 +254,7 @@
       })
     nextTick(() => {
       ShowCurrentWindow()
+      void closeWebviewWindow('login')
     })
   })
 

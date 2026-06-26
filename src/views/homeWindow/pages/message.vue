@@ -1,15 +1,14 @@
 <template>
   <div class="message">
-    <Split :min-size="180" :max-size="300" :default-size="270">
+    <Split :min-size="220" :max-size="320" :default-size="270">
       <template #first>
         <div class="chatlist">
-          <div class="chatlist__title">
+          <div class="chatlist__toolbar">
             <n-input
               size="small"
               type="text"
-              style="width: 100%; height: 28px"
-              class="text-14px"
-              placeholder="搜索"
+              class="chatlist__search text-14px"
+              :placeholder="t('message.searchPlaceholder')"
               clearable>
               <template #prefix>
                 <svg class="size-16px text-[var(--text-secondary-color)]">
@@ -18,7 +17,7 @@
               </template>
             </n-input>
             <n-dropdown :options="addMenuOptions" placement="bottom-start" trigger="click" @select="onAddMenuSelect">
-              <n-button class="size-28px p-0 rounded-5px m-l-10px">
+              <n-button class="chatlist__toolbar-btn">
                 <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
                   <use href="#plus"></use>
                 </svg>
@@ -53,11 +52,11 @@
                       {{ formatTime(item.updatedAt) }}
                     </div>
                   </div>
-                  <div class="flex justify-between items-center h-18px">
+                  <div class="flex justify-between items-center h-14px">
                     <component :is="toShowChatMessage(item.lastMsgContent)" />
                     <svg
                       v-if="item.peerIsMute"
-                      class="size-16px text-[var(--text-secondary-color)] flex-shrink-0 m-l-5px">
+                      class="size-14px text-[var(--text-secondary-color)] flex-shrink-0 m-l-5px">
                       <use href="#bell-mute"></use>
                     </svg>
                   </div>
@@ -73,7 +72,7 @@
         </div>
       </template>
       <template #second>
-        <chat-session v-if="activeChat" :key="activeChat.id" ref="chatSessionRef" :chat="activeChat" />
+        <chat-session v-if="activeChat" ref="chatSessionRef" :chat="activeChat" />
         <div v-else class="message__empty">
           <LinyuEmpty />
         </div>
@@ -338,11 +337,26 @@
       padding: 10px;
       height: 100%;
 
-      .chatlist__title {
+      .chatlist__toolbar {
         display: flex;
-        justify-content: center;
+        align-items: center;
         flex-shrink: 0;
         padding: 0 5px;
+      }
+
+      .chatlist__search {
+        flex: 1;
+        min-width: 0;
+        height: 28px;
+      }
+
+      .chatlist__toolbar-btn {
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        margin-left: 10px;
+        border-radius: 5px;
       }
 
       .chatlist__sync-tip {

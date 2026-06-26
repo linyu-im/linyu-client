@@ -59,7 +59,8 @@ export async function initDatabase(): Promise<void> {
       scene_type TEXT NOT NULL,
       quote_msg_id TEXT,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      fail_reason TEXT
     )
   `)
 

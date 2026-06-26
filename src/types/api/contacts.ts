@@ -23,6 +23,10 @@ export interface Contact {
   enterpriseMemberNum?: number
 }
 
+export interface ContactsFriendIsParam {
+  userId: string
+}
+
 export type ContactsListResult = Contact[]
 
 export type ContactsMenuView = 'newFriend' | 'groupNotice' | 'groupProfile' | 'friendProfile' | 'enterpriseProfile'

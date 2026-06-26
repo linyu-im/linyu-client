@@ -25,7 +25,7 @@
         :size="size"
         fallback-src="/avatar.png" />
     </template>
-    <AvatarProfileCard :id="id" :type="type" @position-change="syncProfilePosition" />
+    <ProfileCard :id="id" :type="type" @position-change="syncProfilePosition" />
   </n-popover>
   <n-avatar
     v-else

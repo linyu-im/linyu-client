@@ -165,7 +165,13 @@
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import Avatar from '@/components/Avatar.vue'
   import { authApi, oauth2Api } from '@/api'
-  import { createHomeWinodw, exitApp, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
+  import {
+    createHomeWinodw,
+    exitApp,
+    hideCurrentWindow,
+    minimizeCurrentWindow,
+    ShowCurrentWindow
+  } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user'
   import { useGlobalStore } from '@/stores/global'
@@ -302,6 +308,7 @@
     }
     userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
     createHomeWinodw()
+    void hideCurrentWindow()
   }
 
   const toggleAccountHistory = () => {

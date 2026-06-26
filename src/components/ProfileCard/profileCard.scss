@@ -1,4 +1,4 @@
-.avatar-profile-card {
+.profile-card {
   width: 100%;
   box-sizing: border-box;
   padding: 20px 16px 16px;
@@ -13,6 +13,11 @@
     align-items: flex-start;
     width: 100%;
     min-width: 0;
+  }
+
+  &__avatar-wrap {
+    flex-shrink: 0;
+    cursor: pointer;
   }
 
   &__avatar {
@@ -127,7 +132,7 @@
     }
 
     &--emotion {
-      .avatar-profile-card__value-slot {
+      .profile-card__value-slot {
         display: flex;
         align-items: center;
       }
@@ -162,7 +167,7 @@
       cursor: default;
     }
 
-    &.avatar-profile-card__emotion {
+    &.profile-card__emotion {
       display: inline-flex;
       align-items: center;
       width: auto;
@@ -217,7 +222,7 @@
       background: var(--button-soft-bg);
       color: var(--primary-color);
 
-      .avatar-profile-card__action-icon {
+      .profile-card__action-icon {
         color: var(--primary-color);
       }
     }

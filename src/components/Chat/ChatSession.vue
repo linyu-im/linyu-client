@@ -80,7 +80,7 @@
               <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
                 <SvgIconButton href="#phone" />
                 <SvgIconButton href="#video" />
-                <n-button size="tiny" type="primary" class="w-56px m-l-20px p-y-12px" @click="onSend()">
+                <n-button size="tiny" type="primary" class="w-56px m-l-10px p-y-12px" @click="onSend()">
                   {{ t('message.editor.send') }}
                 </n-button>
               </div>
@@ -105,9 +105,14 @@
   import { useUserStore } from '@/stores/user'
   import { useMessageDbStore } from '@/stores/messageDb'
   import type { Chat } from '@/types/api/chat'
-  import type { Message } from '@/types/api/message'
+  import type { Message, SendMessageContent, SendMessageMsgType, SendMessageParam } from '@/types/api/message'
   import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
-  import { createLocalMessageFromUnit, patchMessageById, resolveMessageFailReason } from '@/utils/messageSend'
+  import {
+    createLocalMessage,
+    createLocalMessageFromUnit,
+    patchMessageById,
+    resolveMessageFailReason
+  } from '@/utils/messageSend'
   import { useMessageUploadStore } from '@/stores/messageUpload'
   import { useSendingMessagesStore } from '@/stores/sendingMessages'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
@@ -127,6 +132,7 @@
   } from '@/composables/useVoiceRecorder'
   import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/filePick'
   import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
+  import { isValidBackendTime, parseBackendTime } from '@/utils/time'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
   const props = defineProps<{
@@ -217,13 +223,29 @@
 
   const toDisplayOrder = (records: Message[]) => records.slice().reverse()
 
+  const getMessageSortTime = (msg: Message) => {
+    for (const timeStr of [msg.createdAt, msg.updatedAt]) {
+      if (isValidBackendTime(timeStr)) {
+        return parseBackendTime(timeStr!).getTime()
+      }
+    }
+    return 0
+  }
+
+  const sortMessagesByTime = (list: Message[]) => {
+    return [...list].sort((a, b) => {
+      const diff = getMessageSortTime(a) - getMessageSortTime(b)
+      return diff !== 0 ? diff : a.id.localeCompare(b.id)
+    })
+  }
+
   const mergeMessages = (incoming: Message[], existing: Message[]) => {
     const older = toDisplayOrder(incoming)
     const map = new Map<string, Message>()
     for (const msg of [...older, ...existing]) {
       map.set(msg.id, msg)
     }
-    return [...map.values()]
+    return sortMessagesByTime([...map.values()])
   }
 
   const isSelfMessage = (msg: Message) => {
@@ -294,9 +316,9 @@
       const serverMessages = toDisplayOrder(result.records)
       const pendingMessages = sendingMessagesStore.getMessages(props.chat.peerId)
       const serverIds = new Set(serverMessages.map((m) => m.id))
-      const uniquePending = pendingMessages.filter((m) => !serverIds.has(m.id))
+      const uniquePending = pendingMessages.filter((m) => m.status === 'sending' && !serverIds.has(m.id))
 
-      messages.value = [...serverMessages, ...uniquePending]
+      messages.value = sortMessagesByTime([...serverMessages, ...uniquePending])
       page.value = result.page
       totalPage.value = result.totalPage
     } finally {
@@ -324,25 +346,24 @@
   watch(
     () => props.chat.id,
     () => {
+      settingsDrawerVisible.value = false
+      emojiPickerVisible.value = false
+      draft.value = ''
+      editorRef.value?.clear()
+
+      if (voiceRecordingVisible.value) {
+        cancelVoiceRecord()
+        voiceSending.value = false
+        voiceRecordingVisible.value = false
+        resetVoiceRecordLimitState()
+      }
+
       loadInitialMessages()
     },
     { immediate: true }
   )
 
   defineExpose({ appendMessage, reloadMessages: loadInitialMessages })
-
-  watch(
-    () => props.chat.id,
-    () => {
-      settingsDrawerVisible.value = false
-
-      if (!voiceRecordingVisible.value) return
-      cancelVoiceRecord()
-      voiceSending.value = false
-      voiceRecordingVisible.value = false
-      resetVoiceRecordLimitState()
-    }
-  )
 
   const mentionableRobots = ref<MentionItem[]>([])
 
@@ -372,7 +393,13 @@
   const replaceLocalMessage = (localId: string, serverMsg: Message) => {
     messageUploadStore.clearProgress(localId)
     sendingMessagesStore.removeMessage(props.chat.peerId, localId)
-    messages.value = messages.value.map((item) => (item.id === localId ? normalizeMessage(serverMsg as Message) : item))
+    const normalized = normalizeMessage(serverMsg as Message)
+    messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
+    if (localId.startsWith('local-')) {
+      void messageDbStore.replaceLocalWithServer(localId, normalized)
+      return
+    }
+    void messageDbStore.saveMessages([normalized])
   }
 
   const markLocalMessageFailed = (localId: string, reason: string) => {
@@ -385,6 +412,78 @@
       status: 'failed',
       failReason: reason
     })
+
+    const failedMsg = messages.value.find((item) => item.id === localId)
+    if (!failedMsg) return
+
+    const msgToSave = {
+      ...failedMsg,
+      sessionId: failedMsg.sessionId || props.chat.sessionId,
+      status: 'failed' as const,
+      failReason: reason
+    }
+    void messageDbStore.saveMessages([msgToSave]).then(() => {
+      sendingMessagesStore.removeMessage(props.chat.peerId, localId)
+    })
+  }
+
+  type SendContext = {
+    fromId: string
+    toId: string
+    sessionId: string
+    sceneType: SceneType
+  }
+
+  const getSendContext = (): SendContext | null => {
+    const fromId = userStore.authInfo.userId
+    if (!fromId) return null
+    return {
+      fromId,
+      toId: props.chat.peerId,
+      sessionId: props.chat.sessionId,
+      sceneType: props.chat.sceneType ?? SceneType.User
+    }
+  }
+
+  const stageLocalMessage = (message: Message) => {
+    appendMessage(message)
+    sendingMessagesStore.addMessage(props.chat.peerId, message)
+    return message
+  }
+
+  const createAndStageLocalMessage = (msgType: SendMessageMsgType, content: SendMessageContent): Message | null => {
+    const ctx = getSendContext()
+    if (!ctx) return null
+    return stageLocalMessage({
+      ...createLocalMessage(msgType, content, ctx.fromId, ctx.toId, ctx.sceneType),
+      sessionId: ctx.sessionId
+    })
+  }
+
+  const createAndStageLocalMessageFromUnit = (
+    unit: ReturnType<typeof buildSendUnitsFromSegments>[number]
+  ): Message | null => {
+    const ctx = getSendContext()
+    if (!ctx) return null
+    return stageLocalMessage({
+      ...createLocalMessageFromUnit(unit, ctx.fromId, ctx.toId, ctx.sceneType),
+      sessionId: ctx.sessionId
+    })
+  }
+
+  const dispatchSendMessage = (localId: string, param: SendMessageParam) => {
+    return messageApi
+      .sendMsg(param)
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          replaceLocalMessage(localId, res.data)
+          return
+        }
+        markLocalMessageFailed(localId, resolveMessageFailReason(res.code, res.msg, t))
+      })
+      .catch(() => {
+        markLocalMessageFailed(localId, t('message.sendStatus.network'))
+      })
   }
 
   const sendLocalMessage = (localId: string, unit: ReturnType<typeof buildSendUnitsFromSegments>[number]) => {
@@ -396,21 +495,20 @@
       messageUploadStore.setProgress(localId, progress)
     }
 
-    return buildSendParam(unit, props.chat.sessionId, { onProgress }).then((param) => {
-      messageUploadStore.clearProgress(localId)
-      if (!param) {
-        markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'))
-        return
-      }
-
-      return messageApi.sendMsg(param).then((res) => {
-        if (res.code === 0 && res.data) {
-          replaceLocalMessage(localId, res.data)
-        } else {
-          markLocalMessageFailed(localId, resolveMessageFailReason(res.code, res.msg, t))
+    return buildSendParam(unit, props.chat.sessionId, { onProgress })
+      .then((param) => {
+        messageUploadStore.clearProgress(localId)
+        if (!param) {
+          markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'))
+          return
         }
+
+        return dispatchSendMessage(localId, param)
       })
-    })
+      .catch(() => {
+        messageUploadStore.clearProgress(localId)
+        markLocalMessageFailed(localId, t('message.sendStatus.network'))
+      })
   }
 
   const sendRobotAnswers = (
@@ -522,18 +620,16 @@
 
     if (payload.isEmpty) return
 
-    const fromId = userStore.authInfo.userId
-    if (!fromId) return
+    if (!getSendContext()) return
 
-    const sceneType = props.chat.sceneType ?? SceneType.User
     const units = buildSendUnitsFromSegments(payload.segments)
     if (!units.length) return
 
-    const localMessages = units.map((unit) => createLocalMessageFromUnit(unit, fromId, props.chat.peerId, sceneType))
-
-    for (const localMsg of localMessages) {
-      appendMessage(localMsg)
-      sendingMessagesStore.addMessage(props.chat.peerId, localMsg)
+    const localMessages: Message[] = []
+    for (const unit of units) {
+      const localMsg = createAndStageLocalMessageFromUnit(unit)
+      if (!localMsg) return
+      localMessages.push(localMsg)
     }
 
     editorRef.value.clear({ keepBlobs: true })
@@ -637,24 +733,25 @@
             return
           }
 
-          return messageApi
-            .sendMsg({
-              sessionId: props.chat.sessionId,
-              msgType: 'voice',
-              content: {
-                voiceUrl,
-                voiceDuration: String(result.durationSec)
-              }
-            })
-            .then((res) => {
-              voiceSending.value = false
-              onVoiceRecordCancel()
-              if (res.code === 0 && res.data) {
-                appendMessage(res.data)
-              } else {
-                window.$message?.error(res.msg)
-              }
-            })
+          const voiceContent = {
+            voiceUrl,
+            voiceDuration: String(result.durationSec)
+          }
+          const localMsg = createAndStageLocalMessage('voice', voiceContent)
+          if (!localMsg) {
+            voiceSending.value = false
+            onVoiceRecordCancel()
+            return
+          }
+
+          return dispatchSendMessage(localMsg.id, {
+            sessionId: props.chat.sessionId,
+            msgType: 'voice',
+            content: voiceContent
+          }).finally(() => {
+            voiceSending.value = false
+            onVoiceRecordCancel()
+          })
         })
       })
       .catch(() => {
@@ -671,22 +768,19 @@
       editorRef.value.insertText(item.iconValue)
       return
     }
-    messageApi
-      .sendMsg({
-        sessionId: props.chat.sessionId,
-        msgType: 'sticker',
-        content: {
-          stickerUrl: item.iconUrl,
-          stickerName: item.name
-        }
-      })
-      .then((res) => {
-        if (res.code === 0 && res.data) {
-          appendMessage(res.data)
-        } else {
-          window.$message?.error(res.msg)
-        }
-      })
+
+    const stickerContent = {
+      stickerUrl: item.iconUrl,
+      stickerName: item.name
+    }
+    const localMsg = createAndStageLocalMessage('sticker', stickerContent)
+    if (!localMsg) return
+
+    void dispatchSendMessage(localMsg.id, {
+      sessionId: props.chat.sessionId,
+      msgType: 'sticker',
+      content: stickerContent
+    })
   }
 </script>
 <style scoped lang="scss">
