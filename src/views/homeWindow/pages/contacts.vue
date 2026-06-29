@@ -182,6 +182,7 @@
   import ContactsGroupProfile from '@/components/Contacts/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/ContactsNewFriend.vue'
   import { contactsApi } from '@/api'
+  import { useHomeTabStore } from '@/stores/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
   import { getNameInitial } from '@/utils/pinyin'
   import { useI18n } from 'vue-i18n'
@@ -190,6 +191,7 @@
   type FriendGroup = { letter: string; items: Contact[] }
 
   const { t } = useI18n()
+  const homeTabStore = useHomeTabStore()
 
   const selectedId = ref('new-friend')
   const expandedGroups = ref<Record<GroupKey, boolean>>({
@@ -315,6 +317,37 @@
   const toggleGroup = (group: GroupKey) => {
     expandedGroups.value[group] = !expandedGroups.value[group]
   }
+
+  const applyContactsPayload = () => {
+    const payload = homeTabStore.consumeTabPayload('contacts')
+    if (!payload) return
+
+    if (payload.selectedId) {
+      selectedId.value = payload.selectedId
+      return
+    }
+
+    if (payload.peerId) {
+      const contact = friendList.value.find((item) => item.peerId === payload.peerId)
+      if (contact) {
+        expandedGroups.value.friend = true
+        selectedId.value = contact.id
+      }
+    }
+  }
+
+  watch(
+    () => homeTabStore.tabPayload.contacts,
+    () => {
+      applyContactsPayload()
+    }
+  )
+
+  watch(friendList, () => {
+    if (homeTabStore.tabPayload.contacts?.peerId) {
+      applyContactsPayload()
+    }
+  })
 </script>
 
 <style scoped lang="scss">

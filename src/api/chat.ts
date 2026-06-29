@@ -1,8 +1,19 @@
-import { Chat, ChatDeleteParam, ChatMarkReadParam, ChatMuteParam, ChatTopParam } from '@/types/api/chat'
+import {
+  Chat,
+  ChatCreateParam,
+  ChatDeleteParam,
+  ChatMarkReadParam,
+  ChatMuteParam,
+  ChatTopParam
+} from '@/types/api/chat'
 import { ApiResponse, post } from '@/utils/http'
 
 export function list(): Promise<ApiResponse<Chat[]>> {
   return post<Chat[], void>('/api/basic/v1/chat/list')
+}
+
+export function create(data: ChatCreateParam): Promise<ApiResponse<Chat>> {
+  return post<Chat, ChatCreateParam>('/api/basic/v1/chat/create', data)
 }
 
 export function top(data: ChatTopParam): Promise<ApiResponse<void>> {

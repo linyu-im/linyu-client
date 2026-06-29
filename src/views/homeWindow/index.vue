@@ -40,13 +40,21 @@
         <div class="flex flex-col gap-8px">
           <n-popover v-for="item in menuOptions" :key="item.id" :show-arrow="false" placement="right" trigger="hover">
             <template #trigger>
-              <SvgIconButton
-                :size="34"
-                :radius="5"
-                :href="seletedMenuOption === item.id ? item.activeIcon : item.icon"
-                :active="item.id === seletedMenuOption"
-                icon-size="22px"
-                @click="() => onClickMenu(item)" />
+              <n-badge
+                :value="homeTabStore.badgeCounts[item.id]"
+                :max="99"
+                :show-zero="false"
+                :color="'var(--red)'"
+                class="home__tab-badge"
+                :offset="[-2, 2]">
+                <SvgIconButton
+                  :size="34"
+                  :radius="5"
+                  :href="homeTabStore.activeTabId === item.id ? item.activeIcon : item.icon"
+                  :active="item.id === homeTabStore.activeTabId"
+                  icon-size="22px"
+                  @click="() => onClickMenu(item)" />
+              </n-badge>
             </template>
             <span class="select-none">{{ item.label }}</span>
           </n-popover>
@@ -87,6 +95,7 @@
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useHomeTabStore, type HomeTabId } from '@/stores/homeTab'
   import { useUserStore } from '@/stores/user'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
   import {
@@ -102,10 +111,11 @@
   } from '@/utils/window'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
-  import { useRoute, useRouter } from 'vue-router'
+  import { useRoute } from 'vue-router'
 
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
+  const homeTabStore = useHomeTabStore()
 
   const isMaximize = ref(false)
   const showUpdateModal = ref(false)
@@ -131,49 +141,47 @@
     onCloseMainWindow()
   }
 
-  const seletedMenuOption = ref('message')
   const { t } = useI18n()
-  const router = useRouter()
   const route = useRoute()
 
   const menuOptions = computed(() => [
     {
-      id: 'message',
+      id: 'message' as HomeTabId,
       label: t('home.options.message'),
       icon: '#message',
       activeIcon: '#message-active',
       path: '/home/message'
     },
     {
-      id: 'contacts',
+      id: 'contacts' as HomeTabId,
       label: t('home.options.contacts'),
       icon: '#user',
       activeIcon: '#user-active',
       path: '/home/contacts'
     },
     {
-      id: 'moment',
+      id: 'moment' as HomeTabId,
       label: t('home.options.moment'),
       icon: '#moment',
       activeIcon: '#moment-active',
       path: '/home/moment'
     },
     {
-      id: 'ai',
+      id: 'ai' as HomeTabId,
       label: t('home.options.ai'),
       icon: '#ai',
       activeIcon: '#ai-active',
       path: '/home/ai'
     },
     {
-      id: 'drive',
+      id: 'drive' as HomeTabId,
       label: t('home.options.drive'),
       icon: '#drive',
       activeIcon: '#drive-active',
       path: '/home/drive'
     },
     {
-      id: 'application',
+      id: 'application' as HomeTabId,
       label: t('home.options.application'),
       icon: '#application',
       activeIcon: '#application-active',
@@ -201,10 +209,7 @@
   ])
 
   const syncMenuFromRoute = () => {
-    const match = menuOptions.value.find((item) => item.path === route.path)
-    if (match) {
-      seletedMenuOption.value = match.id
-    }
+    homeTabStore.syncActiveTabFromPath(route.path)
   }
 
   const onMoreMenuSelect = (key: string) => {
@@ -219,12 +224,11 @@
     }
   }
 
-  const onClickMenu = (item: { id: string; path: string }) => {
-    if (seletedMenuOption.value === item.id && route.path === item.path) {
+  const onClickMenu = (item: { id: HomeTabId; path: string }) => {
+    if (homeTabStore.activeTabId === item.id && route.path === item.path) {
       return
     }
-    seletedMenuOption.value = item.id
-    router.push(item.path)
+    homeTabStore.navigateTo(item.id)
   }
 
   watch(() => route.path, syncMenuFromRoute, { immediate: true })
@@ -310,6 +314,10 @@
           display: flex;
           justify-content: center;
           align-items: center;
+        }
+
+        .home__tab-badge {
+          display: flex;
         }
       }
 

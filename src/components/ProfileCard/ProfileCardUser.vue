@@ -91,7 +91,7 @@
           </button>
         </template>
         <template v-else>
-          <button type="button" class="profile-card__action">
+          <button type="button" class="profile-card__action" :disabled="sendingMessage" @click="onSendMessage">
             <svg class="profile-card__action-icon size-18px">
               <use href="#message" />
             </svg>
@@ -134,7 +134,9 @@
   import type { UserInfoResult } from '@/types/api/user'
   import { contactsApi } from '@/api'
   import EditProfileModal from '@/components/ProfileCard/EditProfileModal.vue'
+  import { SceneType } from '@/constants/common'
   import { useAvatarStore } from '@/stores/avatar'
+  import { useHomeTabStore } from '@/stores/homeTab'
   import { useUserStore } from '@/stores/user'
   import { openImgViewer } from '@/utils/imgViewer'
   import { useI18n } from 'vue-i18n'
@@ -151,6 +153,9 @@
   const { t } = useI18n()
   const userStore = useUserStore()
   const avatarStore = useAvatarStore()
+  const homeTabStore = useHomeTabStore()
+
+  const sendingMessage = ref(false)
 
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
   const isSelf = computed(() => props.id === currentUserId.value)
@@ -232,6 +237,15 @@
     if (genderClass.value === 'is-female') return '#female'
     return ''
   })
+
+  const onSendMessage = () => {
+    if (sendingMessage.value || !props.id) return
+
+    sendingMessage.value = true
+    homeTabStore.openMessageWithPeer(props.id, SceneType.User).finally(() => {
+      sendingMessage.value = false
+    })
+  }
 </script>
 
 <style scoped lang="scss">

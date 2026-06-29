@@ -1,0 +1,154 @@
+import { chatApi } from '@/api'
+import { SceneType } from '@/constants/common'
+import { useChatStore } from '@/stores/chat'
+import router from '@/router'
+import type { SceneType as SceneTypeValue } from '@/constants/common'
+import { defineStore } from 'pinia'
+
+export type HomeTabId = 'message' | 'contacts' | 'moment' | 'ai' | 'drive' | 'application'
+
+export interface HomeTabMessagePayload {
+  chatId?: string
+  peerId?: string
+  sceneType?: SceneTypeValue
+}
+
+export interface HomeTabContactsPayload {
+  selectedId?: string
+  peerId?: string
+}
+
+type HomeTabBadgeCounts = Record<HomeTabId, number>
+
+type HomeTabPayloadMap = {
+  message: HomeTabMessagePayload
+  contacts: HomeTabContactsPayload
+  moment: Record<string, never>
+  ai: Record<string, never>
+  drive: Record<string, never>
+  application: Record<string, never>
+}
+
+type HomeTabStore = {
+  activeTabId: HomeTabId
+  badgeCounts: HomeTabBadgeCounts
+  tabPayload: Partial<HomeTabPayloadMap>
+}
+
+const TAB_PATHS: Record<HomeTabId, string> = {
+  message: '/home/message',
+  contacts: '/home/contacts',
+  moment: '/home/moment',
+  ai: '/home/ai',
+  drive: '/home/drive',
+  application: '/home/application'
+}
+
+const createDefaultBadgeCounts = (): HomeTabBadgeCounts => ({
+  message: 0,
+  contacts: 0,
+  moment: 0,
+  ai: 0,
+  drive: 0,
+  application: 0
+})
+
+export const useHomeTabStore = defineStore('homeTab', {
+  persist: {
+    pick: ['activeTabId']
+  },
+  share: {
+    enable: true,
+    initialize: true
+  },
+  state: (): HomeTabStore => ({
+    activeTabId: 'message',
+    badgeCounts: createDefaultBadgeCounts(),
+    tabPayload: {}
+  }),
+  actions: {
+    setBadgeCount(tabId: HomeTabId, count: number) {
+      this.$patch((state) => {
+        state.badgeCounts[tabId] = Math.max(0, count)
+      })
+    },
+
+    setBadgeCounts(counts: Partial<HomeTabBadgeCounts>) {
+      this.$patch((state) => {
+        for (const [tabId, count] of Object.entries(counts) as [HomeTabId, number][]) {
+          if (typeof count === 'number') {
+            state.badgeCounts[tabId] = Math.max(0, count)
+          }
+        }
+      })
+    },
+
+    syncActiveTabFromPath(path: string) {
+      const match = (Object.entries(TAB_PATHS) as [HomeTabId, string][]).find(([, tabPath]) => tabPath === path)
+      if (!match || this.activeTabId === match[0]) return
+
+      this.$patch((state) => {
+        state.activeTabId = match[0]
+      })
+    },
+
+    setTabPayload<T extends keyof HomeTabPayloadMap>(tabId: T, payload: HomeTabPayloadMap[T]) {
+      this.$patch((state) => {
+        state.tabPayload[tabId] = payload
+      })
+    },
+
+    consumeTabPayload<T extends keyof HomeTabPayloadMap>(tabId: T): HomeTabPayloadMap[T] | null {
+      const payload = this.tabPayload[tabId]
+      if (!payload) return null
+
+      this.$patch((state) => {
+        delete state.tabPayload[tabId]
+      })
+
+      return payload as HomeTabPayloadMap[T]
+    },
+
+    navigateTo(tabId: HomeTabId, payload?: HomeTabPayloadMap[HomeTabId]): Promise<void> | void {
+      if (tabId === 'message') {
+        const messagePayload = payload as HomeTabMessagePayload | undefined
+        if (messagePayload?.peerId) {
+          return this.openMessageWithPeer(messagePayload.peerId, messagePayload.sceneType ?? SceneType.User)
+        }
+        if (messagePayload?.chatId) {
+          useChatStore().setSelectedChatId(messagePayload.chatId)
+        }
+      }
+
+      if (payload && Object.keys(payload).length > 0) {
+        this.setTabPayload(tabId, payload)
+      }
+
+      this.$patch((state) => {
+        state.activeTabId = tabId
+      })
+
+      if (router.currentRoute.value.path !== TAB_PATHS[tabId]) {
+        return router.push(TAB_PATHS[tabId]).then(() => undefined)
+      }
+    },
+
+    openMessageWithPeer(peerId: string, sceneType: SceneTypeValue = SceneType.User): Promise<void> {
+      const chatStore = useChatStore()
+
+      return chatApi.create({ peerId, sceneType }).then((res) => {
+        if (res.code !== 0 || !res.data) {
+          window.$message.error(res.msg)
+          return
+        }
+
+        const chatId = res.data.id
+        return chatStore.loadList().then(() => {
+          chatStore.setSelectedChatId(chatId)
+          chatStore.markReopen()
+          this.navigateTo('message', { chatId })
+        })
+      })
+    }
+  }
+})

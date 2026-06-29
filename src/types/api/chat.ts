@@ -37,3 +37,8 @@ export interface ChatMarkReadParam {
 export interface ChatDeleteParam {
   chatId: string
 }
+
+export interface ChatCreateParam {
+  peerId: string
+  sceneType: SceneType
+}

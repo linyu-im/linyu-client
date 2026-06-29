@@ -37,6 +37,7 @@
 <script setup lang="ts">
   import { useDismissOnScroll } from '@/composables/useDismissOnScroll'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
+  import { useChatStore } from '@/stores/chat'
   import type { ECardContent } from '@/types/api/message'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
@@ -46,6 +47,7 @@
   }>()
 
   const { t } = useI18n()
+  const chatStore = useChatStore()
 
   interface PopoverInst {
     syncPosition: () => void
@@ -122,6 +124,13 @@
 
   useEscapeOverlay(closeProfile, profileVisible)
   useDismissOnScroll(closeProfile, profileVisible)
+
+  watch(
+    () => chatStore.reopenTick,
+    () => {
+      closeProfile()
+    }
+  )
 
   onBeforeUnmount(() => {
     window.removeEventListener('resize', onResizeSync)

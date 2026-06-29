@@ -103,6 +103,7 @@
   import { messageApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user'
+  import { useChatStore } from '@/stores/chat'
   import { useMessageDbStore } from '@/stores/messageDb'
   import type { Chat } from '@/types/api/chat'
   import type { Message, SendMessageContent, SendMessageMsgType, SendMessageParam } from '@/types/api/message'
@@ -141,6 +142,7 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
   const sendingMessagesStore = useSendingMessagesStore()
@@ -361,6 +363,13 @@
       loadInitialMessages()
     },
     { immediate: true }
+  )
+
+  watch(
+    () => chatStore.reopenTick,
+    () => {
+      settingsDrawerVisible.value = false
+    }
   )
 
   defineExpose({ appendMessage, reloadMessages: loadInitialMessages })

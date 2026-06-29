@@ -47,6 +47,7 @@
   import { useDismissOnScroll } from '@/composables/useDismissOnScroll'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { useAvatarStore } from '@/stores/avatar'
+  import { useChatStore } from '@/stores/chat'
   import type { FromType } from '@/types/common'
   import type { CSSProperties } from 'vue'
 
@@ -72,6 +73,7 @@
   })
 
   const avatarStore = useAvatarStore()
+  const chatStore = useChatStore()
 
   interface PopoverInst {
     syncPosition: () => void
@@ -225,6 +227,13 @@
           visible.value = true
         }
       }
+    }
+  )
+
+  watch(
+    () => chatStore.reopenTick,
+    () => {
+      closeProfile()
     }
   )
 

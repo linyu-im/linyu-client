@@ -138,7 +138,9 @@
         <div class="contacts-profile__actions">
           <n-button class="w-110px" round>{{ t('contacts.actions.share') }}</n-button>
           <n-button class="w-110px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
-          <n-button class="w-110px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
+          <n-button class="w-110px" type="primary" round :loading="sendingMessage" @click="onSendMessage">
+            {{ t('contacts.actions.sendMessage') }}
+          </n-button>
         </div>
       </div>
     </n-scrollbar>
@@ -147,6 +149,8 @@
 
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { SceneType } from '@/constants/common'
+  import { useHomeTabStore } from '@/stores/homeTab'
   import { usePeerInfoStore } from '@/stores/peerInfo'
   import type { UserInfoResult } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
@@ -171,6 +175,9 @@
 
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
+  const homeTabStore = useHomeTabStore()
+
+  const sendingMessage = ref(false)
 
   const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as UserInfoResult | null)
   const loading = computed(() => !!props.userId && !userInfo.value)
@@ -301,6 +308,15 @@
   })
 
   const showMetaRow = computed(() => !!emotionName.value || showGender.value || !!locationText.value)
+
+  const onSendMessage = () => {
+    if (sendingMessage.value || !props.userId) return
+
+    sendingMessage.value = true
+    homeTabStore.openMessageWithPeer(props.userId, SceneType.User).finally(() => {
+      sendingMessage.value = false
+    })
+  }
 </script>
 
 <style scoped lang="scss">

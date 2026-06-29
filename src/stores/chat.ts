@@ -9,6 +9,7 @@ import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/util
 type ChatStore = {
   chatList: Chat[]
   selectedChatId: string
+  reopenTick: number
 }
 
 function getChatSortTime(chat: Chat) {
@@ -40,9 +41,16 @@ export const useChatStore = defineStore('chat', {
   },
   state: (): ChatStore => ({
     chatList: [],
-    selectedChatId: ''
+    selectedChatId: '',
+    reopenTick: 0
   }),
   actions: {
+    markReopen() {
+      this.$patch((state) => {
+        state.reopenTick++
+      })
+    },
+
     setSelectedChatId(chatId: string) {
       if (this.selectedChatId === chatId) return
 
