@@ -4,6 +4,14 @@ export interface UserInfoParam {
   userId: string
 }
 
+export interface UserProfileUpdateParam {
+  username: string
+  gender: string
+  birthday: string
+  signature: string
+  location: string
+}
+
 export interface UserInfoResult {
   id: string
   username: string

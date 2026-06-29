@@ -26,7 +26,11 @@
     :z-index="3000"
     @clickoutside="onPopoverClickOutside"
     @update:show="onProfileShowChange">
-    <ProfileCard :id="content.userId" type="user" @position-change="syncProfilePosition" />
+    <ProfileCard
+      :id="content.userId"
+      type="user"
+      @position-change="syncProfilePosition"
+      @update:edit-profile-show="onEditProfileShow" />
   </n-popover>
 </template>
 
@@ -57,6 +61,11 @@
   const profileVisible = ref(false)
   const profileX = ref(0)
   const profileY = ref(0)
+  const editProfileShow = ref(false)
+
+  const onEditProfileShow = (show: boolean) => {
+    editProfileShow.value = show
+  }
 
   const openProfileAt = (x: number, y: number) => {
     profileX.value = x
@@ -71,6 +80,7 @@
   }
 
   const onPopoverClickOutside = (e: MouseEvent) => {
+    if (editProfileShow.value) return
     const target = e.target as Node | null
     if (target && ecardRef.value?.contains(target)) return
     closeProfile()
@@ -87,6 +97,7 @@
   }
 
   const closeProfile = () => {
+    if (editProfileShow.value) return
     profileVisible.value = false
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
@@ -99,6 +110,7 @@
       return
     }
 
+    editProfileShow.value = false
     window.removeEventListener('resize', onResizeSync)
   }
 

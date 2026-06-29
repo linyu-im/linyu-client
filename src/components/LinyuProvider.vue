@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :theme-overrides="themeOverrides">
+  <n-config-provider :theme-overrides="themeOverrides" :locale="naiveLocale" :date-locale="naiveDateLocale">
     <n-message-provider :max="3" container-style="word-break: break-all !important">
       <slot></slot>
       <naive-component-content />
@@ -8,10 +8,16 @@
 </template>
 
 <script setup lang="ts">
+  import { LangEnum } from '@/constants/system'
   import { useSystemSettingStore } from '@/stores/systemSetting'
-  import { GlobalThemeOverrides } from 'naive-ui'
+  import { dateEnUS, dateZhCN, enUS, type GlobalThemeOverrides, zhCN } from 'naive-ui'
+  import { useI18n } from 'vue-i18n'
 
   let systemSetting = useSystemSettingStore()
+  const { locale } = useI18n()
+
+  const naiveLocale = computed(() => (locale.value === LangEnum.EN ? enUS : zhCN))
+  const naiveDateLocale = computed(() => (locale.value === LangEnum.EN ? dateEnUS : dateZhCN))
 
   const NaiveComponentContent = defineComponent({
     name: 'NaiveComponentContent',
@@ -173,12 +179,80 @@
         }
       }
     },
+    DatePicker: {
+      panelColor: 'var(--bg-muted-color)',
+      panelTextColor: 'var(--text-color)',
+      itemTextColor: 'var(--text-color)',
+      itemTextColorDisabled: 'var(--text-muted-color)',
+      itemTextColorCurrent: 'var(--primary-color)',
+      itemTextColorActive: '#FFF',
+      itemColorActive: 'var(--primary-color)',
+      itemColorIncluded: 'color-mix(in srgb, var(--primary-color) 10%, transparent)',
+      itemColorHover: 'color-mix(in srgb, var(--icon-hover-color) 85%, transparent)',
+      itemBorderRadius: '8px',
+      panelBorderRadius: '10px',
+      iconColor: 'var(--text-secondary-color)',
+      iconColorDisabled: 'var(--text-secondary-color)',
+      calendarTitleTextColor: 'var(--text-color)',
+      calendarTitleColorHover: 'color-mix(in srgb, var(--icon-hover-color) 85%, transparent)',
+      calendarDaysTextColor: 'var(--text-secondary-color)',
+      panelHeaderDividerColor: 'var(--divider-color)',
+      calendarDaysDividerColor: 'var(--divider-color)',
+      calendarDividerColor: 'var(--divider-color)',
+      panelActionDividerColor: 'var(--divider-color)',
+      peers: {
+        Input: {
+          border: '1px solid color-mix(in srgb, var(--border-color) 75%, transparent)',
+          borderRadius: '8px',
+          borderFocus: '1px solid var(--primary-color)',
+          borderHover: '1px solid color-mix(in srgb, var(--border-color) 75%, transparent)',
+          loadingColor: 'var(--primary-color)',
+          caretColor: 'var(--primary-color)',
+          boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb), 0.28)',
+          placeholderColor: 'var(--text-secondary-color)',
+          textColor: 'var(--text-color)',
+          color: 'var(--input-soft-bg)',
+          colorFocus: 'var(--input-soft-bg)',
+          iconColor: 'var(--text-secondary-color)',
+          iconColorHover: 'var(--text-secondary-color)',
+          iconColorPressed: 'var(--text-secondary-color)',
+          clearColor: 'var(--text-secondary-color)',
+          clearColorHover: 'var(--text-color)',
+          clearColorPressed: 'var(--text-color)'
+        },
+        Button: {
+          colorPrimary: 'var(--primary-color)',
+          colorHoverPrimary: 'rgba(var(--primary-rgb), 0.8)',
+          colorPressedPrimary: 'rgba(var(--primary-rgb), 0.8)',
+          colorFocusPrimary: 'rgba(var(--primary-rgb), 0.8)',
+          borderPrimary: '1px solid var(--primary-color)',
+          borderHoverPrimary: '1px solid var(--primary-color)',
+          borderPressedPrimary: '1px solid var(--primary-color)',
+          borderFocusPrimary: '1px solid var(--primary-color)',
+          textColorPrimary: '#FFF',
+          textColorHoverPrimary: '#FFF',
+          textColorPressedPrimary: '#FFF',
+          textColorFocusPrimary: '#FFF'
+        },
+        Scrollbar: {
+          width: '6px',
+          color: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)',
+          colorHover: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)'
+        }
+      }
+    },
     Slider: {
+      handleColor: 'var(--primary-color)',
       fillColor: 'var(--primary-color)',
       fillColorHover: 'var(--primary-color)',
       handleSize: '14px',
       railColor: 'color-mix(in srgb, var(--border-color) 70%, transparent)',
-      railHeight: '4px'
+      railColorHover: 'color-mix(in srgb, var(--border-color) 70%, transparent)',
+      railHeight: '4px',
+      handleBoxShadow: 'none',
+      handleBoxShadowHover: 'none',
+      handleBoxShadowActive: 'none',
+      handleBoxShadowFocus: 'none'
     }
   }
 
@@ -196,4 +270,16 @@
     media?.removeEventListener('change', handleThememChange)
   })
 </script>
-<style></style>
+<style lang="scss">
+  .n-slider-handle {
+    border: 2px solid var(--bg-primary-color);
+    box-shadow: none;
+  }
+
+  .n-slider-handle:hover,
+  .n-slider-handle-wrapper:focus .n-slider-handle,
+  .n-slider--active .n-slider-handle {
+    background-color: var(--primary-color);
+    box-shadow: none;
+  }
+</style>

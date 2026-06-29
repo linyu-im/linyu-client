@@ -271,8 +271,36 @@
     "voiceChat": "Voice Chat",
     "videoChat": "Video Chat",
     "addFriend": "Add Friend",
+    "editProfile": "Edit Profile",
     "enterpriseIntro": "About",
     "memberCount": "{count} members"
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "nickname": "Nickname",
+    "signature": "Signature",
+    "signaturePlaceholder": "Edit your signature to show your unique style",
+    "gender": "Gender",
+    "birthday": "Birthday",
+    "birthdayPlaceholder": "Select birthday",
+    "country": "Country",
+    "province": "Province",
+    "region": "Region",
+    "regionPlaceholder": "Please select",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saveSuccess": "Profile saved",
+    "saveFailed": "Failed to save profile",
+    "nicknameRequired": "Please enter a nickname"
+  },
+  "avatarCrop": {
+    "title": "Crop Image",
+    "save": "Save",
+    "cancel": "Cancel",
+    "pickTitle": "Select Avatar Image",
+    "cropFailed": "Failed to crop image",
+    "loadFailed": "Failed to load image",
+    "uploadFailed": "Failed to upload avatar"
   },
   "moment": {
     "empty": "No moments yet",

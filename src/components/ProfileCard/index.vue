@@ -1,7 +1,11 @@
 <template>
-  <n-spin :show="loading" class="profile-card__spin">
+  <n-spin v-show="!editProfileShow" :show="loading" class="profile-card__spin">
     <div class="profile-card">
-      <ProfileCardUser v-if="type === 'user'" :id="id" :user-info="userInfo" />
+      <ProfileCardUser
+        v-if="type === 'user'"
+        :id="id"
+        :user-info="userInfo"
+        @update:edit-profile-show="onEditProfileShow" />
       <ProfileCardGroup
         v-else-if="type === 'group'"
         :id="id"
@@ -32,10 +36,17 @@
 
   const emit = defineEmits<{
     positionChange: []
+    'update:editProfileShow': [show: boolean]
   }>()
 
   const userStore = useUserStore()
   const peerInfoStore = usePeerInfoStore()
+  const editProfileShow = ref(false)
+
+  const onEditProfileShow = (show: boolean) => {
+    editProfileShow.value = show
+    emit('update:editProfileShow', show)
+  }
 
   const userInfo = computed(() =>
     props.type === 'user' ? (peerInfoStore.read(props.id, 'user') as UserInfoResult | null) : null

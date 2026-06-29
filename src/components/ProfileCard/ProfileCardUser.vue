@@ -1,125 +1,139 @@
 <template>
   <div>
-    <div class="profile-card__head">
-      <div class="profile-card__avatar-wrap" @click.stop="onAvatarPreview">
-        <Avatar class="profile-card__avatar shrink-0" :id="id" :profile-enabled="false" :refresh="true" />
-      </div>
-      <div class="profile-card__head-main min-w-0 flex-1">
-        <div class="profile-card__title-row">
-          <div class="profile-card__title truncate">
-            {{ displayName }}
-            <svg v-if="genderIconHref" class="profile-card__gender-icon size-14px" :class="genderClass">
-              <use :href="genderIconHref" />
-            </svg>
+    <div v-show="!showEditProfile">
+      <div class="profile-card__head">
+        <div class="profile-card__avatar-wrap" @click.stop="onAvatarPreview">
+          <Avatar class="profile-card__avatar shrink-0" :id="id" :profile-enabled="false" :refresh="true" />
+        </div>
+        <div class="profile-card__head-main min-w-0 flex-1">
+          <div class="profile-card__title-row">
+            <div class="profile-card__title truncate">
+              {{ displayName }}
+              <svg v-if="genderIconHref" class="profile-card__gender-icon size-14px" :class="genderClass">
+                <use :href="genderIconHref" />
+              </svg>
+            </div>
           </div>
-        </div>
-        <div class="profile-card__brief-row">
-          <span class="profile-card__brief-label">{{ t('avatarProfile.nickname') }}</span>
-          <span class="profile-card__brief-value truncate">{{ userInfo?.username ?? '' }}</span>
-        </div>
-        <div class="profile-card__brief-row">
-          <span class="profile-card__brief-label">{{ t('contacts.fields.linyuId') }}</span>
-          <span class="profile-card__brief-value truncate">{{ userInfo?.account ?? '' }}</span>
-        </div>
-        <div v-if="locationText" class="profile-card__brief-row">
-          <span class="profile-card__brief-label">{{ t('avatarProfile.region') }}</span>
-          <span class="profile-card__brief-value truncate">{{ locationText }}</span>
-        </div>
-      </div>
-    </div>
-
-    <n-divider class="profile-card__divider" />
-
-    <div class="profile-card__section-title">{{ t('avatarProfile.friendProfile') }}</div>
-    <div class="profile-card__meta">
-      <div v-if="emotionName" class="profile-card__row profile-card__row--emotion">
-        <span class="profile-card__row-label">{{ t('avatarProfile.emotion') }}</span>
-        <div class="profile-card__value-slot">
-          <span class="profile-card__row-value profile-card__emotion">
-            <span>[</span>
-            <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
-            <span>{{ emotionName }}</span>
-            <span>]</span>
-          </span>
-        </div>
-      </div>
-      <div v-if="remarkText" class="profile-card__row">
-        <span class="profile-card__row-label">{{ t('contacts.fields.remark') }}</span>
-        <div class="profile-card__value-slot">
-          <span class="profile-card__row-value profile-card__row-value--ellipsis">
-            {{ remarkText }}
-          </span>
-        </div>
-      </div>
-      <div v-if="tagText" class="profile-card__row">
-        <span class="profile-card__row-label">{{ t('contacts.fields.tag') }}</span>
-        <div class="profile-card__value-slot">
-          <span class="profile-card__row-value profile-card__row-value--ellipsis">{{ tagText }}</span>
-        </div>
-      </div>
-      <div v-if="signatureText" class="profile-card__row">
-        <span class="profile-card__row-label">{{ t('contacts.fields.signature') }}</span>
-        <div class="profile-card__value-slot">
-          <span class="profile-card__row-value profile-card__row-value--ellipsis">
-            {{ signatureText }}
-          </span>
-        </div>
-      </div>
-      <div v-if="momentThumbs.length > 0" class="profile-card__row profile-card__row--moments">
-        <span class="profile-card__row-label">{{ t('contacts.fields.friendMoments') }}</span>
-        <div class="profile-card__value-slot">
-          <div class="profile-card__thumbs">
-            <img
-              v-for="(url, index) in momentThumbs"
-              :key="`${url}-${index}`"
-              class="profile-card__thumb"
-              :src="url"
-              alt="" />
+          <div class="profile-card__brief-row">
+            <span class="profile-card__brief-label">{{ t('avatarProfile.nickname') }}</span>
+            <span class="profile-card__brief-value truncate">{{ userInfo?.username ?? '' }}</span>
+          </div>
+          <div class="profile-card__brief-row">
+            <span class="profile-card__brief-label">{{ t('contacts.fields.linyuId') }}</span>
+            <span class="profile-card__brief-value truncate">{{ userInfo?.account ?? '' }}</span>
+          </div>
+          <div v-if="locationText" class="profile-card__brief-row">
+            <span class="profile-card__brief-label">{{ t('avatarProfile.region') }}</span>
+            <span class="profile-card__brief-value truncate">{{ locationText }}</span>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="profile-card__actions">
-      <template v-if="!isSelf && !isFriend">
-        <button type="button" class="profile-card__action">
-          <svg class="profile-card__action-icon size-18px">
-            <use href="#plus" />
-          </svg>
-          <span class="profile-card__action-label">{{ t('avatarProfile.addFriend') }}</span>
-        </button>
-      </template>
-      <template v-else>
-        <button type="button" class="profile-card__action">
-          <svg class="profile-card__action-icon size-18px">
-            <use href="#message" />
-          </svg>
-          <span class="profile-card__action-label">{{ t('contacts.actions.sendMessage') }}</span>
-        </button>
-        <template v-if="!isSelf">
-          <span class="profile-card__action-sep" aria-hidden="true" />
+      <n-divider class="profile-card__divider" />
+
+      <div class="profile-card__section-title">{{ t('avatarProfile.friendProfile') }}</div>
+      <div class="profile-card__meta">
+        <div v-if="emotionName" class="profile-card__row profile-card__row--emotion">
+          <span class="profile-card__row-label">{{ t('avatarProfile.emotion') }}</span>
+          <div class="profile-card__value-slot">
+            <span class="profile-card__row-value profile-card__emotion">
+              <span>[</span>
+              <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
+              <span>{{ emotionName }}</span>
+              <span>]</span>
+            </span>
+          </div>
+        </div>
+        <div v-if="remarkText" class="profile-card__row">
+          <span class="profile-card__row-label">{{ t('contacts.fields.remark') }}</span>
+          <div class="profile-card__value-slot">
+            <span class="profile-card__row-value profile-card__row-value--ellipsis">
+              {{ remarkText }}
+            </span>
+          </div>
+        </div>
+        <div v-if="tagText" class="profile-card__row">
+          <span class="profile-card__row-label">{{ t('contacts.fields.tag') }}</span>
+          <div class="profile-card__value-slot">
+            <span class="profile-card__row-value profile-card__row-value--ellipsis">{{ tagText }}</span>
+          </div>
+        </div>
+        <div v-if="signatureText" class="profile-card__row">
+          <span class="profile-card__row-label">{{ t('contacts.fields.signature') }}</span>
+          <div class="profile-card__value-slot">
+            <span class="profile-card__row-value profile-card__row-value--ellipsis">
+              {{ signatureText }}
+            </span>
+          </div>
+        </div>
+        <div v-if="momentThumbs.length > 0" class="profile-card__row profile-card__row--moments">
+          <span class="profile-card__row-label">{{ t('contacts.fields.friendMoments') }}</span>
+          <div class="profile-card__value-slot">
+            <div class="profile-card__thumbs">
+              <img
+                v-for="(url, index) in momentThumbs"
+                :key="`${url}-${index}`"
+                class="profile-card__thumb"
+                :src="url"
+                alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card__actions">
+        <template v-if="!isSelf && !isFriend">
           <button type="button" class="profile-card__action">
             <svg class="profile-card__action-icon size-18px">
-              <use href="#phone" />
+              <use href="#plus" />
             </svg>
-            <span class="profile-card__action-label">{{ t('avatarProfile.voiceChat') }}</span>
-          </button>
-          <span class="profile-card__action-sep" aria-hidden="true" />
-          <button type="button" class="profile-card__action">
-            <svg class="profile-card__action-icon size-18px">
-              <use href="#video" />
-            </svg>
-            <span class="profile-card__action-label">{{ t('avatarProfile.videoChat') }}</span>
+            <span class="profile-card__action-label">{{ t('avatarProfile.addFriend') }}</span>
           </button>
         </template>
-      </template>
+        <template v-else>
+          <button type="button" class="profile-card__action">
+            <svg class="profile-card__action-icon size-18px">
+              <use href="#message" />
+            </svg>
+            <span class="profile-card__action-label">{{ t('contacts.actions.sendMessage') }}</span>
+          </button>
+          <template v-if="isSelf">
+            <span class="profile-card__action-sep" aria-hidden="true" />
+            <button type="button" class="profile-card__action" @click="showEditProfile = true">
+              <svg class="profile-card__action-icon size-18px">
+                <use href="#edit" />
+              </svg>
+              <span class="profile-card__action-label">{{ t('avatarProfile.editProfile') }}</span>
+            </button>
+          </template>
+          <template v-else>
+            <span class="profile-card__action-sep" aria-hidden="true" />
+            <button type="button" class="profile-card__action">
+              <svg class="profile-card__action-icon size-18px">
+                <use href="#phone" />
+              </svg>
+              <span class="profile-card__action-label">{{ t('avatarProfile.voiceChat') }}</span>
+            </button>
+            <span class="profile-card__action-sep" aria-hidden="true" />
+            <button type="button" class="profile-card__action">
+              <svg class="profile-card__action-icon size-18px">
+                <use href="#video" />
+              </svg>
+              <span class="profile-card__action-label">{{ t('avatarProfile.videoChat') }}</span>
+            </button>
+          </template>
+        </template>
+      </div>
     </div>
+
+    <EditProfileModal v-model:show="showEditProfile" :user-id="id" :user-info="userInfo" />
   </div>
 </template>
 
 <script setup lang="ts">
   import type { UserInfoResult } from '@/types/api/user'
   import { contactsApi } from '@/api'
+  import EditProfileModal from '@/components/ProfileCard/EditProfileModal.vue'
   import { useAvatarStore } from '@/stores/avatar'
   import { useUserStore } from '@/stores/user'
   import { openImgViewer } from '@/utils/imgViewer'
@@ -130,6 +144,10 @@
     userInfo: UserInfoResult | null
   }>()
 
+  const emit = defineEmits<{
+    'update:editProfileShow': [show: boolean]
+  }>()
+
   const { t } = useI18n()
   const userStore = useUserStore()
   const avatarStore = useAvatarStore()
@@ -137,6 +155,15 @@
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
   const isSelf = computed(() => props.id === currentUserId.value)
   const isFriend = ref(false)
+  const showEditProfile = ref(false)
+
+  watch(
+    showEditProfile,
+    (show) => {
+      emit('update:editProfileShow', show)
+    },
+    { immediate: true }
+  )
 
   const checkIsFriend = () => {
     if (!props.id || isSelf.value) return

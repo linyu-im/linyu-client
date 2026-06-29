@@ -13,6 +13,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Avatar: typeof import('./../components/Avatar.vue')['default']
+    AvatarCropModal: typeof import('./../components/ProfileCard/AvatarCropModal.vue')['default']
     ChatSession: typeof import('./../components/Chat/ChatSession.vue')['default']
     ChatSessionGroupSettings: typeof import('./../components/Chat/ChatSessionSettingsDrawer/ChatSessionGroupSettings.vue')['default']
     ChatSessionPeerInfo: typeof import('./../components/Chat/ChatSessionPeerInfo.vue')['default']
@@ -26,6 +27,7 @@ declare module 'vue' {
     ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
     ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
     Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
+    EditProfileModal: typeof import('./../components/ProfileCard/EditProfileModal.vue')['default']
     EmojiPicker: typeof import('./../components/Message/EmojiPicker/index.vue')['default']
     File: typeof import('./../components/Message/MessageList/Item/File.vue')['default']
     ForwardMessageModal: typeof import('./../components/Message/ForwardMessageModal.vue')['default']
@@ -53,6 +55,7 @@ declare module 'vue' {
     NButton: typeof import('naive-ui')['NButton']
     NCheckbox: typeof import('naive-ui')['NCheckbox']
     NConfigProvider: typeof import('naive-ui')['NConfigProvider']
+    NDatePicker: typeof import('naive-ui')['NDatePicker']
     NDivider: typeof import('naive-ui')['NDivider']
     NDropdown: typeof import('naive-ui')['NDropdown']
     NEmpty: typeof import('naive-ui')['NEmpty']
@@ -105,6 +108,7 @@ declare module 'vue' {
 // For TSX support
 declare global {
   const Avatar: typeof import('./../components/Avatar.vue')['default']
+  const AvatarCropModal: typeof import('./../components/ProfileCard/AvatarCropModal.vue')['default']
   const ChatSession: typeof import('./../components/Chat/ChatSession.vue')['default']
   const ChatSessionGroupSettings: typeof import('./../components/Chat/ChatSessionSettingsDrawer/ChatSessionGroupSettings.vue')['default']
   const ChatSessionPeerInfo: typeof import('./../components/Chat/ChatSessionPeerInfo.vue')['default']
@@ -118,6 +122,7 @@ declare global {
   const ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
   const ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
   const Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
+  const EditProfileModal: typeof import('./../components/ProfileCard/EditProfileModal.vue')['default']
   const EmojiPicker: typeof import('./../components/Message/EmojiPicker/index.vue')['default']
   const File: typeof import('./../components/Message/MessageList/Item/File.vue')['default']
   const ForwardMessageModal: typeof import('./../components/Message/ForwardMessageModal.vue')['default']
@@ -145,6 +150,7 @@ declare global {
   const NButton: typeof import('naive-ui')['NButton']
   const NCheckbox: typeof import('naive-ui')['NCheckbox']
   const NConfigProvider: typeof import('naive-ui')['NConfigProvider']
+  const NDatePicker: typeof import('naive-ui')['NDatePicker']
   const NDivider: typeof import('naive-ui')['NDivider']
   const NDropdown: typeof import('naive-ui')['NDropdown']
   const NEmpty: typeof import('naive-ui')['NEmpty']

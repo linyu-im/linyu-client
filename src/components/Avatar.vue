@@ -14,6 +14,7 @@
     :content-style="profileContentStyle"
     raw
     :z-index="3000"
+    :on-clickoutside="onPopoverClickOutside"
     @update:show="onProfileShowChange">
     <template #trigger>
       <n-avatar
@@ -25,7 +26,11 @@
         :size="size"
         fallback-src="/avatar.png" />
     </template>
-    <ProfileCard :id="id" :type="type" @position-change="syncProfilePosition" />
+    <ProfileCard
+      :id="id"
+      :type="type"
+      @position-change="syncProfilePosition"
+      @update:edit-profile-show="onEditProfileShow" />
   </n-popover>
   <n-avatar
     v-else
@@ -81,6 +86,7 @@
   const src = ref('')
   const visible = ref(false)
   const profileVisible = ref(false)
+  const editProfileShow = ref(false)
 
   const syncProfilePosition = () => {
     nextTick(() => {
@@ -166,6 +172,15 @@
     })
   }
 
+  const onEditProfileShow = (show: boolean) => {
+    editProfileShow.value = show
+  }
+
+  const onPopoverClickOutside = () => {
+    if (editProfileShow.value) return
+    closeProfile()
+  }
+
   const onProfileShowChange = (show: boolean) => {
     if (show) {
       refreshAvatarOnOpen()
@@ -173,6 +188,7 @@
       return
     }
 
+    editProfileShow.value = false
     window.removeEventListener('resize', onResizeSync)
   }
 
@@ -183,6 +199,7 @@
   })
 
   const closeProfile = () => {
+    if (editProfileShow.value) return
     profileVisible.value = false
   }
 

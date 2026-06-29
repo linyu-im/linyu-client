@@ -271,8 +271,36 @@
     "voiceChat": "语音聊天",
     "videoChat": "视频聊天",
     "addFriend": "添加好友",
+    "editProfile": "编辑资料",
     "enterpriseIntro": "企业简介",
     "memberCount": "{count}人"
+  },
+  "editProfile": {
+    "title": "编辑资料",
+    "nickname": "昵称",
+    "signature": "个签",
+    "signaturePlaceholder": "编辑个签，展示我的独特态度",
+    "gender": "性别",
+    "birthday": "生日",
+    "birthdayPlaceholder": "请选择生日",
+    "country": "国家",
+    "province": "省份",
+    "region": "地区",
+    "regionPlaceholder": "请选择",
+    "save": "保存",
+    "cancel": "取消",
+    "saveSuccess": "资料保存成功",
+    "saveFailed": "资料保存失败",
+    "nicknameRequired": "请输入昵称"
+  },
+  "avatarCrop": {
+    "title": "裁剪图片",
+    "save": "保存",
+    "cancel": "取消",
+    "pickTitle": "选择头像图片",
+    "cropFailed": "图片裁剪失败",
+    "loadFailed": "图片加载失败",
+    "uploadFailed": "头像上传失败"
   },
   "moment": {
     "empty": "暂无动态",

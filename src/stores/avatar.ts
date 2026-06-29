@@ -157,6 +157,15 @@ export const useAvatarStore = defineStore('avatar', () => {
     return loadLocalAvatar(type, id)
   }
 
+  const updateAvatarFromRemote = async (type: FromType, id: string, remoteUrl: string): Promise<string> => {
+    if (!id || !remoteUrl) return ''
+
+    const imageData = await downloadImage(remoteUrl)
+    const url = await saveAvatarToLocal(type, id, imageData)
+    lastRefresh.set(getCacheKey(type, id), Date.now())
+    return url
+  }
+
   /** 获取指定头像的最后刷新时间戳（响应式，用于跨实例同步） */
   const getLastRefresh = (type: FromType, id: string): number => {
     return lastRefresh.get(getCacheKey(type, id)) ?? 0
@@ -173,6 +182,7 @@ export const useAvatarStore = defineStore('avatar', () => {
     getCachedSrc,
     resolveSrc,
     refreshSrc,
+    updateAvatarFromRemote,
     getLastRefresh,
     prefetch,
     prefetchMany
