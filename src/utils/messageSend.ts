@@ -56,6 +56,20 @@ export const createLocalMessage = (
 export const patchMessageById = (messages: Message[], id: string, patch: Partial<Message>): Message[] =>
   messages.map((item) => (item.id === id ? ({ ...item, ...patch } as Message) : item))
 
+export const isStalePendingLocalMessage = (pending: Message, serverMessages: Message[]): boolean => {
+  if (pending.status !== 'sending' || !pending.id.startsWith('local-')) return false
+
+  if (pending.msgType === 'file') {
+    const pendingFile = pending.content
+    return serverMessages.some((s) => {
+      if (s.msgType !== 'file' || s.fromId !== pending.fromId) return false
+      return s.content.fileName === pendingFile.fileName && s.content.fileSize === pendingFile.fileSize
+    })
+  }
+
+  return false
+}
+
 export const resolveMessageFailReason = (code: number, msg: string, t: ComposerTranslation): string => {
   const normalized = msg?.trim()
   if (normalized) {

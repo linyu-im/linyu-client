@@ -93,22 +93,6 @@
         </template>
         <n-button size="small" @click="onTodo">{{ t('settings.account.change') }}</n-button>
       </SettingRow>
-      <SettingRow>
-        <template #label>
-          <div class="settings-page__auto-download">
-            <span>{{ t('settings.account.autoDownload') }}</span>
-            <n-input-number
-              v-model:value="appSettings.storage.autoDownloadMaxMb"
-              class="settings-page__number"
-              :min="1"
-              :max="1024"
-              size="small"
-              :show-button="false" />
-            <span class="settings-page__unit">MB</span>
-          </div>
-        </template>
-        <n-switch v-model:value="appSettings.storage.autoDownloadEnabled" />
-      </SettingRow>
       <div class="settings-page__footer">
         <n-button size="small" @click="onTodo">{{ t('settings.account.clearHistory') }}</n-button>
       </div>
@@ -117,12 +101,13 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
+  import { onMounted, ref } from 'vue'
   import { useI18n } from 'vue-i18n'
   import Avatar from '@/components/Avatar.vue'
   import { useUserStore } from '@/stores/user'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { closeCurrentWindow } from '@/utils/window'
+  import { resolveMessageStorageRoot } from '@/utils/messageFileSave'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
 
@@ -141,7 +126,13 @@
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
 
-  const storagePath = 'D:\\Linyu\\data'
+  const storagePath = ref('')
+
+  onMounted(() => {
+    resolveMessageStorageRoot(appSettings.storage.path).then((path) => {
+      storagePath.value = path
+    })
+  })
 
   const devices = ref<LoggedDevice[]>([
     { id: 'mobile-1', name: 'BKQ-AN80', platform: 'android', type: 'mobile' },
@@ -308,22 +299,6 @@
       display: block;
       word-break: break-all;
       line-height: 1.45;
-    }
-
-    &__auto-download {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    &__number {
-      width: 64px;
-    }
-
-    &__unit {
-      font-size: 13px;
-      color: var(--text-secondary-color);
     }
 
     &__footer {

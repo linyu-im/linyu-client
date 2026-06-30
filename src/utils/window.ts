@@ -132,8 +132,7 @@ export const createHomeWinodw = () =>
     minWidth: 800,
     minHeight: 600,
     resizable: true,
-    transparent: true,
-    dragDropEnabled: true
+    transparent: true
   })
 
 export const createEmotionWinodw = () =>

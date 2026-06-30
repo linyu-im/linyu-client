@@ -26,6 +26,12 @@ export interface FileContent {
   fileSize: number
 }
 
+/** 文件消息本地扩展*/
+export interface FileMessageLocalExt {
+  status: string
+  localPath: string
+}
+
 export interface ECardContent {
   userId: string
   userName: string
@@ -69,6 +75,8 @@ export type Message = {
     quoteMsgId?: string
     createdAt: string
     updatedAt: string
+    /** 本地扩展字段，仅存本地库不同步服务端 */
+    localExt?: K extends 'file' ? FileMessageLocalExt : never
   }
 }[keyof MsgTypeMap]
 

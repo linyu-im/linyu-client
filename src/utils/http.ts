@@ -68,6 +68,74 @@ function buildUrl(url: string, params?: Record<string, any>): string {
   return `${SERVICE_URL}${url}${query ? `?${query}` : ''}`
 }
 
+function resolveResourceUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url
+  const path = url.startsWith('/') ? url : `/${url}`
+  return `${SERVICE_URL}${path}`
+}
+
+const getServiceOrigin = () => {
+  try {
+    return new URL(SERVICE_URL).origin
+  } catch {
+    return ''
+  }
+}
+
+const isApiOriginUrl = (requestUrl: string) => {
+  const serviceOrigin = getServiceOrigin()
+  if (!serviceOrigin) return false
+  try {
+    return new URL(requestUrl).origin === serviceOrigin
+  } catch {
+    return false
+  }
+}
+
+const buildBinaryFetchHeaders = (requestUrl: string): Record<string, string> => {
+  if (!isApiOriginUrl(requestUrl)) return {}
+  return {
+    'Accept-Language': getLang(),
+    Authorization: getToken()
+  }
+}
+
+const formatErrorDetail = (error: unknown) => {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack }
+  }
+  return { value: String(error) }
+}
+
+export async function fetchBinary(url: string, onProgress?: (progress: number) => void): Promise<ArrayBuffer> {
+  const requestUrl = resolveResourceUrl(url)
+  const withAuth = isApiOriginUrl(requestUrl)
+  onProgress?.(0)
+
+  try {
+    const response = await fetch(requestUrl, {
+      method: 'GET',
+      headers: buildBinaryFetchHeaders(requestUrl)
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`)
+    }
+
+    const buffer = await response.arrayBuffer()
+    onProgress?.(100)
+    return buffer
+  } catch (error) {
+    console.error('[message-file] fetchBinary failed', {
+      fileUrl: url,
+      requestUrl,
+      withAuth,
+      error: formatErrorDetail(error)
+    })
+    throw error
+  }
+}
+
 export function get<T = any>(url: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
   return send<T>({
     url: buildUrl(url, params),
@@ -194,4 +262,4 @@ export async function postSse(
   }
 }
 
-export default { get, post, formData, postSse }
+export default { get, post, formData, postSse, fetchBinary }

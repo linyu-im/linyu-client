@@ -105,6 +105,15 @@
       "noSearchResult": "未找到匹配项",
       "removeSelected": "移除"
     },
+    "file": {
+      "fileSize": "文件大小：{size}",
+      "receive": "接收文件",
+      "notDownloaded": "未下载",
+      "downloadFailed": "文件下载失败",
+      "openFailed": "无法打开文件",
+      "storagePathMissing": "请先在设置中配置存储位置",
+      "close": "关闭"
+    },
     "bubbleMenu": {
       "copy": "复制",
       "copySuccess": "已复制",
@@ -506,7 +515,6 @@
       "manage": "管理",
       "storagePath": "存储位置",
       "change": "更改",
-      "autoDownload": "自动下载文件（小于）",
       "clearHistory": "清空全部聊天记录"
     },
     "general": {

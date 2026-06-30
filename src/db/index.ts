@@ -60,7 +60,8 @@ export async function initDatabase(): Promise<void> {
       quote_msg_id TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      fail_reason TEXT
+      fail_reason TEXT,
+      local_ext TEXT
     )
   `)
 

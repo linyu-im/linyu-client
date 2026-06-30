@@ -56,16 +56,20 @@
                     </svg>
                     <span>{{ t('contacts.menu.myEnterprise') }}</span>
                   </div>
-                  <span class="contacts__group-count">{{ enterpriseList.length }}</span>
+                  <span class="contacts__group-count">{{ contactsStore.enterpriseList.length }}</span>
                 </div>
                 <template v-if="expandedGroups.enterprise">
-                  <div v-if="enterpriseListLoading" class="contacts__loading">{{ t('contacts.loading') }}</div>
-                  <div v-else-if="enterpriseList.length === 0" class="contacts__empty">
+                  <div
+                    v-if="contactsStore.enterpriseListLoading && contactsStore.enterpriseList.length === 0"
+                    class="contacts__loading">
+                    {{ t('contacts.loading') }}
+                  </div>
+                  <div v-else-if="contactsStore.enterpriseList.length === 0" class="contacts__empty">
                     {{ t('contacts.emptyEnterprises') }}
                   </div>
                   <div
                     v-else
-                    v-for="enterprise in enterpriseList"
+                    v-for="enterprise in contactsStore.enterpriseList"
                     :key="enterprise.id"
                     class="contacts__entry"
                     :class="{ active: selectedId === enterprise.id }"
@@ -86,14 +90,20 @@
                     </svg>
                     <span>{{ t('contacts.menu.myGroup') }}</span>
                   </div>
-                  <span class="contacts__group-count">{{ groupList.length }}</span>
+                  <span class="contacts__group-count">{{ contactsStore.groupList.length }}</span>
                 </div>
                 <template v-if="expandedGroups.group">
-                  <div v-if="groupListLoading" class="contacts__loading">{{ t('contacts.loading') }}</div>
-                  <div v-else-if="groupList.length === 0" class="contacts__empty">{{ t('contacts.emptyGroups') }}</div>
+                  <div
+                    v-if="contactsStore.groupListLoading && contactsStore.groupList.length === 0"
+                    class="contacts__loading">
+                    {{ t('contacts.loading') }}
+                  </div>
+                  <div v-else-if="contactsStore.groupList.length === 0" class="contacts__empty">
+                    {{ t('contacts.emptyGroups') }}
+                  </div>
                   <div
                     v-else
-                    v-for="contact in groupList"
+                    v-for="contact in contactsStore.groupList"
                     :key="contact.id"
                     class="contacts__entry"
                     :class="{ active: selectedId === contact.id }"
@@ -116,11 +126,15 @@
                     </svg>
                     <span>{{ t('contacts.menu.myFriends') }}</span>
                   </div>
-                  <span class="contacts__group-count">{{ friendList.length }}</span>
+                  <span class="contacts__group-count">{{ contactsStore.friendList.length }}</span>
                 </div>
                 <template v-if="expandedGroups.friend">
-                  <div v-if="friendListLoading" class="contacts__loading">{{ t('contacts.loading') }}</div>
-                  <div v-else-if="friendList.length === 0" class="contacts__empty">
+                  <div
+                    v-if="contactsStore.friendListLoading && contactsStore.friendList.length === 0"
+                    class="contacts__loading">
+                    {{ t('contacts.loading') }}
+                  </div>
+                  <div v-else-if="contactsStore.friendList.length === 0" class="contacts__empty">
                     {{ t('contacts.emptyFriends') }}
                   </div>
                   <template v-else>
@@ -181,7 +195,7 @@
   import ContactsGroupNotice from '@/components/Contacts/ContactsGroupNotice.vue'
   import ContactsGroupProfile from '@/components/Contacts/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/ContactsNewFriend.vue'
-  import { contactsApi } from '@/api'
+  import { useContactsStore } from '@/stores/contacts'
   import { useHomeTabStore } from '@/stores/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
   import { getNameInitial } from '@/utils/pinyin'
@@ -192,6 +206,7 @@
 
   const { t } = useI18n()
   const homeTabStore = useHomeTabStore()
+  const contactsStore = useContactsStore()
 
   const selectedId = ref('new-friend')
   const expandedGroups = ref<Record<GroupKey, boolean>>({
@@ -200,21 +215,12 @@
     friend: true
   })
 
-  const enterpriseList = ref<Contact[]>([])
-  const enterpriseListLoading = ref(false)
-
-  const groupList = ref<Contact[]>([])
-  const groupListLoading = ref(false)
-
-  const friendList = ref<Contact[]>([])
-  const friendListLoading = ref(false)
-
   const getContactDisplayName = (contact: Contact) => contact.remark || contact.username
 
   const zhPinyinCollator = new Intl.Collator('zh-Hans-CN-u-co-pinyin')
 
   const friendGroups = computed<FriendGroup[]>(() => {
-    const sorted = [...friendList.value].sort((a, b) =>
+    const sorted = [...contactsStore.friendList].sort((a, b) =>
       zhPinyinCollator.compare(getContactDisplayName(a), getContactDisplayName(b))
     )
     const groups = new Map<string, Contact[]>()
@@ -227,67 +233,18 @@
     return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([letter, items]) => ({ letter, items }))
   })
 
-  const fetchGroupList = async () => {
-    if (groupListLoading.value) return
-    groupListLoading.value = true
-    try {
-      const res = await contactsApi.groupList()
-      if (res.code === 0 && res.data) {
-        groupList.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      groupListLoading.value = false
-    }
-  }
-
-  const fetchEnterpriseList = async () => {
-    if (enterpriseListLoading.value) return
-    enterpriseListLoading.value = true
-    try {
-      const res = await contactsApi.enterpriseList()
-      if (res.code === 0 && res.data) {
-        enterpriseList.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      enterpriseListLoading.value = false
-    }
-  }
-
-  const fetchFriendList = async () => {
-    if (friendListLoading.value) return
-    friendListLoading.value = true
-    try {
-      const res = await contactsApi.friendList()
-      if (res.code === 0 && res.data) {
-        friendList.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      friendListLoading.value = false
-    }
-  }
-
   onActivated(() => {
-    void fetchEnterpriseList()
-    void fetchGroupList()
-    void fetchFriendList()
+    contactsStore.fetchAll()
   })
 
   onMounted(() => {
-    void fetchEnterpriseList()
-    void fetchGroupList()
-    void fetchFriendList()
+    contactsStore.fetchAll()
   })
 
-  const activeGroup = computed(() => groupList.value.find((item) => item.id === selectedId.value))
-  const activeEnterprise = computed(() => enterpriseList.value.find((item) => item.id === selectedId.value))
+  const activeGroup = computed(() => contactsStore.groupList.find((item) => item.id === selectedId.value))
+  const activeEnterprise = computed(() => contactsStore.enterpriseList.find((item) => item.id === selectedId.value))
 
-  const activeContact = computed(() => friendList.value.find((item) => item.id === selectedId.value))
+  const activeContact = computed(() => contactsStore.friendList.find((item) => item.id === selectedId.value))
 
   const activeFriendUserId = computed(() => activeContact.value?.peerId ?? '')
 
@@ -305,12 +262,12 @@
   }
 
   const onFriendRemarkUpdated = (payload: { peerId: string; remark: string }) => {
-    const contact = friendList.value.find((item) => item.peerId === payload.peerId)
+    const contact = contactsStore.friendList.find((item) => item.peerId === payload.peerId)
     if (contact) contact.remark = payload.remark
   }
 
   const onGroupRemarkUpdated = (payload: { peerId: string; remark: string }) => {
-    const contact = groupList.value.find((item) => item.peerId === payload.peerId)
+    const contact = contactsStore.groupList.find((item) => item.peerId === payload.peerId)
     if (contact) contact.remark = payload.remark
   }
 
@@ -328,7 +285,7 @@
     }
 
     if (payload.peerId) {
-      const contact = friendList.value.find((item) => item.peerId === payload.peerId)
+      const contact = contactsStore.friendList.find((item) => item.peerId === payload.peerId)
       if (contact) {
         expandedGroups.value.friend = true
         selectedId.value = contact.id
@@ -343,11 +300,14 @@
     }
   )
 
-  watch(friendList, () => {
-    if (homeTabStore.tabPayload.contacts?.peerId) {
-      applyContactsPayload()
+  watch(
+    () => contactsStore.friendList,
+    () => {
+      if (homeTabStore.tabPayload.contacts?.peerId) {
+        applyContactsPayload()
+      }
     }
-  })
+  )
 </script>
 
 <style scoped lang="scss">

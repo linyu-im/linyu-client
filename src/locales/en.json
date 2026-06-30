@@ -105,6 +105,15 @@
       "noSearchResult": "No matches found",
       "removeSelected": "Remove"
     },
+    "file": {
+      "fileSize": "File size: {size}",
+      "receive": "Receive File",
+      "notDownloaded": "Not downloaded",
+      "downloadFailed": "Failed to download file",
+      "openFailed": "Failed to open file",
+      "storagePathMissing": "Please configure storage location in settings first",
+      "close": "Close"
+    },
     "bubbleMenu": {
       "copy": "Copy",
       "copySuccess": "Copied",
@@ -506,7 +515,6 @@
       "manage": "Manage",
       "storagePath": "Storage location",
       "change": "Change",
-      "autoDownload": "Auto-download files (less than)",
       "clearHistory": "Clear all chat history"
     },
     "general": {

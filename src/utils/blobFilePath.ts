@@ -10,6 +10,16 @@ export const getBlobFilePath = (blobUrl: string): string | undefined => {
   return blobUrlToFilePath.get(blobUrl)
 }
 
+/** 从本地媒体 URL 解析磁盘路径（blob / local-file） */
+export const resolveLocalMediaFilePath = (url: string): string | null => {
+  if (!url) return null
+  if (url.startsWith('local-file://')) {
+    return decodeURIComponent(url.slice('local-file://'.length))
+  }
+  const mapped = getBlobFilePath(url)
+  return mapped ?? null
+}
+
 export const unregisterBlobFilePath = (blobUrl: string) => {
   blobUrlToFilePath.delete(blobUrl)
 }

@@ -20,6 +20,8 @@ export interface DbMessage {
   quoteMsgId?: string
   createdAt: string
   updatedAt: string
+  /** 本地扩展字段（JSON 字符串，仅存本地库） */
+  localExt?: string
 }
 
 /**
@@ -50,11 +52,11 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
 
   const db = await getDb()
 
-  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
+  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
 
   const sql = `
     INSERT OR REPLACE INTO t_message 
-    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, created_at, updated_at, fail_reason)
+    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, created_at, updated_at, fail_reason, local_ext)
     VALUES ${placeholders}
   `
 
@@ -74,7 +76,8 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
       msg.quoteMsgId ?? null,
       msg.createdAt,
       msg.updatedAt,
-      msg.failReason ?? null
+      msg.failReason ?? null,
+      msg.localExt ?? null
     )
   }
 
@@ -103,7 +106,8 @@ export async function queryMessagesByPage(query: MessagePageQuery): Promise<Mess
     `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
             msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
             content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason
+            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
+            local_ext AS localExt
      FROM t_message 
      WHERE session_id = ? 
      ORDER BY created_at DESC 
@@ -154,7 +158,8 @@ export async function queryMessageById(id: string): Promise<DbMessage | null> {
     `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
             msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
             content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason
+            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
+            local_ext AS localExt
      FROM t_message WHERE id = ?`,
     [id]
   )
@@ -176,4 +181,12 @@ export async function queryLatestMessageIdBySession(sessionId: string): Promise<
   )
 
   return result[0]?.id ?? null
+}
+
+/**
+ * 更新消息本地扩展字段
+ */
+export async function updateMessageLocalExt(id: string, localExt: string): Promise<void> {
+  const db = await getDb()
+  await db.execute('UPDATE t_message SET local_ext = ? WHERE id = ?', [localExt, id])
 }

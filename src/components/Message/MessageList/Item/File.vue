@@ -1,7 +1,16 @@
 <template>
-  <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="file">
-    <a class="message-file" href="#" @click.prevent="onDownload">
-      <img class="message-file__icon" :src="iconUrl" :alt="content.fileName" />
+  <UploadProgress
+    :uploading="uploading || downloading"
+    :progress="uploading ? uploadProgress : downloadProgress"
+    variant="file">
+    <a
+      class="message-file"
+      href="#"
+      draggable="false"
+      @dragstart.prevent
+      @mousedown="onMouseDown"
+      @click.prevent="onClick">
+      <img class="message-file__icon" :src="iconUrl" :alt="content.fileName" draggable="false" />
       <div class="message-file__info">
         <n-tooltip trigger="hover" placement="top" :disabled="!isNameTruncated" :content-style="tooltipContentStyle">
           <template #trigger>
@@ -12,33 +21,93 @@
           </template>
           {{ content.fileName }}
         </n-tooltip>
-        <span class="message-file__size" :class="{ 'message-file__size--uploading': uploading || downloading }">
-          <template v-if="uploading">{{ uploadProgress }}%</template>
-          <template v-else-if="downloading">{{ downloadProgress }}%</template>
-          <template v-else>{{ formatSize(content.fileSize) }}</template>
-        </span>
+        <div class="message-file__meta">
+          <span class="message-file__size" :class="{ 'message-file__size--uploading': uploading || downloading }">
+            <template v-if="uploading">{{ uploadProgress }}%</template>
+            <template v-else-if="downloading">{{ downloadProgress }}%</template>
+            <template v-else>{{ formatSize(content.fileSize) }}</template>
+          </span>
+          <span v-if="!isDownloaded && !downloading" class="message-file__status">
+            {{ t('message.file.notDownloaded') }}
+          </span>
+        </div>
       </div>
     </a>
   </UploadProgress>
+
+  <FileReceiveModal
+    v-model:show="receiveModalVisible"
+    :file-name="content.fileName"
+    :file-type="content.fileType"
+    :file-size="content.fileSize"
+    @receive="onReceiveConfirm" />
 </template>
 
 <script setup lang="ts">
   import type { CSSProperties } from 'vue'
-  import { save } from '@tauri-apps/plugin-dialog'
-  import { writeFile } from '@tauri-apps/plugin-fs'
-  import type { FileContent } from '@/types/api/message'
+  import { useI18n } from 'vue-i18n'
+  import { openLocalFile } from '@/utils/openLocalFile'
+  import { prepareLocalFileDrag, startLocalFileDrag } from '@/utils/dragLocalFile'
+  import type { FileContent, FileMessageLocalExt } from '@/types/api/message'
+  import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
+  import { downloadMessageFileToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/fileIcon'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
+  import FileReceiveModal from '@/components/Message/MessageList/FileReceiveModal.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
+  import { useMessageDownloadProgress } from '@/composables/useMessageDownloadProgress'
+  import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useMessageDbStore } from '@/stores/messageDb'
+  import { useMessageDownloadStore } from '@/stores/messageDownload'
 
   const props = defineProps<{
     messageId: string
     content: FileContent
+    localExt?: FileMessageLocalExt
   }>()
 
+  const { t } = useI18n()
+  const appSettingsStore = useAppSettingsStore()
+  const messageDbStore = useMessageDbStore()
+  const messageDownloadStore = useMessageDownloadStore()
+
   const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
-  const downloading = ref(false)
-  const downloadProgress = ref(0)
+  const { downloading, downloadProgress } = useMessageDownloadProgress(() => props.messageId)
+  const receiveModalVisible = ref(false)
+  const receivedLocalExt = ref<FileMessageLocalExt>()
+
+  const TAP_DISTANCE = 8
+  const DRAG_THRESHOLD = 8
+
+  let activePointerTrack: (() => void) | null = null
+
+  const fileLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
+
+  const isDownloaded = computed(() => fileLocalExt.value?.status === FILE_MESSAGE_STATUS_DOWNLOADED)
+
+  const canDragOut = computed(
+    () => isDownloaded.value && !!fileLocalExt.value?.localPath && !uploading.value && !downloading.value
+  )
+
+  watch(
+    () =>
+      canDragOut.value
+        ? {
+            filePath: fileLocalExt.value?.localPath,
+            fileName: props.content.fileName,
+            fileType: props.content.fileType
+          }
+        : null,
+    (target) => {
+      if (!target?.filePath) return
+      void prepareLocalFileDrag({
+        filePath: target.filePath,
+        fileName: target.fileName,
+        fileType: target.fileType
+      })
+    },
+    { immediate: true }
+  )
 
   const iconUrl = computed(() => getFileIconUrl(props.content.fileName, props.content.fileType))
 
@@ -63,49 +132,122 @@
     return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
   }
 
-  const requestBinary = (url: string) =>
-    new Promise<ArrayBuffer>((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', url, true)
-      xhr.responseType = 'arraybuffer'
+  const persistDownloaded = (localPath: string) => {
+    const localExt = { status: FILE_MESSAGE_STATUS_DOWNLOADED, localPath }
+    receivedLocalExt.value = localExt
+    void messageDbStore.updateFileMessageLocalExt(props.messageId, localExt)
+  }
 
-      xhr.onprogress = (event) => {
-        if (!event.lengthComputable || event.total <= 0) return
-        downloadProgress.value = Math.min(100, Math.max(0, Math.round((event.loaded / event.total) * 100)))
-      }
-
-      xhr.onerror = () => reject(new Error('network error'))
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-          resolve(xhr.response as ArrayBuffer)
-          return
-        }
-        reject(new Error(`http ${xhr.status}`))
-      }
-      xhr.send()
-    })
-
-  const onDownload = () => {
+  const receiveDownload = () => {
     if (uploading.value || downloading.value || !props.content.fileUrl) return
-    save({
-      defaultPath: props.content.fileName
-    }).then((path) => {
-      if (!path) return
-      downloading.value = true
-      downloadProgress.value = 0
-      return requestBinary(props.content.fileUrl)
-        .then((buffer) => writeFile(path, new Uint8Array(buffer)))
-        .then(() => {
-          downloadProgress.value = 100
+
+    messageDownloadStore.setProgress(props.messageId, 0)
+    resolveMessageStorageRoot(appSettingsStore.storage.path)
+      .then((storageRoot) => {
+        return downloadMessageFileToStorage({
+          storageRoot,
+          fileUrl: props.content.fileUrl,
+          fileName: props.content.fileName,
+          onProgress: (progress) => messageDownloadStore.setProgress(props.messageId, progress)
         })
-        .catch(() => {
-          downloadProgress.value = 0
+      })
+      .then((localPath) => {
+        persistDownloaded(localPath)
+        void prepareLocalFileDrag({
+          filePath: localPath,
+          fileName: props.content.fileName,
+          fileType: props.content.fileType
         })
-        .finally(() => {
-          downloading.value = false
-        })
+      })
+      .catch(() => {
+        window.$message.error(t('message.file.downloadFailed'))
+      })
+      .finally(() => {
+        messageDownloadStore.clearProgress(props.messageId)
+      })
+  }
+
+  const openDownloadedFile = (localPath: string) => {
+    openLocalFile(localPath).catch(() => {
+      window.$message.error(t('message.file.openFailed'))
     })
   }
+
+  const onClick = () => {
+    if (uploading.value || downloading.value || !props.content.fileUrl) return
+    // 已下载且支持拖出：点击打开由 mouseup + 拖拽结束判断，避免 startDrag 吞掉 click
+    if (canDragOut.value) return
+    if (!isDownloaded.value) {
+      receiveModalVisible.value = true
+      return
+    }
+    const localPath = fileLocalExt.value?.localPath
+    if (!localPath) {
+      receiveDownload()
+      return
+    }
+    openDownloadedFile(localPath)
+  }
+
+  const onReceiveConfirm = () => {
+    receiveModalVisible.value = false
+    receiveDownload()
+  }
+
+  const onMouseDown = (event: MouseEvent) => {
+    if (event.button !== 0) return
+    if (!canDragOut.value) return
+
+    const localPath = fileLocalExt.value?.localPath
+    if (!localPath) return
+
+    const startX = event.clientX
+    const startY = event.clientY
+    let dragStarted = false
+
+    const cleanup = () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      if (activePointerTrack === cleanup) {
+        activePointerTrack = null
+      }
+    }
+
+    const onMove = (moveEvent: MouseEvent) => {
+      if (dragStarted) return
+      const distance = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY)
+      if (distance < DRAG_THRESHOLD) return
+
+      dragStarted = true
+      void startLocalFileDrag(
+        {
+          filePath: localPath,
+          fileName: props.content.fileName,
+          fileType: props.content.fileType
+        },
+        () => {}
+      ).catch(() => {})
+    }
+
+    const onUp = (upEvent: MouseEvent) => {
+      cleanup()
+      if (upEvent.button !== 0 || dragStarted) return
+
+      const distance = Math.hypot(upEvent.clientX - startX, upEvent.clientY - startY)
+      if (distance <= TAP_DISTANCE) {
+        openDownloadedFile(localPath)
+      }
+    }
+
+    activePointerTrack?.()
+    activePointerTrack = cleanup
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
+  onBeforeUnmount(() => {
+    activePointerTrack?.()
+  })
 </script>
 
 <style scoped lang="scss">
@@ -124,6 +266,7 @@
     gap: 10px;
     text-decoration: none;
     color: var(--text-primary-color);
+    -webkit-user-drag: none;
 
     &__icon {
       flex-shrink: 0;
@@ -148,7 +291,7 @@
       max-height: calc(1.4em * 2);
       overflow: hidden;
       word-break: break-all;
-      cursor: default;
+      cursor: pointer;
     }
 
     &__name-base,
@@ -160,6 +303,13 @@
       white-space: nowrap;
     }
 
+    &__meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
     &__size {
       line-height: 1;
       color: var(--text-secondary-color);
@@ -169,6 +319,13 @@
       &--uploading {
         color: var(--primary-color);
       }
+    }
+
+    &__status {
+      flex-shrink: 0;
+      line-height: 1;
+      font-size: 12px;
+      color: var(--text-muted-color);
     }
   }
 </style>

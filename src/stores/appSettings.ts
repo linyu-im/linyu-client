@@ -8,8 +8,7 @@ export const useAppSettingsStore = defineStore('appSettings', {
       keepChatHistory: true
     },
     storage: {
-      autoDownloadEnabled: true,
-      autoDownloadMaxMb: 20
+      path: ''
     },
     general: {
       autoTranslate: false,

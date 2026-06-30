@@ -74,7 +74,8 @@
   "bundle": {
     "active": true,
     "resources": [
-      "html"
+      "html",
+      "resources/file-icons"
     ],
     "targets": "all",
     "icon": [

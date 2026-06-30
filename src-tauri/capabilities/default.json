@@ -21,6 +21,14 @@
     "core:window:allow-unminimize",
     "core:window:allow-set-position",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
     "http:default",
     "http:allow-fetch",
     "http:allow-fetch-cancel",
@@ -53,25 +61,7 @@
       "identifier": "fs:scope",
       "allow": [
         {
-          "path": "$APPDATA/**"
-        },
-        {
-          "path": "$APPDATA/"
-        },
-        {
-          "path": "$DESKTOP/**"
-        },
-        {
-          "path": "$DOCUMENT/**"
-        },
-        {
-          "path": "$DOWNLOAD/**"
-        },
-        {
-          "path": "$PICTURE/**"
-        },
-        {
-          "path": "$HOME/**"
+          "path": "**"
         }
       ]
     },
@@ -80,6 +70,7 @@
     "clipboard-manager:default",
     "clipboard-manager:allow-write-image",
     "upload:default",
+    "drag:default",
     "sql:default",
     "sql:allow-execute",
     "sql:allow-select"

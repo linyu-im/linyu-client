@@ -17,8 +17,6 @@
   import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { convertFileSrc } from '@tauri-apps/api/core'
-  import { getCurrentWebview } from '@tauri-apps/api/webview'
-  import type { UnlistenFn } from '@tauri-apps/api/event'
   import { Editor, EditorContent, mergeAttributes, useEditor } from '@tiptap/vue-3'
   import StarterKit from '@tiptap/starter-kit'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -31,7 +29,7 @@
   import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
   import type { FromType } from '@/types/common'
   import { isVideoFile } from '@/utils/fileIcon'
-  import { getFilePath, getFileSize, readPathAsFile } from '@/utils/filePick'
+  import { getFilePath, getFileSize } from '@/utils/filePick'
   import { registerBlobFilePath } from '@/utils/blobFilePath'
 
   export type EditorSegment =
@@ -267,6 +265,13 @@
       attributes: {
         class: 'message-editor__prose'
       },
+      handleDOMEvents: {
+        dragover: (_view, event) => {
+          event.preventDefault()
+          if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'
+          return true
+        }
+      },
       handlePaste: (_view, event) => {
         const files = Array.from(event.clipboardData?.files ?? [])
         if (files.length === 0) return false
@@ -355,7 +360,7 @@
     isDragOver.value = true
   }
   const onDragOver = (e: DragEvent) => {
-    if (!hasFiles(e)) return
+    e.preventDefault()
     if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
   }
   const onDragLeave = (e: DragEvent) => {
@@ -392,53 +397,18 @@
     return Array.from(types).includes('Files')
   }
 
-  /**
-   * Tauri 原生拖拽：position 是相对窗口的物理像素，需换算成 CSS 像素后与编辑器可视区域比对，
-   * 判断拖拽是否落在输入框内。
-   */
-  const isPositionOverEditor = (position: { x: number; y: number }) => {
+  let unbindDragCapture: (() => void) | null = null
+
+  onMounted(() => {
     const root = editorRootRef.value
-    if (!root) return false
-    const dpr = window.devicePixelRatio || 1
-    const x = position.x / dpr
-    const y = position.y / dpr
-    const rect = root.getBoundingClientRect()
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
-  }
-
-  const handleTauriDropPaths = async (paths: string[]) => {
-    for (const path of paths) {
-      try {
-        const file = await readPathAsFile(path)
-        insertFileOrImage(file)
-      } catch (err) {
-        console.error('[editor] read dropped file failed:', path, err)
-      }
+    if (!root) return
+    const onCaptureDragOver = (e: DragEvent) => {
+      if (!root.contains(e.target as Node)) return
+      e.preventDefault()
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
     }
-    restoreFocusAfterDrop()
-  }
-
-  let unlistenDragDrop: UnlistenFn | null = null
-
-  onMounted(async () => {
-    try {
-      unlistenDragDrop = await getCurrentWebview().onDragDropEvent((event) => {
-        const payload = event.payload
-        if (payload.type === 'enter' || payload.type === 'over') {
-          isDragOver.value = isPositionOverEditor(payload.position)
-        } else if (payload.type === 'drop') {
-          const over = isPositionOverEditor(payload.position)
-          isDragOver.value = false
-          if (over && payload.paths?.length) {
-            void handleTauriDropPaths(payload.paths)
-          }
-        } else {
-          isDragOver.value = false
-        }
-      })
-    } catch (err) {
-      console.error('[editor] register drag-drop listener failed:', err)
-    }
+    root.addEventListener('dragover', onCaptureDragOver, true)
+    unbindDragCapture = () => root.removeEventListener('dragover', onCaptureDragOver, true)
   })
 
   const handleSubmit = () => {
@@ -505,10 +475,8 @@
 
   onBeforeUnmount(() => {
     revokeBlobs()
-    if (unlistenDragDrop) {
-      unlistenDragDrop()
-      unlistenDragDrop = null
-    }
+    unbindDragCapture?.()
+    unbindDragCapture = null
   })
 
   defineExpose({

@@ -3,10 +3,12 @@ import {
   batchInsertMessages,
   deleteMessageById,
   queryLatestMessageIdBySession,
-  queryMessagesByPage
+  queryMessagesByPage,
+  updateMessageLocalExt
 } from '@/db/message'
 import type { DbMessage } from '@/db/message'
-import type { Message } from '@/types/api/message'
+import type { FileMessageLocalExt, Message } from '@/types/api/message'
+import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/messageLocalExt'
 import { defineStore } from 'pinia'
 
 type MessageDbStore = {
@@ -39,7 +41,8 @@ export const useMessageDbStore = defineStore('messageDb', {
         quoteMsgId: msg.quoteMsgId,
         createdAt: msg.createdAt,
         updatedAt: msg.updatedAt,
-        failReason: msg.failReason
+        failReason: msg.failReason,
+        localExt: serializeMessageLocalExt(msg.msgType, msg.localExt)
       }))
 
       await batchInsertMessages(dbMessages)
@@ -50,28 +53,48 @@ export const useMessageDbStore = defineStore('messageDb', {
       await this.saveMessages([serverMsg])
     },
 
+    async updateFileMessageLocalExt(messageId: string, localExt: FileMessageLocalExt) {
+      const serialized = serializeMessageLocalExt('file', localExt)
+      if (!serialized) return
+      await updateMessageLocalExt(messageId, serialized)
+    },
+
     /**
      * 从本地数据库加载消息（分页）
      */
     async loadMessagesFromDb(sessionId: string, page: number, pageSize: number) {
       const result = await queryMessagesByPage({ sessionId, page, pageSize })
 
-      const messages: Message[] = result.records.map((dbMsg) => ({
-        id: dbMsg.id,
-        sessionId: dbMsg.sessionId,
-        fromId: dbMsg.fromId,
-        toId: dbMsg.toId,
-        msgType: dbMsg.msgType as Message['msgType'],
-        fromType: dbMsg.fromType,
-        isShowTime: dbMsg.isShowTime === 1,
-        content: JSON.parse(dbMsg.content),
-        status: dbMsg.status,
-        sceneType: dbMsg.sceneType,
-        quoteMsgId: dbMsg.quoteMsgId,
-        createdAt: dbMsg.createdAt,
-        updatedAt: dbMsg.updatedAt,
-        failReason: dbMsg.failReason
-      }))
+      const messages: Message[] = result.records.map((dbMsg) => {
+        const base = {
+          id: dbMsg.id,
+          sessionId: dbMsg.sessionId,
+          fromId: dbMsg.fromId,
+          toId: dbMsg.toId,
+          fromType: dbMsg.fromType,
+          isShowTime: dbMsg.isShowTime === 1,
+          status: dbMsg.status,
+          sceneType: dbMsg.sceneType,
+          quoteMsgId: dbMsg.quoteMsgId,
+          createdAt: dbMsg.createdAt,
+          updatedAt: dbMsg.updatedAt,
+          failReason: dbMsg.failReason
+        }
+        const content = JSON.parse(dbMsg.content)
+        if (dbMsg.msgType === 'file') {
+          return {
+            ...base,
+            msgType: 'file' as const,
+            content,
+            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt)
+          }
+        }
+        return {
+          ...base,
+          msgType: dbMsg.msgType as Message['msgType'],
+          content
+        } as Message
+      })
 
       return {
         records: messages,

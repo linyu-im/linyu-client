@@ -111,11 +111,13 @@
   import {
     createLocalMessage,
     createLocalMessageFromUnit,
+    isStalePendingLocalMessage,
     patchMessageById,
     resolveMessageFailReason
   } from '@/utils/messageSend'
   import { useMessageUploadStore } from '@/stores/messageUpload'
   import { useSendingMessagesStore } from '@/stores/sendingMessages'
+  import { useAppSettingsStore } from '@/stores/appSettings'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
   import type { MentionItem } from '../Message/MessageEditor/MentionList.vue'
   import MessageList from '../Message/MessageList/index.vue'
@@ -133,6 +135,8 @@
   } from '@/composables/useVoiceRecorder'
   import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/filePick'
   import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
+  import { stageSelfSentFileToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/time'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
@@ -146,6 +150,7 @@
   const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
   const sendingMessagesStore = useSendingMessagesStore()
+  const appSettingsStore = useAppSettingsStore()
 
   const PAGE_SIZE = 20
   const pendingNewCount = ref(0)
@@ -318,7 +323,14 @@
       const serverMessages = toDisplayOrder(result.records)
       const pendingMessages = sendingMessagesStore.getMessages(props.chat.peerId)
       const serverIds = new Set(serverMessages.map((m) => m.id))
-      const uniquePending = pendingMessages.filter((m) => m.status === 'sending' && !serverIds.has(m.id))
+      const uniquePending = pendingMessages.filter((m) => {
+        if (m.status !== 'sending' || serverIds.has(m.id)) return false
+        if (isStalePendingLocalMessage(m, serverMessages)) {
+          sendingMessagesStore.removeMessage(props.chat.peerId, m.id)
+          return false
+        }
+        return true
+      })
 
       messages.value = sortMessagesByTime([...serverMessages, ...uniquePending])
       page.value = result.page
@@ -399,21 +411,22 @@
 
   loadMentionableRobots()
 
-  const replaceLocalMessage = (localId: string, serverMsg: Message) => {
+  const replaceLocalMessage = (localId: string, serverMsg: Message, peerId: string): Promise<void> => {
     messageUploadStore.clearProgress(localId)
-    sendingMessagesStore.removeMessage(props.chat.peerId, localId)
+    sendingMessagesStore.removeMessage(peerId, localId)
     const normalized = normalizeMessage(serverMsg as Message)
-    messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
-    if (localId.startsWith('local-')) {
-      void messageDbStore.replaceLocalWithServer(localId, normalized)
-      return
+    if (messages.value.some((item) => item.id === localId)) {
+      messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
     }
-    void messageDbStore.saveMessages([normalized])
+    if (localId.startsWith('local-')) {
+      return messageDbStore.replaceLocalWithServer(localId, normalized)
+    }
+    return messageDbStore.saveMessages([normalized])
   }
 
-  const markLocalMessageFailed = (localId: string, reason: string) => {
+  const markLocalMessageFailed = (localId: string, reason: string, peerId: string, sessionId: string) => {
     messageUploadStore.clearProgress(localId)
-    sendingMessagesStore.updateMessage(props.chat.peerId, localId, {
+    sendingMessagesStore.updateMessage(peerId, localId, {
       status: 'failed',
       failReason: reason
     })
@@ -427,12 +440,12 @@
 
     const msgToSave = {
       ...failedMsg,
-      sessionId: failedMsg.sessionId || props.chat.sessionId,
+      sessionId: failedMsg.sessionId || sessionId,
       status: 'failed' as const,
       failReason: reason
     }
     void messageDbStore.saveMessages([msgToSave]).then(() => {
-      sendingMessagesStore.removeMessage(props.chat.peerId, localId)
+      sendingMessagesStore.removeMessage(peerId, localId)
     })
   }
 
@@ -480,22 +493,33 @@
     })
   }
 
-  const dispatchSendMessage = (localId: string, param: SendMessageParam) => {
+  const dispatchSendMessage = (
+    localId: string,
+    param: SendMessageParam,
+    peerId: string,
+    sessionId: string
+  ): Promise<string | undefined> => {
     return messageApi
       .sendMsg(param)
       .then((res) => {
         if (res.code === 0 && res.data) {
-          replaceLocalMessage(localId, res.data)
-          return
+          return replaceLocalMessage(localId, res.data, peerId).then(() => res.data!.id)
         }
-        markLocalMessageFailed(localId, resolveMessageFailReason(res.code, res.msg, t))
+        markLocalMessageFailed(localId, resolveMessageFailReason(res.code, res.msg, t), peerId, sessionId)
+        return undefined
       })
       .catch(() => {
-        markLocalMessageFailed(localId, t('message.sendStatus.network'))
+        markLocalMessageFailed(localId, t('message.sendStatus.network'), peerId, sessionId)
+        return undefined
       })
   }
 
-  const sendLocalMessage = (localId: string, unit: ReturnType<typeof buildSendUnitsFromSegments>[number]) => {
+  const sendLocalMessage = (
+    localId: string,
+    unit: ReturnType<typeof buildSendUnitsFromSegments>[number],
+    peerId: string,
+    sessionId: string
+  ): Promise<string | undefined> => {
     if (unitNeedsMediaUpload(unit)) {
       messageUploadStore.setProgress(localId, 0)
     }
@@ -504,20 +528,52 @@
       messageUploadStore.setProgress(localId, progress)
     }
 
-    return buildSendParam(unit, props.chat.sessionId, { onProgress })
+    return buildSendParam(unit, sessionId, { onProgress })
       .then((param) => {
         messageUploadStore.clearProgress(localId)
         if (!param) {
-          markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'))
-          return
+          markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'), peerId, sessionId)
+          return undefined
         }
 
-        return dispatchSendMessage(localId, param)
+        return dispatchSendMessage(localId, param, peerId, sessionId)
       })
       .catch(() => {
         messageUploadStore.clearProgress(localId)
-        markLocalMessageFailed(localId, t('message.sendStatus.network'))
+        markLocalMessageFailed(localId, t('message.sendStatus.network'), peerId, sessionId)
+        return undefined
       })
+  }
+
+  const persistSelfSentFileLocalExt = (serverMessageId: string, localPath: string) => {
+    const localExt = { status: FILE_MESSAGE_STATUS_DOWNLOADED, localPath }
+    messages.value = patchMessageById(messages.value, serverMessageId, { localExt })
+    return messageDbStore.updateFileMessageLocalExt(serverMessageId, localExt)
+  }
+
+  const sendSelfFileMessage = (
+    localId: string,
+    unit: Extract<ReturnType<typeof buildSendUnitsFromSegments>[number], { msgType: 'file' }>,
+    peerId: string,
+    sessionId: string
+  ) => {
+    return resolveMessageStorageRoot(appSettingsStore.storage.path)
+      .then((storageRoot) =>
+        stageSelfSentFileToStorage({
+          storageRoot,
+          fileUrl: unit.content.fileUrl,
+          fileName: unit.content.fileName
+        })
+      )
+      .catch(() => {
+        return null
+      })
+      .then((localPath) =>
+        sendLocalMessage(localId, unit, peerId, sessionId).then((serverMessageId) => {
+          if (!serverMessageId || !localPath) return
+          return persistSelfSentFileLocalExt(serverMessageId, localPath)
+        })
+      )
   }
 
   const sendRobotAnswers = (
@@ -629,7 +685,8 @@
 
     if (payload.isEmpty) return
 
-    if (!getSendContext()) return
+    const sendCtx = getSendContext()
+    if (!sendCtx) return
 
     const units = buildSendUnitsFromSegments(payload.segments)
     if (!units.length) return
@@ -643,8 +700,15 @@
 
     editorRef.value.clear({ keepBlobs: true })
 
+    const { toId: peerId, sessionId } = sendCtx
     const sendTasks = units.flatMap((unit, index) => {
-      const tasks: Promise<void | undefined>[] = [sendLocalMessage(localMessages[index].id, unit)]
+      const localId = localMessages[index].id
+      if (unit.msgType === 'file') {
+        return [sendSelfFileMessage(localId, unit, peerId, sessionId)]
+      }
+      const tasks: Promise<void | undefined>[] = [
+        sendLocalMessage(localId, unit, peerId, sessionId).then(() => undefined)
+      ]
       if (unit.msgType === 'text') {
         tasks.push(...sendRobotAnswers(unit))
       }
@@ -753,11 +817,23 @@
             return
           }
 
-          return dispatchSendMessage(localMsg.id, {
-            sessionId: props.chat.sessionId,
-            msgType: 'voice',
-            content: voiceContent
-          }).finally(() => {
+          const voiceCtx = getSendContext()
+          if (!voiceCtx) {
+            voiceSending.value = false
+            onVoiceRecordCancel()
+            return
+          }
+
+          return dispatchSendMessage(
+            localMsg.id,
+            {
+              sessionId: voiceCtx.sessionId,
+              msgType: 'voice',
+              content: voiceContent
+            },
+            voiceCtx.toId,
+            voiceCtx.sessionId
+          ).finally(() => {
             voiceSending.value = false
             onVoiceRecordCancel()
           })
@@ -782,14 +858,22 @@
       stickerUrl: item.iconUrl,
       stickerName: item.name
     }
+    const stickerCtx = getSendContext()
+    if (!stickerCtx) return
+
     const localMsg = createAndStageLocalMessage('sticker', stickerContent)
     if (!localMsg) return
 
-    void dispatchSendMessage(localMsg.id, {
-      sessionId: props.chat.sessionId,
-      msgType: 'sticker',
-      content: stickerContent
-    })
+    void dispatchSendMessage(
+      localMsg.id,
+      {
+        sessionId: stickerCtx.sessionId,
+        msgType: 'sticker',
+        content: stickerContent
+      },
+      stickerCtx.toId,
+      stickerCtx.sessionId
+    )
   }
 </script>
 <style scoped lang="scss">
