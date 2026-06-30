@@ -50,7 +50,7 @@
   import { prepareLocalFileDrag, startLocalFileDrag } from '@/utils/dragLocalFile'
   import type { FileContent, FileMessageLocalExt } from '@/types/api/message'
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
-  import { downloadMessageFileToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/fileIcon'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import FileReceiveModal from '@/components/Message/MessageList/FileReceiveModal.vue'
@@ -144,9 +144,10 @@
     messageDownloadStore.setProgress(props.messageId, 0)
     resolveMessageStorageRoot(appSettingsStore.storage.path)
       .then((storageRoot) => {
-        return downloadMessageFileToStorage({
+        return downloadMessageToStorage({
           storageRoot,
-          fileUrl: props.content.fileUrl,
+          sourceUrl: props.content.fileUrl,
+          category: 'file',
           fileName: props.content.fileName,
           onProgress: (progress) => messageDownloadStore.setProgress(props.messageId, progress)
         })

@@ -75,10 +75,16 @@
     if (msg.msgType === 'voice') {
       return { content: msg.content, isSelf: props.isSelf }
     }
-    if (msg.msgType === 'image' || msg.msgType === 'video') {
-      return { messageId: msg.id, content: msg.content, isSelf: props.isSelf }
+    if (msg.msgType === 'image') {
+      return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
+    }
+    if (msg.msgType === 'video') {
+      return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
     }
     if (msg.msgType === 'file') {
+      return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
+    }
+    if (msg.msgType === 'sticker') {
       return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
     }
     return { content: msg.content }

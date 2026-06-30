@@ -135,7 +135,7 @@
   } from '@/composables/useVoiceRecorder'
   import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/filePick'
   import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
-  import { stageSelfSentFileToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { resolveMessageStorageRoot, stageSelfSentToStorage } from '@/utils/messageFileSave'
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/time'
   import { openAndFocusWindow } from '@/utils/window.ts'
@@ -545,23 +545,21 @@
       })
   }
 
+  type SelfStagedFileUnit = Extract<ReturnType<typeof buildSendUnitsFromSegments>[number], { msgType: 'file' }>
+
   const persistSelfSentFileLocalExt = (serverMessageId: string, localPath: string) => {
     const localExt = { status: FILE_MESSAGE_STATUS_DOWNLOADED, localPath }
     messages.value = patchMessageById(messages.value, serverMessageId, { localExt })
     return messageDbStore.updateFileMessageLocalExt(serverMessageId, localExt)
   }
 
-  const sendSelfFileMessage = (
-    localId: string,
-    unit: Extract<ReturnType<typeof buildSendUnitsFromSegments>[number], { msgType: 'file' }>,
-    peerId: string,
-    sessionId: string
-  ) => {
+  const sendSelfFileMessage = (localId: string, unit: SelfStagedFileUnit, peerId: string, sessionId: string) => {
     return resolveMessageStorageRoot(appSettingsStore.storage.path)
       .then((storageRoot) =>
-        stageSelfSentFileToStorage({
+        stageSelfSentToStorage({
           storageRoot,
-          fileUrl: unit.content.fileUrl,
+          category: 'file',
+          sourceUrl: unit.content.fileUrl,
           fileName: unit.content.fileName
         })
       )
@@ -855,6 +853,7 @@
     }
 
     const stickerContent = {
+      stickerId: item.id,
       stickerUrl: item.iconUrl,
       stickerName: item.name
     }

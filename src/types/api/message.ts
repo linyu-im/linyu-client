@@ -26,9 +26,24 @@ export interface FileContent {
   fileSize: number
 }
 
-/** 文件消息本地扩展*/
+/** 文件消息本地扩展 */
 export interface FileMessageLocalExt {
   status: string
+  localPath: string
+}
+
+/** 图片消息本地扩展 */
+export interface ImageMessageLocalExt {
+  localPath: string
+}
+
+/** 视频消息本地扩展 */
+export interface VideoMessageLocalExt {
+  localPath: string
+}
+
+/** 表情消息本地扩展 */
+export interface StickerMessageLocalExt {
   localPath: string
 }
 
@@ -43,6 +58,7 @@ export interface VoiceContent {
 }
 
 export interface StickerContent {
+  stickerId: string
   stickerUrl: string
   stickerName: string
 }
@@ -55,6 +71,13 @@ type MsgTypeMap = {
   ecard: ECardContent
   voice: VoiceContent
   sticker: StickerContent
+}
+
+type MessageLocalExtMap = {
+  file: FileMessageLocalExt
+  image: ImageMessageLocalExt
+  video: VideoMessageLocalExt
+  sticker: StickerMessageLocalExt
 }
 
 export type Message = {
@@ -76,7 +99,7 @@ export type Message = {
     createdAt: string
     updatedAt: string
     /** 本地扩展字段，仅存本地库不同步服务端 */
-    localExt?: K extends 'file' ? FileMessageLocalExt : never
+    localExt?: K extends keyof MessageLocalExtMap ? MessageLocalExtMap[K] : never
   }
 }[keyof MsgTypeMap]
 

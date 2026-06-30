@@ -66,7 +66,7 @@
       "assetProtocol": {
         "enable": true,
         "scope": {
-          "allow": ["$APPDATA/avatar/**", "$APPDATA/avatar"]
+          "allow": ["**/**"]
         }
       }
     }

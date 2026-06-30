@@ -19,23 +19,41 @@
 </template>
 
 <script setup lang="ts">
-  import type { ImageContent } from '@/types/api/message'
+  import { exists } from '@tauri-apps/plugin-fs'
+  import type { ImageContent, ImageMessageLocalExt } from '@/types/api/message'
   import { openImgViewer } from '@/utils/imgViewer'
-  import { resolveLocalMediaDisplayUrl } from '@/utils/blobFilePath'
+  import {
+    readLocalFileAsObjectUrl,
+    resolveLocalMediaDisplayUrl,
+    resolveLocalMediaFilePath,
+    toLocalFileDisplayUrl
+  } from '@/utils/blobFilePath'
+  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
+  import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useMessageDbStore } from '@/stores/messageDb'
 
   const props = defineProps<{
     messageId: string
     content: ImageContent
+    localExt?: ImageMessageLocalExt
   }>()
+
+  const appSettingsStore = useAppSettingsStore()
+  const messageDbStore = useMessageDbStore()
 
   const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
 
+  const displaySrc = ref('')
   const imageReady = ref(false)
   const imageError = ref(false)
+  const cacheTriggered = ref(false)
+  const currentLocalPath = ref('')
+  const blobObjectUrl = ref('')
+  let assetFallbackAttempted = false
 
-  const displaySrc = computed(() => resolveLocalMediaDisplayUrl(props.content.imgThumbUrl || props.content.imgUrl))
+  const imageLocalExt = computed(() => props.localExt)
 
   const showPlaceholder = computed(() => {
     if (!displaySrc.value) return true
@@ -43,10 +61,87 @@
     return !imageReady.value
   })
 
-  watch(displaySrc, () => {
+  const isLocalPendingUrl = (url: string) =>
+    !!resolveLocalMediaFilePath(url) || url.startsWith('blob:') || url.startsWith('data:')
+
+  const revokeBlobObjectUrl = () => {
+    if (!blobObjectUrl.value) return
+    URL.revokeObjectURL(blobObjectUrl.value)
+    blobObjectUrl.value = ''
+  }
+
+  const persistLocalPath = (localPath: string) => {
+    void messageDbStore.updateImageMessageLocalExt(props.messageId, { localPath })
+  }
+
+  const cacheRemoteImage = () => {
+    if (!props.content.imgUrl) return Promise.resolve()
+
+    return resolveMessageStorageRoot(appSettingsStore.storage.path)
+      .then((storageRoot) =>
+        downloadMessageToStorage({
+          storageRoot,
+          sourceUrl: props.content.imgUrl,
+          category: 'media',
+          messageId: props.messageId,
+          fileName: props.content.imgName
+        })
+      )
+      .then((localPath) => {
+        persistLocalPath(localPath)
+      })
+      .catch(() => {
+        cacheTriggered.value = false
+      })
+  }
+
+  const applyDisplaySrc = (nextSrc: string, localPath = '') => {
+    if (displaySrc.value === nextSrc) return
     imageReady.value = false
     imageError.value = false
-  })
+    currentLocalPath.value = localPath
+    assetFallbackAttempted = false
+    if (!localPath) revokeBlobObjectUrl()
+    displaySrc.value = nextSrc
+  }
+
+  const syncDisplaySrc = () => {
+    const run = async () => {
+      const localPath = imageLocalExt.value?.localPath
+      if (localPath && (await exists(localPath))) {
+        applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
+        return
+      }
+
+      const remoteOrBlobUrl = props.content.imgThumbUrl || props.content.imgUrl
+      if (uploading.value || isLocalPendingUrl(props.content.imgUrl)) {
+        applyDisplaySrc(resolveLocalMediaDisplayUrl(remoteOrBlobUrl))
+        return
+      }
+
+      applyDisplaySrc(remoteOrBlobUrl)
+
+      if (!cacheTriggered.value && props.content.imgUrl) {
+        cacheTriggered.value = true
+        void cacheRemoteImage()
+      }
+    }
+
+    void run()
+  }
+
+  watch(
+    () => props.messageId,
+    () => {
+      cacheTriggered.value = false
+    }
+  )
+
+  watch(
+    () => [props.messageId, props.content.imgUrl, props.content.imgThumbUrl, props.localExt, uploading.value] as const,
+    syncDisplaySrc,
+    { immediate: true }
+  )
 
   const onImageLoad = () => {
     imageReady.value = true
@@ -54,8 +149,29 @@
   }
 
   const onImageError = () => {
+    if (currentLocalPath.value && !assetFallbackAttempted) {
+      assetFallbackAttempted = true
+      readLocalFileAsObjectUrl(currentLocalPath.value)
+        .then((url) => {
+          revokeBlobObjectUrl()
+          blobObjectUrl.value = url
+          displaySrc.value = url
+        })
+        .catch(() => {
+          imageReady.value = false
+          imageError.value = true
+        })
+      return
+    }
     imageReady.value = false
     imageError.value = true
+  }
+
+  const resolvePreviewUrl = () => {
+    if (blobObjectUrl.value) return blobObjectUrl.value
+    const localPath = imageLocalExt.value?.localPath
+    if (localPath) return toLocalFileDisplayUrl(localPath)
+    return props.content.imgUrl
   }
 
   const onPreview = () => {
@@ -63,13 +179,17 @@
     openImgViewer(
       [
         {
-          url: props.content.imgUrl,
+          url: resolvePreviewUrl(),
           name: props.content.imgName
         }
       ],
       0
     )
   }
+
+  onBeforeUnmount(() => {
+    revokeBlobObjectUrl()
+  })
 </script>
 
 <style scoped lang="scss">

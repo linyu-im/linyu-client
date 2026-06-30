@@ -7,7 +7,13 @@ import {
   updateMessageLocalExt
 } from '@/db/message'
 import type { DbMessage } from '@/db/message'
-import type { FileMessageLocalExt, Message } from '@/types/api/message'
+import type {
+  FileMessageLocalExt,
+  ImageMessageLocalExt,
+  Message,
+  StickerMessageLocalExt,
+  VideoMessageLocalExt
+} from '@/types/api/message'
 import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/messageLocalExt'
 import { defineStore } from 'pinia'
 
@@ -59,6 +65,24 @@ export const useMessageDbStore = defineStore('messageDb', {
       await updateMessageLocalExt(messageId, serialized)
     },
 
+    async updateImageMessageLocalExt(messageId: string, localExt: ImageMessageLocalExt) {
+      const serialized = serializeMessageLocalExt('image', localExt)
+      if (!serialized) return
+      await updateMessageLocalExt(messageId, serialized)
+    },
+
+    async updateVideoMessageLocalExt(messageId: string, localExt: VideoMessageLocalExt) {
+      const serialized = serializeMessageLocalExt('video', localExt)
+      if (!serialized) return
+      await updateMessageLocalExt(messageId, serialized)
+    },
+
+    async updateStickerMessageLocalExt(messageId: string, localExt: StickerMessageLocalExt) {
+      const serialized = serializeMessageLocalExt('sticker', localExt)
+      if (!serialized) return
+      await updateMessageLocalExt(messageId, serialized)
+    },
+
     /**
      * 从本地数据库加载消息（分页）
      */
@@ -86,7 +110,31 @@ export const useMessageDbStore = defineStore('messageDb', {
             ...base,
             msgType: 'file' as const,
             content,
-            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt)
+            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as FileMessageLocalExt | undefined
+          }
+        }
+        if (dbMsg.msgType === 'image') {
+          return {
+            ...base,
+            msgType: 'image' as const,
+            content,
+            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as ImageMessageLocalExt | undefined
+          }
+        }
+        if (dbMsg.msgType === 'video') {
+          return {
+            ...base,
+            msgType: 'video' as const,
+            content,
+            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as VideoMessageLocalExt | undefined
+          }
+        }
+        if (dbMsg.msgType === 'sticker') {
+          return {
+            ...base,
+            msgType: 'sticker' as const,
+            content,
+            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as StickerMessageLocalExt | undefined
           }
         }
         return {

@@ -93,11 +93,42 @@ const isApiOriginUrl = (requestUrl: string) => {
 }
 
 const buildBinaryFetchHeaders = (requestUrl: string): Record<string, string> => {
-  if (!isApiOriginUrl(requestUrl)) return {}
-  return {
-    'Accept-Language': getLang(),
-    Authorization: getToken()
+  if (isApiOriginUrl(requestUrl)) {
+    return {
+      'Accept-Language': getLang(),
+      Authorization: getToken()
+    }
   }
+
+  const headers: Record<string, string> = {
+    Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+  }
+
+  try {
+    const parsed = new URL(requestUrl)
+    headers.Referer = `${parsed.origin}/`
+    headers['User-Agent'] =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+  } catch {
+    // ignore invalid url
+  }
+
+  return headers
+}
+
+const fetchBinaryViaNative = async (requestUrl: string, onProgress?: (progress: number) => void) => {
+  const response = await globalThis.fetch(requestUrl, {
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer-when-downgrade'
+  })
+  if (!response.ok) {
+    throw new Error(`HTTP Error: ${response.status}`)
+  }
+  const buffer = await response.arrayBuffer()
+  onProgress?.(100)
+  return buffer
 }
 
 const formatErrorDetail = (error: unknown) => {
@@ -126,6 +157,18 @@ export async function fetchBinary(url: string, onProgress?: (progress: number) =
     onProgress?.(100)
     return buffer
   } catch (error) {
+    if (!isApiOriginUrl(requestUrl)) {
+      try {
+        const buffer = await fetchBinaryViaNative(requestUrl, onProgress)
+        return buffer
+      } catch (fallbackError) {
+        console.error('[message-file] fetchBinary native fallback failed', {
+          fileUrl: url,
+          requestUrl,
+          error: formatErrorDetail(fallbackError)
+        })
+      }
+    }
     console.error('[message-file] fetchBinary failed', {
       fileUrl: url,
       requestUrl,
