@@ -152,7 +152,11 @@
       "pinChat": "置顶聊天",
       "mute": "消息免打扰",
       "viewHistory": "查看聊天记录",
-      "deleteHistory": "删除聊天记录",
+      "deleteHistory": "删除本地聊天记录",
+      "deleteHistoryConfirmTitle": "删除本地聊天记录",
+      "deleteHistoryConfirmContent": "确定删除当前会话的本地聊天记录吗？此操作不可恢复。",
+      "deleteHistoryConfirm": "删除",
+      "deleteHistoryCancel": "取消",
       "deleteFriend": "删除好友",
       "share": "分享",
       "group": {
@@ -622,6 +626,21 @@
     "saveSuccess": "视频保存成功",
     "saveFailed": "视频保存失败",
     "empty": "暂无视频"
+  },
+  "chatRecord": {
+    "titleWith": "与 \"{name}\" 的聊天记录",
+    "searchPlaceholder": "搜索",
+    "loading": "加载中...",
+    "loadingMore": "加载更多...",
+    "empty": "暂无聊天记录",
+    "filters": {
+      "all": "全部",
+      "file": "文件",
+      "image": "图片",
+      "video": "视频",
+      "date": "日期"
+    },
+    "dateModalTitle": "选择日期范围"
   },
   "screenshot": {
     "size": "{width} × {height}",

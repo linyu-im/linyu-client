@@ -3,12 +3,13 @@
     <div class="message-list__inner">
       <template v-for="message in messages" :key="message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
-        <div class="message-list__row" :class="{ 'message-list__row--self': isSelf(message) }">
+        <div v-memo="[message.id]" class="message-list__row" :class="{ 'message-list__row--self': isSelf(message) }">
           <Avatar
             class="message-list__avatar"
             :id="message.fromId"
             :type="message.fromType"
             :size="32"
+            instant
             :profile-enabled="message.fromType === 'user'" />
           <div class="message-list__main" :class="{ 'message-list__main--text': message.msgType === 'text' }">
             <Name
@@ -16,6 +17,7 @@
               class="message-list__name"
               :id="message.fromId"
               type="robot"
+              instant
               :tag="t('message.robotTag')" />
             <div
               class="message-list__bubble"
@@ -226,6 +228,7 @@
         }
 
         if (isInitialFill) {
+          reachTopLocked.value = false
           scrollToBottom()
         }
       })

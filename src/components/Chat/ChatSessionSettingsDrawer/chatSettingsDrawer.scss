@@ -6,6 +6,41 @@
     padding: 12px 10px 18px;
     box-sizing: border-box;
     user-select: none;
+
+    button:focus,
+    button:focus-visible {
+      outline: none;
+    }
+
+    :deep(.n-switch:focus .n-switch__rail),
+    :deep(.n-switch:focus-visible .n-switch__rail) {
+      box-shadow: none;
+    }
+
+    :deep(.setting-card) {
+      padding: 2px 0;
+      border-radius: 8px;
+      background-color: var(--bg-primary-color);
+      border: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+    }
+
+    html[data-theme='dark'] & {
+      :deep(.setting-card) {
+        background-color: color-mix(in srgb, var(--card-bg-color) 28%, var(--bg-secondary-color));
+        border-color: color-mix(in srgb, var(--border-color) 35%, transparent);
+      }
+    }
+
+    :deep(.setting-row) {
+      gap: 10px;
+      padding: 9px 12px;
+      min-height: 40px;
+    }
+
+    :deep(.setting-row__label) {
+      font-size: 14px;
+      line-height: 1.4;
+    }
   }
 
   &__card {
@@ -18,28 +53,6 @@
       background: color-mix(in srgb, var(--card-bg-color) 28%, var(--bg-secondary-color));
       border-color: color-mix(in srgb, var(--border-color) 35%, transparent);
     }
-  }
-
-  :deep(.setting-card) {
-    padding: 2px 0;
-    border-radius: 8px;
-    background: var(--bg-primary-color);
-  }
-
-  html[data-theme='dark'] & :deep(.setting-card) {
-    background: color-mix(in srgb, var(--card-bg-color) 28%, var(--bg-secondary-color));
-    border-color: color-mix(in srgb, var(--border-color) 35%, transparent);
-  }
-
-  :deep(.setting-row) {
-    gap: 10px;
-    padding: 9px 12px;
-    min-height: 40px;
-  }
-
-  :deep(.setting-row__label) {
-    font-size: 14px;
-    line-height: 1.4;
   }
 
   &__user {

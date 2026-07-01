@@ -152,7 +152,11 @@
       "pinChat": "Pin Chat",
       "mute": "Mute Notifications",
       "viewHistory": "View Chat History",
-      "deleteHistory": "Delete Chat History",
+      "deleteHistory": "Delete Local Chat History",
+      "deleteHistoryConfirmTitle": "Delete Local Chat History",
+      "deleteHistoryConfirmContent": "Delete the local chat history for this conversation? This action cannot be undone.",
+      "deleteHistoryConfirm": "Delete",
+      "deleteHistoryCancel": "Cancel",
       "deleteFriend": "Delete Friend",
       "share": "Share",
       "group": {
@@ -622,6 +626,21 @@
     "saveSuccess": "Video saved successfully",
     "saveFailed": "Failed to save video",
     "empty": "No videos"
+  },
+  "chatRecord": {
+    "titleWith": "Chat history with \"{name}\"",
+    "searchPlaceholder": "Search",
+    "loading": "Loading...",
+    "loadingMore": "Loading more...",
+    "empty": "No chat history",
+    "filters": {
+      "all": "All",
+      "file": "Files",
+      "image": "Images",
+      "video": "Videos",
+      "date": "Date"
+    },
+    "dateModalTitle": "Select date range"
   },
   "screenshot": {
     "size": "{width} × {height}",

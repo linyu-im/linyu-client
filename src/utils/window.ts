@@ -169,3 +169,13 @@ export const createVideoViewerWindow = () =>
     resizable: true,
     transparent: true
   })
+
+export const createChatRecordWindow = () =>
+  createWebviewWindow('聊天记录', 'chatRecord', {
+    width: 660,
+    minWidth: 660,
+    height: 700,
+    minHeight: 580,
+    resizable: true,
+    transparent: true
+  })

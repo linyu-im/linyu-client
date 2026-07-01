@@ -127,7 +127,7 @@
 
         <div class="forward-modal__preview-wrap">
           <div v-if="message" class="forward-modal__preview">
-            <MessageItem :message="message" :is-self="false" />
+            <MessageItem :message="message" :is-self="false" :disable-events="true" />
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <span class="name" :class="{ 'name--visible': visible }">
+  <span class="name" :class="{ 'name--visible': visible || instant, 'name--instant': instant }">
     <span v-if="displayName" class="name__text truncate">{{ displayName }}</span>
     <span v-if="tagText" class="name__tag">{{ tagText }}</span>
   </span>
@@ -13,15 +13,34 @@
     id: string
     type?: FromType
     tag?: string
+    instant?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    type: 'user'
+    type: 'user',
+    instant: false
   })
 
   const nameStore = useNameStore()
-  const displayName = ref('')
-  const visible = ref(false)
+
+  const getInitialNameState = () => {
+    const { id, type } = props
+
+    if (!id || (type !== 'user' && type !== 'robot')) {
+      return { name: '', visible: props.instant }
+    }
+
+    const cached = nameStore.getCachedName(type, id)
+    if (cached) {
+      return { name: cached, visible: true }
+    }
+
+    return { name: '', visible: props.instant }
+  }
+
+  const initialNameState = getInitialNameState()
+  const displayName = ref(initialNameState.name)
+  const visible = ref(initialNameState.visible)
 
   const tagText = computed(() => props.tag?.trim() || '')
 
@@ -47,7 +66,9 @@
     }
 
     const seq = ++loadSeq
-    visible.value = false
+    if (!props.instant) {
+      visible.value = false
+    }
 
     nameStore.resolveName(type, id).then((name) => {
       if (isStale(seq, id, type)) return
@@ -77,6 +98,11 @@
 
     &--visible {
       opacity: 1;
+    }
+
+    &--instant {
+      opacity: 1;
+      transition: none;
     }
 
     &__text {

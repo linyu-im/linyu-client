@@ -48,13 +48,16 @@
     </SettingCard>
 
     <section class="chat-settings-drawer__card">
-      <button type="button" class="chat-settings-drawer__action">
+      <button type="button" class="chat-settings-drawer__action" @click="onViewHistory">
         {{ t('message.chatSettings.viewHistory') }}
       </button>
     </section>
 
     <section class="chat-settings-drawer__card">
-      <button type="button" class="chat-settings-drawer__action chat-settings-drawer__action--danger">
+      <button
+        type="button"
+        class="chat-settings-drawer__action chat-settings-drawer__action--danger"
+        @click="onDeleteHistory">
         {{ t('message.chatSettings.deleteHistory') }}
       </button>
     </section>
@@ -75,9 +78,11 @@
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat'
+  import { useMessageDbStore } from '@/stores/messageDb'
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
   import type { UserInfoResult } from '@/types/api/user'
+  import { openChatRecord } from '@/utils/chatRecord'
 
   const props = defineProps<{
     userInfo: UserInfoResult | null
@@ -85,8 +90,14 @@
     show: boolean
   }>()
 
+  const emit = defineEmits<{
+    'history-deleted': []
+  }>()
+
   const { t } = useI18n()
+  const dialog = useDialog()
   const chatStore = useChatStore()
+  const messageDbStore = useMessageDbStore()
 
   const showForwardModal = ref(false)
   const robots = ref<Robot[]>([])
@@ -117,6 +128,31 @@
 
   const onAddRobot = () => {
     window.$message.info(t('message.chatSettings.addTodo'))
+  }
+
+  const onViewHistory = () => {
+    if (!currentChat.value) return
+    openChatRecord(currentChat.value)
+  }
+
+  const onDeleteHistory = () => {
+    const chat = currentChat.value
+    if (!chat?.sessionId) return
+
+    dialog.warning({
+      title: t('message.chatSettings.deleteHistoryConfirmTitle'),
+      content: t('message.chatSettings.deleteHistoryConfirmContent'),
+      positiveText: t('message.chatSettings.deleteHistoryConfirm'),
+      negativeText: t('message.chatSettings.deleteHistoryCancel'),
+      showIcon: false,
+      positiveButtonProps: { type: 'error' },
+      negativeButtonProps: { ghost: false, size: 'small' },
+      onPositiveClick: () => {
+        messageDbStore.deleteChatHistoryBySession(chat.sessionId).then(() => {
+          emit('history-deleted')
+        })
+      }
+    })
   }
 
   const currentChat = computed(() => {

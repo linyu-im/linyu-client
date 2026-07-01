@@ -18,10 +18,17 @@ export interface DbMessage {
   failReason?: string
   sceneType: SceneType
   quoteMsgId?: string
+  keywordContent?: string
   createdAt: string
   updatedAt: string
+  deletedAt?: string
   /** 本地扩展字段（JSON 字符串，仅存本地库） */
   localExt?: string
+}
+
+export interface MessageDateRange {
+  from: string
+  to: string
 }
 
 /**
@@ -31,6 +38,10 @@ export interface MessagePageQuery {
   sessionId: string
   page: number
   pageSize: number
+  msgType?: string
+  dateRange?: MessageDateRange
+  /** 按 keyword_content 模糊搜索 */
+  keyword?: string
 }
 
 /**
@@ -38,9 +49,41 @@ export interface MessagePageQuery {
  */
 export interface MessagePageResult {
   records: DbMessage[]
-  total: number
   page: number
   pageSize: number
+}
+
+const MESSAGE_SELECT_FIELDS = `id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
+  msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
+  content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
+  keyword_content AS keywordContent,
+  created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
+  local_ext AS localExt`
+
+function buildMessageWhereClause(sessionId: string, msgType?: string, dateRange?: MessageDateRange, keyword?: string) {
+  const conditions = ['session_id = ?', 'deleted_at IS NULL']
+  const params: (string | number)[] = [sessionId]
+
+  if (msgType) {
+    conditions.push('msg_type = ?')
+    params.push(msgType)
+  }
+
+  if (dateRange) {
+    conditions.push('created_at >= ?')
+    conditions.push('created_at <= ?')
+    params.push(dateRange.from, dateRange.to)
+  }
+
+  if (keyword) {
+    conditions.push('keyword_content LIKE ?')
+    params.push(`%${keyword}%`)
+  }
+
+  return {
+    clause: `WHERE ${conditions.join(' AND ')}`,
+    params
+  }
 }
 
 /**
@@ -52,11 +95,11 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
 
   const db = await getDb()
 
-  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
+  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
 
   const sql = `
     INSERT OR REPLACE INTO t_message 
-    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, created_at, updated_at, fail_reason, local_ext)
+    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, keyword_content, created_at, updated_at, fail_reason, local_ext, deleted_at)
     VALUES ${placeholders}
   `
 
@@ -74,10 +117,12 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
       msg.status ?? null,
       msg.sceneType,
       msg.quoteMsgId ?? null,
+      msg.keywordContent ?? null,
       msg.createdAt,
       msg.updatedAt,
       msg.failReason ?? null,
-      msg.localExt ?? null
+      msg.localExt ?? null,
+      msg.deletedAt ?? null
     )
   }
 
@@ -91,36 +136,33 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
  */
 export async function queryMessagesByPage(query: MessagePageQuery): Promise<MessagePageResult> {
   const db = await getDb()
-  const { sessionId, page, pageSize } = query
+  const { sessionId, page, pageSize, msgType, dateRange, keyword } = query
   const offset = (page - 1) * pageSize
+  const { clause: whereClause, params: whereParams } = buildMessageWhereClause(sessionId, msgType, dateRange, keyword)
 
-  // 查询总数
-  const countResult = await db.select<{ total: number }[]>(
-    'SELECT COUNT(*) as total FROM t_message WHERE session_id = ?',
-    [sessionId]
-  )
-  const total = countResult[0]?.total ?? 0
-
-  // 查询分页数据
   const records = await db.select<DbMessage[]>(
-    `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
-            msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
-            content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
-            local_ext AS localExt
-     FROM t_message 
-     WHERE session_id = ? 
-     ORDER BY created_at DESC 
+    `SELECT ${MESSAGE_SELECT_FIELDS}
+     FROM t_message
+     ${whereClause}
+     ORDER BY created_at DESC
      LIMIT ? OFFSET ?`,
-    [sessionId, pageSize, offset]
+    [...whereParams, pageSize, offset]
   )
 
-  return {
-    records,
-    total,
-    page,
-    pageSize
-  }
+  return { records, page, pageSize }
+}
+
+/**
+ * 软删除指定会话的全部聊天记录
+ * @param sessionId 会话 ID
+ * @param deletedAt 删除时间
+ */
+export async function softDeleteMessagesBySessionId(sessionId: string, deletedAt: string): Promise<void> {
+  const db = await getDb()
+  await db.execute('UPDATE t_message SET deleted_at = ? WHERE session_id = ? AND deleted_at IS NULL', [
+    deletedAt,
+    sessionId
+  ])
 }
 
 /**
@@ -158,6 +200,7 @@ export async function queryMessageById(id: string): Promise<DbMessage | null> {
     `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
             msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
             content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
+            keyword_content AS keywordContent,
             created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
             local_ext AS localExt
      FROM t_message WHERE id = ?`,

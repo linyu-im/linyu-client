@@ -41,7 +41,6 @@ export const readPathAsFile = async (path: string) => {
   const file = new File([], name, { type })
   Object.defineProperty(file, FILE_PATH_KEY, { value: path, enumerable: false })
   Object.defineProperty(file, FILE_SIZE_KEY, { value: fileStat.size ?? 0, enumerable: false })
-  console.log('[filePick] readPathAsFile(meta only) | name:', name, '| path:', path, '| size:', fileStat.size ?? 0)
   return file
 }
 

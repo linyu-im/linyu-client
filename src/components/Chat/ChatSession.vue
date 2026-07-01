@@ -8,7 +8,7 @@
         :peer-id="props.chat.peerId"
         :scene-type="props.chat.sceneType ?? SceneType.User" />
       <div class="chat-session__header-actions" @click.stop>
-        <SvgIconButton href="#record" />
+        <SvgIconButton href="#record" @click="onOpenChatRecord" />
         <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
       </div>
     </div>
@@ -24,7 +24,6 @@
           <div class="chat-session__content">
             <MessageList
               ref="messageListRef"
-              :key="props.chat.sessionId"
               :messages="messages"
               :loading="loading"
               :loading-more="loadingMore"
@@ -94,7 +93,8 @@
         :scene-type="props.chat.sceneType ?? SceneType.User"
         :user-info="peerInfo"
         :group-info="groupInfo"
-        @close="settingsDrawerVisible = false" />
+        @close="settingsDrawerVisible = false"
+        @history-deleted="onChatHistoryDeleted" />
     </div>
   </div>
 </template>
@@ -138,6 +138,7 @@
   import { resolveMessageStorageRoot, stageSelfSentToStorage } from '@/utils/messageFileSave'
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/time'
+  import { openChatRecord } from '@/utils/chatRecord'
   import { openAndFocusWindow } from '@/utils/window.ts'
 
   const props = defineProps<{
@@ -156,11 +157,9 @@
   const pendingNewCount = ref(0)
   const messages = ref<Message[]>([])
   const page = ref(0)
-  const totalPage = ref(0)
+  const hasMore = ref(false)
   const loading = ref(false)
   const loadingMore = ref(false)
-
-  const hasMore = computed(() => page.value > 0 && page.value < totalPage.value)
 
   const draft = ref('')
   const emojiPickerVisible = ref(false)
@@ -207,6 +206,14 @@
 
   const onMoreClick = () => {
     settingsDrawerVisible.value = !settingsDrawerVisible.value
+  }
+
+  const onOpenChatRecord = () => {
+    openChatRecord(props.chat)
+  }
+
+  const onChatHistoryDeleted = () => {
+    loadInitialMessages()
   }
 
   useEscapeOverlay(() => {
@@ -292,14 +299,7 @@
     })
   }
 
-  const resetMessages = () => {
-    messages.value = []
-    page.value = 0
-    totalPage.value = 0
-    loading.value = false
-    loadingMore.value = false
-    pendingNewCount.value = 0
-  }
+  let loadSeq = 0
 
   const fetchMessagePage = async (targetPage: number) => {
     const result = await messageDbStore.loadMessagesFromDb(props.chat.sessionId, targetPage, PAGE_SIZE)
@@ -308,25 +308,30 @@
     return {
       records,
       page: result.page,
-      totalPage: result.totalPage
+      hasMore: result.hasMore
     }
   }
 
   const loadInitialMessages = async () => {
-    resetMessages()
+    const seq = ++loadSeq
+    const { peerId } = props.chat
+
+    page.value = 0
+    hasMore.value = false
+    pendingNewCount.value = 0
     loading.value = true
 
     try {
       const result = await fetchMessagePage(1)
-      if (!result) return
+      if (seq !== loadSeq || !result) return
 
       const serverMessages = toDisplayOrder(result.records)
-      const pendingMessages = sendingMessagesStore.getMessages(props.chat.peerId)
+      const pendingMessages = sendingMessagesStore.getMessages(peerId)
       const serverIds = new Set(serverMessages.map((m) => m.id))
       const uniquePending = pendingMessages.filter((m) => {
         if (m.status !== 'sending' || serverIds.has(m.id)) return false
         if (isStalePendingLocalMessage(m, serverMessages)) {
-          sendingMessagesStore.removeMessage(props.chat.peerId, m.id)
+          sendingMessagesStore.removeMessage(peerId, m.id)
           return false
         }
         return true
@@ -334,10 +339,12 @@
 
       messages.value = sortMessagesByTime([...serverMessages, ...uniquePending])
       page.value = result.page
-      totalPage.value = result.totalPage
+      hasMore.value = result.hasMore
     } finally {
-      loading.value = false
-      nextTick(() => messageListRef.value?.scrollToBottom())
+      if (seq === loadSeq) {
+        loading.value = false
+        nextTick(() => messageListRef.value?.scrollToBottom())
+      }
     }
   }
 
@@ -351,7 +358,7 @@
 
       messages.value = mergeMessages(result.records, messages.value)
       page.value = result.page
-      totalPage.value = result.totalPage
+      hasMore.value = result.hasMore
     } finally {
       loadingMore.value = false
     }

@@ -49,7 +49,6 @@ const blobToTempFile = async (blob: Blob, fileName: string): Promise<string> => 
 }
 
 const invokeUpload = (filePath: string, fileName: string, options?: MessageMediaUploadOptions, tempFile?: boolean) => {
-  console.log('[upload] filePath:', filePath, '| tempFile:', tempFile)
   const report = (progress: number) => options?.onProgress?.(clampProgress(progress))
   report(0)
 
@@ -99,7 +98,6 @@ export const uploadMessageMediaBlob = (blob: Blob, fileName: string, options?: M
 
 export const uploadMessageMediaByUrl = (url: string, fileName: string, options?: MessageMediaUploadOptions) => {
   const realPath = getBlobFilePath(url)
-  console.log('[upload] url:', url, '| realPath:', realPath)
   if (realPath) {
     return invokeUpload(realPath, fileName, options, false)
   }

@@ -58,10 +58,12 @@ export async function initDatabase(): Promise<void> {
       status TEXT,
       scene_type TEXT NOT NULL,
       quote_msg_id TEXT,
+      keyword_content TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       fail_reason TEXT,
-      local_ext TEXT
+      local_ext TEXT,
+      deleted_at TEXT
     )
   `)
 
@@ -69,6 +71,10 @@ export async function initDatabase(): Promise<void> {
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_session_id ON t_message(session_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_from_id ON t_message(from_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_to_id ON t_message(to_id)`)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_session_created ON t_message(session_id, created_at DESC)`)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_message_session_type_created ON t_message(session_id, msg_type, created_at DESC)`
+  )
 }
 
 /**

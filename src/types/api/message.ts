@@ -96,6 +96,7 @@ export type Message = {
     uploadProgress?: number
     sceneType: SceneType
     quoteMsgId?: string
+    keywordContent?: string
     createdAt: string
     updatedAt: string
     /** 本地扩展字段，仅存本地库不同步服务端 */

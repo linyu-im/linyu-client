@@ -1,9 +1,11 @@
 <template>
   <n-config-provider :theme-overrides="themeOverrides" :locale="naiveLocale" :date-locale="naiveDateLocale">
-    <n-message-provider :max="3" container-style="word-break: break-all !important">
-      <slot></slot>
-      <naive-component-content />
-    </n-message-provider>
+    <n-dialog-provider>
+      <n-message-provider :max="3" container-style="word-break: break-all !important">
+        <slot></slot>
+        <naive-component-content />
+      </n-message-provider>
+    </n-dialog-provider>
   </n-config-provider>
 </template>
 
@@ -28,6 +30,50 @@
       return h('div')
     }
   })
+
+  const defaultButtonPeers = {
+    borderRadius: '5px',
+    color: 'var(--button-soft-bg)',
+    colorPressed: 'var(--button-soft-bg)',
+    colorFocus: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+    colorDisabled: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+    colorHover: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+    border: '1px solid var(--button-soft-bg)',
+    borderHover: '1px solid var(--button-soft-bg)',
+    borderPressed: '1px solid var(--button-soft-bg)',
+    borderFocus: '1px solid var(--button-soft-bg)',
+    borderDisabled: '1px solid var(--button-soft-bg)',
+    textColor: 'var(--text-color)',
+    textColorPressed: 'var(--text-color)',
+    textColorFocus: 'var(--text-color)',
+    textColorDisabled: 'var(--text-color)',
+    textColorHover: 'var(--text-color)',
+    rippleColor: 'var(--button-soft-bg)',
+    colorPrimary: 'var(--primary-color)',
+    colorHoverPrimary: 'rgba(var(--primary-rgb), 0.8)',
+    colorPressedPrimary: 'rgba(var(--primary-rgb), 0.8)',
+    colorFocusPrimary: 'rgba(var(--primary-rgb), 0.8)',
+    borderPrimary: '1px solid var(--primary-color)',
+    borderHoverPrimary: '1px solid var(--primary-color)',
+    borderPressedPrimary: '1px solid var(--primary-color)',
+    borderFocusPrimary: '1px solid var(--primary-color)',
+    textColorPrimary: '#FFF',
+    textColorHoverPrimary: '#FFF',
+    textColorPressedPrimary: '#FFF',
+    textColorFocusPrimary: '#FFF',
+    colorError: 'var(--red)',
+    colorHoverError: 'color-mix(in srgb, var(--red) 88%, #000)',
+    colorPressedError: 'color-mix(in srgb, var(--red) 88%, #000)',
+    colorFocusError: 'color-mix(in srgb, var(--red) 88%, #000)',
+    borderError: '1px solid var(--red)',
+    borderHoverError: '1px solid var(--red)',
+    borderPressedError: '1px solid var(--red)',
+    borderFocusError: '1px solid var(--red)',
+    textColorError: '#FFF',
+    textColorHoverError: '#FFF',
+    textColorPressedError: '#FFF',
+    textColorFocusError: '#FFF'
+  }
 
   const themeOverrides: GlobalThemeOverrides = {
     Button: {
@@ -66,6 +112,35 @@
       textColorDisabled: 'var(--text-color)',
       textColorHover: 'var(--text-color)',
       rippleColor: 'var(--button-soft-bg)'
+    },
+    Dialog: {
+      color: 'var(--bg-primary-color)',
+      textColor: 'var(--text-secondary-color)',
+      titleTextColor: 'var(--text-color)',
+      titleFontSize: '16px',
+      titleFontWeight: '500',
+      border: '1px solid var(--border-color)',
+      borderRadius: '8px',
+      padding: '20px 24px',
+      iconColorWarning: 'var(--primary-color)',
+      iconColorInfo: 'var(--primary-color)',
+      iconColorSuccess: 'var(--primary-color)',
+      iconColorError: 'var(--red)',
+      peers: {
+        Button: defaultButtonPeers
+      }
+    },
+    Modal: {
+      color: 'var(--bg-primary-color)',
+      boxShadow: '0 8px 28px color-mix(in srgb, #000 14%, transparent)',
+      colorModal: 'color-mix(in srgb, #000 35%, transparent)',
+      peers: {
+        Dialog: {
+          peers: {
+            Button: defaultButtonPeers
+          }
+        }
+      }
     },
     Checkbox: {
       border: '1px solid var(--border-color)',
@@ -271,6 +346,42 @@
   })
 </script>
 <style lang="scss">
+  .n-dialog {
+    .n-dialog__title {
+      line-height: 1.4;
+    }
+
+    .n-dialog__content {
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .n-dialog__action {
+      padding-top: 4px;
+    }
+
+    .n-dialog__icon {
+      color: var(--primary-color);
+    }
+
+    .n-dialog__action .n-button--ghost {
+      --n-color: var(--button-soft-bg);
+      --n-color-hover: color-mix(in srgb, var(--button-soft-bg) 60%, transparent);
+      --n-color-pressed: var(--button-soft-bg);
+      --n-color-focus: var(--button-soft-bg);
+      --n-text-color: var(--text-color);
+      --n-text-color-hover: var(--text-color);
+      --n-text-color-pressed: var(--text-color);
+      --n-text-color-focus: var(--text-color);
+      --n-border: 1px solid var(--button-soft-bg);
+      --n-border-hover: 1px solid var(--button-soft-bg);
+      --n-border-pressed: 1px solid var(--button-soft-bg);
+      --n-border-focus: 1px solid var(--button-soft-bg);
+      --n-box-shadow-focus: none;
+      --n-ripple-color: var(--button-soft-bg);
+    }
+  }
+
   .n-slider-handle {
     border: 2px solid var(--bg-primary-color);
     box-shadow: none;

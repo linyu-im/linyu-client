@@ -17,6 +17,25 @@ export function isValidBackendTime(timeStr?: string | null): boolean {
   return date.getFullYear() > 1970
 }
 
+export function formatDateRangeLabel(range: [number, number]): string {
+  const fmt = (ts: number) => {
+    const d = new Date(ts)
+    return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`
+  }
+  return `${fmt(range[0])} - ${fmt(range[1])}`
+}
+
+export function toBackendDateRange(range: [number, number]): { from: string; to: string } {
+  const fromDate = new Date(range[0])
+  const toDate = new Date(range[1])
+  const fmt = (d: Date, h: number, m: number, s: number) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(h)}:${pad(m)}:${pad(s)}`
+  return {
+    from: fmt(fromDate, 0, 0, 0),
+    to: fmt(toDate, 23, 59, 59)
+  }
+}
+
 export function nowBackendDatetime(): string {
   const now = new Date()
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
@@ -55,4 +74,21 @@ export function formatTime(timeStr: string): string {
   const d = pad(inputDate.getDate())
 
   return `${y}/${m}/${d}`
+}
+
+export function formatChatRecordDateTime(timeStr: string, locale: string): string {
+  const inputDate = parseBackendTime(timeStr)
+  if (Number.isNaN(inputDate.getTime())) return ''
+
+  const time = `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}`
+  const y = inputDate.getFullYear()
+  const m = inputDate.getMonth() + 1
+  const d = inputDate.getDate()
+
+  if (locale.startsWith('zh')) {
+    return `${y}年${m}月${d}日 ${time}`
+  }
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${monthNames[inputDate.getMonth()]} ${d}, ${y} ${time}`
 }

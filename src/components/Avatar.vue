@@ -22,6 +22,7 @@
         class="user-select-none avatar"
         :class="avatarStateClass"
         :src="src || undefined"
+        :img-props="imgProps"
         :round="round"
         :size="size"
         fallback-src="/avatar.png" />
@@ -38,6 +39,7 @@
     class="user-select-none avatar"
     :class="avatarStateClass"
     :src="src || undefined"
+    :img-props="imgProps"
     :round="round"
     :size="size"
     fallback-src="/avatar.png" />
@@ -62,6 +64,8 @@
     profileEnabled?: boolean
     /** 强制从远程刷新头像（用于资料卡等需要最新头像的场景） */
     refresh?: boolean
+    /** 禁用淡入动画（列表切换等场景避免闪烁） */
+    instant?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -69,11 +73,29 @@
     size: 'medium',
     round: false,
     profileEnabled: false,
-    refresh: false
+    refresh: false,
+    instant: false
   })
 
   const avatarStore = useAvatarStore()
   const chatStore = useChatStore()
+
+  const getInitialAvatarState = () => {
+    if (!props.id) {
+      return { src: '', visible: props.instant }
+    }
+
+    if (!props.refresh) {
+      const cached = avatarStore.getCachedSrc(props.type, props.id)
+      if (cached) {
+        return { src: cached, visible: true }
+      }
+    }
+
+    return { src: '', visible: props.instant }
+  }
+
+  const initialAvatarState = getInitialAvatarState()
 
   interface PopoverInst {
     syncPosition: () => void
@@ -84,9 +106,12 @@
     padding: 0
   }
 
+  /** 同步解码，避免切换会话时新建的 <img> 先空白再显示已缓存头像导致闪烁 */
+  const imgProps = { decoding: 'sync' as const, loading: 'eager' as const }
+
   const popoverRef = ref<PopoverInst | null>(null)
-  const src = ref('')
-  const visible = ref(false)
+  const src = ref(initialAvatarState.src)
+  const visible = ref(initialAvatarState.visible)
   const profileVisible = ref(false)
   const editProfileShow = ref(false)
 
@@ -101,7 +126,8 @@
   }
 
   const avatarStateClass = computed(() => ({
-    'avatar--visible': visible.value,
+    'avatar--visible': visible.value || props.instant,
+    'avatar--instant': props.instant,
     'avatar--clickable': props.profileEnabled && !!props.id,
     'avatar--radius': !props.round
   }))
@@ -154,7 +180,9 @@
     }
 
     const seq = ++loadSeq
-    visible.value = false
+    if (!props.instant) {
+      visible.value = false
+    }
 
     const url = await avatarStore.resolveSrc(type, id)
     if (isStale(seq, id, type)) return
@@ -249,6 +277,11 @@
 
     &--visible {
       opacity: 1;
+    }
+
+    &--instant {
+      opacity: 1;
+      transition: none;
     }
 
     &--clickable {

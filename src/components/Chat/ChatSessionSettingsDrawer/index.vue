@@ -8,7 +8,8 @@
             v-if="sceneType === SceneType.User"
             :show="show"
             :user-info="userInfo"
-            :chat-id="chatId" />
+            :chat-id="chatId"
+            @history-deleted="emit('history-deleted')" />
           <ChatSessionGroupSettings
             v-else-if="sceneType === SceneType.Group"
             :show="show"
@@ -44,6 +45,7 @@
 
   const emit = defineEmits<{
     close: []
+    'history-deleted': []
   }>()
 
   const onClose = () => {

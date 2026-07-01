@@ -5,7 +5,8 @@
       'message-item--plain': isPlain,
       'message-item--text': message.msgType === 'text',
       'message-item--file': message.msgType === 'file',
-      'message-item--ecard': message.msgType === 'ecard'
+      'message-item--ecard': message.msgType === 'ecard',
+      'message-item--disabled': disableEvents
     }"
     @contextmenu.prevent="onContextMenu">
     <component :is="bodyComponent" v-if="bodyComponent" v-bind="bodyProps" />
@@ -34,10 +35,14 @@
   import Voice from './Voice.vue'
   import Sticker from './Sticker.vue'
 
-  const props = defineProps<{
-    message: Message
-    isSelf?: boolean
-  }>()
+  const props = withDefaults(
+    defineProps<{
+      message: Message
+      isSelf?: boolean
+      disableEvents?: boolean
+    }>(),
+    { disableEvents: false }
+  )
 
   const { t } = useI18n()
 
@@ -101,6 +106,7 @@
   ])
 
   const onContextMenu = (e: MouseEvent) => {
+    if (props.disableEvents) return
     menuX.value = e.clientX
     menuY.value = e.clientY
     nextTick(() => {
@@ -195,6 +201,11 @@
 
     &--plain {
       max-width: min(80%, 560px);
+    }
+
+    &--disabled {
+      pointer-events: none;
+      user-select: none;
     }
 
     &__unknown {

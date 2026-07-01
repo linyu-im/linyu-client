@@ -4,9 +4,10 @@ import {
   deleteMessageById,
   queryLatestMessageIdBySession,
   queryMessagesByPage,
+  softDeleteMessagesBySessionId,
   updateMessageLocalExt
 } from '@/db/message'
-import type { DbMessage } from '@/db/message'
+import type { DbMessage, MessageDateRange } from '@/db/message'
 import type {
   FileMessageLocalExt,
   ImageMessageLocalExt,
@@ -15,7 +16,49 @@ import type {
   VideoMessageLocalExt
 } from '@/types/api/message'
 import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/messageLocalExt'
+import { nowBackendDatetime } from '@/utils/time'
 import { defineStore } from 'pinia'
+
+const LOCAL_EXT_MSG_TYPES = new Set(['file', 'image', 'video', 'sticker'])
+
+function mapDbMessageToMessage(dbMsg: DbMessage): Message {
+  const content = JSON.parse(dbMsg.content)
+  const base = {
+    id: dbMsg.id,
+    sessionId: dbMsg.sessionId,
+    fromId: dbMsg.fromId,
+    toId: dbMsg.toId,
+    fromType: dbMsg.fromType,
+    isShowTime: dbMsg.isShowTime === 1,
+    status: dbMsg.status,
+    sceneType: dbMsg.sceneType,
+    quoteMsgId: dbMsg.quoteMsgId,
+    keywordContent: dbMsg.keywordContent,
+    createdAt: dbMsg.createdAt,
+    updatedAt: dbMsg.updatedAt,
+    failReason: dbMsg.failReason
+  }
+
+  if (LOCAL_EXT_MSG_TYPES.has(dbMsg.msgType)) {
+    return {
+      ...base,
+      msgType: dbMsg.msgType as 'file' | 'image' | 'video' | 'sticker',
+      content,
+      localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as
+        | FileMessageLocalExt
+        | ImageMessageLocalExt
+        | VideoMessageLocalExt
+        | StickerMessageLocalExt
+        | undefined
+    } as Message
+  }
+
+  return {
+    ...base,
+    msgType: dbMsg.msgType as Message['msgType'],
+    content
+  } as Message
+}
 
 type MessageDbStore = {
   syncingMessages: boolean
@@ -45,6 +88,7 @@ export const useMessageDbStore = defineStore('messageDb', {
         status: msg.status,
         sceneType: msg.sceneType,
         quoteMsgId: msg.quoteMsgId,
+        keywordContent: msg.keywordContent,
         createdAt: msg.createdAt,
         updatedAt: msg.updatedAt,
         failReason: msg.failReason,
@@ -86,71 +130,30 @@ export const useMessageDbStore = defineStore('messageDb', {
     /**
      * 从本地数据库加载消息（分页）
      */
-    async loadMessagesFromDb(sessionId: string, page: number, pageSize: number) {
-      const result = await queryMessagesByPage({ sessionId, page, pageSize })
-
-      const messages: Message[] = result.records.map((dbMsg) => {
-        const base = {
-          id: dbMsg.id,
-          sessionId: dbMsg.sessionId,
-          fromId: dbMsg.fromId,
-          toId: dbMsg.toId,
-          fromType: dbMsg.fromType,
-          isShowTime: dbMsg.isShowTime === 1,
-          status: dbMsg.status,
-          sceneType: dbMsg.sceneType,
-          quoteMsgId: dbMsg.quoteMsgId,
-          createdAt: dbMsg.createdAt,
-          updatedAt: dbMsg.updatedAt,
-          failReason: dbMsg.failReason
-        }
-        const content = JSON.parse(dbMsg.content)
-        if (dbMsg.msgType === 'file') {
-          return {
-            ...base,
-            msgType: 'file' as const,
-            content,
-            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as FileMessageLocalExt | undefined
-          }
-        }
-        if (dbMsg.msgType === 'image') {
-          return {
-            ...base,
-            msgType: 'image' as const,
-            content,
-            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as ImageMessageLocalExt | undefined
-          }
-        }
-        if (dbMsg.msgType === 'video') {
-          return {
-            ...base,
-            msgType: 'video' as const,
-            content,
-            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as VideoMessageLocalExt | undefined
-          }
-        }
-        if (dbMsg.msgType === 'sticker') {
-          return {
-            ...base,
-            msgType: 'sticker' as const,
-            content,
-            localExt: parseMessageLocalExt(dbMsg.msgType, dbMsg.localExt) as StickerMessageLocalExt | undefined
-          }
-        }
-        return {
-          ...base,
-          msgType: dbMsg.msgType as Message['msgType'],
-          content
-        } as Message
-      })
-
+    async loadMessagesFromDb(
+      sessionId: string,
+      page: number,
+      pageSize: number,
+      msgType?: string,
+      dateRange?: MessageDateRange,
+      keyword?: string
+    ) {
+      const result = await queryMessagesByPage({ sessionId, page, pageSize, msgType, dateRange, keyword })
+      const messages = result.records.map(mapDbMessageToMessage)
       return {
         records: messages,
-        total: result.total,
         page: result.page,
         pageSize: result.pageSize,
-        totalPage: Math.ceil(result.total / result.pageSize)
+        hasMore: messages.length > 0 && messages.length >= pageSize
       }
+    },
+
+    /**
+     * 软删除指定会话的聊天记录（设置 deletedAt 为当前时间）
+     */
+    async deleteChatHistoryBySession(sessionId: string) {
+      if (!sessionId) return
+      await softDeleteMessagesBySessionId(sessionId, nowBackendDatetime())
     },
 
     /**

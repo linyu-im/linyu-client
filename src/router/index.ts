@@ -52,6 +52,11 @@ const routes: RouteRecordRaw[] = [
     path: '/videoViewer',
     name: 'videoViewer',
     component: () => import('@/views/videoViewerWindow/index.vue')
+  },
+  {
+    path: '/chatRecord',
+    name: 'chatRecord',
+    component: () => import('@/views/chatRecordWindow/index.vue')
   }
 ]
 
