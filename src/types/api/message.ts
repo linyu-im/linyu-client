@@ -34,17 +34,29 @@ export interface FileMessageLocalExt {
 
 /** 图片消息本地扩展 */
 export interface ImageMessageLocalExt {
-  localPath: string
+  localPath?: string
+  /** 消息列表展示宽度（固定高度下按比例计算） */
+  displayWidth?: number
+  /** 消息列表展示高度 */
+  displayHeight?: number
 }
 
 /** 视频消息本地扩展 */
 export interface VideoMessageLocalExt {
-  localPath: string
+  localPath?: string
+  /** 消息列表封面展示宽度（固定高度下按比例计算） */
+  displayWidth?: number
+  /** 消息列表封面展示高度 */
+  displayHeight?: number
 }
 
 /** 表情消息本地扩展 */
 export interface StickerMessageLocalExt {
-  localPath: string
+  localPath?: string
+  /** 消息列表展示宽度（图片原始宽高） */
+  displayWidth?: number
+  /** 消息列表展示高度（图片原始宽高） */
+  displayHeight?: number
 }
 
 export interface ECardContent {

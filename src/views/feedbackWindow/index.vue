@@ -214,7 +214,7 @@
     height: 100vh;
     overflow: hidden;
     color: var(--text-color);
-    background: var(--bg-primary-color);
+    background: var(--bg-secondary-color);
     user-select: none;
 
     &__toolbar {

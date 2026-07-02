@@ -105,6 +105,11 @@
 
   &__divider {
     margin: 12px 0;
+
+    :deep(.n-divider__line) {
+      background-color: var(--divider-color);
+    }
+
   }
 
   &__section-title {
@@ -194,7 +199,7 @@
     display: flex;
     align-items: center;
     margin: 16px -16px -16px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--divider-color);
     overflow: hidden;
     border-radius: 0 0 10px 10px;
   }
@@ -246,6 +251,6 @@
     flex-shrink: 0;
     width: 1px;
     height: 18px;
-    background: var(--border-color);
+    background: var(--divider-color);
   }
 }

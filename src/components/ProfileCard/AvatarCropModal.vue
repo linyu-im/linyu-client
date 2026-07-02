@@ -448,7 +448,7 @@
       justify-content: center;
       min-height: 52px;
       padding: 0 48px;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--divider-color);
     }
 
     &__title {

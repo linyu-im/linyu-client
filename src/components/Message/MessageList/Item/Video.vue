@@ -1,20 +1,18 @@
 <template>
   <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="media">
     <div class="message-video-wrap" :style="wrapStyle" @click="onPreview">
-      <div v-if="!coverReady" class="message-video__placeholder" aria-hidden="true" />
+      <div v-if="showPlaceholder" class="message-video__placeholder" aria-hidden="true" />
       <img
-        v-if="useImageThumb"
+        v-if="useImageThumb && thumbSrc"
         class="message-video__cover"
-        :class="{ 'message-video__cover--ready': coverReady }"
         :src="thumbSrc"
         :alt="content.videoName"
         @load="onThumbLoad"
         @error="onThumbError" />
       <video
-        v-else
+        v-else-if="videoSrc"
         ref="videoRef"
         class="message-video__cover"
-        :class="{ 'message-video__cover--ready': coverReady }"
         :src="videoSrc"
         preload="metadata"
         muted
@@ -24,7 +22,7 @@
         @canplay="seekToFirstFrame"
         @seeked="freezeOnFirstFrame"
         @error="onVideoError" />
-      <div class="message-video__overlay">
+      <div v-if="coverReady" class="message-video__overlay">
         <div class="message-video__play" />
       </div>
     </div>
@@ -42,14 +40,17 @@
     toLocalFileDisplayUrl
   } from '@/utils/blobFilePath'
   import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  import {
+    calcMediaCoverDisplaySize,
+    DEFAULT_MEDIA_COVER_SIZE,
+    getMediaDisplaySizeFromLocalExt,
+    hasSameDisplaySize
+  } from '@/utils/messageMediaLayout'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useMessageDbStore } from '@/stores/messageDb'
-
-  const COVER_HEIGHT = 160
-  const COVER_MAX_WIDTH = 320
-  const COVER_PLACEHOLDER_WIDTH = 48
 
   const props = defineProps<{
     messageId: string
@@ -64,10 +65,13 @@
 
   const IMAGE_THUMB_PATTERN = /\.(jpe?g|png|gif|webp|bmp|avif)(\?|#|$)/i
 
+  const receivedLocalExt = ref<VideoMessageLocalExt>()
   const videoRef = ref<HTMLVideoElement | null>(null)
   const frameReady = ref(false)
   const coverReady = ref(false)
-  const coverWidth = ref<number | null>(null)
+  const coverError = ref(false)
+  const displayWidth = ref(DEFAULT_MEDIA_COVER_SIZE.displayWidth)
+  const displayHeight = ref(DEFAULT_MEDIA_COVER_SIZE.displayHeight)
   const thumbSrc = ref('')
   const videoSrc = ref('')
   const cacheTriggered = ref(false)
@@ -75,9 +79,11 @@
   const blobObjectUrl = ref('')
   let assetFallbackAttempted = false
 
+  const videoLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
+
   const wrapStyle = computed(() => ({
-    width: `${coverWidth.value ?? COVER_PLACEHOLDER_WIDTH}px`,
-    height: `${COVER_HEIGHT}px`
+    width: `${displayWidth.value}px`,
+    height: `${displayHeight.value}px`
   }))
 
   const useImageThumb = computed(() => {
@@ -86,6 +92,8 @@
     if (videoThumbUrl !== videoUrl) return true
     return /^data:image\//i.test(videoThumbUrl) || IMAGE_THUMB_PATTERN.test(videoThumbUrl)
   })
+
+  const showPlaceholder = computed(() => coverError.value)
 
   const isLocalPendingUrl = (url: string) =>
     !!resolveLocalMediaFilePath(url) || url.startsWith('blob:') || url.startsWith('data:')
@@ -96,23 +104,45 @@
     blobObjectUrl.value = ''
   }
 
-  const resetCoverLayout = () => {
-    coverReady.value = false
-    coverWidth.value = null
-    frameReady.value = false
+  const applyLayoutFromLocalExt = (localExt?: VideoMessageLocalExt) => {
+    const size = getMediaDisplaySizeFromLocalExt(localExt)
+    if (!size) return
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
   }
 
-  const updateCoverLayout = (el: HTMLImageElement | HTMLVideoElement) => {
+  const persistLocalExt = (patch: Partial<VideoMessageLocalExt>) => {
+    const merged = mergeMediaMessageLocalExt(videoLocalExt.value, patch)
+    receivedLocalExt.value = merged
+    void messageDbStore.updateVideoMessageLocalExt(props.messageId, merged)
+  }
+
+  const persistDisplaySize = (naturalW: number, naturalH: number) => {
+    const size = calcMediaCoverDisplaySize(naturalW, naturalH)
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+    if (hasSameDisplaySize(videoLocalExt.value, size)) return
+    persistLocalExt(size)
+  }
+
+  const resetCoverState = () => {
+    coverReady.value = false
+    coverError.value = false
+    frameReady.value = false
+    if (!getMediaDisplaySizeFromLocalExt(videoLocalExt.value)) {
+      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
+    }
+  }
+
+  const applyCoverLayout = (el: HTMLImageElement | HTMLVideoElement) => {
     const naturalW = 'naturalWidth' in el ? el.naturalWidth : el.videoWidth
     const naturalH = 'naturalHeight' in el ? el.naturalHeight : el.videoHeight
-    if (naturalW > 0 && naturalH > 0) {
-      coverWidth.value = Math.min(COVER_MAX_WIDTH, Math.round((naturalW / naturalH) * COVER_HEIGHT))
-    }
-    coverReady.value = true
+    persistDisplaySize(naturalW, naturalH)
   }
 
-  const persistLocalPath = (localPath: string) => {
-    void messageDbStore.updateVideoMessageLocalExt(props.messageId, { localPath })
+  const revealCover = () => {
+    coverReady.value = true
   }
 
   const cacheRemoteVideo = () => {
@@ -130,7 +160,7 @@
         })
       )
       .then((localPath) => {
-        persistLocalPath(localPath)
+        persistLocalExt({ localPath })
       })
       .catch(() => {
         cacheTriggered.value = false
@@ -139,13 +169,13 @@
 
   const applyThumbSrc = (nextSrc: string) => {
     if (thumbSrc.value === nextSrc) return
-    resetCoverLayout()
+    resetCoverState()
     thumbSrc.value = nextSrc
   }
 
   const applyVideoSrc = (nextSrc: string, localPath = '') => {
     if (videoSrc.value === nextSrc) return
-    resetCoverLayout()
+    resetCoverState()
     currentLocalPath.value = localPath
     assetFallbackAttempted = false
     if (!localPath) revokeBlobObjectUrl()
@@ -155,7 +185,9 @@
 
   const syncMediaSrc = () => {
     const run = async () => {
-      const localPath = props.localExt?.localPath
+      applyLayoutFromLocalExt(videoLocalExt.value)
+
+      const localPath = videoLocalExt.value?.localPath
       const hasLocalVideo = !!(localPath && (await exists(localPath)))
 
       if (useImageThumb.value) {
@@ -196,7 +228,7 @@
 
   const resolvePreviewUrl = () => {
     if (blobObjectUrl.value) return blobObjectUrl.value
-    const localPath = props.localExt?.localPath
+    const localPath = videoLocalExt.value?.localPath
     if (localPath) return toLocalFileDisplayUrl(localPath)
     return props.content.videoUrl
   }
@@ -215,17 +247,19 @@
   }
 
   const onThumbLoad = (event: Event) => {
-    updateCoverLayout(event.target as HTMLImageElement)
+    applyCoverLayout(event.target as HTMLImageElement)
+    revealCover()
   }
 
   const onThumbError = () => {
-    coverReady.value = true
+    coverError.value = true
+    coverReady.value = false
   }
 
   const onVideoMetadata = () => {
     const video = videoRef.value
     if (!video) return
-    updateCoverLayout(video)
+    applyCoverLayout(video)
   }
 
   const onVideoError = () => {
@@ -235,16 +269,18 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
-          resetCoverLayout()
+          resetCoverState()
           videoSrc.value = url
           nextTick(() => videoRef.value?.load())
         })
         .catch(() => {
-          coverReady.value = true
+          coverError.value = true
+          coverReady.value = false
         })
       return
     }
-    coverReady.value = true
+    coverError.value = true
+    coverReady.value = false
   }
 
   const freezeOnFirstFrame = () => {
@@ -252,6 +288,7 @@
     if (!video || frameReady.value) return
     video.pause()
     frameReady.value = true
+    revealCover()
   }
 
   const seekToFirstFrame = () => {
@@ -272,8 +309,11 @@
   watch(
     () => props.messageId,
     () => {
+      receivedLocalExt.value = undefined
       cacheTriggered.value = false
-      resetCoverLayout()
+      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
+      resetCoverState()
     }
   )
 
@@ -322,21 +362,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0;
-    background: var(--bg-secondary-color);
-
-    &:not(.message-video__cover--ready) {
-      width: 0;
-      height: 0;
-      min-width: 0;
-      min-height: 0;
-    }
-
-    &--ready {
-      width: 100%;
-      height: 100%;
-      opacity: 1;
-    }
   }
 
   .message-video__overlay {

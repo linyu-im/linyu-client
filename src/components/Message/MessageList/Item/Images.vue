@@ -1,19 +1,12 @@
 <template>
   <UploadProgress :uploading="uploading" :progress="uploadProgress" variant="media">
-    <div class="message-image-wrap" @click="onPreview">
+    <div class="message-image-wrap" :style="wrapStyle" @click="onPreview">
       <div v-if="showPlaceholder" class="message-image__placeholder" aria-hidden="true">
         <svg class="message-image__placeholder-icon">
           <use href="#image" />
         </svg>
       </div>
-      <img
-        v-if="displaySrc"
-        class="message-image"
-        :class="{ 'message-image--hidden': !imageReady }"
-        :src="displaySrc"
-        alt=""
-        @load="onImageLoad"
-        @error="onImageError" />
+      <img v-if="displaySrc" class="message-image" :src="displaySrc" alt="" @load="onImageLoad" @error="onImageError" />
     </div>
   </UploadProgress>
 </template>
@@ -29,6 +22,13 @@
     toLocalFileDisplayUrl
   } from '@/utils/blobFilePath'
   import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  import {
+    calcMediaCoverDisplaySize,
+    DEFAULT_MEDIA_COVER_SIZE,
+    getMediaDisplaySizeFromLocalExt,
+    hasSameDisplaySize
+  } from '@/utils/messageMediaLayout'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useAppSettingsStore } from '@/stores/appSettings'
@@ -45,21 +45,25 @@
 
   const { uploading, uploadProgress } = useMessageUploadProgress(() => props.messageId)
 
+  const receivedLocalExt = ref<ImageMessageLocalExt>()
   const displaySrc = ref('')
   const imageReady = ref(false)
   const imageError = ref(false)
   const cacheTriggered = ref(false)
   const currentLocalPath = ref('')
   const blobObjectUrl = ref('')
+  const displayWidth = ref(DEFAULT_MEDIA_COVER_SIZE.displayWidth)
+  const displayHeight = ref(DEFAULT_MEDIA_COVER_SIZE.displayHeight)
   let assetFallbackAttempted = false
 
-  const imageLocalExt = computed(() => props.localExt)
+  const imageLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
 
-  const showPlaceholder = computed(() => {
-    if (!displaySrc.value) return true
-    if (imageError.value) return true
-    return !imageReady.value
-  })
+  const wrapStyle = computed(() => ({
+    width: `${displayWidth.value}px`,
+    height: `${displayHeight.value}px`
+  }))
+
+  const showPlaceholder = computed(() => imageError.value)
 
   const isLocalPendingUrl = (url: string) =>
     !!resolveLocalMediaFilePath(url) || url.startsWith('blob:') || url.startsWith('data:')
@@ -70,8 +74,25 @@
     blobObjectUrl.value = ''
   }
 
-  const persistLocalPath = (localPath: string) => {
-    void messageDbStore.updateImageMessageLocalExt(props.messageId, { localPath })
+  const applyLayoutFromLocalExt = (localExt?: ImageMessageLocalExt) => {
+    const size = getMediaDisplaySizeFromLocalExt(localExt)
+    if (!size) return
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+  }
+
+  const persistLocalExt = (patch: Partial<ImageMessageLocalExt>) => {
+    const merged = mergeMediaMessageLocalExt(imageLocalExt.value, patch)
+    receivedLocalExt.value = merged
+    void messageDbStore.updateImageMessageLocalExt(props.messageId, merged)
+  }
+
+  const persistDisplaySize = (naturalW: number, naturalH: number) => {
+    const size = calcMediaCoverDisplaySize(naturalW, naturalH)
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+    if (hasSameDisplaySize(imageLocalExt.value, size)) return
+    persistLocalExt(size)
   }
 
   const cacheRemoteImage = () => {
@@ -88,7 +109,7 @@
         })
       )
       .then((localPath) => {
-        persistLocalPath(localPath)
+        persistLocalExt({ localPath })
       })
       .catch(() => {
         cacheTriggered.value = false
@@ -107,6 +128,8 @@
 
   const syncDisplaySrc = () => {
     const run = async () => {
+      applyLayoutFromLocalExt(imageLocalExt.value)
+
       const localPath = imageLocalExt.value?.localPath
       if (localPath && (await exists(localPath))) {
         applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
@@ -133,7 +156,10 @@
   watch(
     () => props.messageId,
     () => {
+      receivedLocalExt.value = undefined
       cacheTriggered.value = false
+      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
     }
   )
 
@@ -143,7 +169,9 @@
     { immediate: true }
   )
 
-  const onImageLoad = () => {
+  const onImageLoad = (event: Event) => {
+    const image = event.target as HTMLImageElement
+    persistDisplaySize(image.naturalWidth, image.naturalHeight)
     imageReady.value = true
     imageError.value = false
   }
@@ -155,6 +183,7 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
+          imageReady.value = false
           displaySrc.value = url
         })
         .catch(() => {
@@ -195,9 +224,11 @@
 <style scoped lang="scss">
   .message-image-wrap {
     display: grid;
-    width: max-content;
     max-width: 320px;
     line-height: 0;
+    cursor: pointer;
+    overflow: hidden;
+    border-radius: 6px;
 
     > * {
       grid-area: 1 / 1;
@@ -208,9 +239,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 200px;
-    height: 160px;
-    border-radius: 6px;
+    width: 100%;
+    height: 100%;
     background: var(--bg-secondary-color);
   }
 
@@ -223,16 +253,8 @@
 
   .message-image {
     display: block;
-    height: 160px;
-    width: auto;
-    max-width: 320px;
-    border-radius: 6px;
-    cursor: pointer;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    background: var(--bg-secondary-color);
-
-    &--hidden {
-      opacity: 0;
-    }
   }
 </style>

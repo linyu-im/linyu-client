@@ -42,7 +42,7 @@
     box-sizing: border-box;
 
     &--border + &--border {
-      border-top: 1px solid color-mix(in srgb, var(--border-color) 45%, transparent);
+      border-top: 1px solid var(--divider-color);
     }
 
     &--stack {

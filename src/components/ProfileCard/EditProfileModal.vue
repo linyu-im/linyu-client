@@ -451,7 +451,7 @@
       justify-content: center;
       min-height: 56px;
       padding: 0 48px;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--divider-color);
     }
 
     &__title {
@@ -552,15 +552,16 @@
     &__input {
       flex: 1;
       min-width: 0;
+      --n-border: none;
+      --n-border-hover: none;
+      --n-border-focus: none;
+      --n-box-shadow-focus: none;
+      background-color: transparent !important;
 
-      :deep(.n-input) {
-        --n-border: none;
-        --n-border-hover: none;
-        --n-border-focus: none;
-        --n-box-shadow-focus: none;
-        --n-color: transparent;
-        --n-color-focus: transparent;
-        background: transparent;
+      &:hover,
+      &.n-input--focus,
+      &.n-input--disabled {
+        background-color: transparent !important;
       }
 
       :deep(.n-input__border),
@@ -571,9 +572,12 @@
       :deep(.n-input-wrapper) {
         padding-left: 0;
         padding-right: 0;
+        background-color: transparent !important;
       }
 
-      :deep(.n-input__input-el) {
+      :deep(.n-input__input-el),
+      :deep(.n-input__textarea-el) {
+        background-color: transparent !important;
         font-size: 14px;
         color: var(--text-color);
       }
@@ -636,8 +640,6 @@
         --n-border-hover: none;
         --n-border-focus: none;
         --n-box-shadow-focus: none;
-        --n-color: transparent;
-        --n-color-focus: transparent;
         --n-text-color: var(--text-color);
         --n-placeholder-color: var(--text-secondary-color);
         --n-icon-color: var(--text-secondary-color);
@@ -649,7 +651,13 @@
         --n-height: 44px;
         --n-padding-right: 24px;
         --n-icon-size: 16px;
-        background: transparent;
+        background-color: transparent !important;
+      }
+
+      :deep(.n-input:hover),
+      :deep(.n-input.n-input--focus),
+      :deep(.n-input.n-input--disabled) {
+        background-color: transparent !important;
       }
 
       :deep(.n-input__border),
@@ -661,6 +669,7 @@
         position: relative;
         padding-left: 0;
         padding-right: 24px;
+        background-color: transparent !important;
       }
 
       :deep(.n-input__suffix) {
@@ -679,6 +688,7 @@
       }
 
       :deep(.n-input__input-el) {
+        background-color: transparent !important;
         font-size: 14px;
         color: var(--text-color);
       }

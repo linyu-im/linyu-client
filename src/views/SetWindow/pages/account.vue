@@ -206,7 +206,7 @@
 
     &__devices {
       padding: 14px 18px;
-      border-top: 1px solid color-mix(in srgb, var(--border-color) 45%, transparent);
+      border-top: 1px solid var(--divider-color);
     }
 
     &__section-label {
@@ -306,7 +306,7 @@
       align-items: center;
       justify-content: flex-end;
       padding: 12px 18px;
-      border-top: 1px solid color-mix(in srgb, var(--border-color) 45%, transparent);
+      border-top: 1px solid var(--divider-color);
     }
   }
 </style>

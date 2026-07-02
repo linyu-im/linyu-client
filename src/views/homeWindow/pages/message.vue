@@ -54,11 +54,14 @@
                   </div>
                   <div class="flex justify-between items-center h-14px">
                     <component :is="toShowChatMessage(item.lastMsgContent)" />
-                    <svg
-                      v-if="item.peerIsMute"
-                      class="size-14px text-[var(--text-secondary-color)] flex-shrink-0 m-l-5px">
-                      <use href="#bell-mute"></use>
-                    </svg>
+                    <div class="flex items-center flex-shrink-0 m-l-5px gap-4px">
+                      <svg v-if="item.peerIsTop" class="size-14px text-[var(--text-secondary-color)] flex-shrink-0">
+                        <use href="#pin"></use>
+                      </svg>
+                      <svg v-if="item.peerIsMute" class="size-14px text-[var(--text-secondary-color)] flex-shrink-0">
+                        <use href="#bell-mute"></use>
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -369,7 +369,7 @@
       width: 40%;
       min-width: 0;
       padding: 12px 10px;
-      border-right: 1px solid var(--border-color);
+      border-right: 1px solid var(--divider-color);
       box-sizing: border-box;
     }
 
@@ -603,8 +603,8 @@
       margin: 12px 0;
 
       :deep(.n-divider__line) {
-        height: 1px;
-        transform: scaleY(0.5);
+        height: 0.5px;
+        background-color: var(--divider-color);
       }
     }
 

@@ -1,10 +1,9 @@
 <template>
-  <div class="message-sticker-wrap">
+  <div class="message-sticker-wrap" :style="wrapStyle">
     <div v-if="showPlaceholder" class="message-sticker__placeholder" aria-hidden="true" />
     <img
       v-if="displaySrc"
       class="message-sticker"
-      :class="{ 'message-sticker--hidden': !stickerReady }"
       :src="displaySrc"
       :alt="content.stickerName"
       draggable="false"
@@ -23,6 +22,13 @@
     toLocalFileDisplayUrl
   } from '@/utils/blobFilePath'
   import { downloadMessageToStorage, findExistingStickerPath, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  import {
+    calcStickerDisplaySize,
+    DEFAULT_STICKER_SIZE,
+    getMediaDisplaySizeFromLocalExt,
+    hasSameDisplaySize
+  } from '@/utils/messageMediaLayout'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useMessageDbStore } from '@/stores/messageDb'
 
@@ -35,19 +41,25 @@
   const appSettingsStore = useAppSettingsStore()
   const messageDbStore = useMessageDbStore()
 
+  const receivedLocalExt = ref<StickerMessageLocalExt>()
   const displaySrc = ref('')
   const stickerReady = ref(false)
   const stickerError = ref(false)
   const cacheInFlight = ref(false)
   const currentLocalPath = ref('')
   const blobObjectUrl = ref('')
+  const displayWidth = ref(DEFAULT_STICKER_SIZE.displayWidth)
+  const displayHeight = ref(DEFAULT_STICKER_SIZE.displayHeight)
   let assetFallbackAttempted = false
 
-  const showPlaceholder = computed(() => {
-    if (!displaySrc.value) return true
-    if (stickerError.value) return true
-    return !stickerReady.value
-  })
+  const stickerLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
+
+  const wrapStyle = computed(() => ({
+    width: `${displayWidth.value}px`,
+    height: `${displayHeight.value}px`
+  }))
+
+  const showPlaceholder = computed(() => stickerError.value)
 
   const isLocalPendingUrl = (url: string) =>
     !!resolveLocalMediaFilePath(url) || url.startsWith('blob:') || url.startsWith('data:')
@@ -64,8 +76,25 @@
     blobObjectUrl.value = ''
   }
 
-  const persistLocalPath = (localPath: string) => {
-    void messageDbStore.updateStickerMessageLocalExt(props.messageId, { localPath })
+  const applyLayoutFromLocalExt = (localExt?: StickerMessageLocalExt) => {
+    const size = getMediaDisplaySizeFromLocalExt(localExt)
+    if (!size) return
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+  }
+
+  const persistLocalExt = (patch: Partial<StickerMessageLocalExt>) => {
+    const merged = mergeMediaMessageLocalExt(stickerLocalExt.value, patch)
+    receivedLocalExt.value = merged
+    void messageDbStore.updateStickerMessageLocalExt(props.messageId, merged)
+  }
+
+  const persistDisplaySize = (naturalW: number, naturalH: number) => {
+    const size = calcStickerDisplaySize(naturalW, naturalH)
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+    if (hasSameDisplaySize(stickerLocalExt.value, size)) return
+    persistLocalExt(size)
   }
 
   const findSharedStickerCachePath = (storageRoot: string) => {
@@ -91,7 +120,7 @@
         })
       )
       .then((localPath) => {
-        persistLocalPath(localPath)
+        persistLocalExt({ localPath })
       })
       .catch((error) => {
         console.error('[sticker] cache failed', {
@@ -124,9 +153,11 @@
 
   const syncDisplaySrc = () => {
     const run = async () => {
+      applyLayoutFromLocalExt(stickerLocalExt.value)
+
       const storageRoot = await resolveMessageStorageRoot(appSettingsStore.storage.path)
 
-      const localPath = props.localExt?.localPath
+      const localPath = stickerLocalExt.value?.localPath
       if (localPath && (await exists(localPath))) {
         applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
         return
@@ -134,7 +165,7 @@
 
       const sharedPath = await findSharedStickerCachePath(storageRoot)
       if (sharedPath) {
-        persistLocalPath(sharedPath)
+        persistLocalExt({ localPath: sharedPath })
         applyDisplaySrc(toLocalFileDisplayUrl(sharedPath), sharedPath)
         return
       }
@@ -155,7 +186,10 @@
   watch(
     () => props.messageId,
     () => {
+      receivedLocalExt.value = undefined
       cacheInFlight.value = false
+      displayWidth.value = DEFAULT_STICKER_SIZE.displayWidth
+      displayHeight.value = DEFAULT_STICKER_SIZE.displayHeight
     }
   )
 
@@ -165,7 +199,9 @@
     { immediate: true }
   )
 
-  const onStickerLoad = () => {
+  const onStickerLoad = (event: Event) => {
+    const image = event.target as HTMLImageElement
+    persistDisplaySize(image.naturalWidth, image.naturalHeight)
     stickerReady.value = true
     stickerError.value = false
     scheduleStickerCache()
@@ -178,6 +214,7 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
+          stickerReady.value = false
           displaySrc.value = url
         })
         .catch(() => {
@@ -198,8 +235,6 @@
 <style scoped lang="scss">
   .message-sticker-wrap {
     display: grid;
-    width: 120px;
-    height: 120px;
     line-height: 0;
 
     > * {
@@ -216,15 +251,11 @@
 
   .message-sticker {
     display: block;
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
     pointer-events: none;
-
-    &--hidden {
-      opacity: 0;
-    }
   }
 </style>
