@@ -1,7 +1,10 @@
 import { fetch } from '@tauri-apps/plugin-http'
 import { useUserStore } from '@/stores/user'
 import { useSystemSettingStore } from '@/stores/systemSetting'
+import i18n from '@/services/i18n'
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
+
+const t = i18n.global.t
 
 export interface RequestConfig<T = any> {
   url: string
@@ -44,17 +47,17 @@ async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
     if (!response.ok) {
       return {
         code: response.status,
-        msg: `HTTP Error: ${response.status}`
+        msg: t('http.networkError')
       }
     }
 
     const result: ApiResponse<T> = await response.json()
 
     return result
-  } catch (error: any) {
+  } catch (_error: any) {
     return {
       code: 1,
-      msg: `Network Error: ${error?.message || error}`
+      msg: t('http.networkError')
     }
   }
 }
@@ -124,7 +127,7 @@ const fetchBinaryViaNative = async (requestUrl: string, onProgress?: (progress: 
     referrerPolicy: 'no-referrer-when-downgrade'
   })
   if (!response.ok) {
-    throw new Error(`HTTP Error: ${response.status}`)
+    throw new Error(t('http.networkError'))
   }
   const buffer = await response.arrayBuffer()
   onProgress?.(100)
@@ -150,7 +153,7 @@ export async function fetchBinary(url: string, onProgress?: (progress: number) =
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`)
+      throw new Error(t('http.networkError'))
     }
 
     const buffer = await response.arrayBuffer()
@@ -213,13 +216,12 @@ export async function formData<T = any>(
     if (!response.ok) {
       return {
         code: response.status,
-        msg: `HTTP Error: ${response.status}`
+        msg: t('http.networkError')
       }
     }
     return (await response.json()) as ApiResponse<T>
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error)
-    return { code: 1, msg: message }
+  } catch (_error: unknown) {
+    return { code: 1, msg: t('http.networkError') }
   }
 }
 
@@ -280,12 +282,12 @@ export async function postSse(
   })
 
   if (!response.ok) {
-    throw new Error(`HTTP Error: ${response.status}`)
+    throw new Error(t('http.networkError'))
   }
 
   const body = response.body
   if (!body) {
-    throw new Error('Response body is empty')
+    throw new Error(t('http.responseBodyEmpty'))
   }
 
   const reader = body.getReader()

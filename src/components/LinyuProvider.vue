@@ -198,8 +198,8 @@
     },
     Scrollbar: {
       width: '6px',
-      color: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)',
-      colorHover: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)'
+      color: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)',
+      colorHover: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)'
     },
     Spin: {
       color: 'var(--primary-color)'
@@ -311,8 +311,8 @@
         },
         Scrollbar: {
           width: '6px',
-          color: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)',
-          colorHover: 'color-mix(in srgb, var(--scrollbar-color) 50%, transparent)'
+          color: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)',
+          colorHover: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)'
         }
       }
     },

@@ -92,5 +92,5 @@ export const resolveMessageFailReason = (code: number, msg: string, t: ComposerT
     return t('message.sendStatus.network')
   }
 
-  return t('message.sendStatus.unknown')
+  return normalized
 }

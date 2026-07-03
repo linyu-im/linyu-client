@@ -66,19 +66,17 @@
       {{ t('message.chatSettings.deleteFriend') }}
     </button>
   </div>
-
-  <ForwardMessageModal v-model:show="showForwardModal" :message="shareMessage" />
 </template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
-  import ForwardMessageModal from '@/components/Message/ForwardMessageModal.vue'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat'
   import { useMessageDbStore } from '@/stores/messageDb'
+  import { useMessageForwardStore } from '@/stores/messageForward'
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
   import type { UserInfoResult } from '@/types/api/user'
@@ -98,8 +96,8 @@
   const dialog = useDialog()
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
+  const messageForwardStore = useMessageForwardStore()
 
-  const showForwardModal = ref(false)
   const robots = ref<Robot[]>([])
 
   const shareMessage = computed<Message | null>(() => {
@@ -122,8 +120,8 @@
   })
 
   const onShare = () => {
-    if (!props.userInfo) return
-    showForwardModal.value = true
+    if (!shareMessage.value) return
+    messageForwardStore.open(shareMessage.value)
   }
 
   const onAddRobot = () => {

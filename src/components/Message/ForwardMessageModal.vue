@@ -107,7 +107,7 @@
             <div v-for="item in selectedContacts" :key="item.id" class="forward-modal__selected-item">
               <Avatar
                 :id="item.peerId"
-                :type="item.isGroup ? 'group' : undefined"
+                :type="item.sceneType === SceneType.Group ? 'group' : undefined"
                 class="forward-modal__selected-avatar" />
               <span class="forward-modal__selected-name">{{ item.name }}</span>
               <button
@@ -126,8 +126,22 @@
         <n-divider class="forward-modal__divider" />
 
         <div class="forward-modal__preview-wrap">
-          <div v-if="message" class="forward-modal__preview">
-            <MessageItem :message="message" :is-self="false" :disable-events="true" />
+          <div
+            v-if="message"
+            class="forward-modal__preview"
+            :class="{ 'forward-modal__preview--text': message.msgType === 'text' }">
+            <div class="forward-modal__main" :class="{ 'forward-modal__main--text': message.msgType === 'text' }">
+              <div
+                class="forward-modal__bubble"
+                :class="{
+                  'forward-modal__bubble--plain': isPlainBubble(message),
+                  'forward-modal__bubble--text': message.msgType === 'text',
+                  'forward-modal__bubble--file': message.msgType === 'file',
+                  'forward-modal__bubble--ecard': message.msgType === 'ecard'
+                }">
+                <MessageItem :message="message" :is-self="false" :disable-events="true" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -150,12 +164,13 @@
 </template>
 
 <script setup lang="ts">
-  import { contactsApi, messageApi } from '@/api'
+  import { contactsApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import MessageItem from '@/components/Message/MessageList/Item/index.vue'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
+  import { useMessageForwardStore } from '@/stores/messageForward'
   import type { Contact } from '@/types/api/contacts'
-  import type { ForwardMessagePeerInfo, Message } from '@/types/api/message'
+  import type { Message } from '@/types/api/message'
   import { useI18n } from 'vue-i18n'
 
   type SectionKey = 'friend' | 'group'
@@ -164,25 +179,26 @@
     id: string
     peerId: string
     name: string
-    isGroup: boolean
+    sceneType: SceneType
   }
 
-  const visible = defineModel<boolean>('show', { default: false })
+  const messageForwardStore = useMessageForwardStore()
+  const visible = computed({
+    get: () => messageForwardStore.show,
+    set: (value: boolean) => {
+      if (!value) messageForwardStore.close()
+    }
+  })
+  const message = computed(() => messageForwardStore.message)
 
   useEscapeOverlay(() => {
-    visible.value = false
+    messageForwardStore.close()
   }, visible)
 
-  const props = defineProps<{
-    message: Message | null
-  }>()
-
-  const emit = defineEmits<{
-    send: [payload: { chatIds: string[] }]
-    cancel: []
-  }>()
-
   const { t } = useI18n()
+
+  const isPlainBubble = (msg: Message) =>
+    msg.msgType === 'image' || msg.msgType === 'video' || msg.msgType === 'sticker'
 
   const searchKeyword = ref('')
   const selectedChatIds = ref<string[]>([])
@@ -238,7 +254,7 @@
           id: contact.id,
           peerId: contact.peerId,
           name: isGroup ? getGroupDisplayName(contact) : getFriendDisplayName(contact),
-          isGroup
+          sceneType: isGroup ? SceneType.Group : SceneType.User
         }
       })
       .filter((item): item is SelectedContactItem => item !== null)
@@ -305,39 +321,20 @@
     selectedChatIds.value = selectedChatIds.value.filter((id) => id !== chatId)
   }
 
-  const buildToPeerInfo = (): ForwardMessagePeerInfo[] =>
-    selectedContacts.value.map((item) => {
-      return {
-        peerId: item.peerId,
-        peerSceneType: item.isGroup ? SceneType.Group : SceneType.User
-      }
-    })
-
   const onCancel = () => {
-    visible.value = false
-    emit('cancel')
+    messageForwardStore.close()
   }
 
   const onSend = () => {
-    if (!props.message || selectedChatIds.value.length === 0 || sending.value) return
+    if (!message.value || selectedContacts.value.length === 0 || sending.value) return
 
     sending.value = true
-    messageApi
-      .forward({
-        toPeerInfo: buildToPeerInfo(),
-        message: props.message
-      })
-      .then((res) => {
-        if (res.code === 0) {
-          visible.value = false
-          emit('send', {
-            chatIds: [...selectedChatIds.value]
-          })
-        } else {
-          window.$message.error(res.msg)
-        }
-        sending.value = false
-      })
+    const peers = selectedContacts.value.map((item) => ({
+      peerId: item.peerId,
+      sceneType: item.sceneType
+    }))
+    messageForwardStore.forward(peers)
+    sending.value = false
   }
 
   const resetForm = () => {
@@ -614,15 +611,101 @@
       justify-content: center;
       margin-top: 0;
       margin-bottom: 12px;
+      width: 100%;
     }
 
     &__preview {
       width: fit-content;
       max-width: 100%;
+      min-width: 0;
+
+      &--text {
+        width: 100%;
+      }
+    }
+
+    &__main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      width: fit-content;
+      max-width: 100%;
+
+      &--text {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+
+    &__bubble {
+      position: relative;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--bg-primary-color);
+      color: var(--text-color);
+      word-break: break-word;
+
+      &--text {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      &--file,
+      &--ecard {
+        padding: 0;
+        background: var(--bg-primary-color);
+        color: var(--text-color);
+      }
+
+      &--plain {
+        padding: 0;
+        background: transparent;
+        color: var(--text-color);
+      }
 
       :deep(.message-item) {
-        max-width: 100%;
-        width: fit-content;
+        max-width: 100% !important;
+        width: fit-content !important;
+        color: inherit;
+      }
+
+      :deep(.message-item--text) {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      :deep(.message-text) {
+        color: var(--text-color);
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre-line;
+        word-break: break-word;
+      }
+
+      :deep(.message-file),
+      :deep(.message-file__name),
+      :deep(.message-ecard__name),
+      :deep(.message-voice__duration) {
+        color: var(--text-color);
+      }
+
+      :deep(.message-file__size),
+      :deep(.message-ecard__footer) {
+        color: var(--text-secondary-color);
+      }
+
+      :deep(.message-file__status) {
+        color: var(--text-muted-color);
+      }
+
+      :deep(.message-voice__icon) {
+        color: var(--text-color);
       }
     }
 

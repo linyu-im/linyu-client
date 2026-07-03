@@ -44,6 +44,10 @@
     { disableEvents: false }
   )
 
+  const emit = defineEmits<{
+    forward: [message: Message]
+  }>()
+
   const { t } = useI18n()
 
   const menuShow = ref(false)
@@ -95,15 +99,60 @@
     return { content: msg.content }
   })
 
-  const menuOptions = computed(() => [
-    { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
-    { label: () => t('message.bubbleMenu.quote'), key: 'quote' },
-    { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
-    { label: () => t('message.bubbleMenu.favorite'), key: 'favorite' },
-    { label: () => t('message.bubbleMenu.multiSelect'), key: 'multiSelect' },
-    { type: 'divider', key: 'd1' },
-    { label: () => t('message.bubbleMenu.delete'), key: 'delete' }
-  ])
+  const menuOptions = computed(() => {
+    const msgType = props.message.msgType
+    const options: Array<{ label?: () => string; key: string; type?: string; props?: Record<string, unknown> }> = []
+
+    switch (msgType) {
+      case 'ecard':
+        options.push({ label: () => t('message.bubbleMenu.forward'), key: 'forward' })
+        break
+      case 'file':
+        options.push(
+          { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
+          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+        )
+        break
+      case 'image':
+      case 'video':
+        options.push(
+          { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
+          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+        )
+        break
+      case 'text':
+        options.push(
+          { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
+          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+        )
+        break
+      case 'voice':
+        options.push(
+          { label: () => t('message.bubbleMenu.voiceToText'), key: 'voiceToText' },
+          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+        )
+        break
+      case 'sticker':
+        options.push(
+          { label: () => t('message.bubbleMenu.collectSticker'), key: 'collectSticker' },
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
+          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+        )
+        break
+    }
+
+    options.push({ type: 'divider', key: 'd1' })
+    options.push({
+      label: () => t('message.bubbleMenu.delete'),
+      key: 'delete',
+      props: { class: 'menu-item--danger' }
+    })
+
+    return options
+  })
 
   const onContextMenu = (e: MouseEvent) => {
     if (props.disableEvents) return
@@ -169,7 +218,7 @@
         window.$message?.info(t('message.bubbleMenu.quote'))
         break
       case 'forward':
-        window.$message?.info(t('message.bubbleMenu.forward'))
+        emit('forward', props.message)
         break
       case 'favorite':
         window.$message?.info(t('message.bubbleMenu.favorite'))
@@ -211,5 +260,20 @@
     &__unknown {
       color: var(--text-secondary-color);
     }
+  }
+
+  :global(.n-dropdown-menu) {
+    min-width: 80px;
+  }
+
+  :global(.n-dropdown-menu .menu-item--danger:hover) {
+    color: var(--red) !important;
+  }
+
+  :global(.message-item a:focus),
+  :global(.message-item a:focus-visible),
+  :global(.message-item button:focus),
+  :global(.message-item button:focus-visible) {
+    outline: none;
   }
 </style>

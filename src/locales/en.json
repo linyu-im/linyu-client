@@ -118,11 +118,13 @@
       "copy": "Copy",
       "copySuccess": "Copied",
       "copyUnsupported": "This message type cannot be copied",
-      "quote": "Quote (coming soon)",
-      "forward": "Forward (coming soon)",
-      "favorite": "Favorite (coming soon)",
-      "multiSelect": "Multi-select (coming soon)",
-      "delete": "Delete (coming soon)"
+      "quote": "Quote",
+      "forward": "Forward",
+      "favorite": "Favorite",
+      "multiSelect": "Multi-select",
+      "delete": "Delete",
+      "voiceToText": "Voice to Text",
+      "collectSticker": "Collect Sticker"
     },
     "sendStatus": {
       "blocked": "You have been blocked",
@@ -664,5 +666,11 @@
       "text": "Text",
       "mosaic": "Mosaic"
     }
+  },
+  "http": {
+    "networkError": "Network Error",
+    "httpError": "Network Error: {status}",
+    "requestFailed": "Request Failed",
+    "responseBodyEmpty": "Response body is empty"
   }
 }

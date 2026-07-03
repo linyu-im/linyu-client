@@ -6,9 +6,7 @@ type SendingMessagesStore = {
 }
 
 export const useSendingMessagesStore = defineStore('sendingMessages', {
-  persist: {
-    pick: ['messagesByPeer']
-  },
+  persist: false,
   share: {
     enable: true,
     initialize: true

@@ -29,7 +29,8 @@
               :loading-more="loadingMore"
               :has-more="hasMore"
               @reach-top="onLoadMore"
-              @at-bottom-change="onAtBottomChange" />
+              @at-bottom-change="onAtBottomChange"
+              @forward="onForwardMessage" />
             <button v-if="pendingNewCount > 0" type="button" class="chat-session__new-msg" @click="scrollToLatest">
               {{ t('message.newMessages', { count: pendingNewCount }) }}
             </button>
@@ -95,6 +96,7 @@
         :group-info="groupInfo"
         @close="settingsDrawerVisible = false"
         @history-deleted="onChatHistoryDeleted" />
+      <ForwardMessageModal />
     </div>
   </div>
 </template>
@@ -116,11 +118,13 @@
     resolveMessageFailReason
   } from '@/utils/messageSend'
   import { useMessageUploadStore } from '@/stores/messageUpload'
+  import { useMessageForwardStore } from '@/stores/messageForward'
   import { useSendingMessagesStore } from '@/stores/sendingMessages'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
   import type { MentionItem } from '../Message/MessageEditor/MentionList.vue'
   import MessageList from '../Message/MessageList/index.vue'
+  import ForwardMessageModal from '../Message/ForwardMessageModal.vue'
   import EmojiPicker from '../Message/EmojiPicker/index.vue'
   import VoiceRecordBar from '../Message/VoiceRecordBar.vue'
   import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer/index.vue'
@@ -150,6 +154,7 @@
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
+  const messageForwardStore = useMessageForwardStore()
   const sendingMessagesStore = useSendingMessagesStore()
   const appSettingsStore = useAppSettingsStore()
 
@@ -210,6 +215,10 @@
 
   const onOpenChatRecord = () => {
     openChatRecord(props.chat)
+  }
+
+  const onForwardMessage = (message: Message) => {
+    messageForwardStore.open(message)
   }
 
   const onChatHistoryDeleted = () => {
@@ -421,8 +430,12 @@
   const replaceLocalMessage = (localId: string, serverMsg: Message, peerId: string): Promise<void> => {
     messageUploadStore.clearProgress(localId)
     sendingMessagesStore.removeMessage(peerId, localId)
-    const normalized = normalizeMessage(serverMsg as Message)
-    if (messages.value.some((item) => item.id === localId)) {
+    const localMsg = messages.value.find((item) => item.id === localId)
+    const normalized = normalizeMessage({
+      ...serverMsg,
+      sessionId: serverMsg.sessionId || localMsg?.sessionId || ''
+    })
+    if (localMsg) {
       messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
     }
     if (localId.startsWith('local-')) {
@@ -479,6 +492,42 @@
     sendingMessagesStore.addMessage(props.chat.peerId, message)
     return message
   }
+
+  const replaceForwardMessageInUi = (localId: string, serverMsg: Message) => {
+    const normalized = normalizeMessage({
+      ...serverMsg,
+      sessionId: serverMsg.sessionId || messages.value.find((item) => item.id === localId)?.sessionId || ''
+    })
+    if (messages.value.some((item) => item.id === localId)) {
+      messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
+    }
+  }
+
+  const markForwardFailedInUi = (localId: string, message: Message) => {
+    messages.value = patchMessageById(messages.value, localId, {
+      status: message.status,
+      failReason: message.failReason
+    })
+  }
+
+  watch(
+    () => messageForwardStore.syncSeq,
+    () => {
+      const payload = messageForwardStore.syncPayload
+      if (!payload || payload.sessionId !== props.chat.sessionId) return
+
+      const { message, replaceLocalId } = payload
+      if (replaceLocalId) {
+        replaceForwardMessageInUi(replaceLocalId, message)
+        return
+      }
+      if (messages.value.some((item) => item.id === message.id)) {
+        markForwardFailedInUi(message.id, message)
+        return
+      }
+      appendMessage(message)
+    }
+  )
 
   const createAndStageLocalMessage = (msgType: SendMessageMsgType, content: SendMessageContent): Message | null => {
     const ctx = getSendContext()

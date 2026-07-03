@@ -1,5 +1,5 @@
 <template>
-  <n-scrollbar ref="scrollbarRef" class="message-list" @scroll="onScroll">
+  <n-scrollbar ref="scrollbarRef" class="message-list" :theme-overrides="{ width: '7px' }" @scroll="onScroll">
     <div class="message-list__inner">
       <template v-for="message in messages" :key="message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
@@ -29,7 +29,7 @@
                 'message-list__bubble--file': message.msgType === 'file',
                 'message-list__bubble--ecard': message.msgType === 'ecard'
               }">
-              <Item :message="message" :is-self="isSelf(message)" />
+              <Item :message="message" :is-self="isSelf(message)" @forward="emit('forward', $event)" />
               <n-tooltip v-if="isSendFailed(message)" placement="top" :show-arrow="false">
                 <template #trigger>
                   <button type="button" class="message-list__fail-btn" aria-label="send failed" @click.stop>
@@ -42,8 +42,8 @@
           </div>
         </div>
       </template>
-      <div ref="bottomAnchorRef" class="message-list__bottom-anchor" aria-hidden="true" />
     </div>
+    <div ref="bottomAnchorRef" class="message-list__bottom-anchor" aria-hidden="true" />
   </n-scrollbar>
 </template>
 
@@ -79,6 +79,7 @@
   const emit = defineEmits<{
     'reach-top': []
     'at-bottom-change': [atBottom: boolean]
+    forward: [message: Message]
   }>()
 
   const scrollbarRef = ref<ScrollbarInst | null>(null)
@@ -286,7 +287,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      padding: 12px 16px 16px;
+      padding: 12px 16px;
       font-size: 12px;
     }
 

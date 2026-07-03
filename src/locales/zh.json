@@ -118,11 +118,13 @@
       "copy": "复制",
       "copySuccess": "已复制",
       "copyUnsupported": "该消息类型暂不支持复制",
-      "quote": "引用（开发中）",
-      "forward": "转发（开发中）",
-      "favorite": "收藏（开发中）",
-      "multiSelect": "多选（开发中）",
-      "delete": "删除（开发中）"
+      "quote": "引用",
+      "forward": "转发",
+      "favorite": "收藏",
+      "multiSelect": "多选",
+      "delete": "删除",
+      "voiceToText": "语音转文字",
+      "collectSticker": "收藏表情"
     },
     "sendStatus": {
       "blocked": "对方已拉黑您",
@@ -664,5 +666,11 @@
       "text": "文字",
       "mosaic": "马赛克"
     }
+  },
+  "http": {
+    "networkError": "网络错误",
+    "httpError": "网络错误: {status}",
+    "requestFailed": "请求失败",
+    "responseBodyEmpty": "响应内容为空"
   }
 }
