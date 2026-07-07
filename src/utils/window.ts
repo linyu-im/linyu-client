@@ -179,3 +179,13 @@ export const createChatRecordWindow = () =>
     resizable: true,
     transparent: true
   })
+
+export const createAddContactsWindow = () =>
+  createWebviewWindow('添加联系人/群聊', 'addContacts', {
+    width: 640,
+    minWidth: 640,
+    height: 680,
+    minHeight: 560,
+    resizable: true,
+    transparent: true
+  })

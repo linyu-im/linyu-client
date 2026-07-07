@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import { contactsApi } from '@/api'
   import EditProfileModal from '@/components/ProfileCard/EditProfileModal.vue'
   import { SceneType } from '@/constants/common'
@@ -143,7 +143,7 @@
 
   const props = defineProps<{
     id: string
-    userInfo: UserInfoResult | null
+    userInfo: User | null
   }>()
 
   const emit = defineEmits<{

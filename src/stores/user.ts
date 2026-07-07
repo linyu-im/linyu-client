@@ -1,4 +1,4 @@
-import type { UserInfoResult } from '@/types/api/user'
+import type { User } from '@/types/api/user'
 import { disconnectWebSocket } from '@/utils/websocket'
 import { defineStore } from 'pinia'
 
@@ -8,7 +8,7 @@ type UserStore = {
     userId: string
     isLoggedIn?: boolean
   }
-  userInfo: UserInfoResult
+  userInfo: User
 }
 
 export const useUserStore = defineStore('user', {
@@ -60,7 +60,7 @@ export const useUserStore = defineStore('user', {
         state.authInfo.isLoggedIn = false
       })
     },
-    setUserInfo(info: UserInfoResult) {
+    setUserInfo(info: User) {
       this.$patch((state) => {
         state.userInfo = info
       })

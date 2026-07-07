@@ -107,7 +107,7 @@
     </SettingCard>
 
     <section class="chat-settings-drawer__card">
-      <button type="button" class="chat-settings-drawer__action">
+      <button type="button" class="chat-settings-drawer__action" @click="onViewHistory">
         {{ t('message.chatSettings.viewHistory') }}
       </button>
     </section>
@@ -130,6 +130,7 @@
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat'
+  import { openChatRecord } from '@/utils/chatRecord'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { GroupMember } from '@/types/api/groupMember'
   import type { Robot } from '@/types/api/robot'
@@ -208,6 +209,11 @@
 
   const onAddRobot = () => {
     window.$message.info(t('message.chatSettings.addTodo'))
+  }
+
+  const onViewHistory = () => {
+    if (!currentChat.value) return
+    openChatRecord(currentChat.value)
   }
 
   const onViewMoreAnnouncement = () => {

@@ -152,7 +152,7 @@
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/homeTab'
   import { usePeerInfoStore } from '@/stores/peerInfo'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
@@ -179,7 +179,7 @@
 
   const sendingMessage = ref(false)
 
-  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as UserInfoResult | null)
+  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as User | null)
   const loading = computed(() => !!props.userId && !userInfo.value)
   const remarkEditing = ref(false)
   const remarkDraft = ref('')

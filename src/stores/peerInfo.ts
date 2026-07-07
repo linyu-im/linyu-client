@@ -3,7 +3,7 @@ import { enterpriseApi, groupApi, userApi } from '@/api'
 import { SceneType } from '@/constants/common'
 import type { EnterprisInfo } from '@/types/api/enterprise'
 import type { GroupInfoResult } from '@/types/api/group'
-import type { UserInfoResult } from '@/types/api/user'
+import type { User } from '@/types/api/user'
 import type { FromType } from '@/types/common'
 
 const PEER_INFO_CACHE_MAX = 50
@@ -12,7 +12,7 @@ export type PeerInfoType = Extract<FromType, 'user' | 'group' | 'enterprise'>
 
 type UserCacheEntry = {
   id: string
-  data: UserInfoResult
+  data: User
 }
 
 type GroupCacheEntry = {
@@ -92,7 +92,7 @@ export const usePeerInfoStore = defineStore('peerInfo', {
     enterprises: []
   }),
   actions: {
-    read(peerId: string, type: PeerInfoType | SceneType): UserInfoResult | GroupInfoResult | EnterprisInfo | null {
+    read(peerId: string, type: PeerInfoType | SceneType): User | GroupInfoResult | EnterprisInfo | null {
       if (!peerId) return null
 
       switch (toPeerInfoType(type)) {
@@ -104,7 +104,7 @@ export const usePeerInfoStore = defineStore('peerInfo', {
           return readCache(this.users, peerId)
       }
     },
-    get(peerId: string, type: PeerInfoType | SceneType): UserInfoResult | GroupInfoResult | EnterprisInfo | null {
+    get(peerId: string, type: PeerInfoType | SceneType): User | GroupInfoResult | EnterprisInfo | null {
       if (!peerId) return null
 
       switch (toPeerInfoType(type)) {
@@ -120,7 +120,7 @@ export const usePeerInfoStore = defineStore('peerInfo', {
 
       return this.read(peerId, type)
     },
-    patchUser(userId: string, patch: Partial<UserInfoResult>) {
+    patchUser(userId: string, patch: Partial<User>) {
       const current = readCache(this.users, userId)
       if (!current) return
 
@@ -128,11 +128,11 @@ export const usePeerInfoStore = defineStore('peerInfo', {
         state.users = writeCache(state.users, userId, { ...current, ...patch }, PEER_INFO_CACHE_MAX)
       })
     },
-    fetchUser(userId: string): Promise<UserInfoResult | null> {
+    fetchUser(userId: string): Promise<User | null> {
       if (!userId) return Promise.resolve(null)
 
       const key = `user:${userId}`
-      const pending = inflight.get(key) as Promise<UserInfoResult | null> | undefined
+      const pending = inflight.get(key) as Promise<User | null> | undefined
       if (pending) return pending
 
       const cached = readCache(this.users, userId)

@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
   import { usePeerInfoStore } from '@/stores/peerInfo'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{
@@ -53,7 +53,7 @@
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
 
-  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as UserInfoResult | null)
+  const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as User | null)
   const loading = computed(() => !!props.userId && !userInfo.value)
 
   watch(

@@ -23,7 +23,7 @@
   import { SceneType } from '@/constants/common'
   import { usePeerInfoStore } from '@/stores/peerInfo'
   import type { GroupInfoResult } from '@/types/api/group'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
 
   const props = withDefaults(
     defineProps<{
@@ -39,9 +39,7 @@
   const peerInfoStore = usePeerInfoStore()
 
   const userInfo = computed(() =>
-    props.sceneType === SceneType.User
-      ? (peerInfoStore.read(props.peerId, props.sceneType) as UserInfoResult | null)
-      : null
+    props.sceneType === SceneType.User ? (peerInfoStore.read(props.peerId, props.sceneType) as User | null) : null
   )
 
   const groupInfo = computed(() =>

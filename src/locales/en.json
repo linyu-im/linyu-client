@@ -214,6 +214,7 @@
           "ecard": "Added via contact card",
           "phone": "Found via phone number",
           "qrcode": "Added via QR code scan",
+          "search": "Added via search",
           "unknown": "Friend request"
         }
       },
@@ -226,8 +227,11 @@
     "actions": {
       "agree": "Agree",
       "reject": "Reject",
-      "completed": "Accepted",
+      "wait": "Pending",
+      "agreed": "Accepted",
       "rejected": "Rejected",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown",
       "share": "Share",
       "sendMessage": "Send Message",
       "audioVideo": "Audio/Video Call"
@@ -666,6 +670,42 @@
       "text": "Text",
       "mosaic": "Mosaic"
     }
+  },
+  "addContacts": {
+    "title": "Add Contact / Group",
+    "searchPlaceholder": "Enter search keywords",
+    "search": "Search",
+    "tabs": {
+      "user": "Users",
+      "group": "Groups"
+    },
+    "group": {
+      "memberCount": "{count} members",
+      "join": "Join",
+      "applyModal": {
+        "title": "Join Group Request",
+        "placeholder": "Please enter a request note",
+        "send": "Send",
+        "cancel": "Cancel",
+        "success": "Group request sent"
+      }
+    },
+    "user": {
+      "linyuId": "Linyu ID: {id}",
+      "add": "Add",
+      "sendMessage": "Send Message",
+      "applyModal": {
+        "title": "Friend Request",
+        "placeholder": "Please enter a request note",
+        "send": "Send",
+        "cancel": "Cancel",
+        "success": "Friend request sent"
+      }
+    },
+    "empty": "Enter keywords to start searching",
+    "loadingMore": "Loading...",
+    "noResultUser": "No matching users found",
+    "noResultGroup": "No matching groups found"
   },
   "http": {
     "networkError": "Network Error",

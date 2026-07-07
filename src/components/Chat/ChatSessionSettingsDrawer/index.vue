@@ -26,14 +26,14 @@
   import ChatSessionGroupSettings from './ChatSessionGroupSettings.vue'
   import ChatSessionUserSettings from './ChatSessionUserSettings.vue'
   import type { GroupInfoResult } from '@/types/api/group'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
 
   const props = withDefaults(
     defineProps<{
       show: boolean
       chatId: string
       sceneType?: SceneType
-      userInfo?: UserInfoResult | null
+      userInfo?: User | null
       groupInfo?: GroupInfoResult | null
     }>(),
     {

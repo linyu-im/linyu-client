@@ -4,6 +4,20 @@ export interface GroupInfoRequest {
   groupId: string
 }
 
+export interface GroupSearchParam {
+  keyword: string
+  page: number
+  pageSize: number
+}
+
+export interface GroupSearchResult {
+  records: Group[]
+  total: number
+  page: number
+  pageSize: number
+  totalPage: number
+}
+
 export interface Group {
   id: string
   creatorUserId: string

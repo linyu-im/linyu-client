@@ -79,11 +79,11 @@
   import { useMessageForwardStore } from '@/stores/messageForward'
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import { openChatRecord } from '@/utils/chatRecord'
 
   const props = defineProps<{
-    userInfo: UserInfoResult | null
+    userInfo: User | null
     chatId: string
     show: boolean
   }>()

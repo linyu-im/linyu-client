@@ -101,6 +101,7 @@
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
   import { formatTime } from '@/utils/time'
+  import { createAddContactsWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
@@ -117,7 +118,7 @@
   const onAddMenuSelect = (key: string) => {
     switch (key) {
       case 'addContact':
-        window.$message.info('TODO: add contact')
+        createAddContactsWindow()
         break
       case 'createGroup':
         window.$message.info('TODO: create group')

@@ -214,6 +214,7 @@
           "ecard": "通过名片添加",
           "phone": "通过手机号搜索",
           "qrcode": "通过扫一扫添加",
+          "search": "通过搜索添加",
           "unknown": "好友申请"
         }
       },
@@ -226,8 +227,11 @@
     "actions": {
       "agree": "同意",
       "reject": "拒绝",
-      "completed": "已同意",
+      "wait": "等待中",
+      "agreed": "已同意",
       "rejected": "已拒绝",
+      "cancelled": "已取消",
+      "unknown": "未知状态",
       "share": "分享",
       "sendMessage": "发消息",
       "audioVideo": "音视频通话"
@@ -666,6 +670,42 @@
       "text": "文字",
       "mosaic": "马赛克"
     }
+  },
+  "addContacts": {
+    "title": "添加联系人/群聊",
+    "searchPlaceholder": "请输入搜索关键字",
+    "search": "搜索",
+    "tabs": {
+      "user": "用户",
+      "group": "群聊"
+    },
+    "group": {
+      "memberCount": "{count}人",
+      "join": "加入",
+      "applyModal": {
+        "title": "申请加入群聊",
+        "placeholder": "请输入申请备注",
+        "send": "发送",
+        "cancel": "取消",
+        "success": "群聊申请已发送"
+      }
+    },
+    "user": {
+      "linyuId": "林语号：{id}",
+      "add": "添加",
+      "sendMessage": "发送消息",
+      "applyModal": {
+        "title": "申请加好友",
+        "placeholder": "请输入申请备注",
+        "send": "发送",
+        "cancel": "取消",
+        "success": "好友申请已发送"
+      }
+    },
+    "empty": "输入关键词开始搜索",
+    "loadingMore": "加载中...",
+    "noResultUser": "未找到匹配用户",
+    "noResultGroup": "未找到匹配群聊"
   },
   "http": {
     "networkError": "网络错误",

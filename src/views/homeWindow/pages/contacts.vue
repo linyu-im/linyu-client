@@ -190,11 +190,11 @@
 
 <script setup lang="ts">
   defineOptions({ name: 'contacts' })
-  import ContactsEnterpriseProfile from '@/components/Contacts/ContactsEnterpriseProfile.vue'
-  import ContactsFriendProfile from '@/components/Contacts/ContactsFriendProfile.vue'
-  import ContactsGroupNotice from '@/components/Contacts/ContactsGroupNotice.vue'
-  import ContactsGroupProfile from '@/components/Contacts/ContactsGroupProfile.vue'
-  import ContactsNewFriend from '@/components/Contacts/ContactsNewFriend.vue'
+  import ContactsEnterpriseProfile from '@/components/Contacts/detail/ContactsEnterpriseProfile.vue'
+  import ContactsFriendProfile from '@/components/Contacts/detail/ContactsFriendProfile.vue'
+  import ContactsGroupNotice from '@/components/Contacts/detail/ContactsGroupNotice.vue'
+  import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
+  import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
   import { useContactsStore } from '@/stores/contacts'
   import { useHomeTabStore } from '@/stores/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'

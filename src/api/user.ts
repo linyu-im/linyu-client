@@ -1,12 +1,16 @@
-import type { UserInfoParam, UserInfoResult, UserProfileUpdateParam } from '@/types/api/user'
+import type { UserInfoParam, User, UserProfileUpdateParam, UserSearchParam, UserSearchResult } from '@/types/api/user'
 import { type ApiResponse, formData, post } from '@/utils/http'
 
-export function currentUserInfo(): Promise<ApiResponse<UserInfoResult>> {
-  return post<UserInfoResult, void>('/api/basic/v1/user/current/info')
+export function currentUserInfo(): Promise<ApiResponse<User>> {
+  return post<User, void>('/api/basic/v1/user/current/info')
 }
 
-export function getUserInfo(params: UserInfoParam): Promise<ApiResponse<UserInfoResult>> {
-  return post<UserInfoResult, UserInfoParam>('/api/basic/v1/user/info', params)
+export function getUserInfo(params: UserInfoParam): Promise<ApiResponse<User>> {
+  return post<User, UserInfoParam>('/api/basic/v1/user/info', params)
+}
+
+export function search(params: UserSearchParam): Promise<ApiResponse<UserSearchResult>> {
+  return post<UserSearchResult, UserSearchParam>('/api/basic/v1/user/search', params)
 }
 
 export function userEmotionSet(id: string): Promise<ApiResponse<void>> {

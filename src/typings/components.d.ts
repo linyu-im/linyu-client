@@ -12,6 +12,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddFriendApplyModal: typeof import('./../components/Contacts/AddFriendApplyModal.vue')['default']
+    AddGroupApplyModal: typeof import('./../components/Contacts/AddGroupApplyModal.vue')['default']
     Avatar: typeof import('./../components/Avatar.vue')['default']
     AvatarCropModal: typeof import('./../components/ProfileCard/AvatarCropModal.vue')['default']
     ChatSession: typeof import('./../components/Chat/ChatSession.vue')['default']
@@ -21,11 +23,11 @@ declare module 'vue' {
     ChatSessionUserSettings: typeof import('./../components/Chat/ChatSessionSettingsDrawer/ChatSessionUserSettings.vue')['default']
     CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']
     ColorTag: typeof import('./../components/ColorTag.vue')['default']
-    ContactsEnterpriseProfile: typeof import('./../components/Contacts/ContactsEnterpriseProfile.vue')['default']
-    ContactsFriendProfile: typeof import('./../components/Contacts/ContactsFriendProfile.vue')['default']
-    ContactsGroupNotice: typeof import('./../components/Contacts/ContactsGroupNotice.vue')['default']
-    ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
-    ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
+    ContactsEnterpriseProfile: typeof import('./../components/Contacts/detail/ContactsEnterpriseProfile.vue')['default']
+    ContactsFriendProfile: typeof import('./../components/Contacts/detail/ContactsFriendProfile.vue')['default']
+    ContactsGroupNotice: typeof import('./../components/Contacts/detail/ContactsGroupNotice.vue')['default']
+    ContactsGroupProfile: typeof import('./../components/Contacts/detail/ContactsGroupProfile.vue')['default']
+    ContactsNewFriend: typeof import('./../components/Contacts/detail/ContactsNewFriend.vue')['default']
     Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
     EditProfileModal: typeof import('./../components/ProfileCard/EditProfileModal.vue')['default']
     EmojiPicker: typeof import('./../components/Message/EmojiPicker/index.vue')['default']
@@ -110,6 +112,8 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const AddFriendApplyModal: typeof import('./../components/Contacts/AddFriendApplyModal.vue')['default']
+  const AddGroupApplyModal: typeof import('./../components/Contacts/AddGroupApplyModal.vue')['default']
   const Avatar: typeof import('./../components/Avatar.vue')['default']
   const AvatarCropModal: typeof import('./../components/ProfileCard/AvatarCropModal.vue')['default']
   const ChatSession: typeof import('./../components/Chat/ChatSession.vue')['default']
@@ -119,11 +123,11 @@ declare global {
   const ChatSessionUserSettings: typeof import('./../components/Chat/ChatSessionSettingsDrawer/ChatSessionUserSettings.vue')['default']
   const CodeBlockView: typeof import('./../components/AI/MessageBubble/views/CodeBlockView.vue')['default']
   const ColorTag: typeof import('./../components/ColorTag.vue')['default']
-  const ContactsEnterpriseProfile: typeof import('./../components/Contacts/ContactsEnterpriseProfile.vue')['default']
-  const ContactsFriendProfile: typeof import('./../components/Contacts/ContactsFriendProfile.vue')['default']
-  const ContactsGroupNotice: typeof import('./../components/Contacts/ContactsGroupNotice.vue')['default']
-  const ContactsGroupProfile: typeof import('./../components/Contacts/ContactsGroupProfile.vue')['default']
-  const ContactsNewFriend: typeof import('./../components/Contacts/ContactsNewFriend.vue')['default']
+  const ContactsEnterpriseProfile: typeof import('./../components/Contacts/detail/ContactsEnterpriseProfile.vue')['default']
+  const ContactsFriendProfile: typeof import('./../components/Contacts/detail/ContactsFriendProfile.vue')['default']
+  const ContactsGroupNotice: typeof import('./../components/Contacts/detail/ContactsGroupNotice.vue')['default']
+  const ContactsGroupProfile: typeof import('./../components/Contacts/detail/ContactsGroupProfile.vue')['default']
+  const ContactsNewFriend: typeof import('./../components/Contacts/detail/ContactsNewFriend.vue')['default']
   const Ecard: typeof import('./../components/Message/MessageList/Item/Ecard.vue')['default']
   const EditProfileModal: typeof import('./../components/ProfileCard/EditProfileModal.vue')['default']
   const EmojiPicker: typeof import('./../components/Message/EmojiPicker/index.vue')['default']

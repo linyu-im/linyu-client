@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import { userApi } from '@/api'
   import { CHINA_CITIES, CHINA_PROVINCES, COUNTRY_OPTIONS } from '@/constants/region'
   import AvatarCropModal from '@/components/ProfileCard/AvatarCropModal.vue'
@@ -146,7 +146,7 @@
 
   const props = defineProps<{
     userId: string
-    userInfo: UserInfoResult | null
+    userInfo: User | null
   }>()
 
   const { t } = useI18n()

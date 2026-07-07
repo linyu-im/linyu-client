@@ -4,6 +4,20 @@ export interface UserInfoParam {
   userId: string
 }
 
+export interface UserSearchParam {
+  keyword: string
+  page: number
+  pageSize: number
+}
+
+export interface UserSearchResult {
+  records: User[]
+  total: number
+  page: number
+  pageSize: number
+  totalPage: number
+}
+
 export interface UserProfileUpdateParam {
   username: string
   gender: string
@@ -12,7 +26,7 @@ export interface UserProfileUpdateParam {
   location: string
 }
 
-export interface UserInfoResult {
+export interface User {
   id: string
   username: string
   account: string

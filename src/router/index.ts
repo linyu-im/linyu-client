@@ -57,6 +57,11 @@ const routes: RouteRecordRaw[] = [
     path: '/chatRecord',
     name: 'chatRecord',
     component: () => import('@/views/chatRecordWindow/index.vue')
+  },
+  {
+    path: '/addContacts',
+    name: 'addContacts',
+    component: () => import('@/views/addContactsWindow/index.vue')
   }
 ]
 

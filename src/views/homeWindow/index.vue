@@ -111,7 +111,7 @@
   } from '@/utils/window'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
-  import { useRoute } from 'vue-router'
+  import { useRoute, useRouter } from 'vue-router'
 
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
@@ -143,6 +143,7 @@
 
   const { t } = useI18n()
   const route = useRoute()
+  const router = useRouter()
 
   const menuOptions = computed(() => [
     {
@@ -232,6 +233,16 @@
   }
 
   watch(() => route.path, syncMenuFromRoute, { immediate: true })
+
+  watch(
+    () => homeTabStore.activeTabId,
+    (tabId) => {
+      const targetPath = menuOptions.value.find((item) => item.id === tabId)?.path
+      if (targetPath && route.path !== targetPath) {
+        void router.push(targetPath)
+      }
+    }
+  )
 
   const onCurrentUserInfo = () => {
     userApi.currentUserInfo().then((res) => {

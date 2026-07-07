@@ -16,7 +16,7 @@
             </div>
             <div class="contacts-apply-card__msg">{{ item.describe }}</div>
           </div>
-          <div v-if="isApplyPending(item.status)" class="contacts-apply-card__actions">
+          <div v-if="isApplyPending(item)" class="contacts-apply-card__actions">
             <n-button size="tiny" class="contacts-apply-card__reject" text @click="handleReject(item)">
               {{ t('contacts.actions.reject') }}
             </n-button>
@@ -34,7 +34,7 @@
 <script setup lang="ts">
   import ColorTag from '@/components/ColorTag.vue'
   import { applyApi } from '@/api'
-  import { isApplySource } from '@/constants/apply'
+  import { isApplySource, ApplyStatusEnum } from '@/constants/apply'
   import type { Apply } from '@/types/api/apply'
   import { formatTime } from '@/utils/time'
   import { useUserStore } from '@/stores/user'
@@ -60,12 +60,25 @@
     return t('contacts.views.newFriend.applySource.unknown')
   }
 
-  const isApplyPending = (status: string) => !status?.trim()
+  const isApplyPending = (item: Apply) => {
+    if (!item.status?.trim()) return true
+    if (item.status === ApplyStatusEnum.Wait && item.userId !== currentUserId.value) return true
+    return false
+  }
 
   const getStatusLabel = (status: string) => {
-    if (status === 'agree') return t('contacts.actions.completed')
-    if (status === 'reject' || status === 'rejected') return t('contacts.actions.rejected')
-    return t('contacts.actions.completed')
+    switch (status) {
+      case ApplyStatusEnum.Wait:
+        return t('contacts.actions.wait')
+      case ApplyStatusEnum.Agree:
+        return t('contacts.actions.agreed')
+      case ApplyStatusEnum.Reject:
+        return t('contacts.actions.rejected')
+      case ApplyStatusEnum.Cancel:
+        return t('contacts.actions.cancelled')
+      default:
+        return t('contacts.actions.unknown')
+    }
   }
 
   const fetchList = async () => {

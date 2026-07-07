@@ -21,7 +21,7 @@
   import { useUserStore } from '@/stores/user'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { GroupInfoResult } from '@/types/api/group'
-  import type { UserInfoResult } from '@/types/api/user'
+  import type { User } from '@/types/api/user'
   import type { FromType } from '@/types/common'
 
   const props = withDefaults(
@@ -49,7 +49,7 @@
   }
 
   const userInfo = computed(() =>
-    props.type === 'user' ? (peerInfoStore.read(props.id, 'user') as UserInfoResult | null) : null
+    props.type === 'user' ? (peerInfoStore.read(props.id, 'user') as User | null) : null
   )
   const groupProfile = computed(() =>
     props.type === 'group' ? (peerInfoStore.read(props.id, 'group') as GroupInfoResult | null) : null
