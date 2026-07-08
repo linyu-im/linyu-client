@@ -3,14 +3,15 @@
     <div class="message-video-wrap" :style="wrapStyle" @click="onPreview">
       <div v-if="showPlaceholder" class="message-video__placeholder" aria-hidden="true" />
       <img
-        v-if="useImageThumb && thumbSrc"
+        v-if="showThumbCover"
         class="message-video__cover"
         :src="thumbSrc"
         :alt="content.videoName"
         @load="onThumbLoad"
         @error="onThumbError" />
       <video
-        v-else-if="videoSrc"
+        v-if="videoSrc"
+        v-show="!showThumbCover"
         ref="videoRef"
         class="message-video__cover"
         :src="videoSrc"
@@ -22,7 +23,7 @@
         @canplay="seekToFirstFrame"
         @seeked="freezeOnFirstFrame"
         @error="onVideoError" />
-      <div v-if="coverReady" class="message-video__overlay">
+      <div v-if="coverRevealed" class="message-video__overlay">
         <div class="message-video__play" />
       </div>
     </div>
@@ -68,7 +69,7 @@
   const receivedLocalExt = ref<VideoMessageLocalExt>()
   const videoRef = ref<HTMLVideoElement | null>(null)
   const frameReady = ref(false)
-  const coverReady = ref(false)
+  const coverRevealed = ref(false)
   const coverError = ref(false)
   const displayWidth = ref(DEFAULT_MEDIA_COVER_SIZE.displayWidth)
   const displayHeight = ref(DEFAULT_MEDIA_COVER_SIZE.displayHeight)
@@ -77,6 +78,7 @@
   const cacheTriggered = ref(false)
   const currentLocalPath = ref('')
   const blobObjectUrl = ref('')
+  const hadLocalVideoContent = ref(false)
   let assetFallbackAttempted = false
 
   const videoLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
@@ -93,10 +95,19 @@
     return /^data:image\//i.test(videoThumbUrl) || IMAGE_THUMB_PATTERN.test(videoThumbUrl)
   })
 
-  const showPlaceholder = computed(() => coverError.value)
+  const showThumbCover = computed(() => {
+    if (!thumbSrc.value) return false
+    if (useImageThumb.value) return true
+    return Boolean(videoSrc.value && !frameReady.value)
+  })
+
+  const showPlaceholder = computed(() => coverError.value && !coverRevealed.value)
 
   const isLocalPendingUrl = (url: string) =>
     !!resolveLocalMediaFilePath(url) || url.startsWith('blob:') || url.startsWith('data:')
+
+  const isReplacingAfterSend = () =>
+    coverRevealed.value && hadLocalVideoContent.value && !isLocalPendingUrl(props.content.videoUrl)
 
   const revokeBlobObjectUrl = () => {
     if (!blobObjectUrl.value) return
@@ -107,6 +118,9 @@
   const applyLayoutFromLocalExt = (localExt?: VideoMessageLocalExt) => {
     const size = getMediaDisplaySizeFromLocalExt(localExt)
     if (!size) return
+    if (coverRevealed.value && displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight) {
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
   }
@@ -119,6 +133,11 @@
 
   const persistDisplaySize = (naturalW: number, naturalH: number) => {
     const size = calcMediaCoverDisplaySize(naturalW, naturalH)
+    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
+    if (sizeUnchanged) {
+      if (!hasSameDisplaySize(videoLocalExt.value, size)) persistLocalExt(size)
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
     if (hasSameDisplaySize(videoLocalExt.value, size)) return
@@ -126,23 +145,47 @@
   }
 
   const resetCoverState = () => {
-    coverReady.value = false
+    if (!coverRevealed.value) {
+      coverError.value = false
+      frameReady.value = false
+      if (!getMediaDisplaySizeFromLocalExt(videoLocalExt.value)) {
+        displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+        displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
+      }
+      return
+    }
     coverError.value = false
     frameReady.value = false
-    if (!getMediaDisplaySizeFromLocalExt(videoLocalExt.value)) {
-      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
-      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
-    }
+  }
+
+  const resetMediaState = () => {
+    receivedLocalExt.value = undefined
+    cacheTriggered.value = false
+    thumbSrc.value = ''
+    videoSrc.value = ''
+    hadLocalVideoContent.value = false
+    coverRevealed.value = false
+    coverError.value = false
+    frameReady.value = false
+    displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+    displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
   }
 
   const applyCoverLayout = (el: HTMLImageElement | HTMLVideoElement) => {
     const naturalW = 'naturalWidth' in el ? el.naturalWidth : el.videoWidth
     const naturalH = 'naturalHeight' in el ? el.naturalHeight : el.videoHeight
-    persistDisplaySize(naturalW, naturalH)
+    const size = calcMediaCoverDisplaySize(naturalW, naturalH)
+    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
+    if (!sizeUnchanged) {
+      persistDisplaySize(naturalW, naturalH)
+    } else if (!hasSameDisplaySize(videoLocalExt.value, size)) {
+      persistLocalExt(size)
+    }
   }
 
   const revealCover = () => {
-    coverReady.value = true
+    coverRevealed.value = true
+    coverError.value = false
   }
 
   const cacheRemoteVideo = () => {
@@ -168,14 +211,42 @@
   }
 
   const applyThumbSrc = (nextSrc: string) => {
-    if (thumbSrc.value === nextSrc) return
-    resetCoverState()
-    thumbSrc.value = nextSrc
+    if (!nextSrc || thumbSrc.value === nextSrc) return
+
+    if (isReplacingAfterSend() && thumbSrc.value) return
+
+    if (!coverRevealed.value || !thumbSrc.value) {
+      resetCoverState()
+      thumbSrc.value = nextSrc
+      return
+    }
+
+    const image = new Image()
+    image.onload = () => {
+      thumbSrc.value = nextSrc
+      coverError.value = false
+    }
+    image.onerror = () => {
+      coverError.value = false
+    }
+    image.src = nextSrc
   }
 
   const applyVideoSrc = (nextSrc: string, localPath = '') => {
-    if (videoSrc.value === nextSrc) return
-    resetCoverState()
+    if (videoSrc.value === nextSrc) {
+      if (localPath) currentLocalPath.value = localPath
+      return
+    }
+
+    const keepCoverVisible = isReplacingAfterSend() || coverRevealed.value
+
+    if (!keepCoverVisible) {
+      resetCoverState()
+    } else {
+      frameReady.value = false
+    }
+
+    coverError.value = false
     currentLocalPath.value = localPath
     assetFallbackAttempted = false
     if (!localPath) revokeBlobObjectUrl()
@@ -185,24 +256,41 @@
 
   const syncMediaSrc = () => {
     const run = async () => {
+      if (isLocalPendingUrl(props.content.videoUrl)) {
+        hadLocalVideoContent.value = true
+      }
+
       applyLayoutFromLocalExt(videoLocalExt.value)
 
       const localPath = videoLocalExt.value?.localPath
       const hasLocalVideo = !!(localPath && (await exists(localPath)))
+      const resolvedThumb = props.content.videoThumbUrl ? resolveLocalMediaDisplayUrl(props.content.videoThumbUrl) : ''
 
       if (useImageThumb.value) {
-        const remoteThumb = props.content.videoThumbUrl
-        if (uploading.value || isLocalPendingUrl(props.content.videoUrl)) {
-          applyThumbSrc(resolveLocalMediaDisplayUrl(remoteThumb))
-        } else {
-          applyThumbSrc(remoteThumb)
+        if (isReplacingAfterSend() && thumbSrc.value) {
+          if (!cacheTriggered.value && props.content.videoUrl) {
+            cacheTriggered.value = true
+            void cacheRemoteVideo()
+          }
+          return
         }
+
+        const thumbUrl =
+          uploading.value || isLocalPendingUrl(props.content.videoUrl)
+            ? resolvedThumb || props.content.videoThumbUrl
+            : props.content.videoThumbUrl
+
+        applyThumbSrc(thumbUrl)
 
         if (!hasLocalVideo && !cacheTriggered.value && props.content.videoUrl) {
           cacheTriggered.value = true
           void cacheRemoteVideo()
         }
         return
+      }
+
+      if (!thumbSrc.value && resolvedThumb) {
+        thumbSrc.value = resolvedThumb
       }
 
       if (hasLocalVideo) {
@@ -234,7 +322,7 @@
   }
 
   const onPreview = () => {
-    if (uploading.value || !coverReady.value) return
+    if (uploading.value || !coverRevealed.value) return
     openVideoViewer(
       [
         {
@@ -252,8 +340,8 @@
   }
 
   const onThumbError = () => {
+    if (coverRevealed.value && thumbSrc.value) return
     coverError.value = true
-    coverReady.value = false
   }
 
   const onVideoMetadata = () => {
@@ -269,18 +357,20 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
-          resetCoverState()
+          frameReady.value = false
           videoSrc.value = url
           nextTick(() => videoRef.value?.load())
         })
         .catch(() => {
-          coverError.value = true
-          coverReady.value = false
+          if (!coverRevealed.value) coverError.value = true
         })
       return
     }
+    if (coverRevealed.value && thumbSrc.value) {
+      coverError.value = false
+      return
+    }
     coverError.value = true
-    coverReady.value = false
   }
 
   const freezeOnFirstFrame = () => {
@@ -307,26 +397,36 @@
   }
 
   watch(
-    () => props.messageId,
-    () => {
-      receivedLocalExt.value = undefined
-      cacheTriggered.value = false
-      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
-      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
-      resetCoverState()
+    () => `${props.content.videoUrl}|${props.content.videoThumbUrl}`,
+    (identity, prevIdentity) => {
+      if (prevIdentity === undefined) return
+
+      const prevUrl = prevIdentity.split('|')[0] ?? ''
+      const nextUrl = identity.split('|')[0] ?? ''
+      const isSendSuccess = coverRevealed.value && isLocalPendingUrl(prevUrl) && !isLocalPendingUrl(nextUrl)
+
+      if (isSendSuccess) {
+        hadLocalVideoContent.value = true
+        cacheTriggered.value = false
+        return
+      }
+      resetMediaState()
     }
   )
 
   watch(
-    () =>
-      [
-        props.messageId,
-        props.content.videoUrl,
-        props.content.videoThumbUrl,
-        props.localExt,
-        uploading.value,
-        useImageThumb.value
-      ] as const,
+    () => props.messageId,
+    (newId, oldId) => {
+      if (!oldId || newId === oldId) return
+      const ext = receivedLocalExt.value ?? props.localExt
+      if (ext) {
+        void messageDbStore.updateVideoMessageLocalExt(newId, ext)
+      }
+    }
+  )
+
+  watch(
+    () => [props.content.videoUrl, props.content.videoThumbUrl, props.localExt, uploading.value] as const,
     syncMediaSrc,
     { immediate: true }
   )

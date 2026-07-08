@@ -33,6 +33,7 @@
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useMessageDbStore } from '@/stores/messageDb'
+  import { preloadMediaDisplaySrc } from '@/utils/mediaDisplaySrc'
 
   const props = defineProps<{
     messageId: string
@@ -77,6 +78,9 @@
   const applyLayoutFromLocalExt = (localExt?: ImageMessageLocalExt) => {
     const size = getMediaDisplaySizeFromLocalExt(localExt)
     if (!size) return
+    if (imageReady.value && displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight) {
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
   }
@@ -89,11 +93,19 @@
 
   const persistDisplaySize = (naturalW: number, naturalH: number) => {
     const size = calcMediaCoverDisplaySize(naturalW, naturalH)
+    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
+    if (sizeUnchanged) {
+      if (!hasSameDisplaySize(imageLocalExt.value, size)) persistLocalExt(size)
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
     if (hasSameDisplaySize(imageLocalExt.value, size)) return
     persistLocalExt(size)
   }
+
+  const isSendSuccessUrlTransition = (prevUrl: string, nextUrl: string) =>
+    imageReady.value && isLocalPendingUrl(prevUrl) && !isLocalPendingUrl(nextUrl)
 
   const cacheRemoteImage = () => {
     if (!props.content.imgUrl) return Promise.resolve()
@@ -117,13 +129,28 @@
   }
 
   const applyDisplaySrc = (nextSrc: string, localPath = '') => {
-    if (displaySrc.value === nextSrc) return
-    imageReady.value = false
-    imageError.value = false
-    currentLocalPath.value = localPath
-    assetFallbackAttempted = false
-    if (!localPath) revokeBlobObjectUrl()
-    displaySrc.value = nextSrc
+    if (displaySrc.value === nextSrc) {
+      if (localPath) currentLocalPath.value = localPath
+      return
+    }
+
+    const commitSwap = () => {
+      imageError.value = false
+      currentLocalPath.value = localPath
+      assetFallbackAttempted = false
+      if (!localPath) revokeBlobObjectUrl()
+      displaySrc.value = nextSrc
+    }
+
+    const deferred = preloadMediaDisplaySrc(displaySrc.value, nextSrc, imageReady.value, () => {
+      commitSwap()
+      imageReady.value = true
+    })
+
+    if (!deferred) {
+      imageReady.value = false
+      commitSwap()
+    }
   }
 
   const syncDisplaySrc = () => {
@@ -153,25 +180,54 @@
     void run()
   }
 
+  const resetMediaState = () => {
+    receivedLocalExt.value = undefined
+    cacheTriggered.value = false
+    displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
+    displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
+  }
+
   watch(
-    () => props.messageId,
-    () => {
-      receivedLocalExt.value = undefined
-      cacheTriggered.value = false
-      displayWidth.value = DEFAULT_MEDIA_COVER_SIZE.displayWidth
-      displayHeight.value = DEFAULT_MEDIA_COVER_SIZE.displayHeight
+    () => `${props.content.imgUrl}|${props.content.imgThumbUrl}`,
+    (identity, prevIdentity) => {
+      if (prevIdentity === undefined) return
+
+      const prevUrl = prevIdentity.split('|')[0] ?? ''
+      const nextUrl = identity.split('|')[0] ?? ''
+      if (isSendSuccessUrlTransition(prevUrl, nextUrl)) {
+        cacheTriggered.value = false
+        return
+      }
+      resetMediaState()
     }
   )
 
   watch(
-    () => [props.messageId, props.content.imgUrl, props.content.imgThumbUrl, props.localExt, uploading.value] as const,
+    () => props.messageId,
+    (newId, oldId) => {
+      if (!oldId || newId === oldId) return
+      const ext = receivedLocalExt.value ?? props.localExt
+      if (ext) {
+        void messageDbStore.updateImageMessageLocalExt(newId, ext)
+      }
+    }
+  )
+
+  watch(
+    () => [props.content.imgUrl, props.content.imgThumbUrl, props.localExt, uploading.value] as const,
     syncDisplaySrc,
     { immediate: true }
   )
 
   const onImageLoad = (event: Event) => {
     const image = event.target as HTMLImageElement
-    persistDisplaySize(image.naturalWidth, image.naturalHeight)
+    const size = calcMediaCoverDisplaySize(image.naturalWidth, image.naturalHeight)
+    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
+    if (!sizeUnchanged) {
+      persistDisplaySize(image.naturalWidth, image.naturalHeight)
+    } else if (!hasSameDisplaySize(imageLocalExt.value, size)) {
+      persistLocalExt(size)
+    }
     imageReady.value = true
     imageError.value = false
   }

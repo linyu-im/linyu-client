@@ -9,7 +9,7 @@
       'message-item--disabled': disableEvents
     }"
     @contextmenu.prevent="onContextMenu">
-    <component :is="bodyComponent" v-if="bodyComponent" v-bind="bodyProps" />
+    <component :is="bodyComponent" v-if="bodyComponent" :key="mediaBodyKey" v-bind="bodyProps" />
     <span v-else class="message-item__unknown">{{ t('message.msgType.unknown') }}</span>
     <n-dropdown
       trigger="manual"
@@ -97,6 +97,14 @@
       return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
     }
     return { content: msg.content }
+  })
+
+  const mediaBodyKey = computed(() => {
+    const msg = props.message
+    if (msg.msgType === 'image' || msg.msgType === 'video' || msg.msgType === 'sticker') {
+      return msg.renderKey ?? msg.id
+    }
+    return msg.id
   })
 
   const menuOptions = computed(() => {

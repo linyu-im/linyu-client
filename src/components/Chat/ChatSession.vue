@@ -114,6 +114,7 @@
     createLocalMessage,
     createLocalMessageFromUnit,
     isStalePendingLocalMessage,
+    mergeReplacedServerMessage,
     patchMessageById,
     resolveMessageFailReason
   } from '@/utils/messageSend'
@@ -431,10 +432,7 @@
     messageUploadStore.clearProgress(localId)
     sendingMessagesStore.removeMessage(peerId, localId)
     const localMsg = messages.value.find((item) => item.id === localId)
-    const normalized = normalizeMessage({
-      ...serverMsg,
-      sessionId: serverMsg.sessionId || localMsg?.sessionId || ''
-    })
+    const normalized = normalizeMessage(mergeReplacedServerMessage(serverMsg, localMsg))
     if (localMsg) {
       messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
     }

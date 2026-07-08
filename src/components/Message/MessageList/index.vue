@@ -1,9 +1,12 @@
 <template>
   <n-scrollbar ref="scrollbarRef" class="message-list" :theme-overrides="{ width: '7px' }" @scroll="onScroll">
-    <div class="message-list__inner">
-      <template v-for="message in messages" :key="message.id">
+    <div ref="innerRef" class="message-list__inner">
+      <template v-for="message in messages" :key="message.renderKey ?? message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
-        <div v-memo="[message.id]" class="message-list__row" :class="{ 'message-list__row--self': isSelf(message) }">
+        <div
+          v-memo="[message.renderKey ?? message.id, message.id, message.status]"
+          class="message-list__row"
+          :class="{ 'message-list__row--self': isSelf(message) }">
           <Avatar
             class="message-list__avatar"
             :id="message.fromId"
@@ -83,6 +86,7 @@
   }>()
 
   const scrollbarRef = ref<ScrollbarInst | null>(null)
+  const innerRef = ref<HTMLElement | null>(null)
   const bottomAnchorRef = ref<HTMLElement | null>(null)
   const reachTopLocked = ref(false)
   const atBottomRef = ref(true)
@@ -166,13 +170,23 @@
     })
   }
 
+  const handleContentResize = () => {
+    if (pendingScrollToBottom) {
+      tryScrollToBottom()
+      return
+    }
+    if (atBottomRef.value) {
+      applyScrollToBottom()
+    }
+  }
+
   onMounted(() => {
     resizeObserver = new ResizeObserver(() => {
-      tryScrollToBottom()
+      handleContentResize()
     })
     nextTick(() => {
-      if (bottomAnchorRef.value) {
-        resizeObserver?.observe(bottomAnchorRef.value)
+      if (innerRef.value) {
+        resizeObserver?.observe(innerRef.value)
       }
     })
   })

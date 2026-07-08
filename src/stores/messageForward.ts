@@ -6,7 +6,7 @@ import { useMessageDbStore } from '@/stores/messageDb'
 import { useSendingMessagesStore } from '@/stores/sendingMessages'
 import { useUserStore } from '@/stores/user'
 import type { Message, SendMessageParam } from '@/types/api/message'
-import { createLocalMessage, resolveMessageFailReason } from '@/utils/messageSend'
+import { createLocalMessage, mergeReplacedServerMessage, resolveMessageFailReason } from '@/utils/messageSend'
 import { buildSessionId } from '@/utils/session'
 import { defineStore } from 'pinia'
 
@@ -91,10 +91,7 @@ export const useMessageForwardStore = defineStore('messageForward', {
         .sendMsg(param)
         .then((res) => {
           if (res.code === 0 && res.data) {
-            const normalized = normalizeMessage({
-              ...res.data,
-              sessionId: res.data.sessionId || sessionId
-            })
+            const normalized = normalizeMessage(mergeReplacedServerMessage(res.data, localMsg))
             return useMessageDbStore()
               .replaceLocalWithServer(localMsg.id, normalized)
               .then(() => {

@@ -274,6 +274,7 @@
   .avatar {
     opacity: 0;
     transition: opacity 0.12s ease;
+    user-select: none;
 
     &--visible {
       opacity: 1;

@@ -95,6 +95,7 @@ type MessageLocalExtMap = {
 export type Message = {
   [K in keyof MsgTypeMap]: {
     id: string
+    renderKey?: string
     sessionId: string
     fromId: string
     toId: string

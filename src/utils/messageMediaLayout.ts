@@ -9,9 +9,11 @@ export const DEFAULT_MEDIA_COVER_SIZE = {
   displayHeight: MEDIA_COVER_HEIGHT
 }
 
+export const STICKER_MAX_HEIGHT = 144
+
 export const DEFAULT_STICKER_SIZE = {
-  displayWidth: 120,
-  displayHeight: 120
+  displayWidth: STICKER_MAX_HEIGHT,
+  displayHeight: STICKER_MAX_HEIGHT
 }
 
 type MediaLocalExt = ImageMessageLocalExt | VideoMessageLocalExt | StickerMessageLocalExt
@@ -28,9 +30,16 @@ export function calcMediaCoverDisplaySize(naturalW: number, naturalH: number) {
 
 export function calcStickerDisplaySize(naturalW: number, naturalH: number) {
   if (naturalW > 0 && naturalH > 0) {
+    if (naturalH <= STICKER_MAX_HEIGHT) {
+      return {
+        displayWidth: naturalW,
+        displayHeight: naturalH
+      }
+    }
+    const scale = STICKER_MAX_HEIGHT / naturalH
     return {
-      displayWidth: naturalW,
-      displayHeight: naturalH
+      displayWidth: Math.round(naturalW * scale),
+      displayHeight: STICKER_MAX_HEIGHT
     }
   }
   return { ...DEFAULT_STICKER_SIZE }

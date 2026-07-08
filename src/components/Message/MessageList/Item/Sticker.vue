@@ -31,6 +31,7 @@
   } from '@/utils/messageMediaLayout'
   import { useAppSettingsStore } from '@/stores/appSettings'
   import { useMessageDbStore } from '@/stores/messageDb'
+  import { preloadMediaDisplaySrc } from '@/utils/mediaDisplaySrc'
 
   const props = defineProps<{
     messageId: string
@@ -142,13 +143,28 @@
   }
 
   const applyDisplaySrc = (nextSrc: string, localPath = '') => {
-    if (displaySrc.value === nextSrc) return
-    stickerReady.value = false
-    stickerError.value = false
-    currentLocalPath.value = localPath
-    assetFallbackAttempted = false
-    if (!localPath) revokeBlobObjectUrl()
-    displaySrc.value = nextSrc
+    if (displaySrc.value === nextSrc) {
+      if (localPath) currentLocalPath.value = localPath
+      return
+    }
+
+    const commitSwap = () => {
+      stickerError.value = false
+      currentLocalPath.value = localPath
+      assetFallbackAttempted = false
+      if (!localPath) revokeBlobObjectUrl()
+      displaySrc.value = nextSrc
+    }
+
+    const deferred = preloadMediaDisplaySrc(displaySrc.value, nextSrc, stickerReady.value, () => {
+      commitSwap()
+      stickerReady.value = true
+    })
+
+    if (!deferred) {
+      stickerReady.value = false
+      commitSwap()
+    }
   }
 
   const syncDisplaySrc = () => {
@@ -183,21 +199,35 @@
     void run()
   }
 
+  const resetMediaState = () => {
+    receivedLocalExt.value = undefined
+    cacheInFlight.value = false
+    displayWidth.value = DEFAULT_STICKER_SIZE.displayWidth
+    displayHeight.value = DEFAULT_STICKER_SIZE.displayHeight
+  }
+
   watch(
-    () => props.messageId,
-    () => {
-      receivedLocalExt.value = undefined
-      cacheInFlight.value = false
-      displayWidth.value = DEFAULT_STICKER_SIZE.displayWidth
-      displayHeight.value = DEFAULT_STICKER_SIZE.displayHeight
+    () => `${normalizedStickerId.value}|${props.content.stickerUrl}`,
+    (_identity, prevIdentity) => {
+      if (prevIdentity === undefined) return
+      resetMediaState()
     }
   )
 
   watch(
-    () => [props.messageId, normalizedStickerId.value, props.content.stickerUrl, props.localExt] as const,
-    syncDisplaySrc,
-    { immediate: true }
+    () => props.messageId,
+    (newId, oldId) => {
+      if (!oldId || newId === oldId) return
+      const ext = receivedLocalExt.value ?? props.localExt
+      if (ext) {
+        void messageDbStore.updateStickerMessageLocalExt(newId, ext)
+      }
+    }
   )
+
+  watch(() => [normalizedStickerId.value, props.content.stickerUrl, props.localExt] as const, syncDisplaySrc, {
+    immediate: true
+  })
 
   const onStickerLoad = (event: Event) => {
     const image = event.target as HTMLImageElement

@@ -9,8 +9,10 @@ const createLocalId = () => `local-${Date.now()}-${Math.random().toString(36).sl
 
 const createLocalMessageBase = (fromId: string, toId: string, sceneType: SceneType) => {
   const now = nowBackendDatetime()
+  const id = createLocalId()
   return {
-    id: createLocalId(),
+    id,
+    renderKey: id,
     sessionId: '',
     fromId,
     toId,
@@ -55,6 +57,27 @@ export const createLocalMessage = (
 
 export const patchMessageById = (messages: Message[], id: string, patch: Partial<Message>): Message[] =>
   messages.map((item) => (item.id === id ? ({ ...item, ...patch } as Message) : item))
+
+export const mergeReplacedServerMessage = (serverMsg: Message, localMsg?: Message): Message => {
+  const renderKey = localMsg?.renderKey || localMsg?.id || serverMsg.renderKey
+  const sessionId = serverMsg.sessionId || localMsg?.sessionId || ''
+  const localExt = serverMsg.localExt ?? localMsg?.localExt
+
+  if (localExt === undefined) {
+    return {
+      ...serverMsg,
+      sessionId,
+      renderKey
+    } as Message
+  }
+
+  return {
+    ...serverMsg,
+    sessionId,
+    renderKey,
+    localExt
+  } as Message
+}
 
 export const isStalePendingLocalMessage = (pending: Message, serverMessages: Message[]): boolean => {
   if (pending.status !== 'sending' || !pending.id.startsWith('local-')) return false
