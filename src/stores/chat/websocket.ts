@@ -1,8 +1,8 @@
-import { useChatStore } from '@/stores/chat'
-import { useMessageDbStore } from '@/stores/messageDb'
+import { useChatStore } from '@/stores/chat/chat'
+import { useMessageDbStore } from '@/stores/message/messageDb'
 import { Message } from '@/types/api/message'
-import { useSendingMessagesStore } from '@/stores/sendingMessages'
-import { useUserStore } from '@/stores/user'
+import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
+import { useUserStore } from '@/stores/user/user'
 import { defineStore } from 'pinia'
 
 export const useWebSocketStore = defineStore('websocket', {
@@ -23,7 +23,7 @@ export const useWebSocketStore = defineStore('websocket', {
       const currentUserId = useUserStore().authInfo.userId
       if (msg.fromId === currentUserId) {
         const pending = useSendingMessagesStore().getMessages(msg.toId)
-        // 普通发送会先写入本地乐观消息；此期间忽略 WS 回推，避免与 local id 并存出现两条
+        // 普通发送会先写入本地乐观消息；此期间忽�?WS 回推，避免与 local id 并存出现两条
         if (pending.some((item) => item.status === 'sending')) {
           return
         }

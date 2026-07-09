@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { robotApi } from '@/api'
-import { usePeerInfoStore } from '@/stores/peerInfo'
+import { usePeerInfoStore } from '@/stores/user/peerInfo'
 import type { FromType } from '@/types/common'
 
 const NAME_CACHE_MAX = 1000

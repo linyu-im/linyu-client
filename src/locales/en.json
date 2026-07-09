@@ -94,6 +94,14 @@
       "addContact": "Add Contact",
       "createGroup": "Create Group Chat"
     },
+    "createGroup": {
+      "title": "Create Group Chat",
+      "search": "Search",
+      "selectFriends": "Select Friends",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "removeSelected": "Remove"
+    },
     "ecard": {
       "recommend": "Friend Recommendation"
     },

@@ -17,7 +17,7 @@
                 <span>
                   [ {{ enterpriseInfo?.location || '-' }}
                   <span class="contacts-profile__meta-sep">·</span>
-                  {{ enterpriseInfo?.memberNum ?? 0 }}人 ]
+                  {{ enterpriseInfo?.memberNum ?? 0 }}�?]
                 </span>
               </div>
               <div class="contacts-profile__sub contacts-profile__sub--member">
@@ -108,7 +108,7 @@
     hasEnterpriseMemberRoleTag,
     isEnterpriseMemberRole
   } from '@/constants/enterprise'
-  import { usePeerInfoStore } from '@/stores/peerInfo'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { EnterpriseDepartment } from '@/types/api/enterpriseDepartment'
   import type { EnterpriseMember } from '@/types/api/enterpriseMember'

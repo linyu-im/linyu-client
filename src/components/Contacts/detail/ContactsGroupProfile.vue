@@ -158,8 +158,8 @@
 
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
-  import { usePeerInfoStore } from '@/stores/peerInfo'
-  import { useUserStore } from '@/stores/user'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
+  import { useUserStore } from '@/stores/user/user'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { GroupMember } from '@/types/api/groupMember'
   import type { InputInst } from 'naive-ui'

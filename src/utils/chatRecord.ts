@@ -1,6 +1,6 @@
 import type { Chat } from '@/types/api/chat'
 import { SceneType } from '@/constants/common'
-import { useChatRecordStore } from '@/stores/chatRecord'
+import { useChatRecordStore } from '@/stores/chat/chatRecord'
 import { createChatRecordWindow } from '@/utils/window'
 
 export const openChatRecord = (chat: Chat) => {

@@ -1,6 +1,6 @@
 import { chatApi } from '@/api'
-import { useMessageDbStore } from '@/stores/messageDb'
-import { useUserStore } from '@/stores/user'
+import { useMessageDbStore } from '@/stores/message/messageDb'
+import { useUserStore } from '@/stores/user/user'
 import type { Chat } from '@/types/api/chat'
 import type { Message } from '@/types/api/message'
 import { defineStore } from 'pinia'

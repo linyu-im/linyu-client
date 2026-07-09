@@ -41,7 +41,7 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import ShortcutInput from '@/components/Set/ShortcutInput.vue'

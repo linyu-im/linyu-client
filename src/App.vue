@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
   import { nextTick, watch } from 'vue'
-  import { useSystemSettingStore } from '@/stores/systemSetting'
+  import { useSystemSettingStore } from '@/stores/app/systemSetting'
   import LinyuProvider from './components/LinyuProvider.vue'
   import { loadLanguage } from './services/i18n'
   import { ThemePatternEnum } from './constants/system'

@@ -53,12 +53,12 @@
   import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/fileIcon'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
-  import FileReceiveModal from '@/components/Message/MessageList/FileReceiveModal.vue'
+  import FileReceiveModal from '@/components/Modal/FileReceiveModal.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useMessageDownloadProgress } from '@/composables/useMessageDownloadProgress'
-  import { useAppSettingsStore } from '@/stores/appSettings'
-  import { useMessageDbStore } from '@/stores/messageDb'
-  import { useMessageDownloadStore } from '@/stores/messageDownload'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
+  import { useMessageDownloadStore } from '@/stores/message/messageDownload'
 
   const props = defineProps<{
     messageId: string
@@ -176,7 +176,7 @@
 
   const onClick = () => {
     if (uploading.value || downloading.value || !props.content.fileUrl) return
-    // 已下载且支持拖出：点击打开由 mouseup + 拖拽结束判断，避免 startDrag 吞掉 click
+    // 已下载且支持拖出：点击打开�?mouseup + 拖拽结束判断，避�?startDrag 吞掉 click
     if (canDragOut.value) return
     if (!isDownloaded.value) {
       receiveModalVisible.value = true

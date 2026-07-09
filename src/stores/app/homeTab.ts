@@ -1,6 +1,6 @@
 import { chatApi } from '@/api'
 import { SceneType } from '@/constants/common'
-import { useChatStore } from '@/stores/chat'
+import { useChatStore } from '@/stores/chat/chat'
 import router from '@/router'
 import type { SceneType as SceneTypeValue } from '@/constants/common'
 import { defineStore } from 'pinia'

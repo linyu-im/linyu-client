@@ -4,6 +4,10 @@ export interface GroupInfoRequest {
   groupId: string
 }
 
+export interface GroupCreateParam {
+  groupMemberList: string[]
+}
+
 export interface GroupSearchParam {
   keyword: string
   page: number

@@ -168,7 +168,7 @@
   import { SceneType } from '@/constants/common'
   import MessageItem from '@/components/Message/MessageList/Item/index.vue'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
-  import { useMessageForwardStore } from '@/stores/messageForward'
+  import { useMessageForwardStore } from '@/stores/message/messageForward'
   import type { Contact } from '@/types/api/contacts'
   import type { Message } from '@/types/api/message'
   import { useI18n } from 'vue-i18n'

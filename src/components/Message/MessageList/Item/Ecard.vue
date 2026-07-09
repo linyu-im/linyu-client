@@ -37,7 +37,7 @@
 <script setup lang="ts">
   import { useDismissOnScroll } from '@/composables/useDismissOnScroll'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
-  import { useChatStore } from '@/stores/chat'
+  import { useChatStore } from '@/stores/chat/chat'
   import type { ECardContent } from '@/types/api/message'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'

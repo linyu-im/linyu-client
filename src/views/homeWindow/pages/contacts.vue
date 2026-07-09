@@ -22,7 +22,7 @@
               </svg>
             </n-button>
           </div>
-          <n-scrollbar class="contacts__scroll">
+          <n-scrollbar class="contacts__scroll" :theme-overrides="{ width: '6px' }">
             <div class="contacts__list">
               <div
                 class="contacts__menu-item"
@@ -195,8 +195,8 @@
   import ContactsGroupNotice from '@/components/Contacts/detail/ContactsGroupNotice.vue'
   import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
-  import { useContactsStore } from '@/stores/contacts'
-  import { useHomeTabStore } from '@/stores/homeTab'
+  import { useContactsStore } from '@/stores/user/contacts'
+  import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
   import { getNameInitial } from '@/utils/pinyin'
   import { useI18n } from 'vue-i18n'
@@ -323,7 +323,6 @@
       width: 100%;
       min-width: 0;
       height: 100%;
-      padding: 10px;
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -332,7 +331,7 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
-      padding: 0 5px;
+      padding: 10px 15px;
     }
 
     &__search {
@@ -351,15 +350,29 @@
     }
 
     &__scroll {
-      margin-top: 10px;
+      flex: 1;
       min-height: 0;
+      margin-top: 10px;
+
+      :deep(.n-scrollbar-container) {
+        height: 100%;
+      }
+
+      :deep(.n-scrollbar-content) {
+        box-sizing: border-box;
+      }
+
+      :deep(.n-scrollbar-rail--vertical) {
+        right: 2px;
+      }
     }
 
     &__list {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      padding: 10px 0;
+      padding: 0 10px 10px 10px;
+      box-sizing: border-box;
     }
 
     &__menu-item {

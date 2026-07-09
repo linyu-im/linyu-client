@@ -50,8 +50,8 @@
   } from '@/utils/messageMediaLayout'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
-  import { useAppSettingsStore } from '@/stores/appSettings'
-  import { useMessageDbStore } from '@/stores/messageDb'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
 
   const props = defineProps<{
     messageId: string

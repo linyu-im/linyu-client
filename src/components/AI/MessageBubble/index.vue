@@ -60,7 +60,7 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import { useUserStore } from '@/stores/user'
+  import { useUserStore } from '@/stores/user/user'
   import Avatar from '@/components/Avatar.vue'
   import MessageBody from './MessageBody.vue'
 

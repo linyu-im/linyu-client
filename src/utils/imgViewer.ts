@@ -1,5 +1,5 @@
-import type { ImgViewerItem } from '@/stores/imgViewer'
-import { useImgViewerStore } from '@/stores/imgViewer'
+import type { ImgViewerItem } from '@/stores/viewer/imgViewer'
+import { useImgViewerStore } from '@/stores/viewer/imgViewer'
 import { createImgViewerWindow } from '@/utils/window'
 
 export const openImgViewer = (images: ImgViewerItem[], index = 0) => {

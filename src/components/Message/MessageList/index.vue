@@ -53,7 +53,7 @@
 <script setup lang="ts">
   import type { ScrollbarInst } from 'naive-ui'
   import { useI18n } from 'vue-i18n'
-  import { useUserStore } from '@/stores/user'
+  import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
   import { onBeforeUnmount, onMounted } from 'vue'
 

@@ -1,5 +1,5 @@
-import type { VideoViewerItem } from '@/stores/videoViewer'
-import { useVideoViewerStore } from '@/stores/videoViewer'
+import type { VideoViewerItem } from '@/stores/viewer/videoViewer'
+import { useVideoViewerStore } from '@/stores/viewer/videoViewer'
 import { createVideoViewerWindow } from '@/utils/window'
 
 export const openVideoViewer = (videos: VideoViewerItem[], index = 0) => {

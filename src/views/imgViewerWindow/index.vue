@@ -155,7 +155,7 @@
   import { save } from '@tauri-apps/plugin-dialog'
   import { writeFile } from '@tauri-apps/plugin-fs'
   import { useI18n } from 'vue-i18n'
-  import { useImgViewerStore } from '@/stores/imgViewer'
+  import { useImgViewerStore } from '@/stores/viewer/imgViewer'
   import {
     hideCurrentWindow,
     minimizeCurrentWindow,

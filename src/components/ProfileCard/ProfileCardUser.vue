@@ -133,11 +133,11 @@
 <script setup lang="ts">
   import type { User } from '@/types/api/user'
   import { contactsApi } from '@/api'
-  import EditProfileModal from '@/components/ProfileCard/EditProfileModal.vue'
+  import EditProfileModal from '@/components/Modal/EditProfileModal.vue'
   import { SceneType } from '@/constants/common'
-  import { useAvatarStore } from '@/stores/avatar'
-  import { useHomeTabStore } from '@/stores/homeTab'
-  import { useUserStore } from '@/stores/user'
+  import { useAvatarStore } from '@/stores/user/avatar'
+  import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useUserStore } from '@/stores/user/user'
   import { openImgViewer } from '@/utils/imgViewer'
   import { useI18n } from 'vue-i18n'
 

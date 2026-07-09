@@ -1,4 +1,4 @@
-import { useMessageUploadStore } from '@/stores/messageUpload'
+import { useMessageUploadStore } from '@/stores/message/messageUpload'
 
 export const useMessageUploadProgress = (messageId: MaybeRefOrGetter<string | undefined>) => {
   const store = useMessageUploadStore()

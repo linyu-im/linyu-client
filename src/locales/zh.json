@@ -94,6 +94,14 @@
       "addContact": "添加联系人",
       "createGroup": "发起群聊"
     },
+    "createGroup": {
+      "title": "创建群聊",
+      "search": "搜索",
+      "selectFriends": "选择好友创建",
+      "confirm": "确定",
+      "cancel": "取消",
+      "removeSelected": "移除"
+    },
     "ecard": {
       "recommend": "好友推荐"
     },

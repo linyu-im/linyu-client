@@ -1,4 +1,4 @@
-import { exists, mkdir, writeFile } from '@tauri-apps/plugin-fs'
+import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
 import { fetch } from '@tauri-apps/plugin-http'
@@ -108,6 +108,31 @@ export const useAvatarStore = defineStore('avatar', () => {
     return new Uint8Array(arrayBuffer)
   }
 
+  const readLocalAvatarBytes = async (type: string, id: string): Promise<Uint8Array | null> => {
+    if (!id) return null
+
+    try {
+      const avatarPath = getAvatarRelativePath(type, id)
+      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppData })
+      if (!isExist) return null
+      return readFile(avatarPath, { baseDir: BaseDirectory.AppData })
+    } catch {
+      return null
+    }
+  }
+
+  const resolveAvatarBytes = async (type: FromType, id: string): Promise<Uint8Array | null> => {
+    if (!id) return null
+
+    const localBytes = await readLocalAvatarBytes(type, id)
+    if (localBytes) return localBytes
+
+    const url = await fetchRemoteAvatar(type, id)
+    if (!url) return null
+
+    return readLocalAvatarBytes(type, id)
+  }
+
   const fetchRemoteAvatar = async (type: FromType, id: string): Promise<string> => {
     if (!id) return ''
 
@@ -181,6 +206,8 @@ export const useAvatarStore = defineStore('avatar', () => {
   return {
     getCachedSrc,
     resolveSrc,
+    resolveAvatarBytes,
+    readLocalAvatarBytes,
     refreshSrc,
     updateAvatarFromRemote,
     getLastRefresh,

@@ -90,14 +90,16 @@
       :show="contextMenuShow"
       @select="onContextMenuSelect"
       @clickoutside="onContextMenuClickoutside" />
+    <CreateGroupModal v-model:show="showCreateGroupModal" />
   </div>
 </template>
 <script setup lang="tsx">
   defineOptions({ name: 'message' })
-  import { useChatStore } from '@/stores/chat'
-  import { useMessageDbStore } from '@/stores/messageDb'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
   import ChatSession from '@/components/Chat/ChatSession.vue'
-  import { useWebSocketStore } from '@/stores/websocket'
+  import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
+  import { useWebSocketStore } from '@/stores/chat/websocket'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
   import { formatTime } from '@/utils/time'
@@ -109,6 +111,7 @@
   const messageDbStore = useMessageDbStore()
   const wsStore = useWebSocketStore()
   const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
+  const showCreateGroupModal = ref(false)
 
   const addMenuOptions = computed(() => [
     { label: () => t('message.addMenu.addContact'), key: 'addContact' },
@@ -121,7 +124,7 @@
         createAddContactsWindow()
         break
       case 'createGroup':
-        window.$message.info('TODO: create group')
+        showCreateGroupModal.value = true
         break
     }
   }

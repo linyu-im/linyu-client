@@ -150,8 +150,8 @@
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
   import { SceneType } from '@/constants/common'
-  import { useHomeTabStore } from '@/stores/homeTab'
-  import { usePeerInfoStore } from '@/stores/peerInfo'
+  import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { User } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'

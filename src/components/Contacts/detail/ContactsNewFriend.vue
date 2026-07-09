@@ -37,7 +37,7 @@
   import { isApplySource, ApplyStatusEnum } from '@/constants/apply'
   import type { Apply } from '@/types/api/apply'
   import { formatTime } from '@/utils/time'
-  import { useUserStore } from '@/stores/user'
+  import { useUserStore } from '@/stores/user/user'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()

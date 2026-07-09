@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
   import { LangEnum } from '@/constants/system'
-  import { useSystemSettingStore } from '@/stores/systemSetting'
+  import { useSystemSettingStore } from '@/stores/app/systemSetting'
   import { dateEnUS, dateZhCN, enUS, type GlobalThemeOverrides, zhCN } from 'naive-ui'
   import { useI18n } from 'vue-i18n'
 

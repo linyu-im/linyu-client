@@ -129,7 +129,7 @@
   import { groupApi, robotApi } from '@/api'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
-  import { useChatStore } from '@/stores/chat'
+  import { useChatStore } from '@/stores/chat/chat'
   import { openChatRecord } from '@/utils/chatRecord'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { GroupMember } from '@/types/api/groupMember'

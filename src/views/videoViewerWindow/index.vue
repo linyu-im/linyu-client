@@ -91,7 +91,7 @@
   import { save } from '@tauri-apps/plugin-dialog'
   import { writeFile } from '@tauri-apps/plugin-fs'
   import { useI18n } from 'vue-i18n'
-  import { useVideoViewerStore } from '@/stores/videoViewer'
+  import { useVideoViewerStore } from '@/stores/viewer/videoViewer'
   import {
     hideCurrentWindow,
     minimizeCurrentWindow,

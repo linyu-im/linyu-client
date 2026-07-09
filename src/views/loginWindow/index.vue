@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <!-- 顶部操作栏 -->
+    <!-- 顶部操作�?-->
     <ToolBar class="login__toolbar">
       <div class="flex gap-5px items-center">
         <svg class="size-24px pointer-events-none">
@@ -76,7 +76,7 @@
         </div>
       </div>
 
-      <!-- 登录和协议 -->
+      <!-- 登录和协�?-->
       <div class="m-t-25px">
         <n-button
           class="login__btn-gradient"
@@ -173,15 +173,15 @@
     ShowCurrentWindow
   } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
-  import { useUserStore } from '@/stores/user'
-  import { useGlobalStore } from '@/stores/global'
-  import { useLoginHistoryStore, type LoginHistoryItem } from '@/stores/loginHistory'
+  import { useUserStore } from '@/stores/user/user'
+  import { useGlobalStore } from '@/stores/app/global'
+  import { useLoginHistoryStore, type LoginHistoryItem } from '@/stores/user/loginHistory'
   import { invoke } from '@tauri-apps/api/core'
   import { openUrl } from '@/utils/open'
   import { once } from '@tauri-apps/api/event'
   import { OAuth2LoginPayload } from '@/types/cmd/login'
   import { LoginResult } from '@/types/api/auth'
-  import { useSystemSettingStore } from '@/stores/systemSetting'
+  import { useSystemSettingStore } from '@/stores/app/systemSetting'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { onClickOutside } from '@vueuse/core'
   import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'

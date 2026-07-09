@@ -96,7 +96,7 @@
   import { stickerApi } from '@/api'
   import { useDefaultStickerCache } from '@/composables/useDefaultStickerCache'
   import { useUserStickerPackCache } from '@/composables/useUserStickerPackCache'
-  import { useRecentDefaultStickerStore } from '@/stores/recentDefaultSticker'
+  import { useRecentDefaultStickerStore } from '@/stores/message/recentDefaultSticker'
   import type { Sticker } from '@/types/api/sticker'
   import StickerItem from './StickerItem.vue'
 

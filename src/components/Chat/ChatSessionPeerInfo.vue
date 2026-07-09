@@ -21,7 +21,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { SceneType } from '@/constants/common'
-  import { usePeerInfoStore } from '@/stores/peerInfo'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { User } from '@/types/api/user'
 

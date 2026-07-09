@@ -122,14 +122,14 @@
   import { useI18n } from 'vue-i18n'
   import { chatApi, groupApi, userApi } from '@/api'
   import { SceneType } from '@/constants/common'
-  import { useChatStore } from '@/stores/chat'
-  import { useHomeTabStore } from '@/stores/homeTab'
-  import { useUserStore } from '@/stores/user'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useUserStore } from '@/stores/user/user'
   import type { Group } from '@/types/api/group'
   import type { User } from '@/types/api/user'
   import { closeCurrentWindow, minimizeCurrentWindow, openAndFocusWindow, ShowCurrentWindow } from '@/utils/window'
-  import AddFriendApplyModal from '@/components/Contacts/AddFriendApplyModal.vue'
-  import AddGroupApplyModal from '@/components/Contacts/AddGroupApplyModal.vue'
+  import AddFriendApplyModal from '@/components/Modal/AddFriendApplyModal.vue'
+  import AddGroupApplyModal from '@/components/Modal/AddGroupApplyModal.vue'
 
   const { t } = useI18n()
   const userStore = useUserStore()

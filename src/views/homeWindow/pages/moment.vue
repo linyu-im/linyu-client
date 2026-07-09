@@ -45,8 +45,8 @@
   import MomentCover from '@/components/Moment/MomentCover.vue'
   import MomentFloatNav from '@/components/Moment/MomentFloatNav.vue'
   import MomentPostCard from '@/components/Moment/MomentPostCard.vue'
-  import MomentComposeModal from '@/components/Moment/MomentComposeModal.vue'
-  import { useUserStore } from '@/stores/user'
+  import MomentComposeModal from '@/components/Modal/MomentComposeModal.vue'
+  import { useUserStore } from '@/stores/user/user'
   import type { MomentFilter, MomentLike, MomentPageParam, MomentRecord } from '@/types/api/moment'
   import { useI18n } from 'vue-i18n'
 

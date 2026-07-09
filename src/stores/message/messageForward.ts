@@ -1,10 +1,10 @@
 import { messageApi } from '@/api'
 import { SceneType } from '@/constants/common'
 import i18n from '@/services/i18n'
-import { useChatStore } from '@/stores/chat'
-import { useMessageDbStore } from '@/stores/messageDb'
-import { useSendingMessagesStore } from '@/stores/sendingMessages'
-import { useUserStore } from '@/stores/user'
+import { useChatStore } from '@/stores/chat/chat'
+import { useMessageDbStore } from '@/stores/message/messageDb'
+import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
+import { useUserStore } from '@/stores/user/user'
 import type { Message, SendMessageParam } from '@/types/api/message'
 import { createLocalMessage, mergeReplacedServerMessage, resolveMessageFailReason } from '@/utils/messageSend'
 import { buildSessionId } from '@/utils/session'
@@ -18,7 +18,7 @@ export interface ForwardPeer {
   sceneType: SceneType
 }
 
-/** 通知 Chat 页同步消息列表 */
+/** 通知 Chat 页同步消息列�?*/
 export interface ForwardSyncPayload {
   sessionId: string
   message: Message

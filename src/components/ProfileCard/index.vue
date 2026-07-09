@@ -17,8 +17,8 @@
 </template>
 
 <script setup lang="ts">
-  import { usePeerInfoStore } from '@/stores/peerInfo'
-  import { useUserStore } from '@/stores/user'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
+  import { useUserStore } from '@/stores/user/user'
   import type { EnterprisInfo } from '@/types/api/enterprise'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { User } from '@/types/api/user'

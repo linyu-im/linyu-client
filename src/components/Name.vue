@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-  import { useNameStore } from '@/stores/name'
+  import { useNameStore } from '@/stores/user/name'
   import type { FromType } from '@/types/common'
 
   interface Props {

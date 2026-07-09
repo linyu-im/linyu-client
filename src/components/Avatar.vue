@@ -48,8 +48,8 @@
 <script setup lang="ts">
   import { useDismissOnScroll } from '@/composables/useDismissOnScroll'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
-  import { useAvatarStore } from '@/stores/avatar'
-  import { useChatStore } from '@/stores/chat'
+  import { useAvatarStore } from '@/stores/user/avatar'
+  import { useChatStore } from '@/stores/chat/chat'
   import type { FromType } from '@/types/common'
   import type { CSSProperties } from 'vue'
 

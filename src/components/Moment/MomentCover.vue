@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-  import { usePeerInfoStore } from '@/stores/peerInfo'
+  import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { User } from '@/types/api/user'
   import { useI18n } from 'vue-i18n'
 

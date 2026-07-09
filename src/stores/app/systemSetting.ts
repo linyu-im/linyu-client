@@ -19,7 +19,7 @@ export const useSystemSettingStore = defineStore('systemSetting', {
   state: (): SystemSettingStore => {
     return {
       themes: {
-        pattern: ThemePatternEnum.LIGHT,
+        pattern: ThemePatternEnum.DARK,
         scheme: ThemeSchemeEnum.DEFALUT
       },
       preferences: {

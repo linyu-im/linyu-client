@@ -1,4 +1,4 @@
-import { useMessageDownloadStore } from '@/stores/messageDownload'
+import { useMessageDownloadStore } from '@/stores/message/messageDownload'
 
 export const useMessageDownloadProgress = (messageId: MaybeRefOrGetter<string | undefined>) => {
   const store = useMessageDownloadStore()

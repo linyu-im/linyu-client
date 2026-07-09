@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="flex justify-between items-center flex-1 pointer-events-none">
-        <!-- 头像状态 -->
+        <!-- 头像状�?-->
         <div class="m-l-10px flex items-center pointer-events-auto">
           <div class="flex position-relative items-center">
             <Avatar :id="userStore.userInfo.id" class="size-24px rounded-5px bg-#FFF" :profile-enabled="true" />
@@ -76,7 +76,7 @@
           </n-dropdown>
         </div>
       </ToolBar>
-      <!-- 内容：keep-alive 缓存各子页面状态 -->
+      <!-- 内容：keep-alive 缓存各子页面状�?-->
       <div class="home__content">
         <UpdateModal v-model:show="showUpdateModal" />
         <router-view v-slot="{ Component, route }">
@@ -90,13 +90,13 @@
 </template>
 
 <script setup lang="ts">
-  import UpdateModal from '@/components/UpdateModal.vue'
+  import UpdateModal from '@/components/Modal/UpdateModal.vue'
   import { dismissTopEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
-  import { useAppSettingsStore } from '@/stores/appSettings'
-  import { useHomeTabStore, type HomeTabId } from '@/stores/homeTab'
-  import { useUserStore } from '@/stores/user'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useHomeTabStore, type HomeTabId } from '@/stores/app/homeTab'
+  import { useUserStore } from '@/stores/user/user'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
   import {
     createEmotionWinodw,

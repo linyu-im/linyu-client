@@ -104,9 +104,9 @@
   import { useI18n } from 'vue-i18n'
   import { messageApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
-  import { useUserStore } from '@/stores/user'
-  import { useChatStore } from '@/stores/chat'
-  import { useMessageDbStore } from '@/stores/messageDb'
+  import { useUserStore } from '@/stores/user/user'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
   import type { Chat } from '@/types/api/chat'
   import type { Message, SendMessageContent, SendMessageMsgType, SendMessageParam } from '@/types/api/message'
   import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
@@ -118,14 +118,14 @@
     patchMessageById,
     resolveMessageFailReason
   } from '@/utils/messageSend'
-  import { useMessageUploadStore } from '@/stores/messageUpload'
-  import { useMessageForwardStore } from '@/stores/messageForward'
-  import { useSendingMessagesStore } from '@/stores/sendingMessages'
-  import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useMessageUploadStore } from '@/stores/message/messageUpload'
+  import { useMessageForwardStore } from '@/stores/message/messageForward'
+  import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
   import type { MentionItem } from '../Message/MessageEditor/MentionList.vue'
   import MessageList from '../Message/MessageList/index.vue'
-  import ForwardMessageModal from '../Message/ForwardMessageModal.vue'
+  import ForwardMessageModal from '@/components/Modal/ForwardMessageModal.vue'
   import EmojiPicker from '../Message/EmojiPicker/index.vue'
   import VoiceRecordBar from '../Message/VoiceRecordBar.vue'
   import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer/index.vue'
@@ -288,7 +288,7 @@
     messageListRef.value?.scrollToBottom()
   }
 
-  /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提示 */
+  /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提�?*/
   const appendMessage = (raw: Message) => {
     const msg = normalizeMessage(raw as Message)
     if (messages.value.some((item) => item.id === msg.id)) return

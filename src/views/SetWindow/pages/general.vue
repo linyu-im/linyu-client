@@ -74,8 +74,8 @@
   import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
-  import { useSystemSettingStore } from '@/stores/systemSetting'
-  import { useAppSettingsStore } from '@/stores/appSettings'
+  import { useSystemSettingStore } from '@/stores/app/systemSetting'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
 
