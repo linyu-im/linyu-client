@@ -62,6 +62,11 @@ const routes: RouteRecordRaw[] = [
     path: '/addContacts',
     name: 'addContacts',
     component: () => import('@/views/addContactsWindow/index.vue')
+  },
+  {
+    path: '/groupNotice',
+    name: 'groupNotice',
+    component: () => import('@/views/groupNoticeWindow/index.vue')
   }
 ]
 

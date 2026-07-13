@@ -120,6 +120,9 @@ export const usePeerInfoStore = defineStore('peerInfo', {
 
       return this.read(peerId, type)
     },
+    refreshGroup(groupId: string) {
+      return this.fetchGroup(groupId)
+    },
     patchUser(userId: string, patch: Partial<User>) {
       const current = readCache(this.users, userId)
       if (!current) return

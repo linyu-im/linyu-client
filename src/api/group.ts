@@ -4,8 +4,17 @@ import type {
   GroupCreateParam,
   GroupInfoRequest,
   GroupInfoResult,
+  GroupInviteMemberParam,
+  GroupNotice,
+  GroupNoticeAddParam,
+  GroupNoticeDeleteParam,
+  GroupNoticeUpdateParam,
+  GroupRemoveMemberParam,
   GroupSearchParam,
-  GroupSearchResult
+  GroupSetAdminParam,
+  GroupSearchResult,
+  GroupTransferOwnerParam,
+  GroupUpdateInfoParam
 } from '@/types/api/group'
 import type { GroupMember } from '@/types/api/groupMember'
 
@@ -29,9 +38,57 @@ export function create(data: GroupCreateParam): Promise<ApiResponse<Group>> {
   return post<Group, GroupCreateParam>('/api/basic/v1/group/create', data)
 }
 
+export function updateInfo(data: GroupUpdateInfoParam): Promise<ApiResponse<void>> {
+  return post<void, GroupUpdateInfoParam>('/api/basic/v1/group/info/update', data)
+}
+
 export function uploadAvatar(file: Blob, groupId: string, fileName = 'avatar.jpg'): Promise<ApiResponse<string>> {
   const body = new FormData()
   body.append('file', file, fileName)
   body.append('groupId', groupId)
   return formData<string>('/api/basic/v1/group/avatar/upload', body)
+}
+
+export function inviteMember(data: GroupInviteMemberParam): Promise<ApiResponse<void>> {
+  return post<void, GroupInviteMemberParam>('/api/basic/v1/group/invite-member', data)
+}
+
+export function removeMember(data: GroupRemoveMemberParam): Promise<ApiResponse<void>> {
+  return post<void, GroupRemoveMemberParam>('/api/basic/v1/group/remove-member', data)
+}
+
+export function isAdmin(data: GroupInfoRequest): Promise<ApiResponse<boolean>> {
+  return post<boolean, GroupInfoRequest>('/api/basic/v1/group/is-admin', data)
+}
+
+export function dissolve(data: GroupInfoRequest): Promise<ApiResponse<void>> {
+  return post<void, GroupInfoRequest>('/api/basic/v1/group/dissolve', data)
+}
+
+export function leave(data: GroupInfoRequest): Promise<ApiResponse<void>> {
+  return post<void, GroupInfoRequest>('/api/basic/v1/group/leave', data)
+}
+
+export function setAdmin(data: GroupSetAdminParam): Promise<ApiResponse<void>> {
+  return post<void, GroupSetAdminParam>('/api/basic/v1/group/set-admin', data)
+}
+
+export function transferOwner(data: GroupTransferOwnerParam): Promise<ApiResponse<void>> {
+  return post<void, GroupTransferOwnerParam>('/api/basic/v1/group/transfer-owner', data)
+}
+
+export function listNotices(data: GroupInfoRequest): Promise<ApiResponse<GroupNotice[]>> {
+  return post<GroupNotice[], GroupInfoRequest>('/api/basic/v1/group/notice/list', data)
+}
+
+export function addNotice(data: GroupNoticeAddParam): Promise<ApiResponse<void>> {
+  return post<void, GroupNoticeAddParam>('/api/basic/v1/group/notice/add', data)
+}
+
+export function updateNotice(data: GroupNoticeUpdateParam): Promise<ApiResponse<void>> {
+  return post<void, GroupNoticeUpdateParam>('/api/basic/v1/group/notice/update', data)
+}
+
+export function deleteNotice(data: GroupNoticeDeleteParam): Promise<ApiResponse<void>> {
+  return post<void, GroupNoticeDeleteParam>('/api/basic/v1/group/notice/delete', data)
 }

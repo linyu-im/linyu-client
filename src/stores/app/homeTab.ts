@@ -67,6 +67,12 @@ export const useHomeTabStore = defineStore('homeTab', {
     tabPayload: {}
   }),
   actions: {
+    setActiveTabId(tabId: HomeTabId) {
+      this.$patch((state) => {
+        state.activeTabId = tabId
+      })
+    },
+
     setBadgeCount(tabId: HomeTabId, count: number) {
       this.$patch((state) => {
         state.badgeCounts[tabId] = Math.max(0, count)

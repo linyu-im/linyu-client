@@ -421,9 +421,7 @@
         .then(() => {
           chatStore.setSelectedChatId(chatId)
           chatStore.markReopen()
-          homeTabStore.$patch((state) => {
-            state.activeTabId = 'message'
-          })
+          homeTabStore.setActiveTabId('message')
           homeTabStore.setTabPayload('message', { chatId })
           return openAndFocusWindow('home')
         })

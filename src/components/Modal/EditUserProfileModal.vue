@@ -28,6 +28,11 @@
             :refresh="true"
             round
             :size="88" />
+          <span class="edit-profile__avatar-overlay" aria-hidden="true">
+            <svg class="edit-profile__avatar-icon">
+              <use href="#image" />
+            </svg>
+          </span>
         </button>
 
         <div class="edit-profile__form">
@@ -493,6 +498,7 @@
     }
 
     &__avatar-btn {
+      position: relative;
       display: block;
       margin: 0 auto 24px;
       padding: 0;
@@ -500,6 +506,11 @@
       background: transparent;
       cursor: pointer;
       border-radius: 50%;
+      overflow: hidden;
+
+      &:hover .edit-profile__avatar-overlay {
+        opacity: 1;
+      }
     }
 
     &__avatar {
@@ -512,6 +523,24 @@
         border-radius: 50%;
         object-fit: cover;
       }
+    }
+
+    &__avatar-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    &__avatar-icon {
+      width: 24px;
+      height: 24px;
     }
 
     &__form {

@@ -158,6 +158,7 @@
       "exclusiveRobot": "Exclusive Robot",
       "exclusiveRobotDesc": "Use {'@'} to wake up robots",
       "add": "Add",
+      "remove": "Remove",
       "addTodo": "Coming soon",
       "pinChat": "Pin Chat",
       "mute": "Mute Notifications",
@@ -176,7 +177,56 @@
         "announcement": "Group Announcement",
         "viewMoreAnnouncement": "View more",
         "leaveGroup": "Leave Group",
-        "announcementPlaceholder": "No group announcement yet"
+        "leaveGroupConfirmTitle": "Leave Group",
+        "leaveGroupConfirmContent": "Are you sure you want to leave this group? You will no longer receive group messages.",
+        "leaveGroupConfirm": "Leave",
+        "leaveGroupCancel": "Cancel",
+        "dissolveGroup": "Dissolve Group",
+        "dissolveGroupConfirmTitle": "Dissolve Group",
+        "dissolveGroupConfirmContent": "Are you sure you want to dissolve this group? All members will leave and this cannot be undone.",
+        "dissolveGroupConfirm": "Dissolve",
+        "dissolveGroupCancel": "Cancel",
+        "transferGroup": {
+          "title": "Transfer Group",
+          "search": "Search",
+          "selectMember": "Select Transfer Target",
+          "confirm": "Confirm Transfer",
+          "cancel": "Cancel",
+          "removeSelected": "Remove"
+        },
+        "setGroupAdmin": "Set Group Admin",
+        "announcementPlaceholder": "No group announcement yet",
+        "profileSettings": "Group Profile",
+        "groupName": "Group Name",
+        "groupIntro": "Introduction",
+        "groupTags": "Tags",
+        "tagsPlaceholder": "Type a group tag and press Enter",
+        "notSet": "Not set",
+        "nameRequired": "Group name is required",
+        "addMember": {
+          "title": "Add Group Members",
+          "search": "Search",
+          "selectFriends": "Select Friends to Invite",
+          "confirm": "Add",
+          "cancel": "Cancel",
+          "removeSelected": "Remove"
+        },
+        "removeMember": {
+          "title": "Remove Group Members",
+          "search": "Search",
+          "selectMembers": "Select Members to Remove",
+          "confirm": "Remove",
+          "cancel": "Cancel",
+          "removeSelected": "Remove"
+        },
+        "setAdmin": {
+          "search": "Search",
+          "currentMembers": "Current Group Members",
+          "adminList": "Admin List",
+          "confirm": "Confirm",
+          "cancel": "Cancel",
+          "removeSelected": "Remove"
+        }
       }
     },
     "voiceRecord": {
@@ -720,5 +770,28 @@
     "httpError": "Network Error: {status}",
     "requestFailed": "Request Failed",
     "responseBodyEmpty": "Response body is empty"
+  },
+  "groupNotice": {
+    "windowTitle": "Linyu",
+    "publish": "New Announcement",
+    "publishTitle": "New Announcement",
+    "pinned": "Pinned",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "composePlaceholder": "Write announcement, 1-600 characters",
+    "pinNotice": "Pin announcement",
+    "submit": "Publish",
+    "cancel": "Cancel",
+    "empty": "No announcements yet",
+    "contentRequired": "Please enter announcement content",
+    "publishSuccess": "Published successfully",
+    "edit": "Edit",
+    "editTitle": "Edit Announcement",
+    "save": "Save",
+    "updateSuccess": "Updated successfully",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete Announcement",
+    "deleteConfirmContent": "Are you sure you want to delete this announcement?",
+    "deleteSuccess": "Deleted successfully"
   }
 }

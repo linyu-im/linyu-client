@@ -14,7 +14,9 @@
             v-else-if="sceneType === SceneType.Group"
             :show="show"
             :group-info="groupInfo"
-            :chat-id="chatId" />
+            :chat-id="chatId"
+            @history-deleted="emit('history-deleted')"
+            @group-dissolved="emit('group-dissolved')" />
         </n-scrollbar>
       </div>
     </aside>
@@ -46,6 +48,7 @@
   const emit = defineEmits<{
     close: []
     'history-deleted': []
+    'group-dissolved': []
   }>()
 
   const onClose = () => {

@@ -83,6 +83,10 @@ export const useChatStore = defineStore('chat', {
       })
     },
 
+    refreshList() {
+      return this.loadList()
+    },
+
     onReceiveMessage(msg: Message) {
       const currentUserId = useUserStore().authInfo.userId
       const index = this.chatList.findIndex((item) => item.sessionId === msg.sessionId)

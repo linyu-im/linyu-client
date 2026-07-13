@@ -158,6 +158,7 @@
       "exclusiveRobot": "专属机器人",
       "exclusiveRobotDesc": "使用{'@'}唤醒机器人",
       "add": "添加",
+      "remove": "移除",
       "addTodo": "敬请期待",
       "pinChat": "置顶聊天",
       "mute": "消息免打扰",
@@ -176,7 +177,56 @@
         "announcement": "群公告",
         "viewMoreAnnouncement": "查看更多",
         "leaveGroup": "退出群聊",
-        "announcementPlaceholder": "暂无群公告"
+        "leaveGroupConfirmTitle": "退出群聊",
+        "leaveGroupConfirmContent": "确定退出该群聊吗？退出后将不再接收群消息。",
+        "leaveGroupConfirm": "退出",
+        "leaveGroupCancel": "取消",
+        "dissolveGroup": "解散群聊",
+        "dissolveGroupConfirmTitle": "解散群聊",
+        "dissolveGroupConfirmContent": "确定解散该群聊吗？解散后所有成员将退出群聊，此操作不可恢复。",
+        "dissolveGroupConfirm": "解散",
+        "dissolveGroupCancel": "取消",
+        "transferGroup": {
+          "title": "转让群聊",
+          "search": "搜索",
+          "selectMember": "选择转让对象",
+          "confirm": "确认转让",
+          "cancel": "取消",
+          "removeSelected": "移除"
+        },
+        "setGroupAdmin": "设置群管理",
+        "announcementPlaceholder": "暂无群公告",
+        "profileSettings": "群资料设置",
+        "groupName": "群聊名称",
+        "groupIntro": "群介绍",
+        "groupTags": "群标签",
+        "tagsPlaceholder": "输入群标签后回车",
+        "notSet": "未设置",
+        "nameRequired": "群聊名称不能为空",
+        "addMember": {
+          "title": "添加群成员",
+          "search": "搜索",
+          "selectFriends": "选择邀请的好友",
+          "confirm": "添加",
+          "cancel": "取消",
+          "removeSelected": "移除"
+        },
+        "removeMember": {
+          "title": "移除群成员",
+          "search": "搜索",
+          "selectMembers": "选择要移除的成员",
+          "confirm": "移除",
+          "cancel": "取消",
+          "removeSelected": "移除"
+        },
+        "setAdmin": {
+          "search": "搜索",
+          "currentMembers": "当前群成员",
+          "adminList": "管理员列表",
+          "confirm": "确认",
+          "cancel": "取消",
+          "removeSelected": "移除"
+        }
       }
     },
     "voiceRecord": {
@@ -720,5 +770,28 @@
     "httpError": "网络错误: {status}",
     "requestFailed": "请求失败",
     "responseBodyEmpty": "响应内容为空"
+  },
+  "groupNotice": {
+    "windowTitle": "Linyu",
+    "publish": "发布新公告",
+    "publishTitle": "发布新公告",
+    "pinned": "置顶",
+    "expand": "展开",
+    "collapse": "收起",
+    "composePlaceholder": "填写公告，1-600字",
+    "pinNotice": "置顶公告",
+    "submit": "发布",
+    "cancel": "取消",
+    "empty": "暂无群公告",
+    "contentRequired": "请填写公告内容",
+    "publishSuccess": "发布成功",
+    "edit": "编辑",
+    "editTitle": "编辑公告",
+    "save": "保存",
+    "updateSuccess": "更新成功",
+    "delete": "删除",
+    "deleteConfirmTitle": "删除公告",
+    "deleteConfirmContent": "确定删除这条群公告吗？",
+    "deleteSuccess": "删除成功"
   }
 }

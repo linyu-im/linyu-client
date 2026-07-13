@@ -126,14 +126,14 @@
       </div>
     </div>
 
-    <EditProfileModal v-model:show="showEditProfile" :user-id="id" :user-info="userInfo" />
+    <EditUserProfileModal v-model:show="showEditProfile" :user-id="id" :user-info="userInfo" />
   </div>
 </template>
 
 <script setup lang="ts">
   import type { User } from '@/types/api/user'
   import { contactsApi } from '@/api'
-  import EditProfileModal from '@/components/Modal/EditProfileModal.vue'
+  import EditUserProfileModal from '@/components/Modal/EditUserProfileModal.vue'
   import { SceneType } from '@/constants/common'
   import { useAvatarStore } from '@/stores/user/avatar'
   import { useHomeTabStore } from '@/stores/app/homeTab'

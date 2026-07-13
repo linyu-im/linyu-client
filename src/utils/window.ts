@@ -189,3 +189,13 @@ export const createAddContactsWindow = () =>
     resizable: true,
     transparent: true
   })
+
+export const createGroupNoticeWindow = () =>
+  createWebviewWindow('群公告', 'groupNotice', {
+    width: 520,
+    minWidth: 420,
+    height: 640,
+    minHeight: 480,
+    resizable: true,
+    transparent: true
+  })

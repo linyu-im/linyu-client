@@ -150,6 +150,21 @@
       colorChecked: 'var(--primary-color)',
       color: 'var(--button-soft-bg)'
     },
+    Radio: {
+      border: '1px solid var(--border-color)',
+      borderHover: '1px solid var(--primary-color)',
+      borderFocus: '1px solid var(--primary-color)',
+      borderChecked: '1px solid var(--primary-color)',
+      borderDisabled: '1px solid var(--border-color)',
+      borderDisabledChecked: '1px solid var(--border-color)',
+      boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      color: 'var(--button-soft-bg)',
+      colorDisabled: 'color-mix(in srgb, var(--button-soft-bg) 60%, transparent)',
+      colorActive: 'var(--primary-color)',
+      dotColorActive: '#FFF',
+      textColor: 'var(--text-color)',
+      textColorDisabled: 'var(--text-secondary-color)'
+    },
     Input: {
       border: '1px solid var(--border-color)',
       borderRadius: '5px',
@@ -222,6 +237,7 @@
         InternalSelection: {
           borderRadius: '8px',
           heightSmall: '28px',
+          heightMedium: '34px',
           textColor: 'var(--text-color)',
           placeholderColor: 'var(--text-secondary-color)',
           color: 'var(--input-soft-bg)',
@@ -253,6 +269,21 @@
           actionDividerColor: 'var(--divider-color)'
         }
       }
+    },
+    Tag: {
+      borderRadius: '4px',
+      heightSmall: '24px',
+      fontSizeSmall: '12px',
+      color: 'rgba(var(--primary-rgb), 0.14)',
+      textColor: 'var(--primary-color)',
+      border: '1px solid rgba(var(--primary-rgb), 0.36)',
+      colorBordered: 'rgba(var(--primary-rgb), 0.14)',
+      textColorBordered: 'var(--primary-color)',
+      borderBordered: '1px solid rgba(var(--primary-rgb), 0.36)',
+      closeIconColor: 'var(--primary-color)',
+      closeIconColorHover: 'var(--primary-strong-color)',
+      closeIconColorPressed: 'var(--primary-strong-color)',
+      closeIconSizeSmall: '12px'
     },
     DatePicker: {
       panelColor: 'var(--bg-muted-color)',
@@ -392,5 +423,19 @@
   .n-slider--active .n-slider-handle {
     background-color: var(--primary-color);
     box-shadow: none;
+  }
+
+  .n-tag.n-tag--default:not(.n-tag--disabled) {
+    color: var(--primary-color);
+    background-color: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 36%, transparent);
+
+    .n-tag__close {
+      color: var(--primary-color);
+
+      &:hover {
+        color: var(--primary-strong-color);
+      }
+    }
   }
 </style>

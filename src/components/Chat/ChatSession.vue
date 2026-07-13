@@ -95,7 +95,8 @@
         :user-info="peerInfo"
         :group-info="groupInfo"
         @close="settingsDrawerVisible = false"
-        @history-deleted="onChatHistoryDeleted" />
+        @history-deleted="onChatHistoryDeleted"
+        @group-dissolved="onGroupDissolved" />
       <ForwardMessageModal />
     </div>
   </div>
@@ -223,7 +224,12 @@
   }
 
   const onChatHistoryDeleted = () => {
+    settingsDrawerVisible.value = false
     loadInitialMessages()
+  }
+
+  const onGroupDissolved = () => {
+    settingsDrawerVisible.value = false
   }
 
   useEscapeOverlay(() => {
