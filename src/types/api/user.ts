@@ -2,6 +2,7 @@ import type { Moment } from '@/types/api/moment'
 
 export interface UserInfoParam {
   userId: string
+  groupId?: string
 }
 
 export interface UserSearchParam {
@@ -50,4 +51,5 @@ export interface User {
   remark: string
   tag?: string
   moment: Moment | null
+  groupNickName?: string
 }

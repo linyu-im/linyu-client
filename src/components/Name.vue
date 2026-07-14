@@ -12,25 +12,27 @@
   interface Props {
     id: string
     type?: FromType
+    groupId?: string
     tag?: string
     instant?: boolean
   }
 
   const props = withDefaults(defineProps<Props>(), {
     type: 'user',
+    groupId: '',
     instant: false
   })
 
   const nameStore = useNameStore()
 
   const getInitialNameState = () => {
-    const { id, type } = props
+    const { id, type, groupId } = props
 
     if (!id || (type !== 'user' && type !== 'robot')) {
       return { name: '', visible: props.instant }
     }
 
-    const cached = nameStore.getCachedName(type, id)
+    const cached = nameStore.getCachedName(type, id, type === 'user' ? groupId : '')
     if (cached) {
       return { name: cached, visible: true }
     }
@@ -46,11 +48,13 @@
 
   let loadSeq = 0
 
-  const isStale = (seq: number, id: string, type: FromType) => seq !== loadSeq || props.id !== id || props.type !== type
+  const isStale = (seq: number, id: string, type: FromType, groupId: string) =>
+    seq !== loadSeq || props.id !== id || props.type !== type || props.groupId !== groupId
 
   const loadName = () => {
     const id = props.id
     const type = props.type
+    const groupId = type === 'user' ? props.groupId : ''
 
     if (!id || (type !== 'user' && type !== 'robot')) {
       displayName.value = ''
@@ -58,7 +62,7 @@
       return
     }
 
-    const cached = nameStore.getCachedName(type, id)
+    const cached = nameStore.getCachedName(type, id, groupId)
     if (cached) {
       displayName.value = cached
       visible.value = true
@@ -70,15 +74,15 @@
       visible.value = false
     }
 
-    nameStore.resolveName(type, id).then((name) => {
-      if (isStale(seq, id, type)) return
+    nameStore.resolveName(type, id, groupId).then((name) => {
+      if (isStale(seq, id, type, groupId)) return
       displayName.value = name
       visible.value = true
     })
   }
 
   watch(
-    () => [props.id, props.type] as const,
+    () => [props.id, props.type, props.groupId] as const,
     () => {
       loadName()
     },
@@ -95,6 +99,7 @@
     max-width: 100%;
     opacity: 0;
     transition: opacity 0.12s ease;
+    user-select: none;
 
     &--visible {
       opacity: 1;

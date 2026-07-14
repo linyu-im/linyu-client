@@ -25,7 +25,7 @@
   import { SingleLine } from './extensions/SingleLine'
   import { FileChip } from './extensions/FileChip'
   import { buildMentionSuggestion } from './extensions/suggestion'
-  import type { MentionItem } from './MentionList.vue'
+  import type { MentionItem } from '@/types/common'
   import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
   import type { FromType } from '@/types/common'
   import { isVideoFile } from '@/utils/fileIcon'

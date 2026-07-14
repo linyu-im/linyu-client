@@ -62,7 +62,7 @@
       </button>
     </section>
 
-    <button type="button" class="chat-settings-drawer__footer-action">
+    <button type="button" class="chat-settings-drawer__footer-action" @click="onDeleteFriend">
       {{ t('message.chatSettings.deleteFriend') }}
     </button>
   </div>
@@ -70,13 +70,14 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { robotApi } from '@/api'
+  import { contactsApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useMessageForwardStore } from '@/stores/message/messageForward'
+  import { useContactsStore } from '@/stores/user/contacts'
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
   import type { User } from '@/types/api/user'
@@ -90,6 +91,7 @@
 
   const emit = defineEmits<{
     'history-deleted': []
+    'friend-deleted': []
   }>()
 
   const { t } = useI18n()
@@ -97,6 +99,7 @@
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
   const messageForwardStore = useMessageForwardStore()
+  const contactsStore = useContactsStore()
 
   const robots = ref<Robot[]>([])
 
@@ -148,6 +151,38 @@
       onPositiveClick: () => {
         messageDbStore.deleteChatHistoryBySession(chat.sessionId).then(() => {
           emit('history-deleted')
+        })
+      }
+    })
+  }
+
+  const onDeleteFriend = () => {
+    const userId = props.userInfo?.id
+    if (!userId) return
+
+    dialog.warning({
+      title: t('message.chatSettings.deleteFriendConfirmTitle'),
+      content: t('message.chatSettings.deleteFriendConfirmContent'),
+      positiveText: t('message.chatSettings.deleteFriendConfirm'),
+      negativeText: t('message.chatSettings.deleteFriendCancel'),
+      showIcon: false,
+      positiveButtonProps: { type: 'error' },
+      negativeButtonProps: { ghost: false, size: 'small' },
+      onPositiveClick: () => {
+        return contactsApi.deleteFriend({ userId }).then((res) => {
+          if (res.code === 0) {
+            const sessionId = currentChat.value?.sessionId
+            if (sessionId) {
+              messageDbStore.deleteChatHistoryBySession(sessionId)
+            }
+            contactsStore.fetchFriendList()
+            chatStore.refreshList()
+            chatStore.clearSelectedChatId()
+            emit('friend-deleted')
+            return
+          }
+          window.$message.error(res.msg)
+          return false
         })
       }
     })

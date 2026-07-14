@@ -9,7 +9,7 @@ type ChatRecordStore = {
 }
 
 export const useChatRecordStore = defineStore('chatRecord', {
-  persist: true,
+  persist: false,
   share: {
     enable: true,
     initialize: true

@@ -1,9 +1,15 @@
 <template>
   <div class="mention-list" :class="{ 'mention-list--empty': !items.length }">
-    <template v-if="items.length">
+    <n-scrollbar
+      v-if="items.length"
+      class="mention-list__scroll"
+      style="max-height: 232px"
+      trigger="none"
+      :theme-overrides="{ width: '6px' }">
       <div
         v-for="(item, index) in items"
-        :key="item.id"
+        :key="`${item.type ?? 'user'}-${item.id}`"
+        ref="itemRefs"
         class="mention-list__item"
         :class="{ 'is-active': index === activeIndex }"
         @mousedown.prevent="selectItem(index)"
@@ -19,24 +25,16 @@
           </div>
         </div>
       </div>
-    </template>
+    </n-scrollbar>
     <div v-else class="mention-list__empty">{{ t('message.editor.mentionEmpty') }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
-  import type { FromType } from '@/types/common'
+  import type { FromType, MentionItem } from '@/types/common'
 
   const { t } = useI18n()
-
-  export interface MentionItem {
-    id: string
-    name: string
-    type?: FromType
-    tag?: string
-  }
 
   interface Props {
     items: MentionItem[]
@@ -45,12 +43,21 @@
 
   const props = defineProps<Props>()
 
+  const itemRefs = ref<HTMLElement[]>([])
   const activeIndex = ref(0)
+
+  const scrollActiveIntoView = () => {
+    nextTick(() => {
+      const el = itemRefs.value[activeIndex.value]
+      el?.scrollIntoView({ block: 'nearest' })
+    })
+  }
 
   watch(
     () => props.items,
     () => {
       activeIndex.value = 0
+      scrollActiveIntoView()
     }
   )
 
@@ -64,10 +71,12 @@
     if (!props.items.length) return false
     if (event.key === 'ArrowUp') {
       activeIndex.value = (activeIndex.value + props.items.length - 1) % props.items.length
+      scrollActiveIntoView()
       return true
     }
     if (event.key === 'ArrowDown') {
       activeIndex.value = (activeIndex.value + 1) % props.items.length
+      scrollActiveIntoView()
       return true
     }
     if (event.key === 'Enter') {
@@ -84,6 +93,7 @@
   .mention-list {
     min-width: 180px;
     max-width: 240px;
+    max-height: 240px;
     background: var(--bg-muted-color);
     border: 1px solid var(--border-color);
     border-radius: 6px;
@@ -92,11 +102,24 @@
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     color: var(--text-color);
-    max-height: 240px;
-    overflow-y: auto;
+    overflow: hidden;
+    box-sizing: border-box;
 
     &--empty {
       min-width: 120px;
+      max-height: none;
+    }
+
+    .mention-list__scroll {
+      max-height: 232px;
+
+      :deep(.n-scrollbar-container) {
+        max-height: 232px;
+      }
+
+      :deep(.n-scrollbar-rail) {
+        right: 0;
+      }
     }
 
     .mention-list__item {

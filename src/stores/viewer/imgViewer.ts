@@ -11,7 +11,7 @@ type ImgViewerStore = {
 }
 
 export const useImgViewerStore = defineStore('imgViewer', {
-  persist: true,
+  persist: false,
   share: {
     enable: true,
     initialize: true

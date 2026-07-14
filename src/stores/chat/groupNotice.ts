@@ -6,7 +6,7 @@ type GroupNoticeStore = {
 }
 
 export const useGroupNoticeStore = defineStore('groupNotice', {
-  persist: true,
+  persist: false,
   share: {
     enable: true,
     initialize: true

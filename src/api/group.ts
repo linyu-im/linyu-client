@@ -5,6 +5,7 @@ import type {
   GroupInfoRequest,
   GroupInfoResult,
   GroupInviteMemberParam,
+  GroupMemberInfoParam,
   GroupNotice,
   GroupNoticeAddParam,
   GroupNoticeDeleteParam,
@@ -14,7 +15,8 @@ import type {
   GroupSetAdminParam,
   GroupSearchResult,
   GroupTransferOwnerParam,
-  GroupUpdateInfoParam
+  GroupUpdateInfoParam,
+  GroupUpdateNicknameParam
 } from '@/types/api/group'
 import type { GroupMember } from '@/types/api/groupMember'
 
@@ -34,12 +36,20 @@ export function listMembers(data: GroupInfoRequest): Promise<ApiResponse<GroupMe
   return post<GroupMember[], GroupInfoRequest>('/api/basic/v1/group/member/list', data)
 }
 
+export function getMemberInfo(data: GroupMemberInfoParam): Promise<ApiResponse<GroupMember>> {
+  return post<GroupMember, GroupMemberInfoParam>('/api/basic/v1/group/member/info', data)
+}
+
 export function create(data: GroupCreateParam): Promise<ApiResponse<Group>> {
   return post<Group, GroupCreateParam>('/api/basic/v1/group/create', data)
 }
 
 export function updateInfo(data: GroupUpdateInfoParam): Promise<ApiResponse<void>> {
   return post<void, GroupUpdateInfoParam>('/api/basic/v1/group/info/update', data)
+}
+
+export function updateNickname(data: GroupUpdateNicknameParam): Promise<ApiResponse<void>> {
+  return post<void, GroupUpdateNicknameParam>('/api/basic/v1/group/nickname/update', data)
 }
 
 export function uploadAvatar(file: Blob, groupId: string, fileName = 'avatar.jpg'): Promise<ApiResponse<string>> {

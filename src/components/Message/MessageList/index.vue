@@ -22,6 +22,14 @@
               type="robot"
               instant
               :tag="t('message.robotTag')" />
+            <Name
+              v-else-if="message.sceneType === SceneType.Group"
+              class="message-list__name"
+              :class="{ 'message-list__name--self': isSelf(message) }"
+              :id="message.fromId"
+              type="user"
+              instant
+              :group-id="message.toId" />
             <div
               class="message-list__bubble"
               :class="{
@@ -56,6 +64,7 @@
   import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
   import { onBeforeUnmount, onMounted } from 'vue'
+  import { SceneType } from '@/constants/common'
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -341,10 +350,19 @@
     }
 
     &__name {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
       font-size: 12px;
       font-weight: 600;
       color: var(--text-secondary-color);
       line-height: 1.2;
+
+      &--self {
+        align-self: flex-end;
+        justify-content: flex-end;
+        text-align: right;
+      }
     }
 
     &__fail-btn {

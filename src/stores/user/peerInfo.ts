@@ -81,7 +81,7 @@ function toPeerInfoType(type: PeerInfoType | SceneType): PeerInfoType {
 }
 
 export const usePeerInfoStore = defineStore('peerInfo', {
-  persist: true,
+  persist: false,
   share: {
     enable: true,
     initialize: true

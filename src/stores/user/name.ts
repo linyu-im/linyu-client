@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { robotApi } from '@/api'
+import { groupApi, robotApi } from '@/api'
 import { usePeerInfoStore } from '@/stores/user/peerInfo'
 import type { FromType } from '@/types/common'
 
@@ -10,7 +10,10 @@ export const useNameStore = defineStore('name', () => {
   const nameCache = new Map<string, string>()
   const inflight = new Map<string, Promise<string>>()
 
-  const getCacheKey = (type: FromType, id: string) => `${type}:${id}`
+  const getCacheKey = (type: FromType, id: string, groupId = '') => {
+    if (type === 'user' && groupId) return `${type}:${id}:g:${groupId}`
+    return `${type}:${id}`
+  }
 
   const cacheGet = (key: string) => {
     const name = nameCache.get(key)
@@ -31,11 +34,19 @@ export const useNameStore = defineStore('name', () => {
     nameCache.set(key, name)
   }
 
-  const fetchRemoteName = async (type: FromType, id: string): Promise<string> => {
+  const fetchRemoteName = async (type: FromType, id: string, groupId = ''): Promise<string> => {
     if (!id) return ''
 
     switch (type) {
       case 'user': {
+        if (groupId) {
+          const res = await groupApi.getMemberInfo({ groupId, userId: id })
+          if (res.code === 0 && res.data) {
+            const groupNickName = res.data.groupNickName?.trim()
+            if (groupNickName) return groupNickName
+          }
+        }
+
         const data = await peerInfoStore.fetchUser(id)
         if (!data) return ''
         return data.remark?.trim() || data.username || ''
@@ -50,19 +61,21 @@ export const useNameStore = defineStore('name', () => {
     }
   }
 
-  const getCachedName = (type: FromType, id: string) => cacheGet(getCacheKey(type, id))
+  const getCachedName = (type: FromType, id: string, groupId = '') =>
+    cacheGet(getCacheKey(type, id, type === 'user' ? groupId : ''))
 
-  const resolveName = async (type: FromType, id: string): Promise<string> => {
+  const resolveName = async (type: FromType, id: string, groupId = ''): Promise<string> => {
     if (!id || (type !== 'user' && type !== 'robot')) return ''
 
-    const key = getCacheKey(type, id)
+    const normalizedGroupId = type === 'user' ? groupId : ''
+    const key = getCacheKey(type, id, normalizedGroupId)
     const cached = cacheGet(key)
     if (cached) return cached
 
     const pending = inflight.get(key)
     if (pending) return pending
 
-    const task = fetchRemoteName(type, id)
+    const task = fetchRemoteName(type, id, normalizedGroupId)
       .then((name) => {
         if (name) cacheSet(key, name)
         return name
@@ -75,8 +88,17 @@ export const useNameStore = defineStore('name', () => {
     return task
   }
 
+  const removeCachedName = (type: FromType, id: string, groupId = '') => {
+    if (!id || (type !== 'user' && type !== 'robot')) return
+
+    const key = getCacheKey(type, id, type === 'user' ? groupId : '')
+    nameCache.delete(key)
+    inflight.delete(key)
+  }
+
   return {
     getCachedName,
-    resolveName
+    resolveName,
+    removeCachedName
   }
 })

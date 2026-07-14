@@ -96,16 +96,18 @@
         :group-info="groupInfo"
         @close="settingsDrawerVisible = false"
         @history-deleted="onChatHistoryDeleted"
-        @group-dissolved="onGroupDissolved" />
+        @group-dissolved="onGroupDissolved"
+        @friend-deleted="onFriendDeleted" />
       <ForwardMessageModal />
     </div>
   </div>
 </template>
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { messageApi, robotApi } from '@/api'
+  import { groupApi, messageApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user/user'
+  import { useNameStore } from '@/stores/user/name'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import type { Chat } from '@/types/api/chat'
@@ -124,7 +126,7 @@
   import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
-  import type { MentionItem } from '../Message/MessageEditor/MentionList.vue'
+  import type { MentionItem } from '@/types/common'
   import MessageList from '../Message/MessageList/index.vue'
   import ForwardMessageModal from '@/components/Modal/ForwardMessageModal.vue'
   import EmojiPicker from '../Message/EmojiPicker/index.vue'
@@ -153,6 +155,7 @@
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const nameStore = useNameStore()
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
   const messageUploadStore = useMessageUploadStore()
@@ -229,6 +232,10 @@
   }
 
   const onGroupDissolved = () => {
+    settingsDrawerVisible.value = false
+  }
+
+  const onFriendDeleted = () => {
     settingsDrawerVisible.value = false
   }
 
@@ -409,30 +416,79 @@
 
   defineExpose({ appendMessage, reloadMessages: loadInitialMessages })
 
-  const mentionableRobots = ref<MentionItem[]>([])
+  const mentionableItems = ref<MentionItem[]>([])
 
-  const loadMentionableRobots = () => {
-    robotApi.listRobots().then((res) => {
+  const buildRobotMentions = (): Promise<MentionItem[]> => {
+    return robotApi.listRobots().then((res) => {
       if (res.code === 0 && res.data) {
-        mentionableRobots.value = res.data.map((robot) => ({
+        return res.data.map((robot) => ({
           id: robot.id,
           name: robot.robotName,
           type: 'robot' as const,
           tag: t('message.robotTag')
         }))
-      } else {
-        window.$message.error(res.msg)
       }
+      window.$message.error(res.msg)
+      return []
+    })
+  }
+
+  const buildGroupMemberMentions = (groupId: string): Promise<MentionItem[]> => {
+    return groupApi.listMembers({ groupId }).then((res) => {
+      if (res.code !== 0 || !res.data) {
+        if (res.code !== 0) window.$message.error(res.msg)
+        return []
+      }
+
+      const selfId = userStore.authInfo.userId
+      const members = res.data.filter((member) => member.userId && member.userId !== selfId)
+
+      const items: MentionItem[] = members.map((member) => ({
+        id: member.userId,
+        name: nameStore.getCachedName('user', member.userId, groupId) || '',
+        type: 'user' as const
+      }))
+
+      members.forEach((member) => {
+        if (nameStore.getCachedName('user', member.userId, groupId)) return
+        nameStore.resolveName('user', member.userId, groupId).then((name) => {
+          if (!name) return
+          mentionableItems.value = mentionableItems.value.map((item) =>
+            item.type === 'user' && item.id === member.userId ? { ...item, name } : item
+          )
+        })
+      })
+
+      return items
+    })
+  }
+
+  const loadMentionableItems = () => {
+    buildRobotMentions().then((robots) => {
+      if (props.chat.sceneType !== SceneType.Group) {
+        mentionableItems.value = robots
+        return
+      }
+
+      buildGroupMemberMentions(props.chat.peerId).then((members) => {
+        mentionableItems.value = [...robots, ...members]
+      })
     })
   }
 
   const onFetchMentions = (query: string) => {
     const q = query.trim().toLowerCase()
-    if (!q) return mentionableRobots.value
-    return mentionableRobots.value.filter((item) => item.name.toLowerCase().includes(q))
+    if (!q) return mentionableItems.value
+    return mentionableItems.value.filter((item) => item.name.toLowerCase().includes(q))
   }
 
-  loadMentionableRobots()
+  watch(
+    () => props.chat.id,
+    () => {
+      loadMentionableItems()
+    },
+    { immediate: true }
+  )
 
   const replaceLocalMessage = (localId: string, serverMsg: Message, peerId: string): Promise<void> => {
     messageUploadStore.clearProgress(localId)

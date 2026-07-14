@@ -16,11 +16,13 @@
                 </svg>
               </template>
             </n-input>
-            <n-button class="contacts__toolbar-btn">
-              <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
-                <use href="#plus"></use>
-              </svg>
-            </n-button>
+            <n-dropdown :options="addMenuOptions" placement="bottom-start" trigger="click" @select="onAddMenuSelect">
+              <n-button class="contacts__toolbar-btn">
+                <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
+                  <use href="#plus"></use>
+                </svg>
+              </n-button>
+            </n-dropdown>
           </div>
           <n-scrollbar class="contacts__scroll" :theme-overrides="{ width: '6px' }">
             <div class="contacts__list">
@@ -110,7 +112,7 @@
                     @click="onSelect(contact.id)">
                     <Avatar class="size-34px rounded-5px bg-#FFF" type="group" :id="contact.peerId" />
                     <div class="min-w-0 flex-1">
-                      <div class="text-14px truncate">{{ contact.groupName }}</div>
+                      <div class="text-14px truncate">{{ contact.remark || contact.groupName }}</div>
                       <div v-if="contact.groupMemberNum != null" class="contacts__sub">
                         ({{ contact.groupMemberNum }})
                       </div>
@@ -185,6 +187,8 @@
         </div>
       </template>
     </Split>
+    <ForwardMessageModal />
+    <CreateGroupModal v-model:show="showCreateGroupModal" />
   </div>
 </template>
 
@@ -195,10 +199,13 @@
   import ContactsGroupNotice from '@/components/Contacts/detail/ContactsGroupNotice.vue'
   import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
+  import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
+  import ForwardMessageModal from '@/components/Modal/ForwardMessageModal.vue'
   import { useContactsStore } from '@/stores/user/contacts'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
   import { getNameInitial } from '@/utils/pinyin'
+  import { createAddContactsWindow } from '@/utils/window'
   import { useI18n } from 'vue-i18n'
 
   type GroupKey = 'enterprise' | 'group' | 'friend'
@@ -208,12 +215,29 @@
   const homeTabStore = useHomeTabStore()
   const contactsStore = useContactsStore()
 
+  const showCreateGroupModal = ref(false)
   const selectedId = ref('new-friend')
   const expandedGroups = ref<Record<GroupKey, boolean>>({
     enterprise: false,
     group: false,
     friend: true
   })
+
+  const addMenuOptions = computed(() => [
+    { label: () => t('message.addMenu.addContact'), key: 'addContact' },
+    { label: () => t('message.addMenu.createGroup'), key: 'createGroup' }
+  ])
+
+  const onAddMenuSelect = (key: string) => {
+    switch (key) {
+      case 'addContact':
+        createAddContactsWindow()
+        break
+      case 'createGroup':
+        showCreateGroupModal.value = true
+        break
+    }
+  }
 
   const getContactDisplayName = (contact: Contact) => contact.remark || contact.username
 
@@ -267,8 +291,7 @@
   }
 
   const onGroupRemarkUpdated = (payload: { peerId: string; remark: string }) => {
-    const contact = contactsStore.groupList.find((item) => item.peerId === payload.peerId)
-    if (contact) contact.remark = payload.remark
+    contactsStore.patchContactRemark(payload.peerId, payload.remark)
   }
 
   const toggleGroup = (group: GroupKey) => {

@@ -19,12 +19,6 @@
           </span>
         </div>
       </button>
-      <button type="button" class="chat-settings-drawer__share-btn">
-        <svg class="chat-settings-drawer__share-icon" aria-hidden="true">
-          <use href="#share" />
-        </svg>
-        <span>{{ t('message.chatSettings.share') }}</span>
-      </button>
     </section>
 
     <section class="chat-settings-drawer__card">
@@ -54,7 +48,7 @@
             :size="36"
             round
             :profile-enabled="true" />
-          <span class="chat-settings-drawer__member-name">{{ getMemberDisplayName(member) }}</span>
+          <Name class="chat-settings-drawer__member-name" :id="member.userId" :group-id="groupInfo?.info.id" instant />
         </button>
         <button
           type="button"
@@ -628,40 +622,6 @@
       white-space: nowrap;
     }
 
-    &__share-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      flex-shrink: 0;
-      height: 28px;
-      padding: 0 10px;
-      border: 1px solid var(--border-color);
-      border-radius: 999px;
-      background: var(--bg-primary-color);
-      font-size: 12px;
-      color: var(--text-color);
-      cursor: pointer;
-      transition:
-        border-color 0.2s ease,
-        color 0.2s ease;
-
-      html[data-theme='dark'] & {
-        background: color-mix(in srgb, var(--card-bg-color) 22%, var(--bg-secondary-color));
-        border-color: color-mix(in srgb, var(--border-color) 35%, transparent);
-      }
-
-      &:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-      }
-    }
-
-    &__share-icon {
-      width: 12px;
-      height: 12px;
-      color: currentColor;
-    }
-
     &__search {
       margin-bottom: 12px;
 
@@ -699,7 +659,10 @@
     }
 
     &__member-name {
+      display: inline-flex;
+      justify-content: center;
       width: 100%;
+      max-width: 100%;
       font-size: 10px;
       color: var(--text-muted-color);
       text-align: center;
@@ -707,6 +670,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+
+      :deep(.name__text) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
 
     &__member-add {

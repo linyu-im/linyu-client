@@ -125,11 +125,11 @@
                   <div class="contacts-profile__top-main">
                     <Avatar v-if="index >= 3" class="size-20px rounded-50% flex-shrink-0" :id="item.userId" />
                     <div class="contacts-profile__top-name">{{ item.username }}</div>
-                    <div
+                    <!-- <div
                       class="contacts-profile__top-level"
                       :class="index < 3 ? `is-level-rank-${index + 1}` : 'is-level-rank-other'">
                       Lv{{ item.groupUserLevel }}
-                    </div>
+                    </div> -->
                   </div>
                   <div
                     class="contacts-profile__top-emotion text-12px flex gap-2px justify-center items-center m-4px text-[var(--text-muted-color)]">
@@ -139,7 +139,7 @@
                     <span>]</span>
                   </div>
                 </div>
-                <div class="contacts-profile__top-rank">{{ index + 1 }}</div>
+                <!-- <div class="contacts-profile__top-rank">{{ index + 1 }}</div> -->
               </div>
             </div>
             <div v-else class="contacts-profile__empty">
@@ -148,8 +148,9 @@
           </div>
         </div>
         <div class="contacts-profile__actions">
-          <n-button class="w-110px" round>{{ t('contacts.actions.share') }}</n-button>
-          <n-button class="w-110px" type="primary" round>{{ t('contacts.actions.sendMessage') }}</n-button>
+          <n-button class="w-110px" type="primary" round :loading="sendingMessage" @click="onSendMessage">
+            {{ t('contacts.actions.sendMessage') }}
+          </n-button>
         </div>
       </div>
     </n-scrollbar>
@@ -158,8 +159,13 @@
 
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { contactsApi, groupApi } from '@/api'
+  import { SceneType } from '@/constants/common'
+  import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useContactsStore } from '@/stores/user/contacts'
+  import { useNameStore } from '@/stores/user/name'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
-  import { useUserStore } from '@/stores/user/user'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { GroupMember } from '@/types/api/groupMember'
   import type { InputInst } from 'naive-ui'
@@ -183,9 +189,13 @@
   }>()
 
   const { t } = useI18n()
-  const userStore = useUserStore()
   const peerInfoStore = usePeerInfoStore()
+  const homeTabStore = useHomeTabStore()
+  const contactsStore = useContactsStore()
+  const chatStore = useChatStore()
+  const nameStore = useNameStore()
 
+  const sendingMessage = ref(false)
   const groupProfile = computed(() => peerInfoStore.read(props.groupId, 'group') as GroupInfoResult | null)
   const loading = computed(() => !!props.groupId && !groupProfile.value)
   const groupRemarkText = ref('')
@@ -210,24 +220,19 @@
     { immediate: true }
   )
 
-  const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
-
   const getCurrentMember = (): GroupMember | undefined => {
-    const profile = groupProfile.value
-    if (!profile) return undefined
-    return profile.tops?.find((item) => item.userId === currentUserId.value)
+    return groupProfile.value?.currentMember
   }
 
   const syncRemarkFromProfile = () => {
-    const member = getCurrentMember()
-    groupRemarkText.value = member?.groupRemark?.trim() || props.remark?.trim() || ''
+    groupRemarkText.value = props.remark?.trim() || ''
   }
 
   const syncAliasFromProfile = () => {
     groupAliasText.value = getCurrentMember()?.groupNickName?.trim() || ''
   }
 
-  watch([groupProfile, () => props.remark], syncRemarkFromProfile, { immediate: true })
+  watch(() => props.remark, syncRemarkFromProfile, { immediate: true })
   watch(groupProfile, syncAliasFromProfile, { immediate: true })
 
   const remarkIsPlaceholder = computed(() => !groupRemarkText.value)
@@ -240,7 +245,7 @@
     nextTick(() => remarkInputRef.value?.focus())
   }
 
-  const commitRemark = async () => {
+  const commitRemark = () => {
     if (!remarkEditing.value || remarkSaving.value) return
 
     const next = remarkDraft.value.trim()
@@ -249,16 +254,21 @@
     if (next === groupRemarkText.value) return
 
     remarkSaving.value = true
-    try {
-      groupRemarkText.value = next
-      const member = getCurrentMember()
-      if (member) {
-        member.groupRemark = next
-      }
-      emit('remarkUpdated', { peerId: props.groupId, remark: next })
-    } finally {
-      remarkSaving.value = false
-    }
+    contactsApi
+      .updateRemark({ peerId: props.groupId, remark: next })
+      .then((res) => {
+        if (res.code === 0) {
+          groupRemarkText.value = next
+          contactsStore.patchContactRemark(props.groupId, next)
+          chatStore.patchPeerRemark(props.groupId, next)
+          emit('remarkUpdated', { peerId: props.groupId, remark: next })
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .finally(() => {
+        remarkSaving.value = false
+      })
   }
 
   const aliasIsPlaceholder = computed(() => !groupAliasText.value)
@@ -271,7 +281,7 @@
     nextTick(() => aliasInputRef.value?.focus())
   }
 
-  const commitAlias = async () => {
+  const commitAlias = () => {
     if (!aliasEditing.value || aliasSaving.value) return
 
     const next = aliasDraft.value.trim()
@@ -280,15 +290,23 @@
     if (next === groupAliasText.value) return
 
     aliasSaving.value = true
-    try {
-      groupAliasText.value = next
-      const member = getCurrentMember()
-      if (member) {
-        member.groupNickName = next
-      }
-    } finally {
-      aliasSaving.value = false
-    }
+    groupApi
+      .updateNickname({ groupId: props.groupId, groupNickName: next })
+      .then((res) => {
+        if (res.code === 0) {
+          groupAliasText.value = next
+          peerInfoStore.refreshGroup(props.groupId)
+          const userId = getCurrentMember()?.userId
+          if (userId) {
+            nameStore.removeCachedName('user', userId, props.groupId)
+          }
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .finally(() => {
+        aliasSaving.value = false
+      })
   }
 
   const groupInfo = computed(() => groupProfile.value?.info)
@@ -299,6 +317,15 @@
     groupIntroText,
     loading
   ])
+
+  const onSendMessage = () => {
+    if (sendingMessage.value || !props.groupId) return
+
+    sendingMessage.value = true
+    homeTabStore.openMessageWithPeer(props.groupId, SceneType.Group).finally(() => {
+      sendingMessage.value = false
+    })
+  }
 </script>
 
 <style scoped lang="scss">

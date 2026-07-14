@@ -136,7 +136,7 @@
         </div>
 
         <div class="contacts-profile__actions">
-          <n-button class="w-110px" round>{{ t('contacts.actions.share') }}</n-button>
+          <n-button class="w-110px" round @click="onShare">{{ t('contacts.actions.share') }}</n-button>
           <n-button class="w-110px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
           <n-button class="w-110px" type="primary" round :loading="sendingMessage" @click="onSendMessage">
             {{ t('contacts.actions.sendMessage') }}
@@ -149,9 +149,12 @@
 
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
+  import { contactsApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useMessageForwardStore } from '@/stores/message/messageForward'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
+  import type { Message } from '@/types/api/message'
   import type { User } from '@/types/api/user'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'
@@ -176,6 +179,7 @@
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
   const homeTabStore = useHomeTabStore()
+  const messageForwardStore = useMessageForwardStore()
 
   const sendingMessage = ref(false)
 
@@ -214,7 +218,7 @@
     nextTick(() => remarkInputRef.value?.focus())
   }
 
-  const commitRemark = async () => {
+  const commitRemark = () => {
     if (!remarkEditing.value || remarkSaving.value) return
 
     const next = remarkDraft.value.trim()
@@ -223,12 +227,19 @@
     if (!userInfo.value || next === remarkText.value) return
 
     remarkSaving.value = true
-    try {
-      peerInfoStore.patchUser(props.userId, { remark: next })
-      emit('remarkUpdated', { peerId: props.userId, remark: next })
-    } finally {
-      remarkSaving.value = false
-    }
+    contactsApi
+      .updateRemark({ peerId: props.userId, remark: next })
+      .then((res) => {
+        if (res.code === 0) {
+          peerInfoStore.patchUser(props.userId, { remark: next })
+          emit('remarkUpdated', { peerId: props.userId, remark: next })
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .finally(() => {
+        remarkSaving.value = false
+      })
   }
 
   const tagText = computed(() => userInfo.value?.tag?.trim() ?? '')
@@ -242,7 +253,7 @@
     nextTick(() => tagInputRef.value?.focus())
   }
 
-  const commitTag = async () => {
+  const commitTag = () => {
     if (!tagEditing.value || tagSaving.value) return
 
     const next = tagDraft.value.trim()
@@ -251,12 +262,19 @@
     if (!userInfo.value || next === tagText.value) return
 
     tagSaving.value = true
-    try {
-      peerInfoStore.patchUser(props.userId, { tag: next })
-      emit('tagUpdated', { peerId: props.userId, tag: next })
-    } finally {
-      tagSaving.value = false
-    }
+    contactsApi
+      .updateTag({ peerId: props.userId, tag: next })
+      .then((res) => {
+        if (res.code === 0) {
+          peerInfoStore.patchUser(props.userId, { tag: next })
+          emit('tagUpdated', { peerId: props.userId, tag: next })
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .finally(() => {
+        tagSaving.value = false
+      })
   }
 
   const signatureText = computed(() => userInfo.value?.signature?.trim() ?? '')
@@ -308,6 +326,30 @@
   })
 
   const showMetaRow = computed(() => !!emotionName.value || showGender.value || !!locationText.value)
+
+  const shareMessage = computed<Message | null>(() => {
+    if (!userInfo.value) return null
+    return {
+      id: `share-${userInfo.value.id}`,
+      sessionId: '',
+      fromId: userInfo.value.id,
+      toId: '',
+      msgType: 'ecard',
+      content: {
+        userId: userInfo.value.id,
+        userName: userInfo.value.username
+      },
+      isShowTime: false,
+      sceneType: SceneType.User,
+      createdAt: '',
+      updatedAt: ''
+    }
+  })
+
+  const onShare = () => {
+    if (!shareMessage.value) return
+    messageForwardStore.open(shareMessage.value)
+  }
 
   const onSendMessage = () => {
     if (sendingMessage.value || !props.userId) return

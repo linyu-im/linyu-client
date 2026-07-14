@@ -21,6 +21,8 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { SceneType } from '@/constants/common'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useContactsStore } from '@/stores/user/contacts'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { User } from '@/types/api/user'
@@ -37,6 +39,8 @@
 
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
+  const contactsStore = useContactsStore()
+  const chatStore = useChatStore()
 
   const userInfo = computed(() =>
     props.sceneType === SceneType.User ? (peerInfoStore.read(props.peerId, props.sceneType) as User | null) : null
@@ -58,7 +62,13 @@
     return userInfo.value.remark || userInfo.value.username
   })
 
-  const groupName = computed(() => groupInfo.value?.info.name ?? '')
+  const groupName = computed(() => {
+    const contactRemark = contactsStore.groupList.find((item) => item.peerId === props.peerId)?.remark?.trim()
+    if (contactRemark) return contactRemark
+    const chatRemark = chatStore.chatList.find((item) => item.peerId === props.peerId)?.peerRemark?.trim()
+    if (chatRemark) return chatRemark
+    return groupInfo.value?.info.name ?? ''
+  })
 
   const memberCount = computed(() => groupInfo.value?.info.memberNum ?? 0)
 

@@ -8,7 +8,7 @@ type RecentDefaultStickerStore = {
 }
 
 export const useRecentDefaultStickerStore = defineStore('recentDefaultSticker', {
-  persist: true,
+  persist: false,
   share: { enable: true, initialize: true },
   state: (): RecentDefaultStickerStore => ({
     stickers: []

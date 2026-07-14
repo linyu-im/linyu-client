@@ -101,7 +101,15 @@
 </script>
 
 <style scoped lang="scss">
-  @use './profileCard.scss';
+  .profile-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 16px 16px;
+    background: var(--bg-primary-color);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
 
   .profile-card__spin {
     width: 320px;

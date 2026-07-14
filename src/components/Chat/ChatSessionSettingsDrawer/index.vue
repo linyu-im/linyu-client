@@ -9,7 +9,8 @@
             :show="show"
             :user-info="userInfo"
             :chat-id="chatId"
-            @history-deleted="emit('history-deleted')" />
+            @history-deleted="emit('history-deleted')"
+            @friend-deleted="emit('friend-deleted')" />
           <ChatSessionGroupSettings
             v-else-if="sceneType === SceneType.Group"
             :show="show"
@@ -49,6 +50,7 @@
     close: []
     'history-deleted': []
     'group-dissolved': []
+    'friend-deleted': []
   }>()
 
   const onClose = () => {

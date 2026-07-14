@@ -27,6 +27,16 @@ export interface ContactsFriendIsParam {
   userId: string
 }
 
+export interface ContactsRemarkUpdateParam {
+  peerId: string
+  remark: string
+}
+
+export interface ContactsTagUpdateParam {
+  peerId: string
+  tag: string
+}
+
 export type ContactsListResult = Contact[]
 
 export type ContactsMenuView = 'newFriend' | 'groupNotice' | 'groupProfile' | 'friendProfile' | 'enterpriseProfile'

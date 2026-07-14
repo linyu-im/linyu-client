@@ -3,7 +3,6 @@ export interface GroupMember {
   groupId: string
   userId: string
   groupNickName: string
-  groupRemark: string
   groupUserLevel: number
   memberRole: string
   username: string

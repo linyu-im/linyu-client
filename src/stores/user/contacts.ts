@@ -51,6 +51,15 @@ export const useContactsStore = defineStore('contacts', {
         state.friendListLoading = loading
       })
     },
+    patchContactRemark(peerId: string, remark: string) {
+      if (!peerId) return
+      this.$patch((state) => {
+        const friend = state.friendList.find((item) => item.peerId === peerId)
+        if (friend) friend.remark = remark
+        const group = state.groupList.find((item) => item.peerId === peerId)
+        if (group) group.remark = remark
+      })
+    },
     fetchEnterpriseList() {
       if (this.enterpriseListLoading) return
       if (this.enterpriseList.length === 0) this.setEnterpriseListLoading(true)

@@ -169,6 +169,10 @@
       "deleteHistoryConfirm": "Delete",
       "deleteHistoryCancel": "Cancel",
       "deleteFriend": "Delete Friend",
+      "deleteFriendConfirmTitle": "Delete Friend",
+      "deleteFriendConfirmContent": "Are you sure you want to delete this friend? Local chat history will also be cleared.",
+      "deleteFriendConfirm": "Delete",
+      "deleteFriendCancel": "Cancel",
       "share": "Share",
       "group": {
         "searchMembers": "Search members",

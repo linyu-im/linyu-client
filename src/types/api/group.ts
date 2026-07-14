@@ -4,11 +4,21 @@ export interface GroupInfoRequest {
   groupId: string
 }
 
+export interface GroupMemberInfoParam {
+  groupId: string
+  userId: string
+}
+
 export interface GroupUpdateInfoParam {
   groupId: string
   name: string
   describe: string
   tag: string
+}
+
+export interface GroupUpdateNicknameParam {
+  groupId: string
+  groupNickName: string
 }
 
 export interface GroupCreateParam {
@@ -94,5 +104,6 @@ export interface Group {
 
 export interface GroupInfoResult {
   info: Group
+  currentMember: GroupMember
   tops: GroupMember[]
 }

@@ -69,6 +69,18 @@ export const useChatStore = defineStore('chat', {
         state.selectedChatId = ''
       })
     },
+
+    patchPeerRemark(peerId: string, remark: string) {
+      if (!peerId) return
+      this.$patch((state) => {
+        state.chatList.forEach((item) => {
+          if (item.peerId === peerId) {
+            item.peerRemark = remark
+          }
+        })
+      })
+    },
+
     loadList(fullSync = false) {
       return chatApi.list().then((res) => {
         if (res.code === 0 && res.data) {

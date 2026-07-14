@@ -11,7 +11,7 @@ type VideoViewerStore = {
 }
 
 export const useVideoViewerStore = defineStore('videoViewer', {
-  persist: true,
+  persist: false,
   share: {
     enable: true,
     initialize: true

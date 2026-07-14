@@ -1,12 +1,13 @@
 import { PluginKey } from '@tiptap/pm/state'
 import { VueRenderer } from '@tiptap/vue-3'
 import type { SuggestionOptions } from '@tiptap/suggestion'
-import MentionList, { type MentionItem } from '../MentionList.vue'
+import MentionList from '../MentionList.vue'
+import type { MentionItem } from '@/types/common'
 
 export interface MentionSuggestionOptions {
-  /** 查询匹配的成员，返回最多 N 条 */
+  /** 查询匹配的成员 */
   fetchItems: (query: string) => MentionItem[] | Promise<MentionItem[]>
-  /** 弹层最多显示多少条 */
+  /** 弹层最多返回多少条；不传则返回全部，由 MentionList 滚动展示 */
   limit?: number
 }
 
@@ -16,8 +17,6 @@ export interface MentionSuggestionOptions {
 export const buildMentionSuggestion = (
   options: MentionSuggestionOptions
 ): Omit<SuggestionOptions<MentionItem>, 'editor'> => {
-  const limit = options.limit ?? 6
-
   return {
     char: '@',
     allowedPrefixes: null,
@@ -26,7 +25,7 @@ export const buildMentionSuggestion = (
     pluginKey: new PluginKey('mentionSuggestion'),
     items: async ({ query }) => {
       const list = await options.fetchItems(query)
-      return list.slice(0, limit)
+      return options.limit != null ? list.slice(0, options.limit) : list
     },
     render: () => {
       let component: VueRenderer | null = null
