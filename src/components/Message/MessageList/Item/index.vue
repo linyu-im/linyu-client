@@ -27,6 +27,7 @@
   import type { Component } from 'vue'
   import { useI18n } from 'vue-i18n'
   import type { Message } from '@/types/api/message'
+  import { copyMessageToClipboard } from '@/utils/messageClipboard'
   import Text from './Text.vue'
   import Images from './Images.vue'
   import Video from './Video.vue'
@@ -46,9 +47,12 @@
 
   const emit = defineEmits<{
     forward: [message: Message]
+    quote: [message: Message]
+    delete: [message: Message]
   }>()
 
   const { t } = useI18n()
+  const dialog = useDialog()
 
   const menuShow = ref(false)
   const menuX = ref(0)
@@ -194,36 +198,17 @@
     document.removeEventListener('wheel', onGlobalWheel)
   })
 
-  const getCopyText = () => {
-    const msg = props.message
-    switch (msg.msgType) {
-      case 'text':
-        return msg.content.text
-      case 'file':
-        return msg.content.fileName
-      case 'ecard':
-        return msg.content.userName
-      default:
-        return ''
-    }
-  }
-
   const onMenuSelect = (key: string) => {
     menuShow.value = false
     switch (key) {
       case 'copy': {
-        const text = getCopyText()
-        if (!text) {
-          window.$message?.info(t('message.bubbleMenu.copyUnsupported'))
-          return
-        }
-        navigator.clipboard.writeText(text).then(() => {
-          window.$message?.success(t('message.bubbleMenu.copySuccess'))
+        copyMessageToClipboard(props.message).catch(() => {
+          window.$message?.error(t('message.bubbleMenu.copyFailed'))
         })
         break
       }
       case 'quote':
-        window.$message?.info(t('message.bubbleMenu.quote'))
+        emit('quote', props.message)
         break
       case 'forward':
         emit('forward', props.message)
@@ -235,7 +220,18 @@
         window.$message?.info(t('message.bubbleMenu.multiSelect'))
         break
       case 'delete':
-        window.$message?.info(t('message.bubbleMenu.delete'))
+        dialog.warning({
+          title: t('message.bubbleMenu.deleteConfirmTitle'),
+          content: t('message.bubbleMenu.deleteConfirmContent'),
+          positiveText: t('message.bubbleMenu.deleteConfirm'),
+          negativeText: t('message.bubbleMenu.deleteCancel'),
+          showIcon: false,
+          positiveButtonProps: { type: 'error' },
+          negativeButtonProps: { ghost: false, size: 'small' },
+          onPositiveClick: () => {
+            emit('delete', props.message)
+          }
+        })
         break
     }
   }
@@ -244,10 +240,18 @@
 <style scoped lang="scss">
   .message-item {
     max-width: min(72%, 520px);
+    padding: 8px 10px;
+    box-sizing: border-box;
 
     &--text {
       max-width: 100%;
       width: fit-content;
+    }
+
+    &--file,
+    &--ecard,
+    &--plain {
+      padding: 0;
     }
 
     &--file,

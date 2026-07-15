@@ -132,6 +132,10 @@ export interface SendMessageParam {
   content: SendMessageContent
   /** 文本消息中的 @ 提及列表（与 content.text 中的 @昵称 对应） */
   mentions?: SendMessageMention[]
+  /** 是否展示时间分隔 */
+  isShowTime: boolean
+  /** 引用的消息 id */
+  quoteMsgId?: string
 }
 
 export interface UploadMessageFileChunkParam {

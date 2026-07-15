@@ -192,6 +192,26 @@ export const useChatStore = defineStore('chat', {
       })
     },
 
+    /**
+     * 更新会话最后一条消息预览（本地删除消息后）
+     */
+    updateLastMsgContent(sessionId: string, msg: Message | null) {
+      const index = this.chatList.findIndex((item) => item.sessionId === sessionId)
+      if (index === -1) return
+
+      this.$patch((state) => {
+        const item = state.chatList[index]
+        item.lastMsgContent = msg
+        if (msg) {
+          const msgTime = msg.updatedAt || msg.createdAt
+          if (isValidBackendTime(msgTime)) {
+            item.updatedAt = msgTime!
+          }
+        }
+        state.chatList = sortChatList(state.chatList)
+      })
+    },
+
     removeItem(chatId: string) {
       const index = this.chatList.findIndex((item) => item.id === chatId)
       if (index === -1) return

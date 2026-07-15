@@ -158,7 +158,8 @@
       { type: 'divider' as const, key: 'd2' },
       {
         label: () => t('message.contextMenu.delete'),
-        key: 'delete'
+        key: 'delete',
+        props: { class: 'menu-item--danger' }
       }
     ]
   })
@@ -432,5 +433,9 @@
         }
       }
     }
+  }
+
+  :global(.n-dropdown-menu .menu-item--danger:hover) {
+    color: var(--red) !important;
   }
 </style>

@@ -4,7 +4,14 @@
       <template v-for="message in messages" :key="message.renderKey ?? message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
         <div
-          v-memo="[message.renderKey ?? message.id, message.id, message.status]"
+          v-memo="[
+            message.renderKey ?? message.id,
+            message.id,
+            message.status,
+            message.quoteMsgId,
+            hasQuotedLookup(message.quoteMsgId),
+            getQuotedMessage(message.quoteMsgId)?.id ?? ''
+          ]"
           class="message-list__row"
           :class="{ 'message-list__row--self': isSelf(message) }">
           <Avatar
@@ -40,7 +47,12 @@
                 'message-list__bubble--file': message.msgType === 'file',
                 'message-list__bubble--ecard': message.msgType === 'ecard'
               }">
-              <Item :message="message" :is-self="isSelf(message)" @forward="emit('forward', $event)" />
+              <Item
+                :message="message"
+                :is-self="isSelf(message)"
+                @forward="emit('forward', $event)"
+                @quote="emit('quote', $event)"
+                @delete="onDeleteMessage" />
               <n-tooltip v-if="isSendFailed(message)" placement="top" :show-arrow="false">
                 <template #trigger>
                   <button type="button" class="message-list__fail-btn" aria-label="send failed" @click.stop>
@@ -50,6 +62,11 @@
                 {{ getFailReason(message) }}
               </n-tooltip>
             </div>
+            <MessageQuotePreview
+              v-if="message.quoteMsgId && hasQuotedLookup(message.quoteMsgId)"
+              class="message-list__quote"
+              :message="getQuotedMessage(message.quoteMsgId)"
+              :missing-text="t('message.quote.notFound')" />
           </div>
         </div>
       </template>
@@ -65,9 +82,12 @@
   import type { Message } from '@/types/api/message'
   import { onBeforeUnmount, onMounted } from 'vue'
   import { SceneType } from '@/constants/common'
+  import MessageQuotePreview from '@/components/Message/MessageQuotePreview.vue'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const messageDbStore = useMessageDbStore()
 
   const props = defineProps({
     messages: {
@@ -92,6 +112,8 @@
     'reach-top': []
     'at-bottom-change': [atBottom: boolean]
     forward: [message: Message]
+    quote: [message: Message]
+    delete: [message: Message]
   }>()
 
   const scrollbarRef = ref<ScrollbarInst | null>(null)
@@ -99,6 +121,9 @@
   const bottomAnchorRef = ref<HTMLElement | null>(null)
   const reachTopLocked = ref(false)
   const atBottomRef = ref(true)
+  /** 已拉取的引用消息缓存（含未找到的 null） */
+  const quotedById = shallowRef(new Map<string, Message | null>())
+  let quotedPrefetchToken = 0
   let savedScrollHeight = 0
   let savedScrollTop = 0
   let scrollContainerEl: HTMLElement | null = null
@@ -107,6 +132,79 @@
 
   const SCROLL_TOP_THRESHOLD = 48
   const SCROLL_BOTTOM_THRESHOLD = 48
+
+  const collectQuoteMsgIds = (msgs: Message[]) => [
+    ...new Set(msgs.map((item) => item.quoteMsgId?.trim()).filter((id): id is string => !!id))
+  ]
+
+  const scrollToBottomAfterQuotes = () => {
+    nextTick(() => {
+      if (pendingScrollToBottom || atBottomRef.value) {
+        applyScrollToBottom()
+      }
+    })
+  }
+
+  /** 批量预取引用消息，渲染前写入缓存，避免逐条异步闪烁与滚动跳动 */
+  const prefetchQuotedMessages = (msgs: Message[]) => {
+    const ids = collectQuoteMsgIds(msgs)
+    if (ids.length === 0) return Promise.resolve()
+
+    const next = new Map(quotedById.value)
+    let changed = false
+    const messageById = new Map(msgs.map((item) => [item.id, item]))
+    const pendingIds: string[] = []
+
+    ids.forEach((id) => {
+      if (next.has(id)) return
+      const local = messageById.get(id)
+      if (local) {
+        next.set(id, local)
+        changed = true
+        return
+      }
+      pendingIds.push(id)
+    })
+
+    if (changed) {
+      quotedById.value = next
+    }
+
+    if (pendingIds.length === 0) return Promise.resolve()
+
+    const token = ++quotedPrefetchToken
+    return messageDbStore.getMessagesByIds(pendingIds).then((map) => {
+      if (token !== quotedPrefetchToken) return
+      const merged = new Map(quotedById.value)
+      pendingIds.forEach((id) => {
+        merged.set(id, map.get(id) ?? null)
+      })
+      quotedById.value = merged
+    })
+  }
+
+  const getQuotedMessage = (quoteMsgId?: string) => {
+    if (!quoteMsgId) return null
+    return quotedById.value.get(quoteMsgId) ?? null
+  }
+
+  const hasQuotedLookup = (quoteMsgId?: string) => {
+    if (!quoteMsgId) return false
+    return quotedById.value.has(quoteMsgId)
+  }
+
+  /** 删除消息时同步清理引用缓存，避免仍展示已删内容 */
+  const removeQuotedCache = (messageId: string) => {
+    if (!messageId || !quotedById.value.has(messageId)) return
+    const next = new Map(quotedById.value)
+    next.set(messageId, null)
+    quotedById.value = next
+  }
+
+  const onDeleteMessage = (message: Message) => {
+    removeQuotedCache(message.id)
+    emit('delete', message)
+  }
 
   const computeAtBottom = (container: HTMLElement): boolean => {
     const distance = container.scrollHeight - container.scrollTop - container.clientHeight
@@ -240,21 +338,45 @@
 
       const isInitialFill = (oldMessages?.length ?? 0) === 0 && newMessages.length > 0
 
+      if (newMessages.length === 0) {
+        quotedPrefetchToken += 1
+        quotedById.value = new Map()
+      }
+
+      const quotesReady = prefetchQuotedMessages(newMessages)
+
       nextTick(() => {
         const container = getScrollContainer()
 
         if (prepended && container) {
-          const newHeight = container.scrollHeight
-          container.scrollTop = newHeight - savedScrollHeight + savedScrollTop
-          reachTopLocked.value = false
-          syncAtBottom(container)
+          quotesReady.then(() => {
+            nextTick(() => {
+              const el = getScrollContainer()
+              if (!el) return
+              const newHeight = el.scrollHeight
+              el.scrollTop = newHeight - savedScrollHeight + savedScrollTop
+              reachTopLocked.value = false
+              syncAtBottom(el)
+            })
+          })
           return
         }
 
         if (isInitialFill) {
           reachTopLocked.value = false
-          scrollToBottom()
+          quotesReady.finally(() => {
+            nextTick(() => {
+              scrollToBottom()
+            })
+          })
+          return
         }
+
+        quotesReady.then(() => {
+          nextTick(() => {
+            scrollToBottomAfterQuotes()
+          })
+        })
       })
     },
     { flush: 'post' }
@@ -327,6 +449,10 @@
 
       &--self {
         flex-direction: row-reverse;
+
+        .message-list__main {
+          align-items: flex-end;
+        }
       }
     }
 
@@ -365,6 +491,10 @@
       }
     }
 
+    &__quote {
+      max-width: 100%;
+    }
+
     &__fail-btn {
       position: absolute;
       left: -22px;
@@ -398,7 +528,7 @@
 
     &__bubble {
       position: relative;
-      padding: 8px 10px;
+      padding: 0;
       border-radius: 8px;
       font-size: 14px;
       background: var(--bg-primary-color);
@@ -417,13 +547,11 @@
 
       &--file,
       &--ecard {
-        padding: 0;
         background: var(--bg-primary-color);
         color: var(--text-primary-color);
       }
 
       &--plain {
-        padding: 0;
         background: transparent;
         color: inherit;
 

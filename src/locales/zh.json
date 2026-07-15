@@ -125,12 +125,18 @@
     "bubbleMenu": {
       "copy": "复制",
       "copySuccess": "已复制",
+      "copyFailed": "复制失败",
       "copyUnsupported": "该消息类型暂不支持复制",
       "quote": "引用",
       "forward": "转发",
       "favorite": "收藏",
       "multiSelect": "多选",
       "delete": "删除",
+      "deleteFailed": "删除失败",
+      "deleteConfirmTitle": "删除消息",
+      "deleteConfirmContent": "确定删除这条消息吗？此操作不可恢复",
+      "deleteConfirm": "删除",
+      "deleteCancel": "取消",
       "voiceToText": "语音转文字",
       "collectSticker": "收藏表情"
     },
@@ -152,7 +158,11 @@
       "sendFailed": "发送失败",
       "pickImage": "选择图片",
       "pickFile": "选择文件",
-      "pickFailed": "读取文件失败"
+      "pickFailed": "读取文件失败",
+      "clearQuote": "取消引用"
+    },
+    "quote": {
+      "notFound": "引用内容不存在"
     },
     "chatSettings": {
       "exclusiveRobot": "专属机器人",

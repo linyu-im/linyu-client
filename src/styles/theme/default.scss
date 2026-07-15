@@ -13,9 +13,11 @@
         --bg-primary-color: #FFF;
         --bg-secondary-color: #F5F5F5;
         --bg-muted-color: #F7F7F7;
+        --bg-tertiary-color: #EBEBEB;
         --bg-primary-rgb: 255, 255, 255;
         --bg-secondary-rgb: 245, 245, 245;
         --bg-muted-rgb: 247, 247, 247;
+        --bg-tertiary-rgb: 235, 235, 235;
 
         //文本颜色
         --text-color: #000;
@@ -67,9 +69,11 @@ html[data-theme="dark"] {
         --bg-primary-color: #282828;
         --bg-secondary-color: #202020;
         --bg-muted-color: #282828;
+        --bg-tertiary-color: #282828;
         --bg-primary-rgb: 40, 40, 40;
         --bg-secondary-rgb: 32, 32, 32;
         --bg-muted-rgb: 40, 40, 40;
+        --bg-tertiary-rgb: 40, 40, 40;
 
         //边框颜色（输入框，选择框）
         --border-color: #454547;

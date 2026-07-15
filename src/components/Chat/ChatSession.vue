@@ -30,7 +30,9 @@
               :has-more="hasMore"
               @reach-top="onLoadMore"
               @at-bottom-change="onAtBottomChange"
-              @forward="onForwardMessage" />
+              @forward="onForwardMessage"
+              @quote="onQuoteMessage"
+              @delete="onDeleteMessage" />
             <button v-if="pendingNewCount > 0" type="button" class="chat-session__new-msg" @click="scrollToLatest">
               {{ t('message.newMessages', { count: pendingNewCount }) }}
             </button>
@@ -42,8 +44,10 @@
               <MessageEditor
                 ref="editorRef"
                 v-model="draft"
+                :quote-msg="quoteMessage"
                 :fetch-mentions="onFetchMentions"
                 @submit="onSend"
+                @clear-quote="clearQuote"
                 @file-rejected="onFileRejected" />
             </div>
             <div class="flex w-full items-center justify-between m-t-10px gap-8px">
@@ -119,7 +123,8 @@
     isStalePendingLocalMessage,
     mergeReplacedServerMessage,
     patchMessageById,
-    resolveMessageFailReason
+    resolveMessageFailReason,
+    shouldShowMessageTime
   } from '@/utils/messageSend'
   import { useMessageUploadStore } from '@/stores/message/messageUpload'
   import { useMessageForwardStore } from '@/stores/message/messageForward'
@@ -172,6 +177,7 @@
   const loadingMore = ref(false)
 
   const draft = ref('')
+  const quoteMessage = ref<Message | null>(null)
   const emojiPickerVisible = ref(false)
   const voiceRecordingVisible = ref(false)
   const voiceSending = ref(false)
@@ -224,6 +230,47 @@
 
   const onForwardMessage = (message: Message) => {
     messageForwardStore.open(message)
+  }
+
+  const getActiveQuoteMsgId = () => {
+    const id = quoteMessage.value?.id?.trim()
+    if (!id || id.startsWith('local-') || id.startsWith('robot-stream-')) return undefined
+    return id
+  }
+
+  const clearQuote = () => {
+    quoteMessage.value = null
+  }
+
+  const onQuoteMessage = (message: Message) => {
+    quoteMessage.value = message
+    nextTick(() => {
+      editorRef.value?.focus()
+    })
+  }
+
+  const onDeleteMessage = (message: Message) => {
+    const messageId = message.id
+    if (!messageId) return
+
+    messages.value = messages.value.filter((item) => item.id !== messageId)
+    if (quoteMessage.value?.id === messageId) {
+      clearQuote()
+    }
+
+    const peerId = props.chat.peerId
+    if (peerId) {
+      sendingMessagesStore.removeMessage(peerId, messageId)
+    }
+
+    const lastMsg = messages.value[messages.value.length - 1] ?? null
+    if (props.chat.sessionId && props.chat.lastMsgContent?.id === messageId) {
+      chatStore.updateLastMsgContent(props.chat.sessionId, lastMsg)
+    }
+
+    messageDbStore.deleteLocalMessage(messageId).catch(() => {
+      window.$message.error(t('message.bubbleMenu.deleteFailed'))
+    })
   }
 
   const onChatHistoryDeleted = () => {
@@ -393,6 +440,7 @@
       settingsDrawerVisible.value = false
       emojiPickerVisible.value = false
       draft.value = ''
+      clearQuote()
       editorRef.value?.clear()
 
       if (voiceRecordingVisible.value) {
@@ -592,9 +640,12 @@
   const createAndStageLocalMessage = (msgType: SendMessageMsgType, content: SendMessageContent): Message | null => {
     const ctx = getSendContext()
     if (!ctx) return null
+    const isShowTime = shouldShowMessageTime(messages.value[messages.value.length - 1]?.createdAt)
+    const quoteMsgId = getActiveQuoteMsgId()
     return stageLocalMessage({
-      ...createLocalMessage(msgType, content, ctx.fromId, ctx.toId, ctx.sceneType),
-      sessionId: ctx.sessionId
+      ...createLocalMessage(msgType, content, ctx.fromId, ctx.toId, ctx.sceneType, isShowTime),
+      sessionId: ctx.sessionId,
+      ...(quoteMsgId ? { quoteMsgId } : {})
     })
   }
 
@@ -603,9 +654,12 @@
   ): Message | null => {
     const ctx = getSendContext()
     if (!ctx) return null
+    const isShowTime = shouldShowMessageTime(messages.value[messages.value.length - 1]?.createdAt)
+    const quoteMsgId = getActiveQuoteMsgId()
     return stageLocalMessage({
-      ...createLocalMessageFromUnit(unit, ctx.fromId, ctx.toId, ctx.sceneType),
-      sessionId: ctx.sessionId
+      ...createLocalMessageFromUnit(unit, ctx.fromId, ctx.toId, ctx.sceneType, isShowTime),
+      sessionId: ctx.sessionId,
+      ...(quoteMsgId ? { quoteMsgId } : {})
     })
   }
 
@@ -644,7 +698,11 @@
       messageUploadStore.setProgress(localId, progress)
     }
 
-    return buildSendParam(unit, sessionId, { onProgress })
+    return buildSendParam(unit, sessionId, {
+      onProgress,
+      isShowTime: messages.value.find((item) => item.id === localId)?.isShowTime ?? false,
+      quoteMsgId: messages.value.find((item) => item.id === localId)?.quoteMsgId
+    })
       .then((param) => {
         messageUploadStore.clearProgress(localId)
         if (!param) {
@@ -810,6 +868,8 @@
       const localMsg = createAndStageLocalMessageFromUnit(unit)
       if (!localMsg) return
       localMessages.push(localMsg)
+      // 同一批只让第一条消息带引用
+      clearQuote()
     }
 
     editorRef.value.clear({ keepBlobs: true })
@@ -930,6 +990,7 @@
             onVoiceRecordCancel()
             return
           }
+          clearQuote()
 
           const voiceCtx = getSendContext()
           if (!voiceCtx) {
@@ -943,7 +1004,9 @@
             {
               sessionId: voiceCtx.sessionId,
               msgType: 'voice',
-              content: voiceContent
+              content: voiceContent,
+              isShowTime: localMsg.isShowTime,
+              ...(localMsg.quoteMsgId ? { quoteMsgId: localMsg.quoteMsgId } : {})
             },
             voiceCtx.toId,
             voiceCtx.sessionId
@@ -978,13 +1041,16 @@
 
     const localMsg = createAndStageLocalMessage('sticker', stickerContent)
     if (!localMsg) return
+    clearQuote()
 
     void dispatchSendMessage(
       localMsg.id,
       {
         sessionId: stickerCtx.sessionId,
         msgType: 'sticker',
-        content: stickerContent
+        content: stickerContent,
+        isShowTime: localMsg.isShowTime,
+        ...(localMsg.quoteMsgId ? { quoteMsgId: localMsg.quoteMsgId } : {})
       },
       stickerCtx.toId,
       stickerCtx.sessionId

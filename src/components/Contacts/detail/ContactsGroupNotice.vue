@@ -1,33 +1,35 @@
 <template>
   <div class="contacts-detail">
     <div class="contacts-detail__title">{{ t('contacts.views.groupNotice.title') }}</div>
-    <n-spin :show="loading">
+    <n-spin :show="loading" class="contacts-detail__spin">
       <div v-if="!loading && list.length === 0" class="contacts-detail__empty">
         {{ t('contacts.views.groupNotice.empty') }}
       </div>
-      <div v-else class="contacts-detail__cards">
-        <div v-for="item in list" :key="item.id" class="contacts-apply-card">
-          <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" :id="getApplicantId(item)" />
-          <div class="min-w-0 flex-1">
-            <div class="contacts-apply-card__head">
-              <span class="contacts-apply-card__name">{{ getApplicantName(item) }}</span>
-              <span class="contacts-apply-card__invite">{{ t('contacts.views.groupNotice.inviteTag') }}</span>
-              <span class="contacts-apply-card__group">{{ getGroupName(item) }}</span>
-              <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
+      <n-scrollbar v-else class="contacts-detail__scroll" trigger="none" :theme-overrides="{ width: '6px' }">
+        <div class="contacts-detail__cards">
+          <div v-for="item in list" :key="item.id" class="contacts-apply-card">
+            <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" :id="getApplicantId(item)" />
+            <div class="min-w-0 flex-1">
+              <div class="contacts-apply-card__head">
+                <span class="contacts-apply-card__name">{{ getApplicantName(item) }}</span>
+                <span class="contacts-apply-card__invite">{{ t('contacts.views.groupNotice.inviteTag') }}</span>
+                <span class="contacts-apply-card__group">{{ getGroupName(item) }}</span>
+                <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
+              </div>
+              <div class="contacts-apply-card__msg">{{ item.describe }}</div>
             </div>
-            <div class="contacts-apply-card__msg">{{ item.describe }}</div>
+            <div v-if="isApplyPending(item.status)" class="contacts-apply-card__actions">
+              <n-button size="tiny" class="contacts-apply-card__reject" text @click="handleReject(item)">
+                {{ t('contacts.actions.reject') }}
+              </n-button>
+              <n-button size="tiny" class="contacts-apply-card__agree" type="primary" @click="handleAgree(item)">
+                {{ t('contacts.actions.agree') }}
+              </n-button>
+            </div>
+            <div v-else class="contacts-apply-card__done">{{ getStatusLabel(item.status) }}</div>
           </div>
-          <div v-if="isApplyPending(item.status)" class="contacts-apply-card__actions">
-            <n-button size="tiny" class="contacts-apply-card__reject" text @click="handleReject(item)">
-              {{ t('contacts.actions.reject') }}
-            </n-button>
-            <n-button size="tiny" class="contacts-apply-card__agree" type="primary" @click="handleAgree(item)">
-              {{ t('contacts.actions.agree') }}
-            </n-button>
-          </div>
-          <div v-else class="contacts-apply-card__done">{{ getStatusLabel(item.status) }}</div>
         </div>
-      </div>
+      </n-scrollbar>
     </n-spin>
   </div>
 </template>
@@ -94,19 +96,54 @@
 
 <style scoped lang="scss">
   .contacts-detail {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
     max-width: 860px;
+    height: 100%;
     margin: 0 auto;
     box-sizing: border-box;
-    padding: 22px 24px 20px;
+    padding: 22px 14px 24px 20px;
+    overflow: hidden;
 
     &__title {
+      flex-shrink: 0;
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 16px;
       color: var(--text-color);
       user-select: none;
+    }
+
+    &__spin {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      overflow: hidden;
+
+      :deep(.n-spin-container),
+      :deep(.n-spin-content) {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+    }
+
+    &__scroll {
+      height: 100%;
+
+      :deep(.n-scrollbar-container) {
+        height: 100%;
+      }
+
+      :deep(.n-scrollbar-content) {
+        box-sizing: border-box;
+      }
+
+      :deep(.n-scrollbar-rail) {
+        right: 0;
+      }
     }
 
     &__empty {
@@ -121,6 +158,9 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      padding-right: 10px;
+      padding-bottom: 4px;
+      box-sizing: border-box;
     }
   }
 

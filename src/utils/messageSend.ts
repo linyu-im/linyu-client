@@ -3,11 +3,18 @@ import type { SceneType } from '@/constants/common'
 import type { EditorSendUnit } from '@/utils/editorMessage'
 import type { Message, SendMessageContent, SendMessageMsgType } from '@/types/api/message'
 import type { FromType } from '@/types/common'
-import { nowBackendDatetime } from '@/utils/time'
+import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/time'
+
+/** 根据会话最近一条消息时间，判断当前消息是否应展示时间 */
+export const shouldShowMessageTime = (previousCreatedAt?: string | null): boolean => {
+  if (!isValidBackendTime(previousCreatedAt)) return true
+  const prev = parseBackendTime(previousCreatedAt!).getTime()
+  return Date.now() - prev >= 10 * 60 * 1000
+}
 
 const createLocalId = () => `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 
-const createLocalMessageBase = (fromId: string, toId: string, sceneType: SceneType) => {
+const createLocalMessageBase = (fromId: string, toId: string, sceneType: SceneType, isShowTime = false) => {
   const now = nowBackendDatetime()
   const id = createLocalId()
   return {
@@ -17,7 +24,7 @@ const createLocalMessageBase = (fromId: string, toId: string, sceneType: SceneTy
     fromId,
     toId,
     fromType: 'user' as FromType,
-    isShowTime: false,
+    isShowTime,
     status: 'sending',
     sceneType,
     createdAt: now,
@@ -29,9 +36,10 @@ export const createLocalMessageFromUnit = (
   unit: EditorSendUnit,
   fromId: string,
   toId: string,
-  sceneType: SceneType
+  sceneType: SceneType,
+  isShowTime = false
 ): Message => {
-  const base = createLocalMessageBase(fromId, toId, sceneType)
+  const base = createLocalMessageBase(fromId, toId, sceneType, isShowTime)
   switch (unit.msgType) {
     case 'text':
       return { ...base, msgType: 'text', content: unit.content }
@@ -49,9 +57,10 @@ export const createLocalMessage = (
   content: SendMessageContent,
   fromId: string,
   toId: string,
-  sceneType: SceneType
+  sceneType: SceneType,
+  isShowTime = false
 ): Message => {
-  const base = createLocalMessageBase(fromId, toId, sceneType)
+  const base = createLocalMessageBase(fromId, toId, sceneType, isShowTime)
   return { ...base, msgType, content } as Message
 }
 

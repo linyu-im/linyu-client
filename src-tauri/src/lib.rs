@@ -1,6 +1,6 @@
 pub mod cmd;
 
-use cmd::{capture_screen, start_oauth_server, upload_file_chunks};
+use cmd::{capture_screen, start_oauth_server, upload_file_chunks, write_clipboard_files};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,7 +20,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             capture_screen,
             start_oauth_server,
-            upload_file_chunks
+            upload_file_chunks,
+            write_clipboard_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -316,3 +316,20 @@ async fn do_upload_file_chunks<R: Runtime>(
 
     Ok(file_url)
 }
+
+#[tauri::command]
+pub fn write_clipboard_files(paths: Vec<String>) -> Result<(), String> {
+    use clipboard_rs::{Clipboard, ClipboardContext};
+
+    if paths.is_empty() {
+        return Err("empty file list".into());
+    }
+    for path in &paths {
+        if !std::path::Path::new(path).is_file() {
+            return Err(format!("file not found: {path}"));
+        }
+    }
+
+    let ctx = ClipboardContext::new().map_err(|error| error.to_string())?;
+    ctx.set_files(paths).map_err(|error| error.to_string())
+}

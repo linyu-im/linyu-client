@@ -3,7 +3,10 @@ import {
   batchInsertMessages,
   deleteMessageById,
   queryLatestMessageIdBySession,
+  queryMessageById,
+  queryMessagesByIds,
   queryMessagesByPage,
+  softDeleteMessageById,
   softDeleteMessagesBySessionId,
   updateMessageLocalExt
 } from '@/db/message'
@@ -128,6 +131,28 @@ export const useMessageDbStore = defineStore('messageDb', {
     },
 
     /**
+     * 根据 id 从本地库查询单条消息
+     */
+    async getMessageById(id: string): Promise<Message | null> {
+      if (!id) return null
+      const dbMsg = await queryMessageById(id)
+      if (!dbMsg) return null
+      return mapDbMessageToMessage(dbMsg)
+    },
+
+    /**
+     * 根据 ids 批量从本地库查询消息
+     */
+    async getMessagesByIds(ids: string[]): Promise<Map<string, Message>> {
+      const dbMsgs = await queryMessagesByIds(ids)
+      const map = new Map<string, Message>()
+      dbMsgs.forEach((dbMsg) => {
+        map.set(dbMsg.id, mapDbMessageToMessage(dbMsg))
+      })
+      return map
+    },
+
+    /**
      * 从本地数据库加载消息（分页）
      */
     async loadMessagesFromDb(
@@ -146,6 +171,14 @@ export const useMessageDbStore = defineStore('messageDb', {
         pageSize: result.pageSize,
         hasMore: messages.length > 0 && messages.length >= pageSize
       }
+    },
+
+    /**
+     * 软删除本地单条消息
+     */
+    async deleteLocalMessage(id: string) {
+      if (!id) return
+      await softDeleteMessageById(id, nowBackendDatetime())
     },
 
     /**

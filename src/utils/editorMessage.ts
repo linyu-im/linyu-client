@@ -150,20 +150,31 @@ export const resolveSegmentMediaUrl = (
   return Promise.resolve(url)
 }
 
+type BuildSendParamOptions = {
+  onProgress?: UploadProgressHandler
+  onError?: UploadErrorHandler
+  isShowTime?: boolean
+  quoteMsgId?: string
+}
+
 export const buildSendParam = (
   unit: EditorSendUnit,
   sessionId: string,
-  options?: { onProgress?: UploadProgressHandler; onError?: UploadErrorHandler }
+  options?: BuildSendParamOptions
 ): Promise<SendMessageParam | null> => {
   const onProgress = options?.onProgress
   const onError = options?.onError
+  const isShowTime = options?.isShowTime ?? false
+  const quoteMsgId = options?.quoteMsgId?.trim() || undefined
 
   if (unit.msgType === 'text') {
     if (!unit.content.text.trim()) return Promise.resolve(null)
     const param: SendMessageParam = {
       sessionId,
       msgType: 'text',
-      content: unit.content
+      content: unit.content,
+      isShowTime,
+      ...(quoteMsgId ? { quoteMsgId } : {})
     }
     if (unit.mentions.length) {
       param.mentions = unit.mentions
@@ -189,7 +200,9 @@ export const buildSendParam = (
             ...unit.content,
             imgUrl,
             imgThumbUrl: imgUrl
-          }
+          },
+          isShowTime,
+          ...(quoteMsgId ? { quoteMsgId } : {})
         }
       }
       return resolveSegmentMediaUrl(unit.content.imgThumbUrl, {
@@ -203,7 +216,9 @@ export const buildSendParam = (
           ...unit.content,
           imgUrl,
           imgThumbUrl: imgThumbUrl || imgUrl
-        }
+        },
+        isShowTime,
+        ...(quoteMsgId ? { quoteMsgId } : {})
       }))
     })
   }
@@ -226,7 +241,9 @@ export const buildSendParam = (
             ...unit.content,
             videoUrl,
             videoThumbUrl: videoUrl
-          }
+          },
+          isShowTime,
+          ...(quoteMsgId ? { quoteMsgId } : {})
         }
       }
       return resolveSegmentMediaUrl(unit.content.videoThumbUrl, {
@@ -240,7 +257,9 @@ export const buildSendParam = (
           ...unit.content,
           videoUrl,
           videoThumbUrl: videoThumbUrl || videoUrl
-        }
+        },
+        isShowTime,
+        ...(quoteMsgId ? { quoteMsgId } : {})
       }))
     })
   }
@@ -260,7 +279,9 @@ export const buildSendParam = (
         content: {
           ...unit.content,
           fileUrl
-        }
+        },
+        isShowTime,
+        ...(quoteMsgId ? { quoteMsgId } : {})
       }
     })
   }
@@ -271,7 +292,7 @@ export const buildSendParam = (
 export const buildSendParamsFromSegments = (
   segments: EditorSegment[],
   sessionId: string,
-  options?: { onProgress?: UploadProgressHandler }
+  options?: BuildSendParamOptions
 ): Promise<SendMessageParam[]> => {
   const units = buildSendUnitsFromSegments(segments)
   let chain: Promise<SendMessageParam[]> = Promise.resolve([])

@@ -166,6 +166,17 @@ export async function softDeleteMessagesBySessionId(sessionId: string, deletedAt
 }
 
 /**
+ * 软删除单条消息
+ * @param id 消息 id
+ * @param deletedAt 删除时间
+ */
+export async function softDeleteMessageById(id: string, deletedAt: string): Promise<void> {
+  if (!id) return
+  const db = await getDb()
+  await db.execute('UPDATE t_message SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL', [deletedAt, id])
+}
+
+/**
  * 根据 id 删除消息
  * @param id 消息 id
  */
@@ -189,7 +200,7 @@ export async function batchDeleteMessagesByIds(ids: string[]): Promise<void> {
 }
 
 /**
- * 根据 id 查询单条消息
+ * 根据 id 查询单条消息（排除软删除）
  * @param id 消息 id
  * @returns 消息记录或 null
  */
@@ -203,11 +214,34 @@ export async function queryMessageById(id: string): Promise<DbMessage | null> {
             keyword_content AS keywordContent,
             created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
             local_ext AS localExt
-     FROM t_message WHERE id = ?`,
+     FROM t_message WHERE id = ? AND deleted_at IS NULL`,
     [id]
   )
 
   return result[0] ?? null
+}
+
+/**
+ * 根据 ids 批量查询消息（排除软删除）
+ * @param ids 消息 id 列表
+ * @returns 命中的消息记录（未找到或已软删除的 id 不会出现在结果中）
+ */
+export async function queryMessagesByIds(ids: string[]): Promise<DbMessage[]> {
+  const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))]
+  if (uniqueIds.length === 0) return []
+
+  const db = await getDb()
+  const placeholders = uniqueIds.map(() => '?').join(', ')
+  return db.select<DbMessage[]>(
+    `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
+            msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
+            content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
+            keyword_content AS keywordContent,
+            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
+            local_ext AS localExt
+     FROM t_message WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
+    uniqueIds
+  )
 }
 
 /**

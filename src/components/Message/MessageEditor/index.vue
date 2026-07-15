@@ -2,13 +2,29 @@
   <div
     ref="editorRootRef"
     class="message-editor"
-    :class="{ 'is-disabled': disabled, 'is-dragover': isDragOver }"
+    :class="{
+      'is-disabled': disabled,
+      'is-dragover': isDragOver,
+      'message-editor--quote': !!quoteMsg
+    }"
     @click="focus"
     @dragenter.prevent="onDragEnter"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop">
     <editor-content :editor="editor" class="message-editor__content" />
+    <div v-if="quoteMsg" class="message-editor__quote" @mousedown.prevent @click.stop>
+      <MessageQuotePreview :message="quoteMsg" />
+      <button
+        type="button"
+        class="message-editor__quote-close"
+        :aria-label="t('message.editor.clearQuote')"
+        @click="emit('clear-quote')">
+        <svg class="size-12px">
+          <use href="#close" />
+        </svg>
+      </button>
+    </div>
     <div v-if="isDragOver" class="message-editor__dragmask">{{ t('message.editor.dragDropHint') }}</div>
   </div>
 </template>
@@ -25,8 +41,9 @@
   import { SingleLine } from './extensions/SingleLine'
   import { FileChip } from './extensions/FileChip'
   import { buildMentionSuggestion } from './extensions/suggestion'
+  import MessageQuotePreview from '@/components/Message/MessageQuotePreview.vue'
   import type { MentionItem } from '@/types/common'
-  import type { FileContent, ImageContent, VideoContent } from '@/types/api/message'
+  import type { FileContent, ImageContent, Message, VideoContent } from '@/types/api/message'
   import type { FromType } from '@/types/common'
   import { isVideoFile } from '@/utils/fileIcon'
   import { getFilePath, getFileSize } from '@/utils/filePick'
@@ -51,6 +68,8 @@
     modelValue?: string
     placeholder?: string
     disabled?: boolean
+    /** 当前引用的消息（输入框底部预览） */
+    quoteMsg?: Message | null
     /** 提供 @ 提及候选数据 */
     fetchMentions?: (query: string) => MentionItem[] | Promise<MentionItem[]>
     /** 图片最大字节数 */
@@ -67,6 +86,7 @@
     modelValue: '',
     placeholder: undefined,
     disabled: false,
+    quoteMsg: null,
     fetchMentions: undefined,
     maxImageSize: 20 * 1024 * 1024,
     maxFileSize: 200 * 1024 * 1024,
@@ -80,6 +100,7 @@
     (e: 'change', payload: EditorPayload): void
     (e: 'submit', payload: EditorPayload): void
     (e: 'file-rejected', reason: { file: File; reason: 'image-too-large' | 'file-too-large' }): void
+    (e: 'clear-quote'): void
   }>()
 
   const isDragOver = ref(false)
@@ -508,6 +529,7 @@
     overflow: hidden;
     cursor: text;
     display: flex;
+    flex-direction: column;
     align-items: stretch;
 
     &.is-disabled {
@@ -524,10 +546,47 @@
       flex: 1;
       min-width: 0;
       min-height: 0;
-      height: 100%;
+      height: auto;
       display: flex;
       align-items: stretch;
       overflow: hidden;
+    }
+
+    .message-editor__quote {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      max-width: calc(100% - 20px);
+      margin: 0 10px 8px;
+      min-width: 0;
+
+      .message-quote-preview {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: calc(100% - 22px);
+      }
+    }
+
+    .message-editor__quote-close {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      color: var(--text-secondary-color);
+      background: color-mix(in srgb, var(--text-secondary-color) 16%, transparent);
+      cursor: pointer;
+
+      &:hover {
+        color: var(--text-color);
+        background: color-mix(in srgb, var(--text-secondary-color) 28%, transparent);
+      }
     }
 
     .message-editor__prose {

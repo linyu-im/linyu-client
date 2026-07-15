@@ -125,12 +125,18 @@
     "bubbleMenu": {
       "copy": "Copy",
       "copySuccess": "Copied",
+      "copyFailed": "Failed to copy",
       "copyUnsupported": "This message type cannot be copied",
       "quote": "Quote",
       "forward": "Forward",
       "favorite": "Favorite",
       "multiSelect": "Multi-select",
       "delete": "Delete",
+      "deleteFailed": "Failed to delete",
+      "deleteConfirmTitle": "Delete message",
+      "deleteConfirmContent": "Delete this message? This cannot be undone.",
+      "deleteConfirm": "Delete",
+      "deleteCancel": "Cancel",
       "voiceToText": "Voice to Text",
       "collectSticker": "Collect Sticker"
     },
@@ -152,7 +158,11 @@
       "sendFailed": "Failed to send",
       "pickImage": "Select images",
       "pickFile": "Select files",
-      "pickFailed": "Failed to read file"
+      "pickFailed": "Failed to read file",
+      "clearQuote": "Clear quote"
+    },
+    "quote": {
+      "notFound": "Quoted message unavailable"
     },
     "chatSettings": {
       "exclusiveRobot": "Exclusive Robot",

@@ -12,17 +12,17 @@ import { defineStore } from 'pinia'
 
 const t = i18n.global.t
 
-/** 转发目标：peerId + 会话场景类型 */
+/** 转坑目标：peerId + 会话场景类型 */
 export interface ForwardPeer {
   peerId: string
   sceneType: SceneType
 }
 
-/** 通知 Chat 页同步消息列�?*/
+/** 通知 Chat 页坌步消杯列�?*/
 export interface ForwardSyncPayload {
   sessionId: string
   message: Message
-  /** 服务端消息替换本地乐观消息时使用 */
+  /** 朝务端消杯替杢本地九观消杯时使用 */
   replaceLocalId?: string
 }
 
@@ -80,7 +80,8 @@ export const useMessageForwardStore = defineStore('messageForward', {
       const param: SendMessageParam = {
         sessionId,
         msgType: source.msgType,
-        content: source.content
+        content: source.content,
+        isShowTime: localMsg.isShowTime
       }
 
       const sendingMessagesStore = useSendingMessagesStore()
