@@ -348,7 +348,7 @@
       flex-shrink: 0;
       font-size: 14px;
       font-weight: 500;
-      color: var(--text-color);
+      color: var(--text-muted-color);
       margin-bottom: 10px;
     }
 

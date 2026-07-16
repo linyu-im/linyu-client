@@ -15,7 +15,7 @@
                 <template v-if="emotionName">
                   <span class="contacts-profile__meta-item">
                     <span>[</span>
-                    <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
+                    <EmotionIcon :url="emotionUrl" :size="20" />
                     <span>{{ emotionName }}</span>
                     <span>]</span>
                   </span>

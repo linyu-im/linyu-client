@@ -155,7 +155,9 @@
       }
       const type = message.fromType === 'robot' ? 'robot' : 'user'
       const groupId = message.sceneType === SceneType.Group && type === 'user' ? message.toId : ''
-      quoteName.value = nameStore.getCachedName(type, message.fromId, groupId) || '...'
+      const cached = nameStore.getCachedName(type, message.fromId, groupId)
+      quoteName.value = cached || '...'
+      if (cached) return
       nameStore.resolveName(type, message.fromId, groupId).then((name) => {
         if (resolvedMessage.value?.id === message.id && name) {
           quoteName.value = name

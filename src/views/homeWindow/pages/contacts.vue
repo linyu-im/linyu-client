@@ -154,7 +154,7 @@
                           <div class="text-14px truncate">{{ getContactDisplayName(contact) }}</div>
                           <div class="contacts__sub">
                             <span>[</span>
-                            <img v-if="contact.emotionUrl" :src="contact.emotionUrl" class="size-12px" />
+                            <EmotionIcon :url="contact.emotionUrl" :size="18" />
                             <div v-if="contact.emotionUrl">{{ contact.emotionName }}</div>
                             <span>]</span>
                           </div>

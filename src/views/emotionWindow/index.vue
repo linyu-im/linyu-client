@@ -6,7 +6,7 @@
     <div class="emotion__content">
       <div data-tauri-drag-region class="h-120px flex justify-center items-center flex-shrink-0">
         <div v-if="userStore.userInfo.emotionId" class="flex items-center justify-center">
-          <img class="size-28px m-r-10px" :src="userStore.userInfo.emotionUrl" alt="" />
+          <EmotionIcon :url="userStore.userInfo.emotionUrl" :size="48" class="m-r-10px" />
           <span>{{ userStore.userInfo.emotionName }}</span>
         </div>
         <span v-else>暂未设置心情</span>
@@ -14,7 +14,7 @@
       <div class="emotion__container">
         <div class="emotion__card">
           <div class="emotion__item" :class="{ active: !activeEmotionId }" @click="() => onSelectEmotion('', '', '')">
-            <img class="size-22px" src="/emotion/nothing.png" alt="" />
+            <EmotionIcon url="/emotion/nothing.png" :size="22" />
             <span class="text-center h-20px">无</span>
           </div>
           <div
@@ -23,7 +23,7 @@
             class="emotion__item"
             :class="{ active: activeEmotionId === item.id }"
             @click="() => onSelectEmotion(item.id, item.emotionName, item.url)">
-            <img class="size-22px" :src="item.url" alt="" />
+            <EmotionIcon :url="item.url" :size="32" />
             <span class="text-center h-20px">{{ item.emotionName }}</span>
           </div>
         </div>

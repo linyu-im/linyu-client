@@ -9,7 +9,6 @@
         </div>
       </div>
       <div class="flex justify-between items-center flex-1 pointer-events-none">
-        <!-- 头像状�?-->
         <div class="m-l-10px flex items-center pointer-events-auto">
           <div class="flex position-relative items-center">
             <Avatar :id="userStore.userInfo.id" class="size-24px rounded-5px bg-#FFF" :profile-enabled="true" />
@@ -18,7 +17,7 @@
           <div
             class="flex items-center justify-center text-12px cursor-pointer text-[var(--text-muted-color)] m-l-10px"
             @click="() => createEmotionWinodw()">
-            <img v-if="userStore.userInfo.emotionId" class="size-14px" :src="userStore.userInfo.emotionUrl" alt="" />
+            <EmotionIcon v-if="userStore.userInfo.emotionId" :url="userStore.userInfo.emotionUrl" :size="20" />
             <div class="m-l-2px">
               {{ userStore.userInfo.emotionId ? userStore.userInfo.emotionName : t('home.emotion.setText') }}
             </div>

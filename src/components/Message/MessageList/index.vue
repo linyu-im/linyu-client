@@ -1,7 +1,7 @@
 <template>
   <n-scrollbar ref="scrollbarRef" class="message-list" :theme-overrides="{ width: '7px' }" @scroll="onScroll">
     <div ref="innerRef" class="message-list__inner">
-      <template v-for="message in messages" :key="message.renderKey ?? message.id">
+      <template v-for="message in displayMessages" :key="message.renderKey ?? message.id">
         <Time v-if="message.isShowTime" :time="message.createdAt" />
         <div
           v-memo="[
@@ -9,7 +9,6 @@
             message.id,
             message.status,
             message.quoteMsgId,
-            hasQuotedLookup(message.quoteMsgId),
             getQuotedMessage(message.quoteMsgId)?.id ?? ''
           ]"
           class="message-list__row"
@@ -63,7 +62,7 @@
               </n-tooltip>
             </div>
             <MessageQuotePreview
-              v-if="message.quoteMsgId && hasQuotedLookup(message.quoteMsgId)"
+              v-if="message.quoteMsgId"
               class="message-list__quote"
               :message="getQuotedMessage(message.quoteMsgId)"
               :missing-text="t('message.quote.notFound')" />
@@ -121,14 +120,19 @@
   const bottomAnchorRef = ref<HTMLElement | null>(null)
   const reachTopLocked = ref(false)
   const atBottomRef = ref(true)
+  /** 等引用预取完成后再渲染，避免引用插入后高度变化导致滚底闪烁 */
+  const displayMessages = shallowRef<Message[]>([])
   /** 已拉取的引用消息缓存（含未找到的 null） */
   const quotedById = shallowRef(new Map<string, Message | null>())
   let quotedPrefetchToken = 0
+  let renderToken = 0
   let savedScrollHeight = 0
   let savedScrollTop = 0
   let scrollContainerEl: HTMLElement | null = null
   let pendingScrollToBottom = false
   let resizeObserver: ResizeObserver | null = null
+  /** 进行中的引用预取，scrollToBottom 需等待 */
+  let pendingQuotesReady: Promise<void> = Promise.resolve()
 
   const SCROLL_TOP_THRESHOLD = 48
   const SCROLL_BOTTOM_THRESHOLD = 48
@@ -137,23 +141,15 @@
     ...new Set(msgs.map((item) => item.quoteMsgId?.trim()).filter((id): id is string => !!id))
   ]
 
-  const scrollToBottomAfterQuotes = () => {
-    nextTick(() => {
-      if (pendingScrollToBottom || atBottomRef.value) {
-        applyScrollToBottom()
-      }
-    })
-  }
-
-  /** 批量预取引用消息，渲染前写入缓存，避免逐条异步闪烁与滚动跳动 */
+  /** 批量预取引用消息；仅在全部就绪后更新缓存 */
   const prefetchQuotedMessages = (msgs: Message[]) => {
     const ids = collectQuoteMsgIds(msgs)
     if (ids.length === 0) return Promise.resolve()
 
     const next = new Map(quotedById.value)
-    let changed = false
     const messageById = new Map(msgs.map((item) => [item.id, item]))
     const pendingIds: string[] = []
+    let changed = false
 
     ids.forEach((id) => {
       if (next.has(id)) return
@@ -166,31 +162,34 @@
       pendingIds.push(id)
     })
 
-    if (changed) {
-      quotedById.value = next
+    if (pendingIds.length === 0) {
+      if (changed) quotedById.value = next
+      return Promise.resolve()
     }
-
-    if (pendingIds.length === 0) return Promise.resolve()
 
     const token = ++quotedPrefetchToken
     return messageDbStore.getMessagesByIds(pendingIds).then((map) => {
       if (token !== quotedPrefetchToken) return
-      const merged = new Map(quotedById.value)
       pendingIds.forEach((id) => {
-        merged.set(id, map.get(id) ?? null)
+        next.set(id, map.get(id) ?? null)
       })
-      quotedById.value = merged
+      quotedById.value = next
     })
+  }
+
+  const isDisplaySynced = () => {
+    const display = displayMessages.value
+    const source = props.messages
+    if (display.length !== source.length) return false
+    if (source.length === 0) return true
+    const lastDisplay = display[display.length - 1]
+    const lastSource = source[source.length - 1]
+    return (lastDisplay?.renderKey ?? lastDisplay?.id) === (lastSource?.renderKey ?? lastSource?.id)
   }
 
   const getQuotedMessage = (quoteMsgId?: string) => {
     if (!quoteMsgId) return null
     return quotedById.value.get(quoteMsgId) ?? null
-  }
-
-  const hasQuotedLookup = (quoteMsgId?: string) => {
-    if (!quoteMsgId) return false
-    return quotedById.value.has(quoteMsgId)
   }
 
   /** 删除消息时同步清理引用缓存，避免仍展示已删内容 */
@@ -265,16 +264,27 @@
     }
   }
 
-  /** 等待布局完成后再滚到底部（首屏加载、切换会话） */
+  /** 等待引用预取 + displayMessages 同步后再滚底，避免半渲染状态闪烁 */
   const scrollToBottom = () => {
     pendingScrollToBottom = true
-    nextTick(() => {
-      tryScrollToBottom()
-      requestAnimationFrame(() => {
-        tryScrollToBottom()
-        requestAnimationFrame(tryScrollToBottom)
+
+    const run = () => {
+      pendingQuotesReady.finally(() => {
+        if (!isDisplaySynced()) {
+          pendingQuotesReady.finally(() => nextTick(run))
+          return
+        }
+        nextTick(() => {
+          tryScrollToBottom()
+          requestAnimationFrame(() => {
+            tryScrollToBottom()
+            requestAnimationFrame(tryScrollToBottom)
+          })
+        })
       })
-    })
+    }
+
+    run()
   }
 
   const handleContentResize = () => {
@@ -328,58 +338,67 @@
     emit('reach-top')
   }
 
+  /**
+   * 消息变更：先预取引用，再一次性写入 displayMessages。
+   * 避免「先无引用渲染 → 引用插入撑高 → 再滚底」造成闪烁。
+   */
   watch(
     () => props.messages,
     (newMessages, oldMessages) => {
+      const token = ++renderToken
       const prepended =
         (oldMessages?.length ?? 0) > 0 &&
         newMessages.length > (oldMessages?.length ?? 0) &&
         newMessages[0]?.id !== oldMessages?.[0]?.id
 
       const isInitialFill = (oldMessages?.length ?? 0) === 0 && newMessages.length > 0
+      const shouldStickBottom = isInitialFill || pendingScrollToBottom || atBottomRef.value
 
       if (newMessages.length === 0) {
         quotedPrefetchToken += 1
         quotedById.value = new Map()
+        displayMessages.value = []
+        pendingQuotesReady = Promise.resolve()
+        return
+      }
+
+      if (prepended) {
+        const container = getScrollContainer()
+        if (container) {
+          savedScrollHeight = container.scrollHeight
+          savedScrollTop = container.scrollTop
+        }
       }
 
       const quotesReady = prefetchQuotedMessages(newMessages)
+      pendingQuotesReady = quotesReady
 
-      nextTick(() => {
-        const container = getScrollContainer()
+      quotesReady.then(() => {
+        if (token !== renderToken) return
 
-        if (prepended && container) {
-          quotesReady.then(() => {
-            nextTick(() => {
-              const el = getScrollContainer()
-              if (!el) return
-              const newHeight = el.scrollHeight
-              el.scrollTop = newHeight - savedScrollHeight + savedScrollTop
+        displayMessages.value = newMessages
+
+        nextTick(() => {
+          if (token !== renderToken) return
+
+          if (prepended) {
+            const el = getScrollContainer()
+            if (el) {
+              el.scrollTop = el.scrollHeight - savedScrollHeight + savedScrollTop
               reachTopLocked.value = false
               syncAtBottom(el)
-            })
-          })
-          return
-        }
+            }
+            return
+          }
 
-        if (isInitialFill) {
-          reachTopLocked.value = false
-          quotesReady.finally(() => {
-            nextTick(() => {
-              scrollToBottom()
-            })
-          })
-          return
-        }
-
-        quotesReady.then(() => {
-          nextTick(() => {
-            scrollToBottomAfterQuotes()
-          })
+          if (shouldStickBottom) {
+            reachTopLocked.value = false
+            scrollToBottom()
+          }
         })
       })
     },
-    { flush: 'post' }
+    { flush: 'post', immediate: true }
   )
 
   watch(
@@ -387,15 +406,6 @@
     (loading) => {
       if (!loading) {
         reachTopLocked.value = false
-      }
-    }
-  )
-
-  watch(
-    () => props.loading,
-    (loading, wasLoading) => {
-      if (wasLoading && !loading && props.messages.length > 0) {
-        scrollToBottom()
       }
     }
   )

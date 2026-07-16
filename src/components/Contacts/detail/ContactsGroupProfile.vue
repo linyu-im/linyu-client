@@ -134,7 +134,7 @@
                   <div
                     class="contacts-profile__top-emotion text-12px flex gap-2px justify-center items-center m-4px text-[var(--text-muted-color)]">
                     <span>[</span>
-                    <img v-if="item.emotionUrl" class="size-14px" :src="item.emotionUrl" alt="" />
+                    <EmotionIcon :url="item.emotionUrl" :size="18" />
                     <span>{{ item.emotionName }}</span>
                     <span>]</span>
                   </div>

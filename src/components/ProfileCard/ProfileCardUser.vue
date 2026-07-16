@@ -38,7 +38,7 @@
           <div class="profile-card__value-slot">
             <span class="profile-card__row-value profile-card__emotion">
               <span>[</span>
-              <img v-if="emotionUrl" class="size-14px" :src="emotionUrl" alt="" />
+              <EmotionIcon :url="emotionUrl" :size="20" />
               <span>{{ emotionName }}</span>
               <span>]</span>
             </span>

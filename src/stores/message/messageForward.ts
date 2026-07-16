@@ -18,7 +18,7 @@ export interface ForwardPeer {
   sceneType: SceneType
 }
 
-/** 通知 Chat 页坌步消杯列�?*/
+/** 通知 Chat 页坌步消杯列�?*/
 export interface ForwardSyncPayload {
   sessionId: string
   message: Message
@@ -81,7 +81,7 @@ export const useMessageForwardStore = defineStore('messageForward', {
         sessionId,
         msgType: source.msgType,
         content: source.content,
-        isShowTime: localMsg.isShowTime
+        isShowTime: false
       }
 
       const sendingMessagesStore = useSendingMessagesStore()

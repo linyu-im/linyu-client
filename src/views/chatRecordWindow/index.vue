@@ -640,7 +640,6 @@
       position: relative;
       width: fit-content;
       max-width: 100%;
-      padding: 8px 10px;
       border-radius: 8px;
       font-size: 14px;
       line-height: 1.5;

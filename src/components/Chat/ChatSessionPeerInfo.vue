@@ -5,7 +5,7 @@
       <div
         v-if="userInfo?.emotionUrl"
         class="flex items-center justify-center text-12px text-[var(--text-muted-color)] m-l-10px flex-shrink-0">
-        <img class="size-14px" :src="userInfo.emotionUrl" alt="" />
+        <EmotionIcon :url="userInfo.emotionUrl" :size="22" />
         <div class="m-l-2px">{{ userInfo.emotionName }}</div>
       </div>
     </template>
