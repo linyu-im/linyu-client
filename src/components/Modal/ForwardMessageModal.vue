@@ -1,166 +1,158 @@
 <template>
-  <n-modal
-    v-model:show="visible"
-    :mask-closable="false"
-    :close-on-esc="false"
-    transform-origin="center"
-    @after-leave="resetForm">
-    <div class="forward-modal">
-      <div class="forward-modal__left">
-        <n-input
-          v-model:value="searchKeyword"
-          size="small"
-          clearable
-          class="forward-modal__search"
-          :placeholder="t('message.forward.search')">
-          <template #prefix>
-            <svg class="forward-modal__search-icon" aria-hidden="true">
-              <use href="#search" />
-            </svg>
-          </template>
-        </n-input>
+  <div class="forward-modal">
+    <div class="forward-modal__left">
+      <n-input
+        v-model:value="searchKeyword"
+        size="small"
+        clearable
+        class="forward-modal__search"
+        :placeholder="t('message.forward.search')">
+        <template #prefix>
+          <svg class="forward-modal__search-icon" aria-hidden="true">
+            <use href="#search" />
+          </svg>
+        </template>
+      </n-input>
 
-        <n-scrollbar class="forward-modal__list-scroll">
-          <div class="forward-modal__list">
-            <div class="forward-modal__section">
-              <button type="button" class="forward-modal__section-head" @click="toggleSection('group')">
-                <span class="forward-modal__section-left">
-                  <svg
-                    class="forward-modal__section-arrow"
-                    :class="{ 'forward-modal__section-arrow--expanded': expandedSections.group }"
-                    aria-hidden="true">
-                    <use href="#right-arrow" />
-                  </svg>
-                  <span>{{ t('contacts.menu.myGroup') }}</span>
-                </span>
-              </button>
-              <template v-if="expandedSections.group">
-                <div v-if="groupListLoading" class="forward-modal__section-hint">{{ t('contacts.loading') }}</div>
-                <div v-else-if="filteredGroups.length === 0" class="forward-modal__section-hint">
-                  {{ searchKeyword ? t('message.forward.noSearchResult') : t('contacts.emptyGroups') }}
+      <n-scrollbar class="forward-modal__list-scroll">
+        <div class="forward-modal__list">
+          <div class="forward-modal__section">
+            <button type="button" class="forward-modal__section-head" @click="toggleSection('group')">
+              <span class="forward-modal__section-left">
+                <svg
+                  class="forward-modal__section-arrow"
+                  :class="{ 'forward-modal__section-arrow--expanded': expandedSections.group }"
+                  aria-hidden="true">
+                  <use href="#right-arrow" />
+                </svg>
+                <span>{{ t('contacts.menu.myGroup') }}</span>
+              </span>
+            </button>
+            <template v-if="expandedSections.group">
+              <div v-if="groupListLoading" class="forward-modal__section-hint">{{ t('contacts.loading') }}</div>
+              <div v-else-if="filteredGroups.length === 0" class="forward-modal__section-hint">
+                {{ searchKeyword ? t('message.forward.noSearchResult') : t('contacts.emptyGroups') }}
+              </div>
+              <template v-else>
+                <div
+                  v-for="contact in filteredGroups"
+                  :key="contact.id"
+                  role="button"
+                  tabindex="0"
+                  class="forward-modal__chat-item"
+                  :class="{ 'forward-modal__chat-item--active': isChatSelected(contact.id) }"
+                  @click="toggleChat(contact.id)"
+                  @keydown.enter.prevent="toggleChat(contact.id)"
+                  @keydown.space.prevent="toggleChat(contact.id)">
+                  <n-checkbox class="forward-modal__checkbox" :checked="isChatSelected(contact.id)" />
+                  <Avatar :id="contact.peerId" type="group" class="forward-modal__avatar" />
+                  <span class="forward-modal__chat-name">{{ getGroupDisplayName(contact) }}</span>
                 </div>
-                <template v-else>
-                  <div
-                    v-for="contact in filteredGroups"
-                    :key="contact.id"
-                    role="button"
-                    tabindex="0"
-                    class="forward-modal__chat-item"
-                    :class="{ 'forward-modal__chat-item--active': isChatSelected(contact.id) }"
-                    @click="toggleChat(contact.id)"
-                    @keydown.enter.prevent="toggleChat(contact.id)"
-                    @keydown.space.prevent="toggleChat(contact.id)">
-                    <n-checkbox class="forward-modal__checkbox" :checked="isChatSelected(contact.id)" />
-                    <Avatar :id="contact.peerId" type="group" class="forward-modal__avatar" />
-                    <span class="forward-modal__chat-name">{{ getGroupDisplayName(contact) }}</span>
-                  </div>
-                </template>
               </template>
-            </div>
-
-            <div class="forward-modal__section">
-              <button type="button" class="forward-modal__section-head" @click="toggleSection('friend')">
-                <span class="forward-modal__section-left">
-                  <svg
-                    class="forward-modal__section-arrow"
-                    :class="{ 'forward-modal__section-arrow--expanded': expandedSections.friend }"
-                    aria-hidden="true">
-                    <use href="#right-arrow" />
-                  </svg>
-                  <span>{{ t('contacts.menu.myFriends') }}</span>
-                </span>
-              </button>
-              <template v-if="expandedSections.friend">
-                <div v-if="friendListLoading" class="forward-modal__section-hint">{{ t('contacts.loading') }}</div>
-                <div v-else-if="filteredFriends.length === 0" class="forward-modal__section-hint">
-                  {{ searchKeyword ? t('message.forward.noSearchResult') : t('contacts.emptyFriends') }}
-                </div>
-                <template v-else>
-                  <div
-                    v-for="contact in filteredFriends"
-                    :key="contact.id"
-                    role="button"
-                    tabindex="0"
-                    class="forward-modal__chat-item"
-                    :class="{ 'forward-modal__chat-item--active': isChatSelected(contact.id) }"
-                    @click="toggleChat(contact.id)"
-                    @keydown.enter.prevent="toggleChat(contact.id)"
-                    @keydown.space.prevent="toggleChat(contact.id)">
-                    <n-checkbox class="forward-modal__checkbox" :checked="isChatSelected(contact.id)" />
-                    <Avatar :id="contact.peerId" class="forward-modal__avatar" />
-                    <span class="forward-modal__chat-name">{{ getFriendDisplayName(contact) }}</span>
-                  </div>
-                </template>
-              </template>
-            </div>
+            </template>
           </div>
-        </n-scrollbar>
+
+          <div class="forward-modal__section">
+            <button type="button" class="forward-modal__section-head" @click="toggleSection('friend')">
+              <span class="forward-modal__section-left">
+                <svg
+                  class="forward-modal__section-arrow"
+                  :class="{ 'forward-modal__section-arrow--expanded': expandedSections.friend }"
+                  aria-hidden="true">
+                  <use href="#right-arrow" />
+                </svg>
+                <span>{{ t('contacts.menu.myFriends') }}</span>
+              </span>
+            </button>
+            <template v-if="expandedSections.friend">
+              <div v-if="friendListLoading" class="forward-modal__section-hint">{{ t('contacts.loading') }}</div>
+              <div v-else-if="filteredFriends.length === 0" class="forward-modal__section-hint">
+                {{ searchKeyword ? t('message.forward.noSearchResult') : t('contacts.emptyFriends') }}
+              </div>
+              <template v-else>
+                <div
+                  v-for="contact in filteredFriends"
+                  :key="contact.id"
+                  role="button"
+                  tabindex="0"
+                  class="forward-modal__chat-item"
+                  :class="{ 'forward-modal__chat-item--active': isChatSelected(contact.id) }"
+                  @click="toggleChat(contact.id)"
+                  @keydown.enter.prevent="toggleChat(contact.id)"
+                  @keydown.space.prevent="toggleChat(contact.id)">
+                  <n-checkbox class="forward-modal__checkbox" :checked="isChatSelected(contact.id)" />
+                  <Avatar :id="contact.peerId" class="forward-modal__avatar" />
+                  <span class="forward-modal__chat-name">{{ getFriendDisplayName(contact) }}</span>
+                </div>
+              </template>
+            </template>
+          </div>
+        </div>
+      </n-scrollbar>
+    </div>
+
+    <div class="forward-modal__right">
+      <div class="forward-modal__right-head">
+        {{ t('message.forward.sendTo') }}
       </div>
 
-      <div class="forward-modal__right">
-        <div class="forward-modal__right-head">
-          {{ t('message.forward.sendTo') }}
-        </div>
-
-        <n-scrollbar class="forward-modal__selected-scroll">
-          <div v-if="selectedContacts.length > 0" class="forward-modal__selected-list">
-            <div v-for="item in selectedContacts" :key="item.id" class="forward-modal__selected-item">
-              <Avatar
-                :id="item.peerId"
-                :type="item.sceneType === SceneType.Group ? 'group' : undefined"
-                class="forward-modal__selected-avatar" />
-              <span class="forward-modal__selected-name">{{ item.name }}</span>
-              <button
-                type="button"
-                class="forward-modal__selected-remove"
-                :aria-label="t('message.forward.removeSelected')"
-                @click="removeChat(item.id)">
-                <svg class="forward-modal__selected-remove-icon" aria-hidden="true">
-                  <use href="#close" />
-                </svg>
-              </button>
-            </div>
+      <n-scrollbar class="forward-modal__selected-scroll">
+        <div v-if="selectedContacts.length > 0" class="forward-modal__selected-list">
+          <div v-for="item in selectedContacts" :key="item.id" class="forward-modal__selected-item">
+            <Avatar
+              :id="item.peerId"
+              :type="item.sceneType === SceneType.Group ? 'group' : undefined"
+              class="forward-modal__selected-avatar" />
+            <span class="forward-modal__selected-name">{{ item.name }}</span>
+            <button
+              type="button"
+              class="forward-modal__selected-remove"
+              :aria-label="t('message.forward.removeSelected')"
+              @click="removeChat(item.id)">
+              <svg class="forward-modal__selected-remove-icon" aria-hidden="true">
+                <use href="#close" />
+              </svg>
+            </button>
           </div>
-        </n-scrollbar>
+        </div>
+      </n-scrollbar>
 
-        <n-divider class="forward-modal__divider" />
+      <n-divider class="forward-modal__divider" />
 
-        <div class="forward-modal__preview-wrap">
-          <div
-            v-if="message"
-            class="forward-modal__preview"
-            :class="{ 'forward-modal__preview--text': message.msgType === 'text' }">
-            <div class="forward-modal__main" :class="{ 'forward-modal__main--text': message.msgType === 'text' }">
-              <div
-                class="forward-modal__bubble"
-                :class="{
-                  'forward-modal__bubble--plain': isPlainBubble(message),
-                  'forward-modal__bubble--text': message.msgType === 'text',
-                  'forward-modal__bubble--file': message.msgType === 'file',
-                  'forward-modal__bubble--ecard': message.msgType === 'ecard'
-                }">
-                <MessageItem :message="message" :is-self="false" :disable-events="true" />
-              </div>
+      <div class="forward-modal__preview-wrap">
+        <div
+          class="forward-modal__preview"
+          :class="{ 'forward-modal__preview--text': props.message.msgType === 'text' }">
+          <div class="forward-modal__main" :class="{ 'forward-modal__main--text': props.message.msgType === 'text' }">
+            <div
+              class="forward-modal__bubble"
+              :class="{
+                'forward-modal__bubble--plain': isPlainBubble(props.message),
+                'forward-modal__bubble--text': props.message.msgType === 'text',
+                'forward-modal__bubble--file': props.message.msgType === 'file',
+                'forward-modal__bubble--ecard': props.message.msgType === 'ecard'
+              }">
+              <MessageItem :message="props.message" :is-self="false" :disable-events="true" />
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="forward-modal__actions">
-          <n-button
-            class="forward-modal__action-btn"
-            type="primary"
-            :disabled="!message || selectedChatIds.length === 0"
-            :loading="sending"
-            @click="onSend">
-            {{ t('message.forward.send') }}
-          </n-button>
-          <n-button class="forward-modal__action-btn" @click="onCancel">
-            {{ t('message.forward.cancel') }}
-          </n-button>
-        </div>
+      <div class="forward-modal__actions">
+        <n-button
+          class="forward-modal__action-btn"
+          type="primary"
+          :disabled="selectedChatIds.length === 0"
+          :loading="sending"
+          @click="onSend">
+          {{ t('message.forward.send') }}
+        </n-button>
+        <n-button class="forward-modal__action-btn" @click="onCancel">
+          {{ t('message.forward.cancel') }}
+        </n-button>
       </div>
     </div>
-  </n-modal>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -183,17 +175,17 @@
   }
 
   const messageForwardStore = useMessageForwardStore()
-  const visible = computed({
-    get: () => messageForwardStore.show,
-    set: (value: boolean) => {
-      if (!value) messageForwardStore.close()
-    }
-  })
-  const message = computed(() => messageForwardStore.message)
+  const props = defineProps<{
+    message: Message
+  }>()
+
+  const emit = defineEmits<{
+    close: []
+  }>()
 
   useEscapeOverlay(() => {
-    messageForwardStore.close()
-  }, visible)
+    emit('close')
+  }, true)
 
   const { t } = useI18n()
 
@@ -295,11 +287,7 @@
     fetchGroupList()
   }
 
-  watch(visible, (show) => {
-    if (show) {
-      fetchContactLists()
-    }
-  })
+  fetchContactLists()
 
   watch(searchKeyword, (keyword) => {
     if (!keyword.trim()) return
@@ -322,29 +310,20 @@
   }
 
   const onCancel = () => {
-    messageForwardStore.close()
+    emit('close')
   }
 
   const onSend = () => {
-    if (!message.value || selectedContacts.value.length === 0 || sending.value) return
+    if (selectedContacts.value.length === 0 || sending.value) return
 
     sending.value = true
     const peers = selectedContacts.value.map((item) => ({
       peerId: item.peerId,
       sceneType: item.sceneType
     }))
-    messageForwardStore.forward(peers)
+    messageForwardStore.forward(peers, props.message)
     sending.value = false
-  }
-
-  const resetForm = () => {
-    searchKeyword.value = ''
-    selectedChatIds.value = []
-    sending.value = false
-    expandedSections.value = {
-      friend: true,
-      group: false
-    }
+    emit('close')
   }
 </script>
 

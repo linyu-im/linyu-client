@@ -95,7 +95,12 @@
                   'chat-record__item-content--file': message.msgType === 'file',
                   'chat-record__item-content--ecard': message.msgType === 'ecard'
                 }">
-                <Item :message="message" :is-self="isSelf(message)" />
+                <Item
+                  :message="message"
+                  :is-self="isSelf(message)"
+                  menu-preset="record"
+                  @forward="onForwardMessage"
+                  @delete="onDeleteMessage" />
               </div>
             </div>
           </article>
@@ -116,11 +121,13 @@
   import type { Message } from '@/types/api/message'
   import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
   import { formatChatRecordDateTime, formatDateRangeLabel, toBackendDateRange } from '@/utils/time'
+  import { useMessageBubbleActions } from '@/composables/useMessageBubbleActions'
 
   const { t, locale } = useI18n()
   const chatRecordStore = useChatRecordStore()
   const messageDbStore = useMessageDbStore()
   const userStore = useUserStore()
+  const messageBubbleActions = useMessageBubbleActions()
 
   type ChatRecordFilter = 'all' | 'file' | 'image' | 'video' | 'date'
   type ChatRecordMsgType = 'file' | 'image' | 'video'
@@ -203,6 +210,18 @@
   const plainContentTypes = new Set(['image', 'video', 'sticker'])
 
   const isPlainContent = (message: Message) => plainContentTypes.has(message.msgType)
+
+  const onForwardMessage = (message: Message) => {
+    messageBubbleActions.forwardMessage(message)
+  }
+
+  const onDeleteMessage = (message: Message) => {
+    messageBubbleActions.deleteMessage(message, {
+      onBeforeDelete: (deletedMessage) => {
+        messages.value = messages.value.filter((item) => item.id !== deletedMessage.id)
+      }
+    })
+  }
 
   const resolveQueryDateRange = () => {
     if (activeFilter.value !== 'date' || !selectedDateRange.value) return undefined

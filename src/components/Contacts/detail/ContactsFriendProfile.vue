@@ -152,7 +152,7 @@
   import { contactsApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
-  import { useMessageForwardStore } from '@/stores/message/messageForward'
+  import { useForwardMessageModal } from '@/composables/useForwardMessageModal'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { Message } from '@/types/api/message'
   import type { User } from '@/types/api/user'
@@ -179,7 +179,7 @@
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
   const homeTabStore = useHomeTabStore()
-  const messageForwardStore = useMessageForwardStore()
+  const { openForwardMessageModal } = useForwardMessageModal()
 
   const sendingMessage = ref(false)
 
@@ -348,7 +348,7 @@
 
   const onShare = () => {
     if (!shareMessage.value) return
-    messageForwardStore.open(shareMessage.value)
+    openForwardMessageModal(shareMessage.value)
   }
 
   const onSendMessage = () => {

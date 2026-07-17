@@ -2,8 +2,10 @@
   <n-config-provider :theme-overrides="themeOverrides" :locale="naiveLocale" :date-locale="naiveDateLocale">
     <n-dialog-provider>
       <n-message-provider :max="3" container-style="word-break: break-all !important">
-        <slot></slot>
-        <naive-component-content />
+        <n-modal-provider>
+          <slot></slot>
+          <naive-component-content />
+        </n-modal-provider>
       </n-message-provider>
     </n-dialog-provider>
   </n-config-provider>

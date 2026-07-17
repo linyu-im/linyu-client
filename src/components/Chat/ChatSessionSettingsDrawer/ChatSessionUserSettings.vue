@@ -76,7 +76,7 @@
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageDbStore } from '@/stores/message/messageDb'
-  import { useMessageForwardStore } from '@/stores/message/messageForward'
+  import { useForwardMessageModal } from '@/composables/useForwardMessageModal'
   import { useContactsStore } from '@/stores/user/contacts'
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
@@ -98,7 +98,7 @@
   const dialog = useDialog()
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
-  const messageForwardStore = useMessageForwardStore()
+  const { openForwardMessageModal } = useForwardMessageModal()
   const contactsStore = useContactsStore()
 
   const robots = ref<Robot[]>([])
@@ -124,7 +124,7 @@
 
   const onShare = () => {
     if (!shareMessage.value) return
-    messageForwardStore.open(shareMessage.value)
+    openForwardMessageModal(shareMessage.value)
   }
 
   const onAddRobot = () => {

@@ -41,8 +41,9 @@
       message: Message
       isSelf?: boolean
       disableEvents?: boolean
+      menuPreset?: 'chat' | 'record'
     }>(),
-    { disableEvents: false }
+    { disableEvents: false, menuPreset: 'chat' }
   )
 
   const emit = defineEmits<{
@@ -114,6 +115,10 @@
   const menuOptions = computed(() => {
     const msgType = props.message.msgType
     const options: Array<{ label?: () => string; key: string; type?: string; props?: Record<string, unknown> }> = []
+    const quoteEnabled = props.menuPreset !== 'record'
+    const pushQuote = () => {
+      if (quoteEnabled) options.push({ label: () => t('message.bubbleMenu.quote'), key: 'quote' })
+    }
 
     switch (msgType) {
       case 'ecard':
@@ -122,37 +127,35 @@
       case 'file':
         options.push(
           { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
-          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
-          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' }
         )
+        pushQuote()
         break
       case 'image':
       case 'video':
         options.push(
           { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
-          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
-          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' }
         )
+        pushQuote()
         break
       case 'text':
         options.push(
           { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
-          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
-          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' }
         )
+        pushQuote()
         break
       case 'voice':
-        options.push(
-          { label: () => t('message.bubbleMenu.voiceToText'), key: 'voiceToText' },
-          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
-        )
+        options.push({ label: () => t('message.bubbleMenu.voiceToText'), key: 'voiceToText' })
+        pushQuote()
         break
       case 'sticker':
         options.push(
           { label: () => t('message.bubbleMenu.collectSticker'), key: 'collectSticker' },
-          { label: () => t('message.bubbleMenu.forward'), key: 'forward' },
-          { label: () => t('message.bubbleMenu.quote'), key: 'quote' }
+          { label: () => t('message.bubbleMenu.forward'), key: 'forward' }
         )
+        pushQuote()
         break
     }
 

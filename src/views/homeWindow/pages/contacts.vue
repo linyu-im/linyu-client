@@ -187,7 +187,6 @@
         </div>
       </template>
     </Split>
-    <ForwardMessageModal />
     <CreateGroupModal v-model:show="showCreateGroupModal" />
   </div>
 </template>
@@ -200,7 +199,6 @@
   import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
-  import ForwardMessageModal from '@/components/Modal/ForwardMessageModal.vue'
   import { useContactsStore } from '@/stores/user/contacts'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'

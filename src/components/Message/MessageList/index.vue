@@ -83,10 +83,12 @@
   import { SceneType } from '@/constants/common'
   import MessageQuotePreview from '@/components/Message/MessageQuotePreview.vue'
   import { useMessageDbStore } from '@/stores/message/messageDb'
+  import { useMessageActionsStore } from '@/stores/message/messageActions'
 
   const { t } = useI18n()
   const userStore = useUserStore()
   const messageDbStore = useMessageDbStore()
+  const messageActionsStore = useMessageActionsStore()
 
   const props = defineProps({
     messages: {
@@ -201,7 +203,6 @@
   }
 
   const onDeleteMessage = (message: Message) => {
-    removeQuotedCache(message.id)
     emit('delete', message)
   }
 
@@ -407,6 +408,13 @@
       if (!loading) {
         reachTopLocked.value = false
       }
+    }
+  )
+
+  watch(
+    () => messageActionsStore.deletedSeq,
+    () => {
+      removeQuotedCache(messageActionsStore.deletedMessageId)
     }
   )
 

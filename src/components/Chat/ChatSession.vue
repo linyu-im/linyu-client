@@ -102,7 +102,6 @@
         @history-deleted="onChatHistoryDeleted"
         @group-dissolved="onGroupDissolved"
         @friend-deleted="onFriendDeleted" />
-      <ForwardMessageModal />
     </div>
   </div>
 </template>
@@ -130,10 +129,10 @@
   import { useMessageForwardStore } from '@/stores/message/messageForward'
   import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useMessageBubbleActions } from '@/composables/useMessageBubbleActions'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
   import type { MentionItem } from '@/types/common'
   import MessageList from '../Message/MessageList/index.vue'
-  import ForwardMessageModal from '@/components/Modal/ForwardMessageModal.vue'
   import EmojiPicker from '../Message/EmojiPicker/index.vue'
   import VoiceRecordBar from '../Message/VoiceRecordBar.vue'
   import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer/index.vue'
@@ -167,6 +166,7 @@
   const messageForwardStore = useMessageForwardStore()
   const sendingMessagesStore = useSendingMessagesStore()
   const appSettingsStore = useAppSettingsStore()
+  const messageBubbleActions = useMessageBubbleActions()
 
   const PAGE_SIZE = 20
   const pendingNewCount = ref(0)
@@ -229,7 +229,7 @@
   }
 
   const onForwardMessage = (message: Message) => {
-    messageForwardStore.open(message)
+    messageBubbleActions.forwardMessage(message)
   }
 
   const getActiveQuoteMsgId = () => {
@@ -253,23 +253,18 @@
     const messageId = message.id
     if (!messageId) return
 
-    messages.value = messages.value.filter((item) => item.id !== messageId)
-    if (quoteMessage.value?.id === messageId) {
-      clearQuote()
-    }
+    messageBubbleActions.deleteMessage(message, {
+      onBeforeDelete: () => {
+        messages.value = messages.value.filter((item) => item.id !== messageId)
+        if (quoteMessage.value?.id === messageId) {
+          clearQuote()
+        }
 
-    const peerId = props.chat.peerId
-    if (peerId) {
-      sendingMessagesStore.removeMessage(peerId, messageId)
-    }
-
-    const lastMsg = messages.value[messages.value.length - 1] ?? null
-    if (props.chat.sessionId && props.chat.lastMsgContent?.id === messageId) {
-      chatStore.updateLastMsgContent(props.chat.sessionId, lastMsg)
-    }
-
-    messageDbStore.deleteLocalMessage(messageId).catch(() => {
-      window.$message.error(t('message.bubbleMenu.deleteFailed'))
+        const peerId = props.chat.peerId
+        if (peerId) {
+          sendingMessagesStore.removeMessage(peerId, messageId)
+        }
+      }
     })
   }
 

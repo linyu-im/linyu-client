@@ -12,23 +12,21 @@ import { defineStore } from 'pinia'
 
 const t = i18n.global.t
 
-/** 转坑目标：peerId + 会话场景类型 */
+/** 转发目标：peerId + 会话场景类型 */
 export interface ForwardPeer {
   peerId: string
   sceneType: SceneType
 }
 
-/** 通知 Chat 页坌步消杯列�?*/
+/** 通知 Chat 页同步消息列表 */
 export interface ForwardSyncPayload {
   sessionId: string
   message: Message
-  /** 朝务端消杯替杢本地九观消杯时使用 */
+  /** 服务端消息替换本地乐观消息时使用 */
   replaceLocalId?: string
 }
 
 type MessageForwardStore = {
-  show: boolean
-  message: Message | null
   syncSeq: number
   syncPayload: ForwardSyncPayload | null
 }
@@ -45,25 +43,10 @@ export const useMessageForwardStore = defineStore('messageForward', {
     initialize: true
   },
   state: (): MessageForwardStore => ({
-    show: false,
-    message: null,
     syncSeq: 0,
     syncPayload: null
   }),
   actions: {
-    open(message: Message) {
-      this.$patch((state) => {
-        state.message = message
-        state.show = true
-      })
-    },
-
-    close() {
-      this.$patch((state) => {
-        state.show = false
-      })
-    },
-
     syncToSession(payload: ForwardSyncPayload) {
       this.$patch((state) => {
         state.syncPayload = payload
@@ -138,12 +121,9 @@ export const useMessageForwardStore = defineStore('messageForward', {
         })
     },
 
-    forward(peers: ForwardPeer[]) {
-      const source = this.message
+    forward(peers: ForwardPeer[], source: Message) {
       const currentUserId = useUserStore().authInfo.userId
       if (!source || !currentUserId || peers.length === 0) return
-
-      this.close()
 
       peers.reduce<Promise<void>>((chain, peer) => {
         return chain.then(() => this.forwardToPeer(peer, source, currentUserId).then(() => undefined))
