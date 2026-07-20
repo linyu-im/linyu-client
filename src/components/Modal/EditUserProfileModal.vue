@@ -143,7 +143,7 @@
   import { useAvatarStore } from '@/stores/user/avatar'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import { useUserStore } from '@/stores/user/user'
-  import { IMAGE_FILE_EXTENSIONS } from '@/utils/filePick'
+  import { IMAGE_FILE_EXTENSIONS } from '@/utils/file/filePick'
   import { open } from '@tauri-apps/plugin-dialog'
   import { useI18n } from 'vue-i18n'
 

@@ -202,8 +202,8 @@
   import { useContactsStore } from '@/stores/user/contacts'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
-  import { getNameInitial } from '@/utils/pinyin'
-  import { createAddContactsWindow } from '@/utils/window'
+  import { getNameInitial } from '@/utils/common/pinyin'
+  import { createAddContactsWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
   type GroupKey = 'enterprise' | 'group' | 'friend'

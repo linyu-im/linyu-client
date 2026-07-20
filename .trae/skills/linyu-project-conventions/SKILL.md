@@ -171,7 +171,7 @@ src/
 │   ├── api/        # API 相关类型
 │   └── cmd/        # Tauri 命令类型
 ├── typings/        # 自动生成的类型声明（勿手动修改）
-├── utils/          # 工具函数（按功能域分文件）
+├── utils/          # 工具函数（按功能域分子目录：message/file/desktop/network/screenshot/common）
 └── views/          # 页面视图
     └── {windowName}Window/  # 窗口目录（Window 后缀）
         ├── index.vue        # 窗口主页面
@@ -183,7 +183,7 @@ src/
 - 新类型定义 → `src/types/api/` 或 `src/types/cmd/`
 - 新组合式函数 → `src/composables/useXxx.ts`
 - 新 Store → `src/stores/`
-- 新工具函数 → `src/utils/`（按功能域分文件）
+- 新工具函数 → `src/utils/` 对应子目录（message/file/desktop/network/screenshot/common）
 - 新窗口 → `src/views/{windowName}Window/`
 - 新子页面 → 对应窗口的 `pages/` 目录
 - 新公共组件 → `src/components/`（或功能子目录）
@@ -262,7 +262,7 @@ setField(value: string) {
 ## 九、API 调用规范
 
 ### HTTP 封装
-- 使用 `@/utils/http.ts` 中的 `get` / `post` 方法
+- 使用 `@/utils/network/http.ts` 中的 `get` / `post` 方法
 - 禁止使用 axios 或其他 HTTP 库
 - 所有 API 返回 `ApiResponse<T>` 泛型接口
 
@@ -302,9 +302,9 @@ export interface ApiResponse<T = any> {
 ## 十、Tauri 多窗口架构规范
 
 ### 窗口管理
-- 窗口操作使用 `@/utils/window.ts` 封装的方法
+- 窗口操作使用 `@/utils/desktop/window.ts` 封装的方法
 - 禁止直接使用 Tauri 窗口 API，必须通过工具函数
-- 新窗口需在 `utils/window.ts` 中添加创建方法
+- 新窗口需在 `utils/desktop/window.ts` 中添加创建方法
 
 ### 跨窗口通信
 - **优先**通过 Pinia Store + `pinia-shared-state` 实现跨窗口/组件间状态共享
@@ -327,7 +327,7 @@ export interface ApiResponse<T = any> {
 ### 新增 API 接口
 ```typescript
 // src/api/example.ts
-import { get, post } from '@/utils/http'
+import { get, post } from '@/utils/network/http'
 import type { ExampleParam, ExampleResult } from '@/types/api/example'
 
 export function list(params: ExampleParam) {
@@ -438,7 +438,7 @@ export const useExampleStore = defineStore('example', {
 7. **禁止**手动 import Vue 核心 API 和 Naive UI 组件（自动导入）
 8. **禁止**在 Store 中使用 getters
 9. **禁止**使用 provide/inject 进行全局状态共享（使用 Pinia）
-10. **禁止**直接操作 Tauri 窗口 API（使用 `@/utils/window.ts` 封装）
+10. **禁止**直接操作 Tauri 窗口 API（使用 `@/utils/desktop/window.ts` 封装）
 11. **禁止**使用 async/await 调用 API（使用 Promise `.then()`）
 12. **禁止**随意新建与现有目录功能重复的目录
 13. **禁止**手动修改 `src/typings/` 下自动生成的类型文件

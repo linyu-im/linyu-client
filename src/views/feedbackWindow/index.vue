@@ -87,7 +87,7 @@
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
-  } from '@/utils/window'
+  } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()

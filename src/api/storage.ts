@@ -1,5 +1,5 @@
 import { readFile } from '@tauri-apps/plugin-fs'
-import { formData, type ApiResponse } from '@/utils/http'
+import { formData, type ApiResponse } from '@/utils/network/http'
 
 export async function upload<T = any>(path: string): Promise<ApiResponse<T>> {
   const bytes = await readFile(path)

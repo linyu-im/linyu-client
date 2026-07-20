@@ -161,7 +161,7 @@
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
-  } from '@/utils/window'
+  } from '@/utils/desktop/window'
 
   const { t } = useI18n()
   const imgViewerStore = useImgViewerStore()

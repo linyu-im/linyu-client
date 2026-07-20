@@ -137,8 +137,8 @@
 
 <script setup lang="ts">
   import type { MomentComment, MomentRecord } from '@/types/api/moment'
-  import { formatTime } from '@/utils/time'
-  import { imageGridClass, parseMomentContent, sortMomentMedia } from '@/utils/moment'
+  import { formatTime } from '@/utils/common/time'
+  import { imageGridClass, parseMomentContent, sortMomentMedia } from '@/utils/common/moment'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{

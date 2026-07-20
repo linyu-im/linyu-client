@@ -1,5 +1,5 @@
 import { AccountLoginParam, LoginResult, Oauth2LoginParam } from '@/types/api/auth'
-import { ApiResponse, post } from '@/utils/http'
+import { ApiResponse, post } from '@/utils/network/http'
 
 export function accountLogin(params: AccountLoginParam): Promise<ApiResponse<LoginResult>> {
   return post<LoginResult, AccountLoginParam>('/api/auth/v1/login/pwd', params)

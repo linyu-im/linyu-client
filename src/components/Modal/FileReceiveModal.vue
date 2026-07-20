@@ -23,7 +23,7 @@
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
-  import { getFileIconUrl } from '@/utils/fileIcon'
+  import { getFileIconUrl } from '@/utils/file/fileIcon'
 
   const visible = defineModel<boolean>('show', { default: false })
 

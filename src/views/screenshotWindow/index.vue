@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
   import ScreenshotEditor from '@/components/Screenshot/ScreenshotEditor.vue'
-  import { hideCurrentWindow } from '@/utils/window'
+  import { hideCurrentWindow } from '@/utils/desktop/window'
 
   const editorKey = ref(0)
 

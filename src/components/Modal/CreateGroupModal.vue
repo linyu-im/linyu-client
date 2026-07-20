@@ -88,7 +88,7 @@
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact } from '@/types/api/contacts'
-  import { syncGroupAvatarAfterCreate } from '@/utils/groupAvatar'
+  import { syncGroupAvatarAfterCreate } from '@/utils/common/groupAvatar'
   import { useI18n } from 'vue-i18n'
 
   const visible = defineModel<boolean>('show', { default: false })

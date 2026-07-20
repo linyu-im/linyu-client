@@ -1,5 +1,5 @@
 import type { UserInfoParam, User, UserProfileUpdateParam, UserSearchParam, UserSearchResult } from '@/types/api/user'
-import { type ApiResponse, formData, post } from '@/utils/http'
+import { type ApiResponse, formData, post } from '@/utils/network/http'
 
 export function currentUserInfo(): Promise<ApiResponse<User>> {
   return post<User, void>('/api/basic/v1/user/current/info')

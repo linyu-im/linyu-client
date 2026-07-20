@@ -317,7 +317,7 @@
 
 <script setup lang="ts">
   defineOptions({ name: 'drive' })
-  import { getDriveListFileIconUrl } from '@/utils/fileIcon'
+  import { getDriveListFileIconUrl } from '@/utils/file/fileIcon'
   import { useI18n } from 'vue-i18n'
 
   type SidebarMenu = 'myDrive' | 'recent' | 'deleted'

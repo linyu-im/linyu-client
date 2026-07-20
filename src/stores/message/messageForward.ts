@@ -6,8 +6,8 @@ import { useMessageDbStore } from '@/stores/message/messageDb'
 import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
 import { useUserStore } from '@/stores/user/user'
 import type { Message, SendMessageParam } from '@/types/api/message'
-import { createLocalMessage, mergeReplacedServerMessage, resolveMessageFailReason } from '@/utils/messageSend'
-import { buildSessionId } from '@/utils/session'
+import { createLocalMessage, mergeReplacedServerMessage, resolveMessageFailReason } from '@/utils/message/messageSend'
+import { buildSessionId } from '@/utils/message/session'
 import { defineStore } from 'pinia'
 
 const t = i18n.global.t

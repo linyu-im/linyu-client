@@ -37,7 +37,7 @@
 <script setup lang="ts">
   import { applyApi } from '@/api'
   import type { Apply } from '@/types/api/apply'
-  import { formatTime } from '@/utils/time'
+  import { formatTime } from '@/utils/common/time'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()

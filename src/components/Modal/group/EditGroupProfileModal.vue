@@ -103,7 +103,7 @@
   import { useChatStore } from '@/stores/chat/chat'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { GroupInfoResult } from '@/types/api/group'
-  import { IMAGE_FILE_EXTENSIONS } from '@/utils/filePick'
+  import { IMAGE_FILE_EXTENSIONS } from '@/utils/file/filePick'
 
   const visible = defineModel<boolean>('show', { default: false })
 

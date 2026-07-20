@@ -14,26 +14,26 @@
 <script setup lang="ts">
   import { exists } from '@tauri-apps/plugin-fs'
   import type { ImageContent, ImageMessageLocalExt } from '@/types/api/message'
-  import { openImgViewer } from '@/utils/imgViewer'
+  import { openImgViewer } from '@/utils/desktop/imgViewer'
   import {
     readLocalFileAsObjectUrl,
     resolveLocalMediaDisplayUrl,
     resolveLocalMediaFilePath,
     toLocalFileDisplayUrl
-  } from '@/utils/blobFilePath'
-  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
-  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  } from '@/utils/file/blobFilePath'
+  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/message/messageLocalExt'
   import {
     calcMediaCoverDisplaySize,
     DEFAULT_MEDIA_COVER_SIZE,
     getMediaDisplaySizeFromLocalExt,
     hasSameDisplaySize
-  } from '@/utils/messageMediaLayout'
+  } from '@/utils/message/messageMediaLayout'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useMessageDbStore } from '@/stores/message/messageDb'
-  import { preloadMediaDisplaySrc } from '@/utils/mediaDisplaySrc'
+  import { preloadMediaDisplaySrc } from '@/utils/message/mediaDisplaySrc'
 
   const props = defineProps<{
     messageId: string

@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-  import { getMosaicRadius, getMosaicStampPoints } from '@/utils/screenshotMosaic'
+  import { getMosaicRadius, getMosaicStampPoints } from '@/utils/screenshot/screenshotMosaic'
   import type { AnnotationStrokeStyle, Line, Point, Rect, ScreenshotAnnotation } from '@/types/screenshot'
 
   interface Props {

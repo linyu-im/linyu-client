@@ -119,8 +119,8 @@
   import { useNameStore } from '@/stores/user/name'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import type { GroupNotice } from '@/types/api/group'
-  import { parseBackendTime } from '@/utils/time'
-  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
+  import { parseBackendTime } from '@/utils/common/time'
+  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
 
   interface NoticeSegment {
     type: 'text' | 'link'

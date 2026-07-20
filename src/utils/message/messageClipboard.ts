@@ -3,7 +3,7 @@ import { writeImage, writeText } from '@tauri-apps/plugin-clipboard-manager'
 import { exists, readFile } from '@tauri-apps/plugin-fs'
 import { useAppSettingsStore } from '@/stores/app/appSettings'
 import type { Message } from '@/types/api/message'
-import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
+import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
 
 const isImageFileName = (fileName: string) => /\.(png|jpe?g|gif|webp|bmp|ico|avif)$/i.test(fileName)
 

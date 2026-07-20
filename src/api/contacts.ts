@@ -4,7 +4,7 @@ import type {
   ContactsRemarkUpdateParam,
   ContactsTagUpdateParam
 } from '@/types/api/contacts'
-import { type ApiResponse, post } from '@/utils/http'
+import { type ApiResponse, post } from '@/utils/network/http'
 
 export function friendList(): Promise<ApiResponse<ContactsListResult>> {
   return post<ContactsListResult, void>('/api/basic/v1/contacts/friend/list')

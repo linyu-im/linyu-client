@@ -81,7 +81,7 @@
   import type { Message } from '@/types/api/message'
   import type { Robot } from '@/types/api/robot'
   import type { User } from '@/types/api/user'
-  import { openChatRecord } from '@/utils/chatRecord'
+  import { openChatRecord } from '@/utils/message/chatRecord'
 
   const props = defineProps<{
     userInfo: User | null

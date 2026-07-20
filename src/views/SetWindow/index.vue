@@ -33,7 +33,7 @@
   import { computed, markRaw, ref } from 'vue'
   import { useI18n } from 'vue-i18n'
   import SvgIconButton from '@/components/SvgIconButton.vue'
-  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
+  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
   import AccountPage from './pages/account.vue'
   import GeneralPage from './pages/general.vue'
   import ShortcutsPage from './pages/shortcuts.vue'

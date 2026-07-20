@@ -106,8 +106,8 @@
   import Avatar from '@/components/Avatar.vue'
   import { useUserStore } from '@/stores/user/user'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
-  import { closeCurrentWindow } from '@/utils/window'
-  import { resolveMessageStorageRoot } from '@/utils/messageFileSave'
+  import { closeCurrentWindow } from '@/utils/desktop/window'
+  import { resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
 

@@ -171,13 +171,13 @@
     hideCurrentWindow,
     minimizeCurrentWindow,
     ShowCurrentWindow
-  } from '@/utils/window'
+  } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user/user'
   import { useGlobalStore } from '@/stores/app/global'
   import { useLoginHistoryStore, type LoginHistoryItem } from '@/stores/user/loginHistory'
   import { invoke } from '@tauri-apps/api/core'
-  import { openUrl } from '@/utils/open'
+  import { openUrl } from '@/utils/desktop/open'
   import { once } from '@tauri-apps/api/event'
   import { OAuth2LoginPayload } from '@/types/cmd/login'
   import { LoginResult } from '@/types/api/auth'

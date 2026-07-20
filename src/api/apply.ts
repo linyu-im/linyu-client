@@ -4,7 +4,7 @@ import type {
   FriendApplyListResult,
   GroupApplyListResult
 } from '@/types/api/apply'
-import { type ApiResponse, post } from '@/utils/http'
+import { type ApiResponse, post } from '@/utils/network/http'
 
 export function addFriend(data: ApplyAddFriendParam): Promise<ApiResponse<void>> {
   return post<void, ApplyAddFriendParam>('/api/basic/v1/apply/add/friend', data)

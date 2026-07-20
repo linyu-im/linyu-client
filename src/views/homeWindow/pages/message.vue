@@ -102,8 +102,8 @@
   import { useWebSocketStore } from '@/stores/chat/websocket'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
-  import { formatTime } from '@/utils/time'
-  import { createAddContactsWindow } from '@/utils/window'
+  import { formatTime } from '@/utils/common/time'
+  import { createAddContactsWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()

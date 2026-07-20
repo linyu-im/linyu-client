@@ -27,7 +27,7 @@
   import type { Component } from 'vue'
   import { useI18n } from 'vue-i18n'
   import type { Message } from '@/types/api/message'
-  import { copyMessageToClipboard } from '@/utils/messageClipboard'
+  import { copyMessageToClipboard } from '@/utils/message/messageClipboard'
   import Text from './Text.vue'
   import Images from './Images.vue'
   import Video from './Video.vue'

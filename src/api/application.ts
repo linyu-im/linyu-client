@@ -1,4 +1,4 @@
-import { post } from '@/utils/http'
+import { post } from '@/utils/network/http'
 import type { Application, ApplicationListParam } from '@/types/api/application'
 
 export function list(data: ApplicationListParam) {

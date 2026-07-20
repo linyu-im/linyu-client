@@ -45,9 +45,9 @@
   import type { MentionItem } from '@/types/common'
   import type { FileContent, ImageContent, Message, VideoContent } from '@/types/api/message'
   import type { FromType } from '@/types/common'
-  import { isVideoFile } from '@/utils/fileIcon'
-  import { getFilePath, getFileSize } from '@/utils/filePick'
-  import { registerBlobFilePath } from '@/utils/blobFilePath'
+  import { isVideoFile } from '@/utils/file/fileIcon'
+  import { getFilePath, getFileSize } from '@/utils/file/filePick'
+  import { registerBlobFilePath } from '@/utils/file/blobFilePath'
 
   export type EditorSegment =
     | { type: 'text'; text: string }

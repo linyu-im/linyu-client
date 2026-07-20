@@ -8,7 +8,7 @@ import type {
   SendMessageParam,
   UploadMessageFileChunkParam
 } from '@/types/api/message'
-import { ApiResponse, formData, post } from '@/utils/http'
+import { ApiResponse, formData, post } from '@/utils/network/http'
 
 export function sendMsg(data: SendMessageParam): Promise<ApiResponse<Message>> {
   return post<Message, SendMessageParam>('/api/basic/v1/message/send', data)

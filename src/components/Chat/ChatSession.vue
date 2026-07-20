@@ -115,7 +115,7 @@
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import type { Chat } from '@/types/api/chat'
   import type { Message, SendMessageContent, SendMessageMsgType, SendMessageParam } from '@/types/api/message'
-  import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/editorMessage'
+  import { buildSendParam, buildSendUnitsFromSegments, unitNeedsMediaUpload } from '@/utils/message/editorMessage'
   import {
     createLocalMessage,
     createLocalMessageFromUnit,
@@ -124,7 +124,7 @@
     patchMessageById,
     resolveMessageFailReason,
     shouldShowMessageTime
-  } from '@/utils/messageSend'
+  } from '@/utils/message/messageSend'
   import { useMessageUploadStore } from '@/stores/message/messageUpload'
   import { useMessageForwardStore } from '@/stores/message/messageForward'
   import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
@@ -145,13 +145,13 @@
     VOICE_RECORD_MAX_DURATION,
     VOICE_RECORD_WARN_REMAINING
   } from '@/composables/useVoiceRecorder'
-  import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/filePick'
-  import { uploadMessageMediaBlob } from '@/utils/messageMediaUpload'
-  import { resolveMessageStorageRoot, stageSelfSentToStorage } from '@/utils/messageFileSave'
-  import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/messageLocalExt'
-  import { isValidBackendTime, parseBackendTime } from '@/utils/time'
-  import { openChatRecord } from '@/utils/chatRecord'
-  import { openAndFocusWindow } from '@/utils/window.ts'
+  import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/file/filePick'
+  import { uploadMessageMediaBlob } from '@/utils/message/messageMediaUpload'
+  import { resolveMessageStorageRoot, stageSelfSentToStorage } from '@/utils/message/messageFileSave'
+  import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
+  import { isValidBackendTime, parseBackendTime } from '@/utils/common/time'
+  import { openChatRecord } from '@/utils/message/chatRecord'
+  import { openAndFocusWindow } from '@/utils/desktop/window.ts'
 
   const props = defineProps<{
     chat: Chat

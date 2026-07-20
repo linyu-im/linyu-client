@@ -1,7 +1,7 @@
 import { appDataDir, join } from '@tauri-apps/api/path'
 import { exists, mkdir, readDir, readFile, writeFile } from '@tauri-apps/plugin-fs'
-import { fetchBinary } from '@/utils/http'
-import { resolveLocalMediaFilePath } from '@/utils/blobFilePath'
+import { fetchBinary } from '@/utils/network/http'
+import { resolveLocalMediaFilePath } from '@/utils/file/blobFilePath'
 
 const MSG_STORAGE_DIR = {
   file: 'msg/file',

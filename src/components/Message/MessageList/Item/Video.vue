@@ -33,21 +33,21 @@
 <script setup lang="ts">
   import { exists } from '@tauri-apps/plugin-fs'
   import type { VideoContent, VideoMessageLocalExt } from '@/types/api/message'
-  import { openVideoViewer } from '@/utils/videoViewer'
+  import { openVideoViewer } from '@/utils/desktop/videoViewer'
   import {
     readLocalFileAsObjectUrl,
     resolveLocalMediaDisplayUrl,
     resolveLocalMediaFilePath,
     toLocalFileDisplayUrl
-  } from '@/utils/blobFilePath'
-  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/messageFileSave'
-  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  } from '@/utils/file/blobFilePath'
+  import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/message/messageLocalExt'
   import {
     calcMediaCoverDisplaySize,
     DEFAULT_MEDIA_COVER_SIZE,
     getMediaDisplaySizeFromLocalExt,
     hasSameDisplaySize
-  } from '@/utils/messageMediaLayout'
+  } from '@/utils/message/messageMediaLayout'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
   import { useMessageUploadProgress } from '@/composables/useMessageUploadProgress'
   import { useAppSettingsStore } from '@/stores/app/appSettings'

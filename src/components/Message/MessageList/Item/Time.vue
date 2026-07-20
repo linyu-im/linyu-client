@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-  import { formatTime } from '@/utils/time'
+  import { formatTime } from '@/utils/common/time'
 
   defineProps<{
     time: string

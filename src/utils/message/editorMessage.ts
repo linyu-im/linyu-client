@@ -5,7 +5,7 @@ import {
   uploadMessageMediaByUrl,
   type UploadErrorHandler,
   type UploadProgressHandler
-} from '@/utils/messageMediaUpload'
+} from '@/utils/message/messageMediaUpload'
 
 export type EditorSendUnit =
   | { msgType: 'text'; content: { text: string }; mentions: SendMessageMention[] }

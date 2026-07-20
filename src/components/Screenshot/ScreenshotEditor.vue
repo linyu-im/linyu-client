@@ -79,7 +79,7 @@
   import { SCREENSHOT_DEFAULT_STROKE_STYLE, SCREENSHOT_DRAW_TOOLS } from '@/constants/screenshot'
   import { useScreenshotAnnotations } from '@/composables/useScreenshotAnnotations'
   import { useScreenshotSelection } from '@/composables/useScreenshotSelection'
-  import { exportScreenshotToClipboard } from '@/utils/screenshotExport'
+  import { exportScreenshotToClipboard } from '@/utils/screenshot/screenshotExport'
   import type { AnnotationDrawTool, ResizeHandle, ScreenshotTool } from '@/types/screenshot'
 
   const emit = defineEmits<{

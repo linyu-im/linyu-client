@@ -36,7 +36,7 @@
   import { emotionApi, userApi } from '@/api'
   import { useUserStore } from '@/stores/user/user'
   import { Emotonn } from '@/types/api/emotion'
-  import { closeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
+  import { closeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
 
   const emotionList = ref<Emotonn[]>([])
   const userStore = useUserStore()

@@ -38,7 +38,7 @@
   import { applyApi } from '@/api'
   import { isApplySource, ApplyStatusEnum } from '@/constants/apply'
   import type { Apply } from '@/types/api/apply'
-  import { formatTime } from '@/utils/time'
+  import { formatTime } from '@/utils/common/time'
   import { useUserStore } from '@/stores/user/user'
   import { useI18n } from 'vue-i18n'
 

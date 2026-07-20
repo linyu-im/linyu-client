@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user/user'
 import type { Chat } from '@/types/api/chat'
 import type { Message } from '@/types/api/message'
 import { defineStore } from 'pinia'
-import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/time'
+import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/common/time'
 
 type ChatStore = {
   chatList: Chat[]

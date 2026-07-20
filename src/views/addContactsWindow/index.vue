@@ -127,7 +127,12 @@
   import { useUserStore } from '@/stores/user/user'
   import type { Group } from '@/types/api/group'
   import type { User } from '@/types/api/user'
-  import { closeCurrentWindow, minimizeCurrentWindow, openAndFocusWindow, ShowCurrentWindow } from '@/utils/window'
+  import {
+    closeCurrentWindow,
+    minimizeCurrentWindow,
+    openAndFocusWindow,
+    ShowCurrentWindow
+  } from '@/utils/desktop/window'
   import AddFriendApplyModal from '@/components/Modal/AddFriendApplyModal.vue'
   import AddGroupApplyModal from '@/components/Modal/AddGroupApplyModal.vue'
 

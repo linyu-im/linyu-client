@@ -18,8 +18,8 @@ import type {
   StickerMessageLocalExt,
   VideoMessageLocalExt
 } from '@/types/api/message'
-import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/messageLocalExt'
-import { nowBackendDatetime } from '@/utils/time'
+import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/message/messageLocalExt'
+import { nowBackendDatetime } from '@/utils/common/time'
 import { defineStore } from 'pinia'
 
 const LOCAL_EXT_MSG_TYPES = new Set(['file', 'image', 'video', 'sticker'])

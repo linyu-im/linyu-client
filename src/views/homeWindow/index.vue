@@ -96,7 +96,7 @@
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useHomeTabStore, type HomeTabId } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
-  import { connectWebSocket, disconnectWebSocket } from '@/utils/websocket'
+  import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
   import {
     createEmotionWinodw,
     createFeedbackWinodw,
@@ -107,7 +107,7 @@
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
-  } from '@/utils/window'
+  } from '@/utils/desktop/window'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
   import { useRoute, useRouter } from 'vue-router'

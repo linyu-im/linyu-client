@@ -1,6 +1,6 @@
 import type { EnterprisInfo, EnterprisInfoRequest } from '@/types/api/enterprise'
 import type { EnterpriseDepartment } from '@/types/api/enterpriseDepartment'
-import { type ApiResponse, post } from '@/utils/http'
+import { type ApiResponse, post } from '@/utils/network/http'
 
 export function getEnterpriseAvatar(id: string): Promise<ApiResponse<string>> {
   return post<string, { enterpriseId: string }>('/api/basic/v1/enterprise/avatar/get', { enterpriseId: id })

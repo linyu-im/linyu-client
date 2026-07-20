@@ -1,4 +1,4 @@
-import { type ApiResponse, formData, post } from '@/utils/http'
+import { type ApiResponse, formData, post } from '@/utils/network/http'
 import type {
   Group,
   GroupCreateParam,

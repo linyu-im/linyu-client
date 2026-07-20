@@ -9,7 +9,7 @@ import type {
   MomentPageParam,
   MomentPageResult
 } from '@/types/api/moment'
-import { ApiResponse, post } from '@/utils/http'
+import { ApiResponse, post } from '@/utils/network/http'
 
 export function create(data: MomentCreateParam): Promise<ApiResponse<void>> {
   return post<void, MomentCreateParam>('/api/basic/v1/moment/create', data)

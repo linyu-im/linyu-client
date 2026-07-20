@@ -1,6 +1,6 @@
 import type { Robot, RobotAnswersDeltaData, RobotAnswersParam } from '@/types/api/robot'
 import type { Message } from '@/types/api/message'
-import { type ApiResponse, post, postSse } from '@/utils/http'
+import { type ApiResponse, post, postSse } from '@/utils/network/http'
 
 export interface RobotAnswersStreamHandlers {
   onDelta: (content: string) => void

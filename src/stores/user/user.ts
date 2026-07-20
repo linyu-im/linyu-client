@@ -1,5 +1,5 @@
 import type { User } from '@/types/api/user'
-import { disconnectWebSocket } from '@/utils/websocket'
+import { disconnectWebSocket } from '@/utils/network/websocket'
 import { defineStore } from 'pinia'
 
 type UserStore = {

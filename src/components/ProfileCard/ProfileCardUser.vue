@@ -138,7 +138,7 @@
   import { useAvatarStore } from '@/stores/user/avatar'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
-  import { openImgViewer } from '@/utils/imgViewer'
+  import { openImgViewer } from '@/utils/desktop/imgViewer'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{

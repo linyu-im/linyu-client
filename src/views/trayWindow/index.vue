@@ -6,9 +6,9 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { initSystemTray, setTrayEvent } from '@/utils/tray'
+  import { initSystemTray, setTrayEvent } from '@/utils/desktop/tray'
   import { useI18n } from 'vue-i18n'
-  import { exitApp } from '@/utils/window'
+  import { exitApp } from '@/utils/desktop/window'
 
   const { t } = useI18n()
   initSystemTray()

@@ -1,9 +1,9 @@
 import type { ComposerTranslation } from 'vue-i18n'
 import type { SceneType } from '@/constants/common'
-import type { EditorSendUnit } from '@/utils/editorMessage'
+import type { EditorSendUnit } from '@/utils/message/editorMessage'
 import type { Message, SendMessageContent, SendMessageMsgType } from '@/types/api/message'
 import type { FromType } from '@/types/common'
-import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/time'
+import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/common/time'
 
 /** 根据会话最近一条消息时间，判断当前消息是否应展示时间 */
 export const shouldShowMessageTime = (previousCreatedAt?: string | null): boolean => {

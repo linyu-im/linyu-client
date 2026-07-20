@@ -1,7 +1,7 @@
 import { resolveResource } from '@tauri-apps/api/path'
 import { startDrag, type CallbackPayload } from '@crabnebula/tauri-plugin-drag'
 import { exists } from '@tauri-apps/plugin-fs'
-import { resolveFileIconName, type FileIconName } from '@/utils/fileIcon'
+import { resolveFileIconName, type FileIconName } from '@/utils/file/fileIcon'
 
 const dragIconPathCache = new Map<FileIconName, string>()
 const preparedDragCache = new Map<string, string>()

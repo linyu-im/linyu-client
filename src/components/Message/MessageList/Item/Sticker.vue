@@ -20,18 +20,22 @@
     resolveLocalMediaDisplayUrl,
     resolveLocalMediaFilePath,
     toLocalFileDisplayUrl
-  } from '@/utils/blobFilePath'
-  import { downloadMessageToStorage, findExistingStickerPath, resolveMessageStorageRoot } from '@/utils/messageFileSave'
-  import { mergeMediaMessageLocalExt } from '@/utils/messageLocalExt'
+  } from '@/utils/file/blobFilePath'
+  import {
+    downloadMessageToStorage,
+    findExistingStickerPath,
+    resolveMessageStorageRoot
+  } from '@/utils/message/messageFileSave'
+  import { mergeMediaMessageLocalExt } from '@/utils/message/messageLocalExt'
   import {
     calcStickerDisplaySize,
     DEFAULT_STICKER_SIZE,
     getMediaDisplaySizeFromLocalExt,
     hasSameDisplaySize
-  } from '@/utils/messageMediaLayout'
+  } from '@/utils/message/messageMediaLayout'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useMessageDbStore } from '@/stores/message/messageDb'
-  import { preloadMediaDisplaySrc } from '@/utils/mediaDisplaySrc'
+  import { preloadMediaDisplaySrc } from '@/utils/message/mediaDisplaySrc'
 
   const props = defineProps<{
     messageId: string

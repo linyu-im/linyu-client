@@ -119,8 +119,8 @@
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
-  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/window'
-  import { formatChatRecordDateTime, formatDateRangeLabel, toBackendDateRange } from '@/utils/time'
+  import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
+  import { formatChatRecordDateTime, formatDateRangeLabel, toBackendDateRange } from '@/utils/common/time'
   import { useMessageBubbleActions } from '@/composables/useMessageBubbleActions'
 
   const { t, locale } = useI18n()

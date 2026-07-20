@@ -18,7 +18,7 @@
   import { SceneType } from '@/constants/common'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useNameStore } from '@/stores/user/name'
-  import { resolveLocalMediaDisplayUrl, toLocalFileDisplayUrl } from '@/utils/blobFilePath'
+  import { resolveLocalMediaDisplayUrl, toLocalFileDisplayUrl } from '@/utils/file/blobFilePath'
 
   const props = withDefaults(
     defineProps<{
