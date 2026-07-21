@@ -8,9 +8,9 @@ const DEVICE = 'desktop'
 const HEARTBEAT_ROUTE = 'heartbeat'
 const HEARTBEAT_INTERVAL_MS = 30_000
 
-/** 最大重连次�?n */
+/** 最大重连次 */
 const MAX_RECONNECT_ATTEMPTS = 10
-/** 重连基础间隔 t（ms），�?k 次等�?k * t */
+/** 重连基础间隔 t（ms）*/
 const RECONNECT_BASE_INTERVAL_MS = 3_000
 
 let socket: WebSocket | null = null
@@ -212,7 +212,7 @@ async function connectWebSocketInternal(): Promise<void> {
   }
 }
 
-/** 建立 WebSocket 连接�?*/
+/** 建立 WebSocket 连接*/
 export async function connectWebSocket(): Promise<void> {
   manualClose = false
   resetReconnectState()
@@ -226,7 +226,7 @@ export async function connectWebSocket(): Promise<void> {
   }
 }
 
-/** 发�?ws 请求 */
+/** 发ws 请求 */
 export async function sendWsRequest(route: string, device?: string, seqId?: string, data?: unknown): Promise<void> {
   if (!socket) {
     throw new Error('WebSocket is not connected')
@@ -235,7 +235,7 @@ export async function sendWsRequest(route: string, device?: string, seqId?: stri
   await socket.send(JSON.stringify(payload))
 }
 
-/** 关闭连接并停止心跳（不会触发重连�?*/
+/** 关闭连接并停止心跳（不会触发重连）*/
 export async function disconnectWebSocket(): Promise<void> {
   manualClose = true
   resetReconnectState()

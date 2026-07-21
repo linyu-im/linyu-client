@@ -1,9 +1,10 @@
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { defineStore } from 'pinia'
 import { chatApi } from '@/api'
 import { SceneType } from '@/constants/common'
-import { useChatStore } from '@/stores/chat/chat'
-import router from '@/router'
 import type { SceneType as SceneTypeValue } from '@/constants/common'
-import { defineStore } from 'pinia'
+import router from '@/router'
+import { useChatStore } from '@/stores/chat/chat'
 
 export type HomeTabId = 'message' | 'contacts' | 'moment' | 'ai' | 'drive' | 'application'
 
@@ -134,6 +135,7 @@ export const useHomeTabStore = defineStore('homeTab', {
         state.activeTabId = tabId
       })
 
+      if (WebviewWindow.getCurrent().label !== 'home') return
       if (router.currentRoute.value.path !== TAB_PATHS[tabId]) {
         return router.push(TAB_PATHS[tabId]).then(() => undefined)
       }
@@ -150,9 +152,10 @@ export const useHomeTabStore = defineStore('homeTab', {
 
         const chatId = res.data.id
         return chatStore.loadList().then(() => {
-          chatStore.setSelectedChatId(chatId)
-          chatStore.markReopen()
-          this.navigateTo('message', { chatId })
+          return Promise.resolve(chatStore.setSelectedChatId(chatId)).then(() => {
+            chatStore.markReopen()
+            this.navigateTo('message', { chatId })
+          })
         })
       })
     }

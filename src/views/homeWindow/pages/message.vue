@@ -39,9 +39,10 @@
                 @contextmenu="(e: MouseEvent) => onContextMenu(e, item)">
                 <n-badge
                   :value="item.unreadNum"
-                  :dot="item.peerIsMute && item.unreadNum > 0"
+                  :dot="item.peerIsMute"
+                  :show="item.unreadNum > 0"
                   :max="99"
-                  class="select-none pointer-events-none p-0 text-1px"
+                  class="chatlist__badge select-none pointer-events-none p-0 text-1px"
                   :offset="[-2, 2]">
                   <Avatar class="size-38px rounded-5px bg-#FFF" :id="item.peerId" :type="item.sceneType" />
                 </n-badge>
@@ -95,6 +96,7 @@
 </template>
 <script setup lang="tsx">
   defineOptions({ name: 'message' })
+  import { chatApi } from '@/api'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import ChatSession from '@/components/Chat/ChatSession.vue'
@@ -295,6 +297,21 @@
 
   const hasActiveChat = computed(() => Boolean(activeChat.value))
 
+  const reportActiveSession = (activeSessionId: string) => {
+    chatApi.activeSession({ activeSessionId }).then((res) => {
+      if (res.code !== 0) {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  watch(
+    () => activeChat.value?.sessionId ?? '',
+    (activeSessionId) => {
+      reportActiveSession(activeSessionId)
+    }
+  )
+
   const onSelectChat = (item: Chat) => {
     if (chatStore.selectedChatId === item.id) {
       chatStore.clearSelectedChatId()
@@ -324,7 +341,12 @@
   })
 
   onActivated(() => {
+    reportActiveSession(activeChat.value?.sessionId ?? '')
     chatStore.loadList()
+  })
+
+  onDeactivated(() => {
+    reportActiveSession('')
   })
 </script>
 <style scoped lang="scss">
@@ -430,6 +452,13 @@
             background-color: color-mix(in srgb, var(--primary-color) 5%, transparent);
             border: 1px color-mix(in srgb, var(--primary-color) 60%, transparent) solid;
           }
+        }
+      }
+
+      .chatlist__badge {
+        :deep(.n-badge-sup.fade-in-scale-up-transition-enter-active),
+        :deep(.n-badge-sup.fade-in-scale-up-transition-leave-active) {
+          transition: none !important;
         }
       }
     }

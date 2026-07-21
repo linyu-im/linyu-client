@@ -34,6 +34,10 @@ export interface ChatMarkReadParam {
   chatId: string
 }
 
+export interface ChatActiveSessionParam {
+  activeSessionId: string
+}
+
 export interface ChatDeleteParam {
   chatId: string
 }

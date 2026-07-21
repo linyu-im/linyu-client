@@ -1,5 +1,6 @@
 import {
   Chat,
+  ChatActiveSessionParam,
   ChatCreateParam,
   ChatDeleteParam,
   ChatMarkReadParam,
@@ -26,6 +27,10 @@ export function mute(data: ChatMuteParam): Promise<ApiResponse<void>> {
 
 export function markRead(data: ChatMarkReadParam): Promise<ApiResponse<void>> {
   return post<void, ChatMarkReadParam>('/api/basic/v1/chat/mark-read', data)
+}
+
+export function activeSession(data: ChatActiveSessionParam): Promise<ApiResponse<void>> {
+  return post<void, ChatActiveSessionParam>('/api/basic/v1/chat/active-session', data)
 }
 
 export function remove(data: ChatDeleteParam): Promise<ApiResponse<void>> {

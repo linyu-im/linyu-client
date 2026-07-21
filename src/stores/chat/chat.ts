@@ -52,14 +52,14 @@ export const useChatStore = defineStore('chat', {
     },
 
     setSelectedChatId(chatId: string) {
-      if (this.selectedChatId === chatId) return
-
-      this.$patch((state) => {
-        state.selectedChatId = chatId
-      })
+      if (this.selectedChatId !== chatId) {
+        this.$patch((state) => {
+          state.selectedChatId = chatId
+        })
+      }
 
       if (chatId) {
-        this.markRead(chatId)
+        return this.markRead(chatId)
       }
     },
 
@@ -173,22 +173,30 @@ export const useChatStore = defineStore('chat', {
 
     markRead(chatId: string) {
       const index = this.chatList.findIndex((item) => item.id === chatId)
-      if (index === -1) return
+      if (index === -1) return Promise.resolve()
 
       const prevUnread = this.chatList[index].unreadNum
-      if (prevUnread === 0) return
+      if (prevUnread === 0) return Promise.resolve()
 
       this.$patch((state) => {
         state.chatList[index].unreadNum = 0
       })
 
-      chatApi.markRead({ chatId }).then((res) => {
+      return chatApi.markRead({ chatId }).then((res) => {
+        const currentIndex = this.chatList.findIndex((item) => item.id === chatId)
+        if (currentIndex === -1) return
+
         if (res.code !== 0) {
           this.$patch((state) => {
-            state.chatList[index].unreadNum = prevUnread
+            state.chatList[currentIndex].unreadNum = prevUnread
           })
           window.$message.error(res.msg)
+          return
         }
+
+        this.$patch((state) => {
+          state.chatList[currentIndex].unreadNum = 0
+        })
       })
     },
 

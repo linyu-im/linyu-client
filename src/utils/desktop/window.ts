@@ -199,3 +199,5 @@ export const createGroupNoticeWindow = () =>
     resizable: true,
     transparent: true
   })
+
+export const createMessageRemindWindow = () => openAndFocusWindow('messageRemind')

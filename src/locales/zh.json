@@ -720,6 +720,9 @@
     },
     "dateModalTitle": "选择日期范围"
   },
+  "messageRemind": {
+    "cancelBlink": "取消闪动"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "圆角",

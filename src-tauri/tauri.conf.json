@@ -48,6 +48,22 @@
         "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
       },
       {
+        "title": "消息提醒",
+        "label": "messageRemind",
+        "url": "/messageRemind",
+        "resizable": false,
+        "center": false,
+        "visible": false,
+        "width": 240,
+        "height": 82,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "decorations": false,
+        "transparent": false,
+        "dragDropEnabled": false,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --use-fake-ui-for-media-stream"
+      },
+      {
         "title": "截图",
         "label": "screenshot",
         "url": "/screenshot",

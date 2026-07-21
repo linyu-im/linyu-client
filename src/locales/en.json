@@ -720,6 +720,9 @@
     },
     "dateModalTitle": "Select date range"
   },
+  "messageRemind": {
+    "cancelBlink": "Stop flashing"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "Rounded corners",

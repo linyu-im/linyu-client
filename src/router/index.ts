@@ -67,6 +67,11 @@ const routes: RouteRecordRaw[] = [
     path: '/groupNotice',
     name: 'groupNotice',
     component: () => import('@/views/groupNoticeWindow/index.vue')
+  },
+  {
+    path: '/messageRemind',
+    name: 'messageRemind',
+    component: () => import('@/views/messageRemindWindows/index.vue')
   }
 ]
 
