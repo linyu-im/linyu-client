@@ -723,6 +723,19 @@
   "messageRemind": {
     "cancelBlink": "Stop flashing"
   },
+  "audioVideoCall": {
+    "title": "Video Call",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "participantCount": "{count}",
+    "microphone": "Mute",
+    "microphoneOff": "Unmute",
+    "camera": "Turn off camera",
+    "cameraOff": "Turn on camera",
+    "hangup": "Leave",
+    "inviteParticipant": "Invite",
+    "cameraOffLabel": "Camera off"
+  },
   "screenshot": {
     "size": "{width} × {height}",
     "roundedCorner": "Rounded corners",

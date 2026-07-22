@@ -72,6 +72,24 @@ const routes: RouteRecordRaw[] = [
     path: '/messageRemind',
     name: 'messageRemind',
     component: () => import('@/views/messageRemindWindows/index.vue')
+  },
+  {
+    path: '/call',
+    name: 'call',
+    redirect: '/call/video',
+    component: () => import('@/views/audioVideoCallWindow/index.vue'),
+    children: [
+      {
+        path: 'video',
+        name: 'callVideo',
+        component: () => import('@/views/audioVideoCallWindow/pages/video.vue')
+      },
+      {
+        path: 'audio',
+        name: 'callAudio',
+        component: () => import('@/views/audioVideoCallWindow/pages/audio.vue')
+      }
+    ]
   }
 ]
 

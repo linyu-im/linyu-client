@@ -82,8 +82,8 @@
                   @send="onVoiceRecordSend" />
               </div>
               <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
-                <SvgIconButton href="#phone" />
-                <SvgIconButton href="#video" />
+                <SvgIconButton href="#phone" @click="createCallWindow('audio')" />
+                <SvgIconButton href="#video" @click="createCallWindow('video')" />
                 <n-button size="tiny" type="primary" class="w-56px m-l-10px p-y-12px" @click="onSend()">
                   {{ t('message.editor.send') }}
                 </n-button>
@@ -151,7 +151,7 @@
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/common/time'
   import { openChatRecord } from '@/utils/message/chatRecord'
-  import { openAndFocusWindow } from '@/utils/desktop/window.ts'
+  import { createCallWindow, openAndFocusWindow } from '@/utils/desktop/window.ts'
 
   const props = defineProps<{
     chat: Chat

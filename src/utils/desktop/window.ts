@@ -22,7 +22,8 @@ const defaultOptions = {
   // 关闭 Tauri 原生拖拽处理，否则系统层会拦截 OS 级 file drop，WebView 里的 HTML5
   // dragover / drop 事件根本收不到，富文本编辑器拖入图片 / 文件就没反应。
   dragDropEnabled: false,
-  center: true
+  center: true,
+  url: null as string | null
 }
 
 export const createWebviewWindow = async (
@@ -41,7 +42,7 @@ export const createWebviewWindow = async (
 
   const webviewOptions: WebviewWindowCreateOptions = {
     title,
-    url: `/${label}`,
+    url: opts.url ?? `/${label}`,
     fullscreen: opts.fullscreen,
     resizable: opts.resizable,
     center: opts.center,
@@ -201,3 +202,24 @@ export const createGroupNoticeWindow = () =>
   })
 
 export const createMessageRemindWindow = () => openAndFocusWindow('messageRemind')
+
+export const createCallWindow = (mode: 'video' | 'audio' = 'video') =>
+  mode === 'audio'
+    ? createWebviewWindow('语音通话', 'call', {
+        url: '/call/audio',
+        width: 350,
+        height: 600,
+        minWidth: 350,
+        minHeight: 600,
+        resizable: false,
+        transparent: true
+      })
+    : createWebviewWindow('视频通话', 'call', {
+        url: '/call/video',
+        width: 1080,
+        height: 720,
+        minWidth: 1080,
+        minHeight: 720,
+        resizable: true,
+        transparent: true
+      })
