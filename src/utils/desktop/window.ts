@@ -1,5 +1,5 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
-import { Effect, EffectState } from '@tauri-apps/api/window'
+import { Effect, EffectState, UserAttentionType } from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
 import { WEBVIEW_ADDITIONAL_BROWSER_ARGS } from '@/constants/webview'
 
@@ -76,6 +76,18 @@ export const createWebviewWindow = async (
   })
 
   return webview
+}
+
+export const getCurrentWindowLabel = () => WebviewWindow.getCurrent().label
+
+export const isCurrentWindowLabel = (label: string) => getCurrentWindowLabel() === label
+
+/** 任务栏闪烁提醒（窗口已聚焦时无效果） */
+export const requestCurrentWindowAttention = async (type: UserAttentionType = UserAttentionType.Informational) => {
+  const webview = WebviewWindow.getCurrent()
+  const focused = await webview.isFocused()
+  if (focused) return
+  await webview.requestUserAttention(type)
 }
 
 export const closeCurrentWindow = async () => {
@@ -223,3 +235,30 @@ export const createCallWindow = (mode: 'video' | 'audio' = 'video') =>
         resizable: true,
         transparent: true
       })
+
+const toChatSessionLabel = (chatId: string) => `chatSession-${chatId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
+
+export const getChatSessionWindowLabel = (chatId: string) => toChatSessionLabel(chatId)
+
+export const hasChatSessionWindow = async (chatId: string) => {
+  const webview = await WebviewWindow.getByLabel(toChatSessionLabel(chatId))
+  return !!webview
+}
+
+export const closeChatSessionWindow = async (chatId: string) => {
+  await closeWebviewWindow(toChatSessionLabel(chatId))
+}
+
+export const createChatSessionWindow = (chat: { id: string; peerName?: string; peerRemark?: string }) => {
+  const title = chat.peerRemark?.trim() || chat.peerName?.trim() || '聊天'
+  const label = toChatSessionLabel(chat.id)
+  return createWebviewWindow(title, label, {
+    url: `/chatSession?chatId=${encodeURIComponent(chat.id)}`,
+    width: 660,
+    height: 700,
+    minWidth: 520,
+    minHeight: 480,
+    resizable: true,
+    transparent: true
+  })
+}

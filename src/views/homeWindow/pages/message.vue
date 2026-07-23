@@ -96,24 +96,24 @@
 </template>
 <script setup lang="tsx">
   defineOptions({ name: 'message' })
-  import { chatApi } from '@/api'
   import { useChatStore } from '@/stores/chat/chat'
+  import { useChatDetachedStore } from '@/stores/chat/chatDetached'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import ChatSession from '@/components/Chat/ChatSession.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
-  import { useWebSocketStore } from '@/stores/chat/websocket'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
   import { formatTime } from '@/utils/common/time'
-  import { createAddContactsWindow } from '@/utils/desktop/window'
+  import { createAddContactsWindow, createChatSessionWindow, hasChatSessionWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
   const chatStore = useChatStore()
+  const chatDetachedStore = useChatDetachedStore()
   const messageDbStore = useMessageDbStore()
-  const wsStore = useWebSocketStore()
   const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
   const showCreateGroupModal = ref(false)
+  const messagePageActive = ref(true)
 
   const addMenuOptions = computed(() => [
     { label: () => t('message.addMenu.addContact'), key: 'addContact' },
@@ -165,16 +165,6 @@
       }
     ]
   })
-
-  watch(
-    () => wsStore.lastServerMessage,
-    (msg) => {
-      if (!msg) return
-      const chat = activeChat.value
-      if (!chat || msg.sessionId !== chat.sessionId) return
-      chatSessionRef.value?.appendMessage(msg)
-    }
-  )
 
   const onContextMenu = (e: MouseEvent, item: Chat) => {
     e.preventDefault()
@@ -245,13 +235,15 @@
   }
 
   const onIndependentWindow = (item: Chat) => {
-    window.$message.info('TODO: independent window for ' + item.peerName)
+    chatStore.detachChat(item.id)
+    createChatSessionWindow(item)
   }
 
   const onDelete = (item: Chat) => {
     if (chatStore.selectedChatId === item.id) {
       chatStore.clearSelectedChatId()
     }
+    chatStore.attachChat(item.id)
     chatStore.removeItem(item.id)
   }
 
@@ -292,32 +284,38 @@
   }
 
   const activeChat = computed(() => {
-    return chatStore.chatList.find((item) => item.id === chatStore.selectedChatId) ?? null
+    const id = chatStore.selectedChatId
+    if (!id || chatStore.isDetachedChat(id)) return null
+    return chatStore.chatList.find((item) => item.id === id) ?? null
   })
 
   const hasActiveChat = computed(() => Boolean(activeChat.value))
 
-  const reportActiveSession = (activeSessionId: string) => {
-    chatApi.activeSession({ activeSessionId }).then((res) => {
-      if (res.code !== 0) {
-        window.$message.error(res.msg)
-      }
-    })
-  }
-
   watch(
-    () => activeChat.value?.sessionId ?? '',
-    (activeSessionId) => {
-      reportActiveSession(activeSessionId)
-    }
+    () => [chatStore.selectedChatId, chatDetachedStore.detachedChatIds] as const,
+    () => {
+      chatStore.reportActiveSessions(messagePageActive.value)
+    },
+    { deep: true }
   )
 
   const onSelectChat = (item: Chat) => {
-    if (chatStore.selectedChatId === item.id) {
-      chatStore.clearSelectedChatId()
-      return
-    }
-    chatStore.setSelectedChatId(item.id)
+    hasChatSessionWindow(item.id).then((exists) => {
+      if (exists) {
+        chatStore.detachChat(item.id)
+        createChatSessionWindow(item)
+        return
+      }
+
+      // 窗口已关但 detached 残留时清掉，再按普通会话选中
+      chatStore.attachChat(item.id)
+
+      if (chatStore.selectedChatId === item.id) {
+        chatStore.clearSelectedChatId()
+        return
+      }
+      chatStore.setSelectedChatId(item.id)
+    })
   }
 
   const reloadActiveChatMessages = () => {
@@ -337,16 +335,20 @@
   )
 
   onMounted(() => {
-    chatStore.loadList(true)
+    chatStore.loadList(true).then(() => {
+      chatStore.reportActiveSessions(messagePageActive.value)
+    })
   })
 
   onActivated(() => {
-    reportActiveSession(activeChat.value?.sessionId ?? '')
+    messagePageActive.value = true
+    chatStore.reportActiveSessions(true)
     chatStore.loadList()
   })
 
   onDeactivated(() => {
-    reportActiveSession('')
+    messagePageActive.value = false
+    chatStore.reportActiveSessions(false)
   })
 </script>
 <style scoped lang="scss">

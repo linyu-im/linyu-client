@@ -203,6 +203,7 @@
   import SettingRow from '@/components/Set/SettingRow.vue'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageDbStore } from '@/stores/message/messageDb'
+  import { useContactsStore } from '@/stores/user/contacts'
   import { useUserStore } from '@/stores/user/user'
   import { openChatRecord } from '@/utils/message/chatRecord'
   import { openGroupNotice } from '@/utils/desktop/groupNotice'
@@ -229,6 +230,7 @@
   const dialog = useDialog()
   const chatStore = useChatStore()
   const messageDbStore = useMessageDbStore()
+  const contactsStore = useContactsStore()
   const userStore = useUserStore()
 
   const memberKeyword = ref('')
@@ -387,8 +389,10 @@
             if (sessionId) {
               messageDbStore.deleteChatHistoryBySession(sessionId)
             }
+            chatStore.removeChatLocal(props.chatId)
+            contactsStore.removeGroupLocal(groupId)
+            contactsStore.fetchGroupList()
             chatStore.refreshList()
-            chatStore.clearSelectedChatId()
             emit('group-dissolved')
             return
           }
@@ -418,8 +422,10 @@
             if (sessionId) {
               messageDbStore.deleteChatHistoryBySession(sessionId)
             }
+            chatStore.removeChatLocal(props.chatId)
+            contactsStore.removeGroupLocal(groupId)
+            contactsStore.fetchGroupList()
             chatStore.refreshList()
-            chatStore.clearSelectedChatId()
             emit('group-dissolved')
             return
           }

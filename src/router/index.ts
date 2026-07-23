@@ -90,6 +90,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/audioVideoCallWindow/pages/audio.vue')
       }
     ]
+  },
+  {
+    path: '/chatSession',
+    name: 'chatSession',
+    component: () => import('@/views/chatSessionWindow/index.vue')
   }
 ]
 

@@ -1,8 +1,10 @@
 import { chatApi } from '@/api'
 import { useMessageDbStore } from '@/stores/message/messageDb'
+import { useChatDetachedStore } from '@/stores/chat/chatDetached'
 import { useUserStore } from '@/stores/user/user'
 import type { Chat } from '@/types/api/chat'
 import type { Message } from '@/types/api/message'
+import { closeChatSessionWindow } from '@/utils/desktop/window'
 import { defineStore } from 'pinia'
 import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/common/time'
 
@@ -51,7 +53,33 @@ export const useChatStore = defineStore('chat', {
       })
     },
 
+    detachChat(chatId: string) {
+      if (!chatId) return
+      useChatDetachedStore().detach(chatId)
+      // 独立窗打开时主窗不能再选中该会话，保证列表只有一个选中态且右侧为空
+      if (this.selectedChatId === chatId) {
+        this.clearSelectedChatId()
+      }
+    },
+
+    attachChat(chatId: string) {
+      useChatDetachedStore().attach(chatId)
+    },
+
+    isDetachedChat(chatId: string) {
+      return useChatDetachedStore().isDetached(chatId)
+    },
+
+    /** 是否正在查看该会话（主窗选中或独立窗打开），用于未读/提醒，不用于列表高亮 */
+    isChatActive(chatId: string) {
+      return this.selectedChatId === chatId || useChatDetachedStore().isDetached(chatId)
+    },
+
     setSelectedChatId(chatId: string) {
+      if (useChatDetachedStore().isDetached(chatId)) {
+        return this.markRead(chatId)
+      }
+
       if (this.selectedChatId !== chatId) {
         this.$patch((state) => {
           state.selectedChatId = chatId
@@ -67,6 +95,36 @@ export const useChatStore = defineStore('chat', {
       if (!this.selectedChatId) return
       this.$patch((state) => {
         state.selectedChatId = ''
+      })
+    },
+
+    /** 当前应上报的活跃 sessionId：主窗选中 + 独立窗会话 */
+    buildActiveSessionIds(includeSelected = true) {
+      const sessionIds: string[] = []
+      const seen = new Set<string>()
+
+      const pushByChatId = (chatId: string) => {
+        if (!chatId) return
+        const chat = this.chatList.find((item) => item.id === chatId)
+        const sessionId = chat?.sessionId?.trim()
+        if (!sessionId || seen.has(sessionId)) return
+        seen.add(sessionId)
+        sessionIds.push(sessionId)
+      }
+
+      if (includeSelected && this.selectedChatId && !this.isDetachedChat(this.selectedChatId)) {
+        pushByChatId(this.selectedChatId)
+      }
+
+      useChatDetachedStore().detachedChatIds.forEach(pushByChatId)
+      return sessionIds
+    },
+
+    reportActiveSessions(includeSelected = true) {
+      return chatApi.activeSession({ activeSessionIds: this.buildActiveSessionIds(includeSelected) }).then((res) => {
+        if (res.code !== 0) {
+          window.$message.error(res.msg)
+        }
       })
     },
 
@@ -110,7 +168,7 @@ export const useChatStore = defineStore('chat', {
       }
 
       const chat = this.chatList[index]
-      const isActive = this.selectedChatId === chat.id
+      const isActive = this.isChatActive(chat.id)
       const isFromSelf = msg.fromId === currentUserId
 
       this.$patch((state) => {
@@ -230,6 +288,9 @@ export const useChatStore = defineStore('chat', {
         this.clearSelectedChatId()
       }
 
+      this.attachChat(chatId)
+      void closeChatSessionWindow(chatId)
+
       this.$patch((state) => {
         state.chatList = state.chatList.filter((item) => item.id !== chatId)
       })
@@ -242,6 +303,19 @@ export const useChatStore = defineStore('chat', {
           })
           window.$message.error(res.msg)
         }
+      })
+    },
+
+    /** 仅本地移除会话（删除好友 / 退群 / 解散后，避免等接口再关窗导致主窗列表未同步） */
+    removeChatLocal(chatId: string) {
+      if (!chatId) return
+      if (this.selectedChatId === chatId) {
+        this.clearSelectedChatId()
+      }
+      this.attachChat(chatId)
+      void closeChatSessionWindow(chatId)
+      this.$patch((state) => {
+        state.chatList = state.chatList.filter((item) => item.id !== chatId)
       })
     }
   }

@@ -175,9 +175,10 @@
             if (sessionId) {
               messageDbStore.deleteChatHistoryBySession(sessionId)
             }
+            chatStore.removeChatLocal(props.chatId)
+            contactsStore.removeFriendLocal(userId)
             contactsStore.fetchFriendList()
             chatStore.refreshList()
-            chatStore.clearSelectedChatId()
             emit('friend-deleted')
             return
           }

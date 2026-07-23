@@ -1,6 +1,8 @@
+import { emit } from '@tauri-apps/api/event'
 import { useChatStore } from '@/stores/chat/chat'
 import { useMessageDbStore } from '@/stores/message/messageDb'
 import { useMessageRemindStore } from '@/stores/message/messageRemind'
+import { CHAT_SERVER_MESSAGE_EVENT } from '@/constants/common'
 import { Message } from '@/types/api/message'
 import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
 import { useUserStore } from '@/stores/user/user'
@@ -36,6 +38,9 @@ export const useWebSocketStore = defineStore('websocket', {
       this.$patch((state) => {
         state.lastServerMessage = msg
       })
+
+      // WS 只在 home 窗口连接，用 Tauri 事件同步到独立聊天窗等
+      void emit(CHAT_SERVER_MESSAGE_EVENT, msg)
     },
     clearMsg() {
       this.$patch((state) => {

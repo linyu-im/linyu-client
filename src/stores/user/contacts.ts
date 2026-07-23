@@ -51,6 +51,18 @@ export const useContactsStore = defineStore('contacts', {
         state.friendListLoading = loading
       })
     },
+    removeFriendLocal(peerId: string) {
+      if (!peerId) return
+      this.$patch((state) => {
+        state.friendList = state.friendList.filter((item) => item.peerId !== peerId)
+      })
+    },
+    removeGroupLocal(peerId: string) {
+      if (!peerId) return
+      this.$patch((state) => {
+        state.groupList = state.groupList.filter((item) => item.peerId !== peerId)
+      })
+    },
     patchContactRemark(peerId: string, remark: string) {
       if (!peerId) return
       this.$patch((state) => {

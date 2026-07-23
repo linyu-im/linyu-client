@@ -174,7 +174,7 @@ export const useMessageRemindStore = defineStore('messageRemind', {
       const chatStore = useChatStore()
       const chat = chatStore.chatList.find((item) => item.sessionId === msg.sessionId)
       if (!chat || chat.peerIsMute) return
-      if (chatStore.selectedChatId === chat.id) return
+      if (chatStore.isChatActive(chat.id)) return
 
       const preview = formatMessagePreview(msg).trim()
       const name = (chat.peerRemark || chat.peerName || '').trim() || chat.peerId

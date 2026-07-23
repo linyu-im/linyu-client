@@ -151,7 +151,15 @@
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/common/time'
   import { openChatRecord } from '@/utils/message/chatRecord'
-  import { createCallWindow, openAndFocusWindow } from '@/utils/desktop/window.ts'
+  import {
+    closeCurrentWindow,
+    createCallWindow,
+    isCurrentWindowLabel,
+    openAndFocusWindow,
+    requestCurrentWindowAttention
+  } from '@/utils/desktop/window.ts'
+  import { CHAT_SERVER_MESSAGE_EVENT } from '@/constants/common'
+  import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
   const props = defineProps<{
     chat: Chat
@@ -273,12 +281,22 @@
     loadInitialMessages()
   }
 
+  const closeIfNotHomeWindow = () => {
+    if (!isCurrentWindowLabel('home')) {
+      closeCurrentWindow()
+    }
+  }
+
   const onGroupDissolved = () => {
     settingsDrawerVisible.value = false
+    chatStore.attachChat(props.chat.id)
+    closeIfNotHomeWindow()
   }
 
   const onFriendDeleted = () => {
     settingsDrawerVisible.value = false
+    chatStore.attachChat(props.chat.id)
+    closeIfNotHomeWindow()
   }
 
   useEscapeOverlay(() => {
@@ -343,7 +361,7 @@
     messageListRef.value?.scrollToBottom()
   }
 
-  /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提�?*/
+  /** 追加实时消息；自己发送或已在底部时自动滚到底部，否则累计新消息提示 */
   const appendMessage = (raw: Message) => {
     const msg = normalizeMessage(raw as Message)
     if (messages.value.some((item) => item.id === msg.id)) return
@@ -363,6 +381,26 @@
       }
     })
   }
+
+  let unlistenServerMessage: UnlistenFn | undefined
+
+  onMounted(() => {
+    listen<Message>(CHAT_SERVER_MESSAGE_EVENT, (event) => {
+      const msg = event.payload
+      if (!msg?.sessionId || msg.sessionId !== props.chat.sessionId) return
+      appendMessage(msg)
+      // 对方消息且当前窗口未聚焦时，任务栏对应窗口闪烁提醒
+      if (!isSelfMessage(msg)) {
+        void requestCurrentWindowAttention()
+      }
+    }).then((unlisten) => {
+      unlistenServerMessage = unlisten
+    })
+  })
+
+  onBeforeUnmount(() => {
+    unlistenServerMessage?.()
+  })
 
   let loadSeq = 0
 
@@ -1060,6 +1098,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    color: var(--text-color);
+    background-color: var(--bg-secondary-color);
 
     .chat-session__header {
       position: relative;
