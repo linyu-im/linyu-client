@@ -69,7 +69,7 @@
         <div v-if="momentThumbs.length > 0" class="profile-card__row profile-card__row--moments">
           <span class="profile-card__row-label">{{ t('contacts.fields.friendMoments') }}</span>
           <div class="profile-card__value-slot">
-            <div class="profile-card__thumbs">
+            <div class="profile-card__thumbs" @click.stop="onOpenMoments">
               <img
                 v-for="(url, index) in momentThumbs"
                 :key="`${url}-${index}`"
@@ -139,6 +139,7 @@
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
   import { openImgViewer } from '@/utils/desktop/imgViewer'
+  import { createMomentWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{
@@ -200,6 +201,11 @@
       if (!url) return
       openImgViewer([{ url, name: displayName.value }], 0)
     })
+  }
+
+  const onOpenMoments = () => {
+    if (!props.id) return
+    createMomentWindow(props.id)
   }
 
   const remarkText = computed(() => props.userInfo?.remark?.trim() ?? '')
@@ -414,6 +420,7 @@
       flex-wrap: nowrap;
       gap: 4px;
       width: 100%;
+      cursor: pointer;
     }
 
     &__thumb {

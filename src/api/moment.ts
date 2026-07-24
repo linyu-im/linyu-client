@@ -7,9 +7,11 @@ import type {
   MomentLike,
   MomentLikeParam,
   MomentPageParam,
-  MomentPageResult
+  MomentPageResult,
+  MomentSettingGetParam,
+  MomentSettingResult
 } from '@/types/api/moment'
-import { ApiResponse, post } from '@/utils/network/http'
+import { type ApiResponse, formData, post } from '@/utils/network/http'
 
 export function create(data: MomentCreateParam): Promise<ApiResponse<void>> {
   return post<void, MomentCreateParam>('/api/basic/v1/moment/create', data)
@@ -37,4 +39,14 @@ export function commentDel(data: MomentCommentDelParam): Promise<ApiResponse<voi
 
 export function remove(data: MomentDeleteParam): Promise<ApiResponse<void>> {
   return post<void, MomentDeleteParam>('/api/basic/v1/moment/delete', data)
+}
+
+export function uploadBackground(file: Blob, fileName = 'background.jpg'): Promise<ApiResponse<void>> {
+  const body = new FormData()
+  body.append('file', file, fileName)
+  return formData<void>('/api/basic/v1/moment/background/upload', body)
+}
+
+export function getSetting(data: MomentSettingGetParam): Promise<ApiResponse<MomentSettingResult>> {
+  return post<MomentSettingResult, MomentSettingGetParam>('/api/basic/v1/moment/setting/get', data)
 }

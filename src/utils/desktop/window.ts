@@ -262,3 +262,16 @@ export const createChatSessionWindow = (chat: { id: string; peerName?: string; p
     transparent: true
   })
 }
+
+const toMomentLabel = (userId: string) => `moment-${userId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
+
+export const createMomentWindow = (userId: string) =>
+  createWebviewWindow('过往', toMomentLabel(userId), {
+    url: `/moment?userId=${encodeURIComponent(userId)}`,
+    width: 720,
+    height: 800,
+    minWidth: 720,
+    minHeight: 600,
+    resizable: true,
+    transparent: true
+  })

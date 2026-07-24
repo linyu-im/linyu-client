@@ -405,6 +405,9 @@
     },
     "cover": {
       "changeCover": "Change cover",
+      "pickTitle": "Choose cover image",
+      "uploadSuccess": "Cover updated",
+      "uploadFailed": "Failed to upload cover",
       "settings": "Settings",
       "todo": "Coming soon"
     },

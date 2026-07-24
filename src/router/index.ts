@@ -95,6 +95,11 @@ const routes: RouteRecordRaw[] = [
     path: '/chatSession',
     name: 'chatSession',
     component: () => import('@/views/chatSessionWindow/index.vue')
+  },
+  {
+    path: '/moment',
+    name: 'momentWindow',
+    component: () => import('@/views/momentWindow/index.vue')
   }
 ]
 

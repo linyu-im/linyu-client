@@ -102,3 +102,15 @@ export interface MomentProfile {
   coverUrl: string
   signature: string
 }
+
+export interface MomentSettingResult {
+  UserID: string
+  bgUrl: string
+  ExpireDays: number
+  CreatedAt: string
+  UpdatedAt: string
+}
+
+export interface MomentSettingGetParam {
+  userId: string
+}

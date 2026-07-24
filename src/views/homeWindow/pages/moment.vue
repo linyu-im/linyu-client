@@ -5,30 +5,12 @@
         <MomentFloatNav v-model:active-filter="activeFilter" @refresh="onRefresh" @compose="showCompose = true" />
       </aside>
 
-      <n-spin :show="loading" class="moment__spin">
-        <n-scrollbar class="moment__scroll">
-          <div class="moment__feed">
-            <MomentCover :user-id="userStore.userInfo.id" @change-cover="onChangeCover" @settings="onSettings" />
-
-            <div class="moment__spacer" />
-
-            <MomentPostCard
-              v-for="record in filteredRecords"
-              :key="record.moment.id"
-              :record="record"
-              :current-user-id="userStore.userInfo.id"
-              @toggle-like="onToggleLike"
-              @view-all-comments="onViewAllComments"
-              @add-comment="onAddComment"
-              @delete-comment="onDeleteComment"
-              @delete="onDeletePost" />
-
-            <div v-if="!loading && filteredRecords.length === 0" class="moment__empty">
-              <n-divider class="moment__empty-text">{{ t('moment.empty') }}</n-divider>
-            </div>
-          </div>
-        </n-scrollbar>
-      </n-spin>
+      <MomentFeed
+        ref="feedRef"
+        :cover-user-id="userStore.userInfo.id"
+        :view-user-id="feedViewUserId"
+        :enabled="activeFilter !== 'special'"
+        @settings="onSettings" />
     </div>
 
     <MomentComposeModal
@@ -41,144 +23,33 @@
 
 <script setup lang="ts">
   defineOptions({ name: 'moment' })
-  import { momentApi } from '@/api'
-  import MomentCover from '@/components/Moment/MomentCover.vue'
+  import MomentFeed from '@/components/Moment/MomentFeed.vue'
   import MomentFloatNav from '@/components/Moment/MomentFloatNav.vue'
-  import MomentPostCard from '@/components/Moment/MomentPostCard.vue'
   import MomentComposeModal from '@/components/Modal/MomentComposeModal.vue'
   import { useUserStore } from '@/stores/user/user'
-  import type { MomentFilter, MomentLike, MomentPageParam, MomentRecord } from '@/types/api/moment'
+  import type { MomentFilter } from '@/types/api/moment'
   import { useI18n } from 'vue-i18n'
-
-  const PAGE_SIZE = 20
 
   const { t } = useI18n()
   const userStore = useUserStore()
 
   const activeFilter = ref<MomentFilter>('all')
   const showCompose = ref(false)
-  const loading = ref(false)
-  const records = ref<MomentRecord[]>([])
+  const feedRef = ref<InstanceType<typeof MomentFeed> | null>(null)
 
-  const filteredRecords = computed(() => {
-    if (activeFilter.value === 'special') return []
-    return records.value
+  const feedViewUserId = computed(() => {
+    if (activeFilter.value === 'mine') return userStore.userInfo.id
+    return undefined
   })
 
-  const buildPageParam = (): MomentPageParam => {
-    const param: MomentPageParam = { page: 1, PageSize: PAGE_SIZE }
-    if (activeFilter.value === 'mine') {
-      param.viewUserId = userStore.userInfo.id
-    }
-    return param
-  }
-
-  const fetchMoments = async () => {
-    if (activeFilter.value === 'special') {
-      records.value = []
-      return
-    }
-
-    loading.value = true
-    try {
-      const res = await momentApi.page(buildPageParam())
-      if (res.code === 0 && res.data) {
-        records.value = res.data.records
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const findRecord = (momentId: string) => records.value.find((r) => r.moment.id === momentId)
-
-  const onToggleLike = async (momentId: string) => {
-    const record = findRecord(momentId)
-    if (!record) return
-
-    const likes = record.likes ?? []
-    const idx = likes.findIndex((l) => l.userId === userStore.userInfo.id)
-    const isLiked = idx >= 0
-
-    const res = isLiked ? await momentApi.likeCancel({ momentId }) : await momentApi.likeAdd({ momentId })
-
-    if (res.code !== 0) {
-      window.$message.error(res.msg)
-      return
-    }
-
-    if (isLiked) {
-      record.likes = likes.filter((l) => l.userId !== userStore.userInfo.id)
-    } else {
-      const like = res.data as MomentLike
-      record.likes = [like, ...likes]
-    }
-  }
-
-  const onViewAllComments = (momentId: string) => {
-    window.$message.info(t('moment.post.viewAllCommentsTodo', { id: momentId }))
-  }
-
-  const onAddComment = async (momentId: string, content: string, parentId?: string) => {
-    const record = findRecord(momentId)
-    if (!record) return
-
-    const res = await momentApi.commentAdd({
-      momentId,
-      content,
-      ...(parentId ? { parentId } : {})
-    })
-
-    if (res.code !== 0) {
-      window.$message.error(res.msg)
-      return
-    }
-
-    if (!res.data) return
-
-    const comments = record.comments ?? []
-    record.comments = [...comments, res.data]
-  }
-
-  const onDeleteComment = async (momentId: string, commentId: string) => {
-    const record = findRecord(momentId)
-    if (!record) return
-
-    const res = await momentApi.commentDel({ commentId })
-
-    if (res.code !== 0) {
-      window.$message.error(res.msg)
-      return
-    }
-
-    const comments = record.comments ?? []
-    record.comments = comments.filter((c) => c.id !== commentId)
-  }
-
-  const onDeletePost = async (momentId: string) => {
-    const res = await momentApi.remove({ momentId })
-    if (res.code !== 0) {
-      window.$message.error(res.msg)
-      return
-    }
-    records.value = records.value.filter((r) => r.moment.id !== momentId)
-    window.$message.success(t('moment.post.deleted'))
-  }
-
   const onComposeSuccess = () => {
-    fetchMoments()
+    feedRef.value?.refresh()
   }
 
   const onRefresh = () => {
-    fetchMoments().then(() => {
+    feedRef.value?.refresh()?.then(() => {
       window.$message.success(t('moment.refreshed'))
     })
-  }
-
-  const onChangeCover = () => {
-    window.$message.info(t('moment.cover.todo'))
   }
 
   const onSettings = () => {
@@ -186,16 +57,8 @@
   }
 
   onActivated(() => {
-    void fetchMoments()
+    feedRef.value?.refresh()
   })
-
-  watch(
-    activeFilter,
-    () => {
-      fetchMoments()
-    },
-    { immediate: true }
-  )
 </script>
 
 <style scoped lang="scss">
@@ -238,50 +101,6 @@
       justify-content: center;
       padding-right: 20px;
     }
-
-    &__spin {
-      flex: 1;
-      min-width: 0;
-      height: 100%;
-
-      :deep(.n-spin-container) {
-        height: 100%;
-      }
-
-      :deep(.n-spin-content) {
-        height: 100%;
-      }
-    }
-
-    &__scroll {
-      height: 100%;
-    }
-
-    &__feed {
-      position: relative;
-      width: 100%;
-      padding: 16px 16px 24px 0;
-      box-sizing: border-box;
-    }
-
-    &__spacer {
-      height: 24px;
-    }
-
-    &__empty {
-      margin-top: 48px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    &__empty-text {
-      font-size: 12px;
-      color: var(--text-secondary-color);
-      width: 80%;
-      user-select: none;
-    }
   }
 
   @media (max-width: 640px) {
@@ -293,10 +112,6 @@
     .moment__sider {
       flex: 0 0 40px;
       padding-right: 4px;
-    }
-
-    .moment__feed {
-      padding: 12px 8px 16px 0;
     }
   }
 </style>

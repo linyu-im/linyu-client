@@ -405,6 +405,9 @@
     },
     "cover": {
       "changeCover": "更换封面",
+      "pickTitle": "选择封面图片",
+      "uploadSuccess": "封面更新成功",
+      "uploadFailed": "封面上传失败",
       "settings": "设置",
       "todo": "功能开发中"
     },
