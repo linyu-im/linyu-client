@@ -17,7 +17,7 @@
                 <span>
                   [ {{ enterpriseInfo?.location || '-' }}
                   <span class="contacts-profile__meta-sep">·</span>
-                  {{ enterpriseInfo?.memberNum ?? 0 }}�?]
+                  {{ enterpriseInfo?.memberNum ?? 0 }}人]
                 </span>
               </div>
               <div class="contacts-profile__sub contacts-profile__sub--member">

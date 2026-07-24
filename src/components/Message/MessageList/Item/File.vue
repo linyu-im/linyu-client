@@ -176,7 +176,7 @@
 
   const onClick = () => {
     if (uploading.value || downloading.value || !props.content.fileUrl) return
-    // 已下载且支持拖出：点击打开�?mouseup + 拖拽结束判断，避�?startDrag 吞掉 click
+    // 已下载且支持拖出：点击打开。mouseup + 拖拽结束判断，避免 startDrag 吞掉 click
     if (canDragOut.value) return
     if (!isDownloaded.value) {
       receiveModalVisible.value = true

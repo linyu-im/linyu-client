@@ -75,7 +75,7 @@
           </n-dropdown>
         </div>
       </ToolBar>
-      <!-- 内容：keep-alive 缓存各子页面状�?-->
+      <!-- 内容：keep-alive 缓存各子页面状态 -->
       <div class="home__content">
         <UpdateModal v-model:show="showUpdateModal" />
         <router-view v-slot="{ Component, route }">

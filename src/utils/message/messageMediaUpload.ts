@@ -22,7 +22,7 @@ const clampProgress = (value: number) => Math.min(100, Math.max(0, Math.round(va
 export const isLocalMediaUrl = (url: string) =>
   url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('local-file://')
 
-/** 发送前需上传到服务端的本地媒�?URL（含 Tauri 本地文件映射�?*/
+/** 发送前需上传到服务端的本地媒体URL（含 Tauri 本地文件映射） */
 export const needsMediaUpload = (url: string) => {
   if (!url) return false
   if (getBlobFilePath(url)) return true

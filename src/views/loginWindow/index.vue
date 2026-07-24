@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <!-- 顶部操作�?-->
+    <!-- 顶部操作栏 -->
     <ToolBar class="login__toolbar">
       <div class="flex gap-5px items-center">
         <svg class="size-24px pointer-events-none">
@@ -76,7 +76,7 @@
         </div>
       </div>
 
-      <!-- 登录和协�?-->
+      <!-- 登录和协议 -->
       <div class="m-t-25px">
         <n-button
           class="login__btn-gradient"
