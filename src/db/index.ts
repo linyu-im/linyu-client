@@ -48,6 +48,7 @@ export async function initDatabase(): Promise<void> {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_message (
       id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
       session_id TEXT NOT NULL,
       from_id TEXT NOT NULL,
       to_id TEXT NOT NULL,
@@ -69,9 +70,13 @@ export async function initDatabase(): Promise<void> {
 
   // 创建索引
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_session_id ON t_message(session_id)`)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_user_id ON t_message(user_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_from_id ON t_message(from_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_to_id ON t_message(to_id)`)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_message_session_created ON t_message(session_id, created_at DESC)`)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_message_user_session_created ON t_message(user_id, session_id, created_at DESC)`
+  )
   await db.execute(
     `CREATE INDEX IF NOT EXISTS idx_t_message_session_type_created ON t_message(session_id, msg_type, created_at DESC)`
   )

@@ -39,7 +39,13 @@ export interface ContactsTagUpdateParam {
 
 export type ContactsListResult = Contact[]
 
-export type ContactsMenuView = 'newFriend' | 'groupNotice' | 'groupProfile' | 'friendProfile' | 'enterpriseProfile'
+export type ContactsMenuView =
+  | 'empty'
+  | 'newFriend'
+  | 'groupNotice'
+  | 'groupProfile'
+  | 'friendProfile'
+  | 'enterpriseProfile'
 
 export interface ContactsSectionEntry {
   id: string

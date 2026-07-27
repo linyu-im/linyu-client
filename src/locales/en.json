@@ -292,8 +292,15 @@
       },
       "groupNotice": {
         "title": "Group Notices",
-        "inviteTag": "Request to join",
-        "empty": "No group notices yet"
+        "empty": "No group notices yet",
+        "action": {
+          "leave": "left"
+        },
+        "message": {
+          "dissolve": "This group has been dissolved",
+          "remove": "You were removed from this group",
+          "unknown": "Group notice"
+        }
       }
     },
     "actions": {

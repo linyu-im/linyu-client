@@ -292,8 +292,15 @@
       },
       "groupNotice": {
         "title": "群聊通知",
-        "inviteTag": "申请加入",
-        "empty": "暂无群聊通知"
+        "empty": "暂无群聊通知",
+        "action": {
+          "leave": "退出"
+        },
+        "message": {
+          "dissolve": "该群聊已被解散",
+          "remove": "你已被移出该群聊",
+          "unknown": "群聊通知"
+        }
       }
     },
     "actions": {

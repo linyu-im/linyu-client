@@ -32,6 +32,7 @@
                 @click="onSelect('new-friend')">
                 <div class="text-14px">{{ t('contacts.menu.newFriend') }}</div>
                 <div class="flex items-center gap-6px text-[var(--text-secondary-color)]">
+                  <n-badge v-if="newFriendBadgeCount > 0" :value="newFriendBadgeCount" :max="99" color="#ff5f5f" />
                   <svg class="size-18px">
                     <use href="#right-arrow"></use>
                   </svg>
@@ -43,7 +44,7 @@
                 @click="onSelect('group-notice')">
                 <div class="text-14px">{{ t('contacts.menu.groupNotice') }}</div>
                 <div class="flex items-center gap-6px text-[var(--text-secondary-color)]">
-                  <n-badge :value="2" :max="99" color="#ff5f5f" />
+                  <n-badge v-if="groupNoticeBadgeCount > 0" :value="groupNoticeBadgeCount" :max="99" color="#ff5f5f" />
                   <svg class="size-18px">
                     <use href="#right-arrow"></use>
                   </svg>
@@ -181,9 +182,12 @@
             v-else-if="activeView === 'enterpriseProfile' && activeEnterprise"
             :enterprise-id="activeEnterprise.peerId" />
           <ContactsFriendProfile
-            v-else-if="activeFriendUserId"
+            v-else-if="activeView === 'friendProfile' && activeFriendUserId"
             :user-id="activeFriendUserId"
             @remark-updated="onFriendRemarkUpdated" />
+          <div v-else class="contacts__detail-empty">
+            <LinyuEmpty />
+          </div>
         </div>
       </template>
     </Split>
@@ -199,9 +203,12 @@
   import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
+  import { userBadgeApi } from '@/api'
+  import { UserBadgeCode } from '@/constants/userBadge'
   import { useContactsStore } from '@/stores/user/contacts'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
+  import type { UserBadge } from '@/types/api/userBadge'
   import { getNameInitial } from '@/utils/common/pinyin'
   import { createAddContactsWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
@@ -214,7 +221,8 @@
   const contactsStore = useContactsStore()
 
   const showCreateGroupModal = ref(false)
-  const selectedId = ref('new-friend')
+  const selectedId = ref('')
+  const badgeList = ref<UserBadge[]>([])
   const expandedGroups = ref<Record<GroupKey, boolean>>({
     enterprise: false,
     group: false,
@@ -255,12 +263,43 @@
     return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([letter, items]) => ({ letter, items }))
   })
 
+  const MENU_BADGE_CODE: Record<string, string> = {
+    'new-friend': UserBadgeCode.NewFriend,
+    'group-notice': UserBadgeCode.GroupNotion
+  }
+
+  const getBadgeCount = (badgeCode: string) =>
+    badgeList.value.find((item) => item.badgeCode === badgeCode)?.unreadCount ?? 0
+
+  const newFriendBadgeCount = computed(() => getBadgeCount(UserBadgeCode.NewFriend))
+  const groupNoticeBadgeCount = computed(() => getBadgeCount(UserBadgeCode.GroupNotion))
+
+  const clearBadgeCount = (badgeCode: string) => {
+    const index = badgeList.value.findIndex((item) => item.badgeCode === badgeCode)
+    if (index === -1 || badgeList.value[index].unreadCount === 0) return
+    badgeList.value[index] = { ...badgeList.value[index], unreadCount: 0 }
+  }
+
+  const fetchBadgeList = () => {
+    userBadgeApi.list().then((res) => {
+      if (res.code === 0 && res.data) {
+        badgeList.value = res.data
+        const activeBadgeCode = MENU_BADGE_CODE[selectedId.value]
+        if (activeBadgeCode) clearBadgeCount(activeBadgeCode)
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
   onActivated(() => {
     contactsStore.fetchAll()
+    fetchBadgeList()
   })
 
   onMounted(() => {
     contactsStore.fetchAll()
+    fetchBadgeList()
   })
 
   const activeGroup = computed(() => contactsStore.groupList.find((item) => item.id === selectedId.value))
@@ -271,16 +310,19 @@
   const activeFriendUserId = computed(() => activeContact.value?.peerId ?? '')
 
   const activeView = computed<ContactsMenuView>(() => {
+    if (!selectedId.value) return 'empty'
     if (selectedId.value === 'new-friend') return 'newFriend'
     if (selectedId.value === 'group-notice') return 'groupNotice'
     if (activeFriendUserId.value) return 'friendProfile'
     if (activeGroup.value) return 'groupProfile'
     if (activeEnterprise.value) return 'enterpriseProfile'
-    return 'newFriend'
+    return 'empty'
   })
 
   const onSelect = (id: string) => {
     selectedId.value = id
+    const badgeCode = MENU_BADGE_CODE[id]
+    if (badgeCode) clearBadgeCount(badgeCode)
   }
 
   const onFriendRemarkUpdated = (payload: { peerId: string; remark: string }) => {
@@ -301,7 +343,7 @@
     if (!payload) return
 
     if (payload.selectedId) {
-      selectedId.value = payload.selectedId
+      onSelect(payload.selectedId)
       return
     }
 
@@ -309,7 +351,7 @@
       const contact = contactsStore.friendList.find((item) => item.peerId === payload.peerId)
       if (contact) {
         expandedGroups.value.friend = true
-        selectedId.value = contact.id
+        onSelect(contact.id)
       }
     }
   }
@@ -528,6 +570,15 @@
       height: 100%;
       box-sizing: border-box;
       overflow: hidden;
+    }
+
+    &__detail-empty {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-primary-color);
     }
   }
 </style>

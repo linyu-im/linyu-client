@@ -5,6 +5,8 @@ import type { FromType } from '@/types/common'
 
 const NAME_CACHE_MAX = 1000
 
+const isNameType = (type: FromType) => type === 'user' || type === 'robot' || type === 'group'
+
 export const useNameStore = defineStore('name', () => {
   const peerInfoStore = usePeerInfoStore()
   const nameCache = new Map<string, string>()
@@ -56,6 +58,12 @@ export const useNameStore = defineStore('name', () => {
         if (res.code !== 0 || !res.data) return ''
         return res.data.robotName || ''
       }
+      case 'group': {
+        const res = await groupApi.getGroupInfo({ groupId: id })
+        console.log('getGroupInfo', res)
+        if (res.code !== 0 || !res.data) return ''
+        return res.data.info.name?.trim() || ''
+      }
       default:
         return ''
     }
@@ -65,7 +73,7 @@ export const useNameStore = defineStore('name', () => {
     cacheGet(getCacheKey(type, id, type === 'user' ? groupId : ''))
 
   const resolveName = async (type: FromType, id: string, groupId = ''): Promise<string> => {
-    if (!id || (type !== 'user' && type !== 'robot')) return ''
+    if (!id || !isNameType(type)) return ''
 
     const normalizedGroupId = type === 'user' ? groupId : ''
     const key = getCacheKey(type, id, normalizedGroupId)
@@ -89,7 +97,7 @@ export const useNameStore = defineStore('name', () => {
   }
 
   const removeCachedName = (type: FromType, id: string, groupId = '') => {
-    if (!id || (type !== 'user' && type !== 'robot')) return
+    if (!id || !isNameType(type)) return
 
     const key = getCacheKey(type, id, type === 'user' ? groupId : '')
     nameCache.delete(key)

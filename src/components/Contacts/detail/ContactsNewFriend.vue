@@ -8,10 +8,10 @@
       <n-scrollbar v-else class="contacts-detail__scroll" trigger="none" :theme-overrides="{ width: '6px' }">
         <div class="contacts-detail__cards">
           <div v-for="item in list" :key="item.id" class="contacts-apply-card">
-            <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" :id="getApplicantId(item)" />
+            <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" :id="item.userId" />
             <div class="min-w-0 flex-1">
               <div class="contacts-apply-card__head">
-                <span class="contacts-apply-card__name">{{ getDisplayName(item) }}</span>
+                <Name class="contacts-apply-card__name" :id="item.userId" instant />
                 <ColorTag :label="getApplySourceLabel(item.applySource)" color="var(--primary-color)" />
                 <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
               </div>
@@ -35,24 +35,23 @@
 
 <script setup lang="ts">
   import ColorTag from '@/components/ColorTag.vue'
+  import Name from '@/components/Name.vue'
   import { applyApi } from '@/api'
   import { isApplySource, ApplyStatusEnum } from '@/constants/apply'
   import type { Apply } from '@/types/api/apply'
   import { formatTime } from '@/utils/common/time'
   import { useUserStore } from '@/stores/user/user'
+  import { useContactsStore } from '@/stores/user/contacts'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
   const userStore = useUserStore()
+  const contactsStore = useContactsStore()
 
   const loading = ref(false)
   const list = ref<Apply[]>([])
 
   const currentUserId = computed(() => userStore.authInfo.userId)
-
-  const getApplicantId = (item: Apply) => (item.userId === currentUserId.value ? item.peerId : item.userId)
-
-  const getDisplayName = (item: Apply) => item.peerName?.trim() || getApplicantId(item)
 
   const getApplySourceLabel = (source?: string) => {
     const normalized = (source || '').trim().toLowerCase()
@@ -83,38 +82,55 @@
     }
   }
 
-  const fetchList = async () => {
+  const fetchList = () => {
     if (loading.value) return
     loading.value = true
-    try {
-      const res = await applyApi.friendList()
-      if (res.code === 0 && res.data) {
-        list.value = [...res.data].sort(
-          (a, b) =>
-            new Date(b.createdAt.replace(/-/g, '/')).getTime() - new Date(a.createdAt.replace(/-/g, '/')).getTime()
-        )
-      } else {
-        window.$message.error(res.msg)
+    applyApi
+      .friendList()
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          list.value = [...res.data].sort(
+            (a, b) =>
+              new Date(b.createdAt.replace(/-/g, '/')).getTime() - new Date(a.createdAt.replace(/-/g, '/')).getTime()
+          )
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        loading.value = false
+      })
+  }
+
+  const handleAgree = (item: Apply) => {
+    if (!item.id) return
+    applyApi.agreeFriend({ applyId: item.id }).then((res) => {
+      if (res.code === 0) {
+        item.status = ApplyStatusEnum.Agree
+        contactsStore.fetchFriendList()
+        return
       }
-    } finally {
-      loading.value = false
-    }
+      window.$message.error(res.msg)
+    })
   }
 
-  const handleAgree = (_item: Apply) => {
-    // TODO: agree apply API
-  }
-
-  const handleReject = (_item: Apply) => {
-    // TODO: reject apply API
+  const handleReject = (item: Apply) => {
+    if (!item.id) return
+    applyApi.reject({ applyId: item.id }).then((res) => {
+      if (res.code === 0) {
+        item.status = ApplyStatusEnum.Reject
+        return
+      }
+      window.$message.error(res.msg)
+    })
   }
 
   onMounted(() => {
-    void fetchList()
+    fetchList()
   })
 
   onActivated(() => {
-    void fetchList()
+    fetchList()
   })
 </script>
 

@@ -8,25 +8,31 @@
       <n-scrollbar v-else class="contacts-detail__scroll" trigger="none" :theme-overrides="{ width: '6px' }">
         <div class="contacts-detail__cards">
           <div v-for="item in list" :key="item.id" class="contacts-apply-card">
-            <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" :id="getApplicantId(item)" />
-            <div class="min-w-0 flex-1">
-              <div class="contacts-apply-card__head">
-                <span class="contacts-apply-card__name">{{ getApplicantName(item) }}</span>
-                <span class="contacts-apply-card__invite">{{ t('contacts.views.groupNotice.inviteTag') }}</span>
-                <span class="contacts-apply-card__group">{{ getGroupName(item) }}</span>
-                <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
+            <template v-if="isLeaveNotice(item)">
+              <Avatar class="size-48px shrink-0 rounded-full bg-#FFF" :id="item.extra.leaveUserId" />
+              <div class="min-w-0 flex-1">
+                <div class="contacts-apply-card__head">
+                  <Name
+                    class="contacts-apply-card__name contacts-apply-card__name--link"
+                    :id="item.extra.leaveUserId" />
+                  <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
+                </div>
+                <div class="contacts-apply-card__msg contacts-apply-card__msg--inline">
+                  <span>{{ t('contacts.views.groupNotice.action.leave') }}</span>
+                  <Name class="contacts-apply-card__name--link" type="group" :id="item.extra.groupId" />
+                </div>
               </div>
-              <div class="contacts-apply-card__msg">{{ item.describe }}</div>
-            </div>
-            <div v-if="isApplyPending(item.status)" class="contacts-apply-card__actions">
-              <n-button size="tiny" class="contacts-apply-card__reject" text @click="handleReject(item)">
-                {{ t('contacts.actions.reject') }}
-              </n-button>
-              <n-button size="tiny" class="contacts-apply-card__agree" type="primary" @click="handleAgree(item)">
-                {{ t('contacts.actions.agree') }}
-              </n-button>
-            </div>
-            <div v-else class="contacts-apply-card__done">{{ getStatusLabel(item.status) }}</div>
+            </template>
+            <template v-else>
+              <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" type="group" :id="item.extra.groupId" />
+              <div class="min-w-0 flex-1">
+                <div class="contacts-apply-card__head">
+                  <Name class="contacts-apply-card__name" type="group" :id="item.extra.groupId" />
+                  <span class="contacts-apply-card__time">{{ formatTime(item.createdAt) }}</span>
+                </div>
+                <div class="contacts-apply-card__msg">{{ getNoticeMessage(item) }}</div>
+              </div>
+            </template>
           </div>
         </div>
       </n-scrollbar>
@@ -35,62 +41,57 @@
 </template>
 
 <script setup lang="ts">
-  import { applyApi } from '@/api'
-  import type { Apply } from '@/types/api/apply'
+  import { noticeApi } from '@/api'
+  import Name from '@/components/Name.vue'
+  import { GroupNoticeExtraStatus } from '@/constants/notice'
+  import type { Notice } from '@/types/api/notice'
   import { formatTime } from '@/utils/common/time'
   import { useI18n } from 'vue-i18n'
 
   const { t } = useI18n()
 
   const loading = ref(false)
-  const list = ref<Apply[]>([])
+  const list = ref<Notice[]>([])
 
-  const getApplicantId = (item: Apply) => item.userId
+  const isLeaveNotice = (item: Notice) => item.extra.status === GroupNoticeExtraStatus.Leave
 
-  const getApplicantName = (item: Apply) => item.userName?.trim() || getApplicantId(item)
-
-  const getGroupName = (item: Apply) => item.peerName?.trim() || item.peerId
-
-  const isApplyPending = (status: string) => !status?.trim()
-
-  const getStatusLabel = (status: string) => {
-    if (status === 'agree') return t('contacts.actions.completed')
-    if (status === 'reject' || status === 'rejected') return t('contacts.actions.rejected')
-    return t('contacts.actions.completed')
-  }
-
-  const fetchList = async () => {
-    if (loading.value) return
-    loading.value = true
-    try {
-      const res = await applyApi.groupList()
-      if (res.code === 0 && res.data) {
-        list.value = [...res.data].sort(
-          (a, b) =>
-            new Date(b.createdAt.replace(/-/g, '/')).getTime() - new Date(a.createdAt.replace(/-/g, '/')).getTime()
-        )
-      } else {
-        window.$message.error(res.msg)
-      }
-    } finally {
-      loading.value = false
+  const getNoticeMessage = (item: Notice) => {
+    switch (item.extra.status) {
+      case GroupNoticeExtraStatus.Dissolve:
+        return t('contacts.views.groupNotice.message.dissolve')
+      case GroupNoticeExtraStatus.Remove:
+        return t('contacts.views.groupNotice.message.remove')
+      default:
+        return t('contacts.views.groupNotice.message.unknown')
     }
   }
 
-  const handleAgree = (_item: Apply) => {
-    // TODO: agree group apply API
-  }
-
-  const handleReject = (_item: Apply) => {
-    // TODO: reject group apply API
+  const fetchList = () => {
+    if (loading.value) return
+    loading.value = true
+    noticeApi
+      .listGroup()
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          list.value = [...res.data].sort(
+            (a, b) =>
+              new Date(b.createdAt.replace(/-/g, '/')).getTime() - new Date(a.createdAt.replace(/-/g, '/')).getTime()
+          )
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        loading.value = false
+      })
   }
 
   onMounted(() => {
-    void fetchList()
+    fetchList()
   })
 
   onActivated(() => {
-    void fetchList()
+    fetchList()
   })
 </script>
 
@@ -191,25 +192,11 @@
       flex-shrink: 1;
       min-width: 0;
       max-width: 100%;
-    }
 
-    &__invite {
-      flex-shrink: 0;
-      font-size: 13px;
-      color: var(--text-secondary-color);
-      user-select: none;
-    }
-
-    &__group {
-      flex-shrink: 1;
-      min-width: 0;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--primary-color);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      user-select: none;
+      &--link {
+        color: var(--primary-color);
+        font-weight: 500;
+      }
     }
 
     &__time {
@@ -225,28 +212,14 @@
       line-height: 1.45;
       color: var(--text-secondary-color);
       word-break: break-word;
-    }
 
-    &__actions {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      flex-shrink: 0;
-    }
-
-    &__reject {
-      color: var(--text-secondary-color) !important;
-
-      &:hover {
-        color: var(--text-color) !important;
+      &--inline {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        flex-wrap: wrap;
       }
-    }
-
-    &__done {
-      flex-shrink: 0;
-      font-size: 12px;
-      color: var(--text-secondary-color);
-      user-select: none;
     }
   }
 </style>

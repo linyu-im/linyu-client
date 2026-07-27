@@ -25,10 +25,12 @@
 
   const nameStore = useNameStore()
 
+  const isNameType = (type: FromType) => type === 'user' || type === 'robot' || type === 'group'
+
   const getInitialNameState = () => {
     const { id, type, groupId } = props
 
-    if (!id || (type !== 'user' && type !== 'robot')) {
+    if (!id || !isNameType(type)) {
       return { name: '', visible: props.instant }
     }
 
@@ -56,7 +58,7 @@
     const type = props.type
     const groupId = type === 'user' ? props.groupId : ''
 
-    if (!id || (type !== 'user' && type !== 'robot')) {
+    if (!id || !isNameType(type)) {
       displayName.value = ''
       visible.value = true
       return

@@ -20,9 +20,14 @@ import type {
 } from '@/types/api/message'
 import { serializeMessageLocalExt, parseMessageLocalExt } from '@/utils/message/messageLocalExt'
 import { nowBackendDatetime } from '@/utils/common/time'
+import { useUserStore } from '@/stores/user/user'
 import { defineStore } from 'pinia'
 
 const LOCAL_EXT_MSG_TYPES = new Set(['file', 'image', 'video', 'sticker'])
+
+function getCurrentUserId() {
+  return useUserStore().authInfo.userId?.trim() || ''
+}
 
 function mapDbMessageToMessage(dbMsg: DbMessage): Message {
   const content = JSON.parse(dbMsg.content)
@@ -79,8 +84,12 @@ export const useMessageDbStore = defineStore('messageDb', {
     async saveMessages(messages: Message[]) {
       if (messages.length === 0) return
 
+      const userId = getCurrentUserId()
+      if (!userId) return
+
       const dbMessages: DbMessage[] = messages.map((msg) => ({
         id: msg.id,
+        userId,
         sessionId: msg.sessionId,
         fromId: msg.fromId,
         toId: msg.toId,
@@ -163,7 +172,12 @@ export const useMessageDbStore = defineStore('messageDb', {
       dateRange?: MessageDateRange,
       keyword?: string
     ) {
-      const result = await queryMessagesByPage({ sessionId, page, pageSize, msgType, dateRange, keyword })
+      const userId = getCurrentUserId()
+      if (!userId || !sessionId) {
+        return { records: [] as Message[], page, pageSize, hasMore: false }
+      }
+
+      const result = await queryMessagesByPage({ userId, sessionId, page, pageSize, msgType, dateRange, keyword })
       const messages = result.records.map(mapDbMessageToMessage)
       return {
         records: messages,
@@ -185,15 +199,18 @@ export const useMessageDbStore = defineStore('messageDb', {
      * 软删除指定会话的聊天记录（设置 deletedAt 为当前时间）
      */
     async deleteChatHistoryBySession(sessionId: string) {
-      if (!sessionId) return
-      await softDeleteMessagesBySessionId(sessionId, nowBackendDatetime())
+      const userId = getCurrentUserId()
+      if (!userId || !sessionId) return
+      await softDeleteMessagesBySessionId(userId, sessionId, nowBackendDatetime())
     },
 
     /**
      * 获取指定会话的最新消息 ID
      */
     async getLatestMessageId(sessionId: string): Promise<string | null> {
-      return queryLatestMessageIdBySession(sessionId)
+      const userId = getCurrentUserId()
+      if (!userId || !sessionId) return null
+      return queryLatestMessageIdBySession(userId, sessionId)
     },
 
     /**

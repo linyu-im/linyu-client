@@ -12,6 +12,14 @@ export interface ApplyAddGroupParam {
   applySource: ApplySourceEnum
 }
 
+export interface ApplyAgreeFriendParam {
+  applyId: string
+}
+
+export interface ApplyRejectParam {
+  applyId: string
+}
+
 export interface Apply {
   id: string
   userId: string

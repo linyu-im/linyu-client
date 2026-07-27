@@ -7,6 +7,8 @@ import { getDb } from '.'
  */
 export interface DbMessage {
   id: string
+  /** 本地所属用户（多账号隔离） */
+  userId: string
   sessionId: string
   fromId: string
   toId: string
@@ -35,6 +37,7 @@ export interface MessageDateRange {
  * 分页查询参数
  */
 export interface MessagePageQuery {
+  userId: string
   sessionId: string
   page: number
   pageSize: number
@@ -53,16 +56,22 @@ export interface MessagePageResult {
   pageSize: number
 }
 
-const MESSAGE_SELECT_FIELDS = `id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
+const MESSAGE_SELECT_FIELDS = `id, user_id AS userId, session_id AS sessionId, from_id AS fromId, to_id AS toId,
   msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
   content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
   keyword_content AS keywordContent,
   created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
   local_ext AS localExt`
 
-function buildMessageWhereClause(sessionId: string, msgType?: string, dateRange?: MessageDateRange, keyword?: string) {
-  const conditions = ['session_id = ?', 'deleted_at IS NULL']
-  const params: (string | number)[] = [sessionId]
+function buildMessageWhereClause(
+  userId: string,
+  sessionId: string,
+  msgType?: string,
+  dateRange?: MessageDateRange,
+  keyword?: string
+) {
+  const conditions = ['user_id = ?', 'session_id = ?', 'deleted_at IS NULL']
+  const params: (string | number)[] = [userId, sessionId]
 
   if (msgType) {
     conditions.push('msg_type = ?')
@@ -95,11 +104,11 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
 
   const db = await getDb()
 
-  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
+  const placeholders = messages.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')
 
   const sql = `
     INSERT OR REPLACE INTO t_message 
-    (id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, keyword_content, created_at, updated_at, fail_reason, local_ext, deleted_at)
+    (id, user_id, session_id, from_id, to_id, msg_type, from_type, is_show_time, content, status, scene_type, quote_msg_id, keyword_content, created_at, updated_at, fail_reason, local_ext, deleted_at)
     VALUES ${placeholders}
   `
 
@@ -107,6 +116,7 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
   for (const msg of messages) {
     values.push(
       msg.id,
+      msg.userId,
       msg.sessionId,
       msg.fromId,
       msg.toId,
@@ -130,15 +140,21 @@ export async function batchInsertMessages(messages: DbMessage[]): Promise<void> 
 }
 
 /**
- * 分页查询消息（根据 session_id）
+ * 分页查询消息（根据 user_id + session_id）
  * @param query 查询参数
  * @returns 分页结果
  */
 export async function queryMessagesByPage(query: MessagePageQuery): Promise<MessagePageResult> {
   const db = await getDb()
-  const { sessionId, page, pageSize, msgType, dateRange, keyword } = query
+  const { userId, sessionId, page, pageSize, msgType, dateRange, keyword } = query
   const offset = (page - 1) * pageSize
-  const { clause: whereClause, params: whereParams } = buildMessageWhereClause(sessionId, msgType, dateRange, keyword)
+  const { clause: whereClause, params: whereParams } = buildMessageWhereClause(
+    userId,
+    sessionId,
+    msgType,
+    dateRange,
+    keyword
+  )
 
   const records = await db.select<DbMessage[]>(
     `SELECT ${MESSAGE_SELECT_FIELDS}
@@ -154,13 +170,19 @@ export async function queryMessagesByPage(query: MessagePageQuery): Promise<Mess
 
 /**
  * 软删除指定会话的全部聊天记录
+ * @param userId 本地所属用户
  * @param sessionId 会话 ID
  * @param deletedAt 删除时间
  */
-export async function softDeleteMessagesBySessionId(sessionId: string, deletedAt: string): Promise<void> {
+export async function softDeleteMessagesBySessionId(
+  userId: string,
+  sessionId: string,
+  deletedAt: string
+): Promise<void> {
   const db = await getDb()
-  await db.execute('UPDATE t_message SET deleted_at = ? WHERE session_id = ? AND deleted_at IS NULL', [
+  await db.execute('UPDATE t_message SET deleted_at = ? WHERE user_id = ? AND session_id = ? AND deleted_at IS NULL', [
     deletedAt,
+    userId,
     sessionId
   ])
 }
@@ -208,12 +230,7 @@ export async function queryMessageById(id: string): Promise<DbMessage | null> {
   const db = await getDb()
 
   const result = await db.select<DbMessage[]>(
-    `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
-            msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
-            content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            keyword_content AS keywordContent,
-            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
-            local_ext AS localExt
+    `SELECT ${MESSAGE_SELECT_FIELDS}
      FROM t_message WHERE id = ? AND deleted_at IS NULL`,
     [id]
   )
@@ -233,12 +250,7 @@ export async function queryMessagesByIds(ids: string[]): Promise<DbMessage[]> {
   const db = await getDb()
   const placeholders = uniqueIds.map(() => '?').join(', ')
   return db.select<DbMessage[]>(
-    `SELECT id, session_id AS sessionId, from_id AS fromId, to_id AS toId,
-            msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
-            content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
-            keyword_content AS keywordContent,
-            created_at AS createdAt, updated_at AS updatedAt, fail_reason AS failReason,
-            local_ext AS localExt
+    `SELECT ${MESSAGE_SELECT_FIELDS}
      FROM t_message WHERE id IN (${placeholders}) AND deleted_at IS NULL`,
     uniqueIds
   )
@@ -246,15 +258,16 @@ export async function queryMessagesByIds(ids: string[]): Promise<DbMessage[]> {
 
 /**
  * 查询指定会话的最新消息 ID
+ * @param userId 本地所属用户
  * @param sessionId 会话 ID
  * @returns 最新消息 ID 或 null
  */
-export async function queryLatestMessageIdBySession(sessionId: string): Promise<string | null> {
+export async function queryLatestMessageIdBySession(userId: string, sessionId: string): Promise<string | null> {
   const db = await getDb()
 
   const result = await db.select<{ id: string }[]>(
-    `SELECT id FROM t_message WHERE session_id = ? ORDER BY created_at DESC LIMIT 1`,
-    [sessionId]
+    `SELECT id FROM t_message WHERE user_id = ? AND session_id = ? ORDER BY created_at DESC LIMIT 1`,
+    [userId, sessionId]
   )
 
   return result[0]?.id ?? null
