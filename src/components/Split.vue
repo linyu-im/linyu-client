@@ -32,6 +32,16 @@
 
   const sizeProp = computed(() => (props.direction === 'vertical' ? 'height' : 'width'))
 
+  const clampSize = (size: number) => Math.min(props.maxSize, Math.max(props.minSize, size))
+
+  watch(
+    () => [props.defaultSize, props.minSize, props.maxSize] as const,
+    ([defaultSize]) => {
+      if (isResizing.value) return
+      panelSize.value = clampSize(defaultSize)
+    }
+  )
+
   const firstPanelStyle = computed(() => {
     if (props.fixed === 'first') {
       return { [sizeProp.value]: panelSize.value + 'px', flexShrink: 0 }
@@ -56,7 +66,7 @@
       const currentPos = props.direction === 'vertical' ? moveEvent.clientY : moveEvent.clientX
       const delta = currentPos - startPos
       const adjustedDelta = props.fixed === 'second' ? -delta : delta
-      panelSize.value = Math.min(props.maxSize, Math.max(props.minSize, startSize + adjustedDelta))
+      panelSize.value = clampSize(startSize + adjustedDelta)
     }
 
     const onMouseUp = () => {

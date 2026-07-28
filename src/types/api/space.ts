@@ -1,0 +1,53 @@
+import type { SpaceStatus, SpaceType } from '@/constants/space'
+
+export interface Space {
+  id: string
+  spaceType: SpaceType | string
+  targetId: string
+  ownerId: string
+  spaceName: string
+  quotaBytes: number
+  usedBytes: number
+  fileCount: number
+  folderCount: number
+  status: SpaceStatus | string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+}
+
+export type SpaceUserInfoResult = Space
+
+export interface SpaceUserFileListParam {
+  parentId: string
+}
+
+export interface SpaceUserDirCreateParam {
+  parentId: string
+  dirName: string
+}
+
+export interface SpaceUserFileDeleteParam {
+  spaceFileIDs: string[]
+}
+
+/** 空间文件/目录项 */
+export interface SpaceFile {
+  id: string
+  spaceId: string
+  userId: string
+  physicalId: string
+  storagePath: string
+  parentId: string
+  path: string
+  level: number
+  fileName: string
+  isDir: boolean
+  fileType: string
+  /** 后端字段名即为 filSize */
+  filSize: number
+  status: string
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
+}

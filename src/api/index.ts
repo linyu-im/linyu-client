@@ -16,6 +16,8 @@ import * as applicationApi from './application'
 import * as robotApi from './robot'
 import * as userBadgeApi from './userbadge'
 import * as noticeApi from './notice'
+import * as spaceApi from './space'
+import * as spaceRecycleApi from './spaceRecycle'
 
 export {
   userApi,
@@ -35,5 +37,7 @@ export {
   applicationApi,
   robotApi,
   userBadgeApi,
-  noticeApi
+  noticeApi,
+  spaceApi,
+  spaceRecycleApi
 }

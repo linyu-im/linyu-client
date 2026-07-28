@@ -481,6 +481,49 @@
       "recent": "Recently accessed",
       "deleted": "Recently deleted"
     },
+    "recycle": {
+      "title": "Recently deleted",
+      "hint": "Recently deleted items can be restored from the recycle bin",
+      "empty": "Recycle bin is empty",
+      "columns": {
+        "name": "Name",
+        "expire": "Expires",
+        "size": "Size",
+        "deletedAt": "Deleted at"
+      },
+      "expireRemain": {
+        "days": "{count} days",
+        "hours": "{count} hours",
+        "minutes": "{count} minutes",
+        "expired": "Expired"
+      },
+      "actions": {
+        "restore": "Restore",
+        "delete": "Delete permanently",
+        "clear": "Empty recycle bin"
+      },
+      "restore": {
+        "confirmTitle": "Restore files",
+        "confirmContent": "Restore {count} selected item(s)?",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "success": "Restored successfully"
+      },
+      "delete": {
+        "confirmTitle": "Delete permanently",
+        "confirmContent": "Permanently delete {count} selected item(s)? This cannot be undone.",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "success": "Deleted successfully"
+      },
+      "clear": {
+        "confirmTitle": "Empty recycle bin",
+        "confirmContent": "Empty the recycle bin? This cannot be undone.",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "success": "Recycle bin emptied"
+      }
+    },
     "title": "My Cloud Drive",
     "path": {
       "label": "Current location",
@@ -498,6 +541,19 @@
       "download": "Download",
       "delete": "Delete"
     },
+    "delete": {
+      "confirmTitle": "Delete files",
+      "confirmContent": "Delete {count} selected item(s)? You can restore recently deleted items from the recycle bin.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Deleted successfully"
+    },
+    "empty": {
+      "upload": "Upload",
+      "newFolder": "New folder",
+      "hintUpload": "Click {upload} or drag files here to add local files",
+      "hintFolder": "Or click {newFolder}"
+    },
     "categories": {
       "images": "Images",
       "videos": "Videos",
@@ -513,8 +569,20 @@
         "size": "Size",
         "owner": "Owner"
       },
+      "sortAsc": "Ascending",
+      "sortDesc": "Descending",
+      "sortClear": "Clear sort",
+      "menu": {
+        "moveTo": "Move to",
+        "rename": "Rename",
+        "detail": "Details",
+        "share": "Share",
+        "download": "Download",
+        "delete": "Delete"
+      },
       "types": {
         "folder": "Folder",
+        "file": "File",
         "image": "Image",
         "pdf": "PDF",
         "archive": "Archive"

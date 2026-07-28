@@ -481,6 +481,49 @@
       "recent": "最近访问",
       "deleted": "最近删除"
     },
+    "recycle": {
+      "title": "最近删除",
+      "hint": "可在回收站找回最近删除的内容",
+      "empty": "回收站为空",
+      "columns": {
+        "name": "名称",
+        "expire": "有效期",
+        "size": "大小",
+        "deletedAt": "删除时间"
+      },
+      "expireRemain": {
+        "days": "{count} 天",
+        "hours": "{count} 小时",
+        "minutes": "{count} 分钟",
+        "expired": "已过期"
+      },
+      "actions": {
+        "restore": "还原",
+        "delete": "彻底删除",
+        "clear": "清空回收站"
+      },
+      "restore": {
+        "confirmTitle": "还原文件",
+        "confirmContent": "确定还原选中的 {count} 项吗？",
+        "confirm": "确认",
+        "cancel": "取消",
+        "success": "还原成功"
+      },
+      "delete": {
+        "confirmTitle": "彻底删除",
+        "confirmContent": "确定彻底删除选中的 {count} 项吗？删除后不可恢复。",
+        "confirm": "确认",
+        "cancel": "取消",
+        "success": "删除成功"
+      },
+      "clear": {
+        "confirmTitle": "清空回收站",
+        "confirmContent": "确定清空回收站吗？清空后不可恢复。",
+        "confirm": "确认",
+        "cancel": "取消",
+        "success": "清空成功"
+      }
+    },
     "title": "我的云盘",
     "path": {
       "label": "当前位置",
@@ -498,6 +541,19 @@
       "download": "下载",
       "delete": "删除"
     },
+    "delete": {
+      "confirmTitle": "删除文件",
+      "confirmContent": "确定删除选中的 {count} 项吗？可在回收站找回最近删除的内容。",
+      "confirm": "删除",
+      "cancel": "取消",
+      "success": "删除成功"
+    },
+    "empty": {
+      "upload": "上传",
+      "newFolder": "新建文件夹",
+      "hintUpload": "点击 {upload} 或拖拽文件至此处添加本地文件",
+      "hintFolder": "或者点击 {newFolder}"
+    },
     "categories": {
       "images": "图片",
       "videos": "视频",
@@ -513,8 +569,20 @@
         "size": "大小",
         "owner": "拥有者"
       },
+      "sortAsc": "升序",
+      "sortDesc": "降序",
+      "sortClear": "取消排序",
+      "menu": {
+        "moveTo": "移动到",
+        "rename": "重命名",
+        "detail": "详情",
+        "share": "分享",
+        "download": "下载",
+        "delete": "删除"
+      },
       "types": {
         "folder": "文件夹",
+        "file": "文件",
         "image": "图片",
         "pdf": "PDF",
         "archive": "压缩包"
