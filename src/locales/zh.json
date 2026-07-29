@@ -591,6 +591,45 @@
     "view": {
       "list": "列表视图",
       "grid": "网格视图"
+    },
+    "transfer": {
+      "title": "传输列表",
+      "tabs": {
+        "uploading": "上传中",
+        "downloading": "下载中",
+        "completed": "已完成"
+      },
+      "uploadingCount": "正在上传 {count} 项",
+      "downloadingCount": "正在下载 {count} 项",
+      "completedUploadCount": "已完成上传 {count} 项",
+      "completedDownloadCount": "已完成下载 {count} 项",
+      "completedUploadSection": "上传完成 ({count})",
+      "completedDownloadSection": "下载完成 ({count})",
+      "from": "来自：{path}",
+      "remain": "剩余 {time}",
+      "pause": "暂停",
+      "cancel": "取消",
+      "pauseAll": "全部暂停",
+      "uploadDone": "上传完成",
+      "downloadDone": "下载完成",
+      "recordKeepDays": "传输记录已保留 {days} 天",
+      "clearCompleted": "清空已完成",
+      "settings": {
+        "entry": "设置",
+        "title": "传输设置",
+        "back": "返回",
+        "parallelTasks": "并行任务",
+        "uploadParallel": "上传并行任务数",
+        "downloadParallel": "下载并行任务数",
+        "selectPlaceholder": "请选择",
+        "smart": "智能",
+        "smartRecommend": "(推荐智能)",
+        "downloadLocation": "下载位置",
+        "pathPlaceholder": "请选择下载路径",
+        "browse": "浏览",
+        "browseTitle": "选择下载目录",
+        "setDefaultPath": "设为默认下载路径"
+      }
     }
   },
   "ai": {

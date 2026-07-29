@@ -1,4 +1,4 @@
-import type { SpaceStatus, SpaceType } from '@/constants/space'
+import type { SpaceFileCategory, SpaceStatus, SpaceType } from '@/constants/space'
 
 export interface Space {
   id: string
@@ -29,6 +29,13 @@ export interface SpaceUserDirCreateParam {
 
 export interface SpaceUserFileDeleteParam {
   spaceFileIDs: string[]
+}
+
+/** 空间文件分类统计项 */
+export interface SpaceUserFileCategoryStat {
+  fileCategory: SpaceFileCategory | string
+  fileCount: number
+  totalSize: number
 }
 
 /** 空间文件/目录项 */

@@ -4,7 +4,7 @@ import { appDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, remove, writeFile } from '@tauri-apps/plugin-fs'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
-import type { UploadFileChunksParam, UploadFileProgressPayload } from '@/types/cmd/upload'
+import type { FileChunkUploadParam, UploadFileProgressPayload } from '@/types/cmd/upload'
 import { getBlobFilePath } from '@/utils/file/blobFilePath'
 
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
@@ -48,7 +48,22 @@ const blobToTempFile = async (blob: Blob, fileName: string): Promise<string> => 
   return tempPath
 }
 
-const invokeUpload = (filePath: string, fileName: string, options?: MessageMediaUploadOptions, tempFile?: boolean) => {
+export interface FileChunkUploadExtra {
+  chunkUploadUrl?: string
+  mergeUrl?: string
+  successCode?: number
+  skipChunks?: number[]
+  chunkSize?: number
+  mergeExtra?: Record<string, unknown>
+}
+
+export const invokeChunkUpload = (
+  filePath: string,
+  fileName: string,
+  options?: MessageMediaUploadOptions,
+  tempFile?: boolean,
+  extra?: FileChunkUploadExtra
+) => {
   const report = (progress: number) => options?.onProgress?.(clampProgress(progress))
   report(0)
 
@@ -59,13 +74,14 @@ const invokeUpload = (filePath: string, fileName: string, options?: MessageMedia
     report(event.payload.progress)
   })
 
-  const param: UploadFileChunksParam = {
+  const param: FileChunkUploadParam = {
     filePath,
     fileName,
     baseUrl: SERVICE_URL,
     authToken: userStore.authInfo.token || '',
     lang: systemSettingStore.preferences.lang || 'zh',
-    tempFile
+    tempFile,
+    ...extra
   }
 
   return invoke<string>('upload_file_chunks', { param })
@@ -75,7 +91,7 @@ const invokeUpload = (filePath: string, fileName: string, options?: MessageMedia
       return null
     })
     .then((result) => {
-      if (result) report(100)
+      if (result !== null) report(100)
       return result
     })
     .finally(() => {
@@ -89,7 +105,7 @@ export const uploadMessageMediaBlob = (blob: Blob, fileName: string, options?: M
   return blobToTempFile(blob, fileName)
     .then((path) => {
       tempPath = path
-      return invokeUpload(path, fileName, options, true)
+      return invokeChunkUpload(path, fileName, options, true)
     })
     .finally(() => {
       if (tempPath) remove(tempPath).catch(() => {})
@@ -99,7 +115,7 @@ export const uploadMessageMediaBlob = (blob: Blob, fileName: string, options?: M
 export const uploadMessageMediaByUrl = (url: string, fileName: string, options?: MessageMediaUploadOptions) => {
   const realPath = getBlobFilePath(url)
   if (realPath) {
-    return invokeUpload(realPath, fileName, options, false)
+    return invokeChunkUpload(realPath, fileName, options, false)
   }
 
   if (!url || !isLocalMediaUrl(url)) {

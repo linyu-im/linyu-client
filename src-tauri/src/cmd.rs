@@ -160,6 +160,16 @@ pub struct UploadFileChunksParam {
     chunk_size: Option<usize>,
     #[serde(rename = "tempFile")]
     temp_file: Option<bool>,
+    #[serde(rename = "chunkUploadUrl")]
+    chunk_upload_url: Option<String>,
+    #[serde(rename = "mergeUrl")]
+    merge_url: Option<String>,
+    #[serde(rename = "successCode")]
+    success_code: Option<i64>,
+    #[serde(rename = "skipChunks")]
+    skip_chunks: Option<Vec<usize>>,
+    #[serde(rename = "mergeExtra")]
+    merge_extra: Option<serde_json::Value>,
 }
 
 #[tauri::command]
@@ -223,9 +233,27 @@ async fn do_upload_file_chunks<R: Runtime>(
 
     let chunk_size = param.chunk_size.unwrap_or(DEFAULT_CHUNK_SIZE).max(1);
     let total_chunks = (file_size + chunk_size - 1) / chunk_size;
+    let success_code = param.success_code.unwrap_or(0);
     let client = reqwest::Client::new();
 
+    let skip_set: std::collections::HashSet<usize> =
+        param.skip_chunks.as_deref().unwrap_or(&[]).iter().copied().collect();
+
+    let chunk_url = match &param.chunk_upload_url {
+        Some(url) => format!("{}{}", param.base_url, url),
+        None => format!("{}/api/basic/v1/message/file/upload", param.base_url),
+    };
+
     for i in 0..total_chunks {
+        if skip_set.contains(&i) {
+            let progress = HASH_WEIGHT + ((i + 1) as f64 / total_chunks as f64) * UPLOAD_WEIGHT;
+            let _ = app.emit(
+                "upload-file-progress",
+                json!({ "progress": progress, "fileHash": file_hash }),
+            );
+            continue;
+        }
+
         let start = i * chunk_size;
         let end = (start + chunk_size).min(file_size);
 
@@ -251,9 +279,8 @@ async fn do_upload_file_chunks<R: Runtime>(
             .text("chunkIndex", i.to_string())
             .part("file", part);
 
-        let url = format!("{}/api/basic/v1/message/file/upload", param.base_url);
         let response = client
-            .post(&url)
+            .post(&chunk_url)
             .header("Authorization", &param.auth_token)
             .header("Accept-Language", &param.lang)
             .multipart(form)
@@ -267,7 +294,7 @@ async fn do_upload_file_chunks<R: Runtime>(
 
         let body: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
         let code = body.get("code").and_then(|v| v.as_i64()).unwrap_or(-1);
-        if code != 0 {
+        if code != success_code {
             let msg = body.get("msg").and_then(|v| v.as_str()).unwrap_or("unknown error");
             return Err(format!("chunk {i} upload error: {msg}"));
         }
@@ -277,16 +304,26 @@ async fn do_upload_file_chunks<R: Runtime>(
             .emit("upload-file-progress", json!({ "progress": progress, "fileHash": file_hash }));
     }
 
-    let merge_url = format!("{}/api/basic/v1/message/file/merge", param.base_url);
-    let merge_body = json!({
+    let merge_endpoint = match &param.merge_url {
+        Some(url) => format!("{}{}", param.base_url, url),
+        None => format!("{}/api/basic/v1/message/file/merge", param.base_url),
+    };
+    let mut merge_body = json!({
         "fileHash": file_hash,
         "fileSize": file_size,
         "fileName": param.file_name,
         "totalChunk": total_chunks,
     });
+    if let Some(extra) = &param.merge_extra {
+        if let (Some(base), Some(ext)) = (merge_body.as_object_mut(), extra.as_object()) {
+            for (k, v) in ext {
+                base.insert(k.clone(), v.clone());
+            }
+        }
+    }
 
     let merge_resp = client
-        .post(&merge_url)
+        .post(&merge_endpoint)
         .header("Authorization", &param.auth_token)
         .header("Accept-Language", &param.lang)
         .header("Content-Type", "application/json")
@@ -301,16 +338,13 @@ async fn do_upload_file_chunks<R: Runtime>(
 
     let merge_body: serde_json::Value = merge_resp.json().await.map_err(|e| e.to_string())?;
     let code = merge_body.get("code").and_then(|v| v.as_i64()).unwrap_or(-1);
-    if code != 0 {
+    if code != success_code {
         let msg = merge_body.get("msg").and_then(|v| v.as_str()).unwrap_or("unknown error");
         return Err(format!("merge error: {msg}"));
     }
 
-    let file_url = merge_body
-        .get("data")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "merge response missing data".to_string())?
-        .to_string();
+    let file_url =
+        merge_body.get("data").and_then(|v| v.as_str()).map(|s| s.to_string()).unwrap_or_default();
 
     let _ = app.emit("upload-file-progress", json!({ "progress": 100.0, "fileHash": file_hash }));
 

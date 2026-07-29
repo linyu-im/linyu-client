@@ -144,6 +144,37 @@
         }
       }
     },
+    Drawer: {
+      color: 'var(--bg-secondary-color)',
+      textColor: 'var(--text-color)',
+      titleTextColor: 'var(--text-color)',
+      titleFontSize: '16px',
+      titleFontWeight: '600',
+      headerBorderBottom: '1px solid color-mix(in srgb, var(--divider-color) 88%, transparent)',
+      footerBorderTop: '1px solid color-mix(in srgb, var(--divider-color) 80%, transparent)',
+      boxShadow: '-8px 0 28px color-mix(in srgb, #000 16%, transparent)',
+      closeIconColor: 'var(--text-secondary-color)',
+      closeIconColorHover: 'var(--text-color)',
+      closeIconColorPressed: 'var(--text-color)',
+      closeColorHover: 'color-mix(in srgb, var(--bg-primary-color) 85%, transparent)',
+      closeColorPressed: 'var(--bg-primary-color)',
+      closeBorderRadius: '6px',
+      peers: {
+        Scrollbar: {
+          width: '6px',
+          color: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)',
+          colorHover: 'color-mix(in srgb, var(--scrollbar-color) 90%, transparent)'
+        }
+      }
+    },
+    Collapse: {
+      titleFontSize: '13px',
+      titleFontWeight: '500',
+      titleTextColor: 'var(--text-color)',
+      textColor: 'var(--text-color)',
+      arrowColor: 'var(--text-secondary-color)',
+      dividerColor: 'color-mix(in srgb, var(--divider-color) 80%, transparent)'
+    },
     Checkbox: {
       border: '1px solid var(--border-color)',
       borderFocus: '1px solid var(--primary-color)',

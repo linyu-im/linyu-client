@@ -19,11 +19,27 @@
           <span class="cloud-drive-header__storage-percent">{{ storagePercent }}%</span>
         </div>
       </div>
+
+      <div class="cloud-drive-header__right">
+        <button
+          type="button"
+          class="cloud-drive-header__transfer-btn"
+          :title="t('drive.transfer.title')"
+          @click="transferDrawerShow = true">
+          <svg class="size-16px" aria-hidden="true">
+            <use href="#list"></use>
+          </svg>
+          <span class="cloud-drive-header__transfer-btn-label">{{ t('drive.transfer.title') }}</span>
+        </button>
+      </div>
     </div>
+
+    <CloudDriveTransferDrawer v-model:show="transferDrawerShow" />
   </header>
 </template>
 
 <script setup lang="ts">
+  import CloudDriveTransferDrawer from '@/components/CloudDrive/CloudDriveTransferDrawer.vue'
   import { useI18n } from 'vue-i18n'
 
   interface Props {
@@ -36,6 +52,7 @@
   defineProps<Props>()
 
   const { t } = useI18n()
+  const transferDrawerShow = ref(false)
 </script>
 
 <style scoped lang="scss">
@@ -48,6 +65,8 @@
     &__row {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       min-width: 0;
     }
 
@@ -57,6 +76,13 @@
       flex-wrap: wrap;
       gap: 12px;
       min-width: 0;
+      flex: 1;
+    }
+
+    &__right {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     &__title {
@@ -118,6 +144,36 @@
       color: var(--primary-color);
       user-select: none;
     }
+
+    &__transfer-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+      border-radius: 8px;
+      background: var(--bg-muted-color);
+      color: var(--text-color);
+      font-size: 13px;
+      cursor: pointer;
+      transition:
+        color 0.12s ease,
+        background 0.12s ease,
+        border-color 0.12s ease;
+
+      &:hover {
+        color: var(--primary-color);
+        border-color: color-mix(in srgb, var(--primary-color) 35%, var(--border-color));
+        background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-muted-color));
+      }
+    }
+
+    &__transfer-btn-label {
+      white-space: nowrap;
+      user-select: none;
+    }
   }
 
   @media (max-width: 900px) {
@@ -136,6 +192,15 @@
     .cloud-drive-header__storage-percent,
     .cloud-drive-header__storage-label {
       font-size: 11px;
+    }
+
+    .cloud-drive-header__transfer-btn-label {
+      display: none;
+    }
+
+    .cloud-drive-header__transfer-btn {
+      width: 32px;
+      padding: 0;
     }
   }
 

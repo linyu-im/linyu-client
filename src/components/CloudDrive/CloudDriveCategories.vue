@@ -14,7 +14,9 @@
         </span>
         <span class="cloud-drive-categories__info">
           <span class="cloud-drive-categories__name">{{ t(category.labelKey) }}</span>
-          <span class="cloud-drive-categories__meta">{{ category.count }} · {{ category.size }}</span>
+          <span class="cloud-drive-categories__meta">
+            {{ t('drive.categories.meta', { count: category.count, size: category.size }) }}
+          </span>
         </span>
       </button>
     </div>
@@ -22,24 +24,106 @@
 </template>
 
 <script setup lang="ts">
+  import { spaceApi } from '@/api'
+  import { SpaceFileCategory } from '@/constants/space'
+  import type { SpaceUserFileCategoryStat } from '@/types/api/space'
   import { useI18n } from 'vue-i18n'
 
-  interface DriveCategory {
+  interface DriveCategoryConfig {
     key: string
+    apiCategory: SpaceFileCategory
     icon: string
     labelKey: string
+  }
+
+  interface DriveCategory extends DriveCategoryConfig {
     count: string
     size: string
   }
 
+  const CATEGORY_CONFIGS: DriveCategoryConfig[] = [
+    {
+      key: 'images',
+      apiCategory: SpaceFileCategory.Image,
+      icon: '#image',
+      labelKey: 'drive.categories.images'
+    },
+    {
+      key: 'videos',
+      apiCategory: SpaceFileCategory.Video,
+      icon: '#video',
+      labelKey: 'drive.categories.videos'
+    },
+    {
+      key: 'documents',
+      apiCategory: SpaceFileCategory.Document,
+      icon: '#document',
+      labelKey: 'drive.categories.documents'
+    },
+    {
+      key: 'audio',
+      apiCategory: SpaceFileCategory.Audio,
+      icon: '#voice',
+      labelKey: 'drive.categories.audio'
+    }
+  ]
+
   const { t } = useI18n()
 
-  const categories: DriveCategory[] = [
-    { key: 'images', icon: '#image', labelKey: 'drive.categories.images', count: '1.2k', size: '15.4 GB' },
-    { key: 'videos', icon: '#video', labelKey: 'drive.categories.videos', count: '154', size: '28.2 GB' },
-    { key: 'documents', icon: '#document', labelKey: 'drive.categories.documents', count: '842', size: '4.2 GB' },
-    { key: 'audio', icon: '#voice', labelKey: 'drive.categories.audio', count: '56', size: '1.8 GB' }
-  ]
+  const statsMap = ref<Record<string, SpaceUserFileCategoryStat>>({})
+
+  const formatCount = (count: number) => {
+    if (!Number.isFinite(count) || count <= 0) return '0'
+    if (count < 1000) return String(count)
+    if (count < 10000) return `${(count / 1000).toFixed(1).replace(/\.0$/, '')}k`
+    return `${Math.round(count / 1000)}k`
+  }
+
+  const formatBytes = (bytes: number) => {
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    if (bytes < 1024 * 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
+    return `${(bytes / 1024 / 1024 / 1024 / 1024).toFixed(1)} TB`
+  }
+
+  const categories = computed<DriveCategory[]>(() =>
+    CATEGORY_CONFIGS.map((config) => {
+      const stat = statsMap.value[config.apiCategory]
+      return {
+        ...config,
+        count: formatCount(stat?.fileCount ?? 0),
+        size: formatBytes(stat?.totalSize ?? 0)
+      }
+    })
+  )
+
+  const fetchCategoryStats = () => {
+    spaceApi.getSpaceUserFileCategoryStats().then((res) => {
+      if (res.code === 0 && res.data) {
+        const next: Record<string, SpaceUserFileCategoryStat> = {}
+        for (const item of res.data) {
+          next[item.fileCategory] = item
+        }
+        statsMap.value = next
+      } else {
+        window.$message.error(res.msg)
+      }
+    })
+  }
+
+  defineExpose({
+    refresh: fetchCategoryStats
+  })
+
+  onMounted(() => {
+    fetchCategoryStats()
+  })
+
+  onActivated(() => {
+    fetchCategoryStats()
+  })
 </script>
 
 <style scoped lang="scss">

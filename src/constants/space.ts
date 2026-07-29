@@ -16,3 +16,15 @@ export type SpaceStatus = (typeof SpaceStatus)[keyof typeof SpaceStatus]
 
 /** 空间根目录 parentId，与后端一致 */
 export const SpaceRootParentId = 'root' as const
+
+/** 空间文件分类 */
+export const SpaceFileCategory = {
+  Image: 'image',
+  Video: 'video',
+  Document: 'document',
+  Audio: 'audio',
+  Archive: 'archive',
+  Other: 'other'
+} as const
+
+export type SpaceFileCategory = (typeof SpaceFileCategory)[keyof typeof SpaceFileCategory]

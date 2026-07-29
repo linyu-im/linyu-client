@@ -591,6 +591,45 @@
     "view": {
       "list": "List view",
       "grid": "Grid view"
+    },
+    "transfer": {
+      "title": "Transfers",
+      "tabs": {
+        "uploading": "Uploading",
+        "downloading": "Downloading",
+        "completed": "Completed"
+      },
+      "uploadingCount": "Uploading {count} items",
+      "downloadingCount": "Downloading {count} items",
+      "completedUploadCount": "{count} uploads completed",
+      "completedDownloadCount": "{count} downloads completed",
+      "completedUploadSection": "Uploads completed ({count})",
+      "completedDownloadSection": "Downloads completed ({count})",
+      "from": "From: {path}",
+      "remain": "{time} left",
+      "pause": "Pause",
+      "cancel": "Cancel",
+      "pauseAll": "Pause all",
+      "uploadDone": "Upload complete",
+      "downloadDone": "Download complete",
+      "recordKeepDays": "Transfer records kept for {days} days",
+      "clearCompleted": "Clear completed",
+      "settings": {
+        "entry": "Settings",
+        "title": "Transfer settings",
+        "back": "Back",
+        "parallelTasks": "Parallel tasks",
+        "uploadParallel": "Upload concurrency",
+        "downloadParallel": "Download concurrency",
+        "selectPlaceholder": "Please select",
+        "smart": "Smart",
+        "smartRecommend": "(Smart recommended)",
+        "downloadLocation": "Download location",
+        "pathPlaceholder": "Select a download path",
+        "browse": "Browse",
+        "browseTitle": "Select download folder",
+        "setDefaultPath": "Set as default download path"
+      }
     }
   },
   "ai": {

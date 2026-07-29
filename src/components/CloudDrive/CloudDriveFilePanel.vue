@@ -5,7 +5,7 @@
       :storage-used="storageUsed"
       :storage-total="storageTotal"
       :storage-percent="storagePercent" />
-    <CloudDriveCategories />
+    <CloudDriveCategories ref="categoriesRef" />
 
     <div class="cloud-drive-files__body">
       <div class="cloud-drive-files__head">
@@ -326,6 +326,15 @@
                   :checked="selectedFileIds.has(file.id)"
                   @update:checked="(checked) => setFileSelected(file.id, checked)" />
               </span>
+              <span class="cloud-drive-files__grid-more" @click.stop>
+                <n-dropdown trigger="click" placement="bottom-end" :options="rowMoreOptions">
+                  <n-button quaternary size="tiny">
+                    <svg class="size-16px">
+                      <use href="#more"></use>
+                    </svg>
+                  </n-button>
+                </n-dropdown>
+              </span>
               <span class="cloud-drive-files__grid-icon">
                 <img
                   class="cloud-drive-files__grid-icon-img"
@@ -414,6 +423,7 @@
   const creatingFolderTime = ref('')
   const creatingFolderSubmitting = ref(false)
   const createFolderInputRef = ref<HTMLInputElement | null>(null)
+  const categoriesRef = ref<InstanceType<typeof CloudDriveCategories> | null>(null)
   let skipCreateFolderBlur = false
 
   const currentUserId = computed(() => userStore.authInfo.userId)
@@ -772,6 +782,7 @@
             if (res.code === 0) {
               selectedFileIds.value = new Set()
               fetchFileList(currentFolderId.value)
+              categoriesRef.value?.refresh()
               emit('deleted')
               window.$message.success(t('drive.delete.success'))
             } else {
@@ -1467,12 +1478,20 @@
         .cloud-drive-files__grid-check {
           opacity: 1;
         }
+
+        .cloud-drive-files__grid-more {
+          opacity: 1;
+        }
       }
 
       &--selected {
         background-color: color-mix(in srgb, var(--primary-color) 12%, var(--bg-secondary-color));
 
         .cloud-drive-files__grid-check {
+          opacity: 1;
+        }
+
+        .cloud-drive-files__grid-more {
           opacity: 1;
         }
       }
@@ -1500,6 +1519,21 @@
 
       :deep(.n-checkbox) {
         display: inline-flex;
+      }
+    }
+
+    &__grid-more {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+
+      :deep(.n-button) {
+        width: 24px;
+        height: 24px;
+        padding: 0;
       }
     }
 

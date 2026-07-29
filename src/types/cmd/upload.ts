@@ -1,4 +1,4 @@
-export interface UploadFileChunksParam {
+export interface FileChunkUploadParam {
   filePath: string
   fileName: string
   baseUrl: string
@@ -6,6 +6,11 @@ export interface UploadFileChunksParam {
   lang: string
   chunkSize?: number
   tempFile?: boolean
+  chunkUploadUrl?: string
+  mergeUrl?: string
+  successCode?: number
+  skipChunks?: number[]
+  mergeExtra?: Record<string, unknown>
 }
 
 export interface UploadFileProgressPayload {

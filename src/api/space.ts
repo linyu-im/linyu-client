@@ -1,11 +1,11 @@
 import type {
   SpaceUserDirCreateParam,
+  SpaceUserFileCategoryStat,
   SpaceUserFileDeleteParam,
   SpaceUserFileListParam,
   SpaceFile,
   SpaceUserInfoResult
 } from '@/types/api/space'
-
 import { type ApiResponse, post } from '@/utils/network/http'
 
 export function getUserInfo(): Promise<ApiResponse<SpaceUserInfoResult>> {
@@ -22,4 +22,8 @@ export function createSpaceUserDir(data: SpaceUserDirCreateParam): Promise<ApiRe
 
 export function deleteSpaceUserFile(data: SpaceUserFileDeleteParam): Promise<ApiResponse<void>> {
   return post<void, SpaceUserFileDeleteParam>('/api/cloud-drive/v1/space/user/file/delete', data)
+}
+
+export function getSpaceUserFileCategoryStats(): Promise<ApiResponse<SpaceUserFileCategoryStat[]>> {
+  return post<SpaceUserFileCategoryStat[], void>('/api/cloud-drive/v1/space/user/file/category/stats')
 }
