@@ -28,7 +28,8 @@
                 :storage-used="storageUsed"
                 :storage-total="storageTotal"
                 :storage-percent="storagePercent"
-                @deleted="fetchUserSpace" />
+                @deleted="fetchUserSpace"
+                @uploaded="fetchUserSpace" />
             </div>
           </div>
         </div>

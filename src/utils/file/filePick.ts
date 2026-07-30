@@ -34,18 +34,45 @@ const guessMimeFromName = (name: string) => {
   return MIME_BY_EXT[ext] ?? 'application/octet-stream'
 }
 
+/** 网盘上传专用：规范化可能来自 SQLite/IPC 的 size */
+export const normalizeFileSize = (value: unknown): number => {
+  if (typeof value === 'bigint') {
+    const asNumber = Number(value)
+    return Number.isSafeInteger(asNumber) && asNumber >= 0 ? asNumber : 0
+  }
+  if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+    return Math.trunc(value)
+  }
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed) && parsed >= 0) return Math.trunc(parsed)
+  }
+  return 0
+}
+
 export const readPathAsFile = async (path: string) => {
   const fileStat = await stat(path)
   const name = getFileNameFromPath(path)
   const type = guessMimeFromName(name)
   const file = new File([], name, { type })
   Object.defineProperty(file, FILE_PATH_KEY, { value: path, enumerable: false })
-  Object.defineProperty(file, FILE_SIZE_KEY, { value: fileStat.size ?? 0, enumerable: false })
+  Object.defineProperty(file, FILE_SIZE_KEY, {
+    value: typeof fileStat.size === 'number' ? fileStat.size : normalizeFileSize(fileStat.size),
+    enumerable: false
+  })
   return file
 }
 
-export const getFilePath = (file: File): string | undefined => (file as any)[FILE_PATH_KEY]
+export const getFilePath = (file: File): string | undefined => {
+  const custom = (file as any)[FILE_PATH_KEY]
+  if (typeof custom === 'string' && custom) return custom
+  // Tauri / WebView 拖入的 File 通常带有本地 path
+  const tauriPath = (file as any).path
+  if (typeof tauriPath === 'string' && tauriPath) return tauriPath
+  return undefined
+}
 
+/** 保持原语义：优先自定义元数据，否则用 File.size（消息编辑器依赖此行为） */
 export const getFileSize = (file: File): number => {
   const metadataSize = (file as any)[FILE_SIZE_KEY]
   if (typeof metadataSize === 'number' && Number.isFinite(metadataSize) && metadataSize >= 0) {
@@ -53,6 +80,9 @@ export const getFileSize = (file: File): number => {
   }
   return file.size
 }
+
+/** 网盘上传：从磁盘读取真实大小 */
+export const statFileSize = (filePath: string) => stat(filePath).then((info) => normalizeFileSize(info.size))
 
 interface PickFilesOptions {
   title: string

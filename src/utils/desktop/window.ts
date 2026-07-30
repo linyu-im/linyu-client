@@ -19,8 +19,8 @@ const defaultOptions = {
   closeWindow: null as string | null,
   skipTaskbar: false,
   decorations: false,
-  // 关闭 Tauri 原生拖拽处理，否则系统层会拦截 OS 级 file drop，WebView 里的 HTML5
-  // dragover / drop 事件根本收不到，富文本编辑器拖入图片 / 文件就没反应。
+  // 关闭 Tauri 原生拖放后，HTML5 drop 才能收到 OS 文件，但拿不到本地路径（只能读 File 内容）。
+  // 需要本地路径的窗口（home / 独立会话）请显式 dragDropEnabled: true，并用 listenOsFileDrop。
   dragDropEnabled: false,
   center: true,
   url: null as string | null
@@ -145,7 +145,12 @@ export const createHomeWinodw = () =>
     minWidth: 800,
     minHeight: 600,
     resizable: true,
-    transparent: true
+    transparent: true,
+    // Windows WebView2 只有在创建时可见，才会注册原生文件 DropTarget。
+    // 动态窗口先 hidden 再 show 会永久显示禁止拖放（tauri#14643）。
+    visible: true,
+    // 网盘/消息大文件拖入必须拿本地路径（onDragDropEvent.paths）
+    dragDropEnabled: true
   })
 
 export const createEmotionWinodw = () =>
@@ -259,7 +264,9 @@ export const createChatSessionWindow = (chat: { id: string; peerName?: string; p
     minWidth: 520,
     minHeight: 480,
     resizable: true,
-    transparent: true
+    transparent: true,
+    visible: true,
+    dragDropEnabled: true
   })
 }
 

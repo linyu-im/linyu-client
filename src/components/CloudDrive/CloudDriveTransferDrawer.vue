@@ -45,7 +45,10 @@
             </svg>
             <span>{{ t('drive.transfer.uploadingCount', { count: uploadingItems.length }) }}</span>
           </div>
-          <div class="cloud-drive-transfer__list">
+          <div v-if="uploadingItems.length === 0" class="cloud-drive-transfer__empty">
+            {{ t('drive.transfer.emptyUploading') }}
+          </div>
+          <div v-else class="cloud-drive-transfer__list">
             <div v-for="item in uploadingItems" :key="item.id" class="cloud-drive-transfer__item">
               <span class="cloud-drive-transfer__file-icon">
                 <img class="cloud-drive-transfer__file-icon-img" :src="item.icon" :alt="item.name" draggable="false" />
@@ -54,12 +57,31 @@
                 <div class="cloud-drive-transfer__item-top">
                   <span class="cloud-drive-transfer__file-name" :title="item.name">{{ item.name }}</span>
                   <div class="cloud-drive-transfer__item-actions">
-                    <button type="button" class="cloud-drive-transfer__icon-btn" :title="t('drive.transfer.pause')">
+                    <button
+                      v-if="item.canResume"
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.resume')"
+                      @click="onResume(item.id)">
+                      <svg class="size-14px" aria-hidden="true">
+                        <use href="#play"></use>
+                      </svg>
+                    </button>
+                    <button
+                      v-else-if="item.canPause"
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.pause')"
+                      @click="onPause(item.id)">
                       <svg class="size-14px" aria-hidden="true">
                         <use href="#pause"></use>
                       </svg>
                     </button>
-                    <button type="button" class="cloud-drive-transfer__icon-btn" :title="t('drive.transfer.cancel')">
+                    <button
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.cancel')"
+                      @click="onCancel(item.id)">
                       <svg class="size-14px" aria-hidden="true">
                         <use href="#close"></use>
                       </svg>
@@ -67,6 +89,7 @@
                   </div>
                 </div>
                 <div class="cloud-drive-transfer__file-path" :title="item.path">{{ item.path }}</div>
+                <div v-if="item.statusText" class="cloud-drive-transfer__status-text">{{ item.statusText }}</div>
                 <div class="cloud-drive-transfer__progress-row">
                   <n-progress
                     class="cloud-drive-transfer__progress"
@@ -75,11 +98,12 @@
                     :show-indicator="false"
                     :height="4"
                     :border-radius="2"
+                    :status="item.failed ? 'error' : 'default'"
                     color="var(--primary-color)" />
                   <div class="cloud-drive-transfer__progress-meta">
                     <span class="cloud-drive-transfer__percent">{{ item.percent }}%</span>
                     <span class="cloud-drive-transfer__speed">{{ item.speed }}</span>
-                    <span class="cloud-drive-transfer__remain">
+                    <span v-if="item.remain" class="cloud-drive-transfer__remain">
                       {{ t('drive.transfer.remain', { time: item.remain }) }}
                     </span>
                   </div>
@@ -96,7 +120,10 @@
             </svg>
             <span>{{ t('drive.transfer.downloadingCount', { count: downloadingItems.length }) }}</span>
           </div>
-          <div class="cloud-drive-transfer__list">
+          <div v-if="downloadingItems.length === 0" class="cloud-drive-transfer__empty">
+            {{ t('drive.transfer.emptyDownloading') }}
+          </div>
+          <div v-else class="cloud-drive-transfer__list">
             <div v-for="item in downloadingItems" :key="item.id" class="cloud-drive-transfer__item">
               <span class="cloud-drive-transfer__file-icon">
                 <img class="cloud-drive-transfer__file-icon-img" :src="item.icon" :alt="item.name" draggable="false" />
@@ -158,11 +185,18 @@
             </span>
           </div>
 
+          <div
+            v-if="completedUploads.length === 0 && completedDownloads.length === 0"
+            class="cloud-drive-transfer__empty">
+            {{ t('drive.transfer.emptyCompleted') }}
+          </div>
+
           <n-collapse
+            v-else
             class="cloud-drive-transfer__collapse"
             :default-expanded-names="['upload', 'download']"
             display-directive="show">
-            <n-collapse-item name="upload">
+            <n-collapse-item v-if="completedUploads.length > 0" name="upload">
               <template #header>
                 <span class="cloud-drive-transfer__section-title">
                   {{ t('drive.transfer.completedUploadSection', { count: completedUploads.length }) }}
@@ -189,7 +223,15 @@
                     <svg class="size-12px" aria-hidden="true">
                       <use href="#cloud"></use>
                     </svg>
-                    <span>{{ t('drive.transfer.uploadDone') }}</span>
+                    <span>
+                      {{
+                        item.cancelled
+                          ? t('drive.transfer.status.cancelled')
+                          : item.instant
+                            ? t('drive.transfer.uploadInstant')
+                            : t('drive.transfer.uploadDone')
+                      }}
+                    </span>
                   </div>
                 </div>
                 <span class="cloud-drive-transfer__done-check" aria-hidden="true">
@@ -200,7 +242,7 @@
               </div>
             </n-collapse-item>
 
-            <n-collapse-item name="download">
+            <n-collapse-item v-if="completedDownloads.length > 0" name="download">
               <template #header>
                 <span class="cloud-drive-transfer__section-title">
                   {{ t('drive.transfer.completedDownloadSection', { count: completedDownloads.length }) }}
@@ -250,22 +292,24 @@
                 {{ t('drive.transfer.settings.uploadParallel') }}
               </span>
               <n-select
-                v-model:value="uploadParallel"
+                :value="uploadParallel"
                 class="cloud-drive-transfer__settings-select"
                 size="small"
                 :options="parallelOptions"
-                :placeholder="t('drive.transfer.settings.selectPlaceholder')" />
+                :placeholder="t('drive.transfer.settings.selectPlaceholder')"
+                @update:value="onUploadParallelChange" />
             </div>
             <div class="cloud-drive-transfer__settings-field">
               <span class="cloud-drive-transfer__settings-field-label">
                 {{ t('drive.transfer.settings.downloadParallel') }}
               </span>
               <n-select
-                v-model:value="downloadParallel"
+                :value="downloadParallel"
                 class="cloud-drive-transfer__settings-select"
                 size="small"
                 :options="parallelOptions"
-                :placeholder="t('drive.transfer.settings.selectPlaceholder')" />
+                :placeholder="t('drive.transfer.settings.selectPlaceholder')"
+                @update:value="onDownloadParallelChange" />
               <span class="cloud-drive-transfer__settings-tip">{{ t('drive.transfer.settings.smartRecommend') }}</span>
             </div>
           </div>
@@ -276,15 +320,19 @@
           <div class="cloud-drive-transfer__settings-fields cloud-drive-transfer__settings-fields--column">
             <div class="cloud-drive-transfer__settings-path-row">
               <n-input
-                v-model:value="downloadPath"
+                :value="downloadPath"
                 class="cloud-drive-transfer__settings-path"
                 size="small"
-                :placeholder="t('drive.transfer.settings.pathPlaceholder')" />
+                :placeholder="t('drive.transfer.settings.pathPlaceholder')"
+                @update:value="onDownloadPathChange" />
               <button type="button" class="cloud-drive-transfer__settings-browse" @click="browseDownloadPath">
                 {{ t('drive.transfer.settings.browse') }}
               </button>
             </div>
-            <n-checkbox v-model:checked="useDefaultDownloadPath" class="cloud-drive-transfer__settings-checkbox">
+            <n-checkbox
+              :checked="useDefaultDownloadPath"
+              class="cloud-drive-transfer__settings-checkbox"
+              @update:checked="onUseDefaultDownloadPathChange">
               {{ t('drive.transfer.settings.setDefaultPath') }}
             </n-checkbox>
           </div>
@@ -299,7 +347,11 @@
             </svg>
             <span>{{ t('drive.transfer.settings.entry') }}</span>
           </button>
-          <button type="button" class="cloud-drive-transfer__footer-btn">
+          <button
+            v-if="activeTab === 'uploading'"
+            type="button"
+            class="cloud-drive-transfer__footer-btn"
+            @click="onPauseAll">
             {{ t('drive.transfer.pauseAll') }}
           </button>
         </div>
@@ -308,9 +360,9 @@
             <svg class="size-14px cloud-drive-transfer__footer-icon" aria-hidden="true">
               <use href="#clock"></use>
             </svg>
-            <span>{{ t('drive.transfer.recordKeepDays', { days: 30 }) }}</span>
+            <span>{{ t('drive.transfer.recordKeepDays', { days: recordKeepDays }) }}</span>
           </div>
-          <button type="button" class="cloud-drive-transfer__footer-btn">
+          <button type="button" class="cloud-drive-transfer__footer-btn" @click="onClearCompleted">
             {{ t('drive.transfer.clearCompleted') }}
           </button>
         </div>
@@ -320,9 +372,24 @@
 </template>
 
 <script setup lang="ts">
-  import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
+  import {
+    SPACE_UPLOAD_RECORD_KEEP_DAYS,
+    useSpaceUploadStore,
+    type SpaceUploadTask
+  } from '@/stores/cloudDrive/spaceUpload'
+  import { useUserStore } from '@/stores/user/user'
+  import { getDriveListFileIconUrl } from '@/utils/file/fileIcon'
+  import {
+    cancelSpaceUpload,
+    clearCompletedSpaceUploads,
+    initSpaceUploadManager,
+    pauseAllSpaceUploads,
+    pauseSpaceUpload,
+    resumeSpaceUpload
+  } from '@/utils/file/spaceUploadManager'
   import { open } from '@tauri-apps/plugin-dialog'
   import type { SelectOption } from 'naive-ui'
+  import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
 
   type TransferTab = 'uploading' | 'downloading' | 'completed'
@@ -336,6 +403,10 @@
     percent: number
     speed: string
     remain: string
+    canPause: boolean
+    canResume: boolean
+    failed: boolean
+    statusText: string
   }
 
   interface TransferDoneItem {
@@ -345,6 +416,8 @@
     icon: string
     size: string
     time: string
+    instant: boolean
+    cancelled: boolean
   }
 
   interface Props {
@@ -358,13 +431,14 @@
   }>()
 
   const { t } = useI18n()
+  const userStore = useUserStore()
+  const spaceUploadStore = useSpaceUploadStore()
+  const { tasks, uploadParallel, downloadParallel, downloadPath, useDefaultDownloadPath } =
+    storeToRefs(spaceUploadStore)
 
   const panelView = ref<PanelView>('list')
   const activeTab = ref<TransferTab>('uploading')
-  const uploadParallel = ref<string | number>('smart')
-  const downloadParallel = ref<string | number>('smart')
-  const downloadPath = ref('E:\\BaiduNetdiskDownload')
-  const useDefaultDownloadPath = ref(true)
+  const recordKeepDays = SPACE_UPLOAD_RECORD_KEEP_DAYS
 
   const drawerWidth = computed(() => (panelView.value === 'settings' ? 720 : 420))
 
@@ -379,135 +453,148 @@
     ...[1, 2, 3, 4, 5, 6, 8, 10].map((value) => ({ label: String(value), value }))
   ])
 
-  const uploadingItems = ref<TransferProgressItem[]>([
-    {
-      id: 'u1',
-      name: '产品设计稿',
-      path: '/我的云盘/工作资料/设计/',
-      icon: getFolderIconUrl(),
-      percent: 68,
-      speed: '2.1 MB/s',
-      remain: '12s'
-    },
-    {
-      id: 'u2',
-      name: '团队合影.jpg',
-      path: '/我的云盘/照片/',
-      icon: getDriveListFileIconUrl('团队合影.jpg'),
-      percent: 42,
-      speed: '1.4 MB/s',
-      remain: '28s'
-    },
-    {
-      id: 'u3',
-      name: '宣传片.mp4',
-      path: '/我的云盘/视频/',
-      icon: getDriveListFileIconUrl('宣传片.mp4'),
-      percent: 23,
-      speed: '3.6 MB/s',
-      remain: '1m 05s'
-    },
-    {
-      id: 'u4',
-      name: '需求文档.docx',
-      path: '/我的云盘/工作资料/',
-      icon: getDriveListFileIconUrl('需求文档.docx'),
-      percent: 91,
-      speed: '860 KB/s',
-      remain: '3s'
-    }
-  ])
+  const formatBytes = (bytes: number) => {
+    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    if (bytes < 1024 * 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
+    return `${(bytes / 1024 / 1024 / 1024 / 1024).toFixed(1)} TB`
+  }
 
-  const downloadingItems = ref<TransferProgressItem[]>([
-    {
-      id: 'd1',
-      name: '团队合影.jpg',
-      path: '我的云盘/照片',
-      icon: getDriveListFileIconUrl('团队合影.jpg'),
-      percent: 68,
-      speed: '3.2 MB/s',
-      remain: '12s'
-    },
-    {
-      id: 'd2',
-      name: '素材包.zip',
-      path: '我的云盘/资源',
-      icon: getDriveListFileIconUrl('素材包.zip'),
-      percent: 35,
-      speed: '4.8 MB/s',
-      remain: '41s'
-    },
-    {
-      id: 'd3',
-      name: '演示视频.mp4',
-      path: '我的云盘/视频',
-      icon: getDriveListFileIconUrl('演示视频.mp4'),
-      percent: 12,
-      speed: '2.6 MB/s',
-      remain: '2m 18s'
-    }
-  ])
+  const formatSpeed = (bps: number) => {
+    if (!Number.isFinite(bps) || bps <= 0) return ''
+    return `${formatBytes(bps)}/s`
+  }
 
-  const completedUploads = ref<TransferDoneItem[]>([
-    {
-      id: 'cu1',
-      name: '项目计划书.docx',
-      path: '/我的云盘/工作资料',
-      icon: getDriveListFileIconUrl('项目计划书.docx'),
-      size: '1.8 MB',
-      time: '17:32'
-    },
-    {
-      id: 'cu2',
-      name: '季度汇报.pptx',
-      path: '/我的云盘/工作资料',
-      icon: getDriveListFileIconUrl('季度汇报.pptx'),
-      size: '6.2 MB',
-      time: '16:48'
-    },
-    {
-      id: 'cu3',
-      name: '设计素材.zip',
-      path: '/我的云盘/资源',
-      icon: getDriveListFileIconUrl('设计素材.zip'),
-      size: '28.4 MB',
-      time: '15:20'
-    }
-  ])
+  const formatRemain = (task: SpaceUploadTask) => {
+    if (!['uploading'].includes(task.status) || task.speedBps <= 0 || task.progress >= 100) return ''
+    const remainBytes = Math.max(0, task.fileSize * (1 - task.progress / 100))
+    const seconds = Math.ceil(remainBytes / task.speedBps)
+    if (seconds < 60) return `${seconds}s`
+    const minutes = Math.floor(seconds / 60)
+    const rest = seconds % 60
+    if (minutes < 60) return `${minutes}m ${String(rest).padStart(2, '0')}s`
+    const hours = Math.floor(minutes / 60)
+    return `${hours}h ${String(minutes % 60).padStart(2, '0')}m`
+  }
 
-  const completedDownloads = ref<TransferDoneItem[]>([
-    {
-      id: 'cd1',
-      name: '数据报表.xlsx',
-      path: '/我的云盘/工作资料',
-      icon: getDriveListFileIconUrl('数据报表.xlsx'),
-      size: '940 KB',
-      time: '17:10'
-    },
-    {
-      id: 'cd2',
-      name: '产品演示.mp4',
-      path: '/我的云盘/视频',
-      icon: getDriveListFileIconUrl('产品演示.mp4'),
-      size: '126 MB',
-      time: '14:55'
-    },
-    {
-      id: 'cd3',
-      name: '说明书.pdf',
-      path: '/我的云盘/文档',
-      icon: getDriveListFileIconUrl('说明书.pdf'),
-      size: '3.1 MB',
-      time: '21:06'
+  const formatDoneTime = (iso: string) => {
+    if (!iso) return ''
+    const date = new Date(iso)
+    if (Number.isNaN(date.getTime())) return ''
+    const pad = (value: number) => String(value).padStart(2, '0')
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  }
+
+  const resolveErrorText = (task: SpaceUploadTask) => {
+    if (!task.errorMsg) return ''
+    if (task.errorMsg === 'file missing' || task.errorMsg === 'FILE_MISSING') {
+      return t('drive.transfer.errors.fileMissing')
     }
-  ])
+    if (task.errorMsg === 'invalid file size' || task.errorMsg === 'INVALID_FILE_SIZE') {
+      return t('drive.transfer.errors.invalidFileSize')
+    }
+    if (task.errorMsg === 'check upload failed' || task.errorMsg === 'CHECK_FAILED') {
+      return t('drive.transfer.errors.checkFailed')
+    }
+    if (task.errorMsg === 'UPLOAD_FAILED') return t('drive.transfer.errors.uploadFailed')
+    return task.errorMsg
+  }
+
+  const resolveStatusText = (task: SpaceUploadTask) => {
+    if (task.status === 'failed') return resolveErrorText(task) || t('drive.transfer.status.failed')
+    if (task.status === 'paused') return t('drive.transfer.status.paused')
+    if (task.status === 'pending') return t('drive.transfer.status.pending')
+    if (task.status === 'hashing') return t('drive.transfer.status.hashing')
+    if (task.status === 'checking') return t('drive.transfer.status.checking')
+    return ''
+  }
+
+  const ACTIVE_UPLOAD_STATUSES = new Set(['pending', 'hashing', 'checking', 'uploading', 'paused', 'failed'])
+
+  const uploadingItems = computed<TransferProgressItem[]>(() =>
+    tasks.value
+      .filter((task) => ACTIVE_UPLOAD_STATUSES.has(task.status))
+      .map((task) => ({
+        id: task.id,
+        name: task.fileName,
+        path: task.parentPath,
+        icon: getDriveListFileIconUrl(task.fileName),
+        percent: task.progress,
+        speed: task.status === 'uploading' ? formatSpeed(task.speedBps) : '',
+        remain: formatRemain(task),
+        canPause: ['pending', 'hashing', 'checking', 'uploading'].includes(task.status),
+        canResume: ['paused', 'failed'].includes(task.status),
+        failed: task.status === 'failed',
+        statusText: resolveStatusText(task)
+      }))
+  )
+
+  const downloadingItems = computed<TransferProgressItem[]>(() => [])
+
+  const completedUploads = computed<TransferDoneItem[]>(() =>
+    tasks.value
+      .filter((task) => task.status === 'completed' || task.status === 'cancelled')
+      .map((task) => ({
+        id: task.id,
+        name: task.fileName,
+        path: task.parentPath,
+        icon: getDriveListFileIconUrl(task.fileName),
+        size: formatBytes(task.fileSize),
+        time: formatDoneTime(task.completedAt || task.updatedAt),
+        instant: task.instantUpload,
+        cancelled: task.status === 'cancelled'
+      }))
+  )
+
+  const completedDownloads = computed<TransferDoneItem[]>(() => [])
 
   const onUpdateShow = (value: boolean) => {
     emit('update:show', value)
+    spaceUploadStore.setTransferDrawerVisible(value)
   }
 
   const close = () => {
-    emit('update:show', false)
+    onUpdateShow(false)
+  }
+
+  const onPause = (id: string) => {
+    pauseSpaceUpload(id)
+  }
+
+  const onResume = (id: string) => {
+    resumeSpaceUpload(id)
+  }
+
+  const onCancel = (id: string) => {
+    cancelSpaceUpload(id)
+  }
+
+  const onPauseAll = () => {
+    pauseAllSpaceUploads()
+  }
+
+  const onClearCompleted = () => {
+    clearCompletedSpaceUploads()
+  }
+
+  const onUploadParallelChange = (value: string | number | null) => {
+    if (value === null) return
+    spaceUploadStore.setUploadParallel(value === 'smart' ? 'smart' : Number(value))
+  }
+
+  const onDownloadParallelChange = (value: string | number | null) => {
+    if (value === null) return
+    spaceUploadStore.setDownloadParallel(value === 'smart' ? 'smart' : Number(value))
+  }
+
+  const onDownloadPathChange = (value: string) => {
+    spaceUploadStore.setDownloadPath(value)
+  }
+
+  const onUseDefaultDownloadPathChange = (value: boolean) => {
+    spaceUploadStore.setUseDefaultDownloadPath(value)
   }
 
   const browseDownloadPath = () => {
@@ -518,7 +605,7 @@
       defaultPath: downloadPath.value || undefined
     }).then((selected) => {
       if (typeof selected === 'string' && selected) {
-        downloadPath.value = selected
+        spaceUploadStore.setDownloadPath(selected)
       }
     })
   }
@@ -527,7 +614,16 @@
     () => props.show,
     (show) => {
       if (!show) panelView.value = 'list'
+      else initSpaceUploadManager(userStore.authInfo.userId)
     }
+  )
+
+  watch(
+    () => userStore.authInfo.userId,
+    (userId) => {
+      if (userId) initSpaceUploadManager(userId)
+    },
+    { immediate: true }
   )
 </script>
 
@@ -650,6 +746,24 @@
       min-height: 0;
       overflow: auto;
       padding-right: 2px;
+    }
+
+    &__empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-height: 120px;
+      font-size: 13px;
+      color: var(--text-secondary-color);
+      user-select: none;
+    }
+
+    &__status-text {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-secondary-color);
+      user-select: none;
     }
 
     &__item,

@@ -552,7 +552,8 @@
       "upload": "上传",
       "newFolder": "新建文件夹",
       "hintUpload": "点击 {upload} 或拖拽文件至此处添加本地文件",
-      "hintFolder": "或者点击 {newFolder}"
+      "hintFolder": "或者点击 {newFolder}",
+      "dragDropHint": "松开以上传文件"
     },
     "categories": {
       "images": "图片",
@@ -608,12 +609,34 @@
       "from": "来自：{path}",
       "remain": "剩余 {time}",
       "pause": "暂停",
+      "resume": "继续",
       "cancel": "取消",
       "pauseAll": "全部暂停",
       "uploadDone": "上传完成",
+      "uploadInstant": "秒传完成",
       "downloadDone": "下载完成",
       "recordKeepDays": "传输记录已保留 {days} 天",
       "clearCompleted": "清空已完成",
+      "emptyUploading": "暂无上传任务",
+      "emptyDownloading": "暂无下载任务",
+      "emptyCompleted": "暂无已完成记录",
+      "status": {
+        "pending": "等待中",
+        "hashing": "校验中",
+        "checking": "检查中",
+        "uploading": "上传中",
+        "paused": "已暂停",
+        "failed": "上传失败",
+        "cancelled": "已取消"
+      },
+      "errors": {
+        "fileMissing": "本地文件不存在，无法继续上传",
+        "checkFailed": "上传检查失败",
+        "uploadFailed": "上传失败",
+        "invalidFileSize": "文件大小无效，无法上传空文件",
+        "skipEmptyFiles": "已跳过大小为 0 的文件"
+      },
+      "pickTitle": "选择要上传的文件",
       "settings": {
         "entry": "设置",
         "title": "传输设置",

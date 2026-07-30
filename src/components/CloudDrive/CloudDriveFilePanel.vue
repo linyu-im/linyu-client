@@ -45,7 +45,10 @@
           </template>
         </nav>
         <div class="cloud-drive-files__toolbar">
-          <button type="button" class="cloud-drive-files__action-btn cloud-drive-files__action-btn--primary">
+          <button
+            type="button"
+            class="cloud-drive-files__action-btn cloud-drive-files__action-btn--primary"
+            @click="pickAndUploadFiles">
             <svg class="cloud-drive-files__action-btn-icon" aria-hidden="true">
               <use href="#plus"></use>
             </svg>
@@ -107,7 +110,7 @@
         </div>
       </div>
 
-      <div class="cloud-drive-files__table-wrap">
+      <div ref="dropZoneRef" class="cloud-drive-files__table-wrap" :class="{ 'is-dragover': isDragOver }">
         <n-spin :show="filesLoading" class="cloud-drive-files__spin">
           <div v-if="showFilesEmpty" class="cloud-drive-files__empty">
             <div class="cloud-drive-files__empty-text">
@@ -129,7 +132,10 @@
                 @click="startCreateFolder">
                 {{ t('drive.actions.newFolder') }}
               </button>
-              <button type="button" class="cloud-drive-files__empty-btn cloud-drive-files__empty-btn--upload">
+              <button
+                type="button"
+                class="cloud-drive-files__empty-btn cloud-drive-files__empty-btn--upload"
+                @click="pickAndUploadFiles">
                 {{ t('drive.actions.upload') }}
               </button>
             </div>
@@ -346,6 +352,7 @@
             </div>
           </div>
         </n-spin>
+        <div v-show="isDragOver" class="cloud-drive-files__dragmask">{{ t('drive.empty.dragDropHint') }}</div>
       </div>
     </div>
   </section>
@@ -356,10 +363,15 @@
   import CloudDriveCategories from '@/components/CloudDrive/CloudDriveCategories.vue'
   import CloudDriveHeader from '@/components/CloudDrive/CloudDriveHeader.vue'
   import { SpaceRootParentId } from '@/constants/space'
+  import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { useUserStore } from '@/stores/user/user'
-  import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
   import type { SpaceFile } from '@/types/api/space'
+  import { getFilePath, getFileSize, pickFiles, readPathAsFile } from '@/utils/file/filePick'
+  import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
+  import { filterExistingFilePaths, listenOsFileDrop } from '@/utils/file/nativeFileDrop'
+  import { enqueueSpaceUploads, initSpaceUploadManager } from '@/utils/file/spaceUploadManager'
   import type { DropdownOption } from 'naive-ui'
+  import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
 
   type ViewMode = 'list' | 'grid'
@@ -404,9 +416,12 @@
   const { t } = useI18n()
   const dialog = useDialog()
   const userStore = useUserStore()
+  const spaceUploadStore = useSpaceUploadStore()
+  const { completedVersion } = storeToRefs(spaceUploadStore)
 
   const emit = defineEmits<{
     deleted: []
+    uploaded: []
   }>()
 
   const viewMode = ref<ViewMode>('list')
@@ -796,13 +811,135 @@
     })
   }
 
+  const buildUploadParentPath = () => {
+    const labels = pathSegments.value.map((segment) => segment.label)
+    return `/${labels.join('/')}`
+  }
+
+  const resolveUploadFile = (file: File) => {
+    const existingPath = getFilePath(file)
+    if (!existingPath) {
+      return Promise.reject(new Error('MISSING_FILE_PATH'))
+    }
+    return Promise.resolve({
+      filePath: existingPath,
+      fileName: file.name,
+      fileSize: getFileSize(file)
+    })
+  }
+
+  const uploadLocalFiles = (files: File[]) => {
+    if (!files.length) return
+
+    Promise.all(files.map((file) => resolveUploadFile(file)))
+      .then((uploadFiles) => {
+        const validFiles = uploadFiles.filter((item) => item.fileSize > 0)
+        if (!validFiles.length) {
+          window.$message.error(t('drive.transfer.errors.invalidFileSize'))
+          return
+        }
+        if (validFiles.length < uploadFiles.length) {
+          window.$message.warning(t('drive.transfer.errors.skipEmptyFiles'))
+        }
+
+        enqueueSpaceUploads({
+          parentId: currentFolderId.value,
+          parentPath: buildUploadParentPath(),
+          files: validFiles
+        }).then(() => {
+          spaceUploadStore.setTransferDrawerVisible(true)
+        })
+      })
+      .catch(() => {
+        window.$message.error(t('drive.transfer.errors.uploadFailed'))
+      })
+  }
+
+  /** OS 原生拖放：直接使用本地绝对路径，与选文件按钮同一条上传链路 */
+  const uploadLocalPaths = (paths: string[]) => {
+    if (!paths.length) return
+    filterExistingFilePaths(paths)
+      .then((filePaths) => {
+        if (!filePaths.length) {
+          window.$message.error(t('drive.transfer.errors.invalidFileSize'))
+          return
+        }
+        return Promise.all(filePaths.map((path) => readPathAsFile(path))).then((files) => {
+          uploadLocalFiles(files)
+        })
+      })
+      .catch(() => {
+        window.$message.error(t('drive.transfer.errors.uploadFailed'))
+      })
+  }
+
+  const pickAndUploadFiles = () => {
+    pickFiles({
+      title: t('drive.transfer.pickTitle'),
+      multiple: true
+    }).then((files) => {
+      uploadLocalFiles(files)
+    })
+  }
+
+  const dropZoneRef = ref<HTMLElement | null>(null)
+  const isDragOver = ref(false)
+  let unbindOsDrop: (() => void) | null = null
+  let osDropDisposed = false
+
+  // setup 阶段立即开始注册原生事件，避免等到 mounted 后才进行多次 IPC 监听注册
+  listenOsFileDrop({
+    getTarget: () => dropZoneRef.value,
+    // 网盘页激活即接收（keep-alive 失活时 isConnected=false），避免 DPI 坐标误判丢文件
+    requireHitTest: false,
+    onEnter: () => {
+      isDragOver.value = true
+    },
+    onOver: () => {
+      isDragOver.value = true
+    },
+    onLeave: () => {
+      isDragOver.value = false
+    },
+    onDrop: (paths) => {
+      isDragOver.value = false
+      uploadLocalPaths(paths)
+    }
+  }).then((unlisten) => {
+    if (osDropDisposed) {
+      unlisten()
+      return
+    }
+    unbindOsDrop = unlisten
+  })
+
   defineExpose({
     resetToRoot,
     refresh
   })
 
+  watch(completedVersion, () => {
+    fetchFileList(currentFolderId.value)
+    categoriesRef.value?.refresh()
+    emit('uploaded')
+  })
+
+  watch(
+    () => userStore.authInfo.userId,
+    (userId) => {
+      if (userId) initSpaceUploadManager(userId)
+    },
+    { immediate: true }
+  )
+
   onMounted(() => {
     fetchFileList(SpaceRootParentId)
+  })
+
+  onBeforeUnmount(() => {
+    osDropDisposed = true
+    unbindOsDrop?.()
+    unbindOsDrop = null
   })
 
   onActivated(() => {
@@ -1129,6 +1266,7 @@
     }
 
     &__table-wrap {
+      position: relative;
       flex: 1 1 0;
       height: 0;
       min-height: 0;
@@ -1136,6 +1274,11 @@
       border-radius: 10px;
       overflow-y: auto;
       overflow-x: auto;
+
+      &.is-dragover {
+        border-color: var(--primary-color);
+        background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+      }
 
       &::-webkit-scrollbar {
         width: 6px;
@@ -1150,6 +1293,21 @@
       &::-webkit-scrollbar-thumb:hover {
         background: color-mix(in srgb, var(--text-secondary-color) 50%, transparent);
       }
+    }
+
+    &__dragmask {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      font-size: 13px;
+      color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 6%, transparent);
+      border: 1px dashed var(--primary-color);
+      border-radius: 10px;
     }
 
     &__spin {

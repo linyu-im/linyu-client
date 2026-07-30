@@ -146,6 +146,7 @@
     VOICE_RECORD_WARN_REMAINING
   } from '@/composables/useVoiceRecorder'
   import { IMAGE_FILE_EXTENSIONS, pickFiles } from '@/utils/file/filePick'
+  import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { uploadMessageMediaBlob } from '@/utils/message/messageMediaUpload'
   import { resolveMessageStorageRoot, stageSelfSentToStorage } from '@/utils/message/messageFileSave'
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
@@ -175,6 +176,8 @@
   const sendingMessagesStore = useSendingMessagesStore()
   const appSettingsStore = useAppSettingsStore()
   const messageBubbleActions = useMessageBubbleActions()
+
+  initOsFileDropListener().catch(() => undefined)
 
   const PAGE_SIZE = 20
   const pendingNewCount = ref(0)

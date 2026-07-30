@@ -96,6 +96,7 @@
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useHomeTabStore, type HomeTabId } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
+  import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
   import {
     createEmotionWinodw,
@@ -115,6 +116,8 @@
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
   const homeTabStore = useHomeTabStore()
+
+  initOsFileDropListener().catch(() => undefined)
 
   const isMaximize = ref(false)
   const showUpdateModal = ref(false)

@@ -7,11 +7,7 @@
       'is-dragover': isDragOver,
       'message-editor--quote': !!quoteMsg
     }"
-    @click="focus"
-    @dragenter.prevent="onDragEnter"
-    @dragover.prevent="onDragOver"
-    @dragleave.prevent="onDragLeave"
-    @drop.prevent="onDrop">
+    @click="focus">
     <editor-content :editor="editor" class="message-editor__content" />
     <div v-if="quoteMsg" class="message-editor__quote" @mousedown.prevent @click.stop>
       <MessageQuotePreview :message="quoteMsg" />
@@ -25,12 +21,12 @@
         </svg>
       </button>
     </div>
-    <div v-if="isDragOver" class="message-editor__dragmask">{{ t('message.editor.dragDropHint') }}</div>
+    <div v-show="isDragOver" class="message-editor__dragmask">{{ t('message.editor.dragDropHint') }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { convertFileSrc } from '@tauri-apps/api/core'
   import { Editor, EditorContent, mergeAttributes, useEditor } from '@tiptap/vue-3'
@@ -47,6 +43,7 @@
   import type { FromType } from '@/types/common'
   import { isVideoFile } from '@/utils/file/fileIcon'
   import { getFilePath, getFileSize } from '@/utils/file/filePick'
+  import { listenOsFileDrop, readPathsAsFiles } from '@/utils/file/nativeFileDrop'
   import { registerBlobFilePath } from '@/utils/file/blobFilePath'
 
   export type EditorSegment =
@@ -104,7 +101,6 @@
   }>()
 
   const isDragOver = ref(false)
-  const dragCounter = ref(0)
   const blobUrls = shallowRef<Set<string>>(new Set())
   const editorRootRef = ref<HTMLElement | null>(null)
 
@@ -286,31 +282,12 @@
       attributes: {
         class: 'message-editor__prose'
       },
-      handleDOMEvents: {
-        dragover: (_view, event) => {
-          event.preventDefault()
-          if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'
-          return true
-        }
-      },
       handlePaste: (_view, event) => {
         const files = Array.from(event.clipboardData?.files ?? [])
         if (files.length === 0) return false
         event.preventDefault()
         event.stopPropagation()
         files.forEach((file) => insertFileOrImage(file))
-        return true
-      },
-      handleDrop: (_view, event) => {
-        const dt = (event as DragEvent).dataTransfer
-        const files = Array.from(dt?.files ?? [])
-        if (files.length === 0) return false
-        event.preventDefault()
-        event.stopPropagation()
-        isDragOver.value = false
-        dragCounter.value = 0
-        files.forEach((file) => insertFileOrImage(file))
-        restoreFocusAfterDrop()
         return true
       }
     },
@@ -375,27 +352,13 @@
     }
   }
 
-  const onDragEnter = (e: DragEvent) => {
-    if (!hasFiles(e)) return
-    dragCounter.value += 1
-    isDragOver.value = true
-  }
-  const onDragOver = (e: DragEvent) => {
-    e.preventDefault()
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
-  }
-  const onDragLeave = (e: DragEvent) => {
-    if (!hasFiles(e)) return
-    dragCounter.value = Math.max(0, dragCounter.value - 1)
-    if (dragCounter.value === 0) isDragOver.value = false
-  }
-  const onDrop = (e: DragEvent) => {
-    dragCounter.value = 0
-    isDragOver.value = false
-    const files = Array.from(e.dataTransfer?.files ?? [])
-    if (files.length === 0) return
-    files.forEach((file) => insertFileOrImage(file))
-    restoreFocusAfterDrop()
+  /** 只构造带路径和大小元数据的空 File，不读取文件内容，也不创建临时副本 */
+  const insertOsDropPaths = (paths: string[]) => {
+    readPathsAsFiles(paths).then((files) => {
+      if (!files.length) return
+      files.forEach((file) => insertFileOrImage(file))
+      restoreFocusAfterDrop()
+    })
   }
 
   const restoreFocusAfterDrop = () => {
@@ -412,24 +375,32 @@
       }, 50)
     })
   }
-  const hasFiles = (e: DragEvent) => {
-    const types = e.dataTransfer?.types
-    if (!types) return false
-    return Array.from(types).includes('Files')
-  }
+  let unbindOsDrop: (() => void) | null = null
+  let osDropDisposed = false
 
-  let unbindDragCapture: (() => void) | null = null
-
-  onMounted(() => {
-    const root = editorRootRef.value
-    if (!root) return
-    const onCaptureDragOver = (e: DragEvent) => {
-      if (!root.contains(e.target as Node)) return
-      e.preventDefault()
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
+  // setup 阶段订阅窗口级原生拖放单例，避免输入框挂载后再重复注册 IPC 监听
+  listenOsFileDrop({
+    getTarget: () => editorRootRef.value,
+    requireHitTest: true,
+    onEnter: () => {
+      isDragOver.value = true
+    },
+    onOver: () => {
+      isDragOver.value = true
+    },
+    onLeave: () => {
+      isDragOver.value = false
+    },
+    onDrop: (paths) => {
+      isDragOver.value = false
+      insertOsDropPaths(paths)
     }
-    root.addEventListener('dragover', onCaptureDragOver, true)
-    unbindDragCapture = () => root.removeEventListener('dragover', onCaptureDragOver, true)
+  }).then((unlisten) => {
+    if (osDropDisposed) {
+      unlisten()
+      return
+    }
+    unbindOsDrop = unlisten
   })
 
   const handleSubmit = () => {
@@ -496,8 +467,9 @@
 
   onBeforeUnmount(() => {
     revokeBlobs()
-    unbindDragCapture?.()
-    unbindDragCapture = null
+    osDropDisposed = true
+    unbindOsDrop?.()
+    unbindOsDrop = null
   })
 
   defineExpose({
@@ -523,9 +495,6 @@
     border-radius: 5px;
     background: var(--input-soft-bg);
     color: var(--text-color);
-    transition:
-      border-color 0.2s ease,
-      box-shadow 0.2s ease;
     overflow: hidden;
     cursor: text;
     display: flex;

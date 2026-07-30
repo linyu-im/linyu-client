@@ -9,6 +9,7 @@
     "core:default",
     "core:app:allow-set-app-theme",
     "core:app:allow-default-window-icon",
+    "core:event:allow-listen",
     "core:webview:allow-create-webview-window",
     "core:window:allow-hide",
     "core:window:allow-set-focus",

@@ -4,7 +4,7 @@ import { appDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, remove, writeFile } from '@tauri-apps/plugin-fs'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
-import type { FileChunkUploadParam, UploadFileProgressPayload } from '@/types/cmd/upload'
+import type { MessageUploadFileParam, UploadFileProgressPayload } from '@/types/cmd/upload'
 import { getBlobFilePath } from '@/utils/file/blobFilePath'
 
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
@@ -48,21 +48,12 @@ const blobToTempFile = async (blob: Blob, fileName: string): Promise<string> => 
   return tempPath
 }
 
-export interface FileChunkUploadExtra {
-  chunkUploadUrl?: string
-  mergeUrl?: string
-  successCode?: number
-  skipChunks?: number[]
-  chunkSize?: number
-  mergeExtra?: Record<string, unknown>
-}
-
+/** 消息媒体分片上传（命令：upload_file_chunks，与网盘隔离） */
 export const invokeChunkUpload = (
   filePath: string,
   fileName: string,
   options?: MessageMediaUploadOptions,
-  tempFile?: boolean,
-  extra?: FileChunkUploadExtra
+  tempFile?: boolean
 ) => {
   const report = (progress: number) => options?.onProgress?.(clampProgress(progress))
   report(0)
@@ -74,14 +65,13 @@ export const invokeChunkUpload = (
     report(event.payload.progress)
   })
 
-  const param: FileChunkUploadParam = {
+  const param: MessageUploadFileParam = {
     filePath,
     fileName,
     baseUrl: SERVICE_URL,
     authToken: userStore.authInfo.token || '',
     lang: systemSettingStore.preferences.lang || 'zh',
-    tempFile,
-    ...extra
+    tempFile
   }
 
   return invoke<string>('upload_file_chunks', { param })

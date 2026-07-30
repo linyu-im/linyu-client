@@ -25,7 +25,7 @@
           type="button"
           class="cloud-drive-header__transfer-btn"
           :title="t('drive.transfer.title')"
-          @click="transferDrawerShow = true">
+          @click="openTransferDrawer">
           <svg class="size-16px" aria-hidden="true">
             <use href="#list"></use>
           </svg>
@@ -34,12 +34,14 @@
       </div>
     </div>
 
-    <CloudDriveTransferDrawer v-model:show="transferDrawerShow" />
+    <CloudDriveTransferDrawer :show="transferDrawerVisible" @update:show="spaceUploadStore.setTransferDrawerVisible" />
   </header>
 </template>
 
 <script setup lang="ts">
   import CloudDriveTransferDrawer from '@/components/CloudDrive/CloudDriveTransferDrawer.vue'
+  import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
+  import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
 
   interface Props {
@@ -52,7 +54,12 @@
   defineProps<Props>()
 
   const { t } = useI18n()
-  const transferDrawerShow = ref(false)
+  const spaceUploadStore = useSpaceUploadStore()
+  const { transferDrawerVisible } = storeToRefs(spaceUploadStore)
+
+  const openTransferDrawer = () => {
+    spaceUploadStore.setTransferDrawerVisible(true)
+  }
 </script>
 
 <style scoped lang="scss">

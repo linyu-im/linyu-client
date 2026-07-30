@@ -80,6 +80,31 @@ export async function initDatabase(): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS idx_t_message_session_type_created ON t_message(session_id, msg_type, created_at DESC)`
   )
+
+  // 网盘上传记录表（按 user_id 隔离）
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_space_upload (
+      id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      file_path TEXT NOT NULL,
+      file_size INTEGER NOT NULL,
+      file_hash TEXT,
+      parent_id TEXT NOT NULL,
+      parent_path TEXT NOT NULL,
+      status TEXT NOT NULL,
+      progress REAL DEFAULT 0,
+      error_msg TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      completed_at TEXT
+    )
+  `)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_space_upload_user_id ON t_space_upload(user_id)`)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_space_upload_user_status ON t_space_upload(user_id, status)`)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_space_upload_user_created ON t_space_upload(user_id, created_at DESC)`
+  )
 }
 
 /**
@@ -94,3 +119,4 @@ export async function closeDatabase(): Promise<void> {
 
 // 导出所有数据库操作
 export * from './message'
+export * from './spaceUpload'
