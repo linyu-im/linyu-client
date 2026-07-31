@@ -34,7 +34,10 @@
             class="cloud-drive-transfer__tab"
             :class="{ 'cloud-drive-transfer__tab--active': activeTab === tab.key }"
             @click="activeTab = tab.key">
-            {{ t(tab.labelKey) }}
+            <span class="cloud-drive-transfer__tab-label">{{ t(tab.labelKey) }}</span>
+            <span v-if="getTabBadgeCount(tab.key) > 0" class="cloud-drive-transfer__tab-badge">
+              {{ formatBadgeCount(getTabBadgeCount(tab.key)) }}
+            </span>
           </button>
         </div>
 
@@ -132,12 +135,31 @@
                 <div class="cloud-drive-transfer__item-top">
                   <span class="cloud-drive-transfer__file-name" :title="item.name">{{ item.name }}</span>
                   <div class="cloud-drive-transfer__item-actions">
-                    <button type="button" class="cloud-drive-transfer__icon-btn" :title="t('drive.transfer.pause')">
+                    <button
+                      v-if="item.canResume"
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.resume')"
+                      @click="onResumeDownload(item.id)">
+                      <svg class="size-14px" aria-hidden="true">
+                        <use href="#play"></use>
+                      </svg>
+                    </button>
+                    <button
+                      v-else-if="item.canPause"
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.pause')"
+                      @click="onPauseDownload(item.id)">
                       <svg class="size-14px" aria-hidden="true">
                         <use href="#pause"></use>
                       </svg>
                     </button>
-                    <button type="button" class="cloud-drive-transfer__icon-btn" :title="t('drive.transfer.cancel')">
+                    <button
+                      type="button"
+                      class="cloud-drive-transfer__icon-btn"
+                      :title="t('drive.transfer.cancel')"
+                      @click="onCancelDownload(item.id)">
                       <svg class="size-14px" aria-hidden="true">
                         <use href="#close"></use>
                       </svg>
@@ -145,8 +167,9 @@
                   </div>
                 </div>
                 <div class="cloud-drive-transfer__file-path" :title="item.path">
-                  {{ t('drive.transfer.from', { path: item.path }) }}
+                  {{ t('drive.transfer.downloadTo', { path: item.path }) }}
                 </div>
+                <div v-if="item.statusText" class="cloud-drive-transfer__status-text">{{ item.statusText }}</div>
                 <div class="cloud-drive-transfer__progress-row">
                   <n-progress
                     class="cloud-drive-transfer__progress"
@@ -155,11 +178,12 @@
                     :show-indicator="false"
                     :height="4"
                     :border-radius="2"
+                    :status="item.failed ? 'error' : 'default'"
                     color="var(--primary-color)" />
                   <div class="cloud-drive-transfer__progress-meta">
                     <span class="cloud-drive-transfer__percent">{{ item.percent }}%</span>
                     <span class="cloud-drive-transfer__speed">{{ item.speed }}</span>
-                    <span class="cloud-drive-transfer__remain">
+                    <span v-if="item.remain" class="cloud-drive-transfer__remain">
                       {{ t('drive.transfer.remain', { time: item.remain }) }}
                     </span>
                   </div>
@@ -292,7 +316,7 @@
                 {{ t('drive.transfer.settings.uploadParallel') }}
               </span>
               <n-select
-                :value="uploadParallel"
+                :value="uploadParallelLimit"
                 class="cloud-drive-transfer__settings-select"
                 size="small"
                 :options="parallelOptions"
@@ -304,13 +328,12 @@
                 {{ t('drive.transfer.settings.downloadParallel') }}
               </span>
               <n-select
-                :value="downloadParallel"
+                :value="downloadParallelLimit"
                 class="cloud-drive-transfer__settings-select"
                 size="small"
                 :options="parallelOptions"
                 :placeholder="t('drive.transfer.settings.selectPlaceholder')"
                 @update:value="onDownloadParallelChange" />
-              <span class="cloud-drive-transfer__settings-tip">{{ t('drive.transfer.settings.smartRecommend') }}</span>
             </div>
           </div>
         </div>
@@ -320,7 +343,7 @@
           <div class="cloud-drive-transfer__settings-fields cloud-drive-transfer__settings-fields--column">
             <div class="cloud-drive-transfer__settings-path-row">
               <n-input
-                :value="downloadPath"
+                :value="displayDownloadPath"
                 class="cloud-drive-transfer__settings-path"
                 size="small"
                 :placeholder="t('drive.transfer.settings.pathPlaceholder')"
@@ -348,7 +371,7 @@
             <span>{{ t('drive.transfer.settings.entry') }}</span>
           </button>
           <button
-            v-if="activeTab === 'uploading'"
+            v-if="activeTab === 'uploading' || activeTab === 'downloading'"
             type="button"
             class="cloud-drive-transfer__footer-btn"
             @click="onPauseAll">
@@ -372,7 +395,11 @@
 </template>
 
 <script setup lang="ts">
+  import { DEFAULT_SPACE_DOWNLOAD_PATH } from '@/constants/space'
+  import { useSpaceDownloadStore, type SpaceDownloadTask } from '@/stores/cloudDrive/spaceDownload'
   import {
+    MAX_TRANSFER_PARALLEL,
+    normalizeTransferParallel,
     SPACE_UPLOAD_RECORD_KEEP_DAYS,
     useSpaceUploadStore,
     type SpaceUploadTask
@@ -380,11 +407,21 @@
   import { useUserStore } from '@/stores/user/user'
   import { getDriveListFileIconUrl } from '@/utils/file/fileIcon'
   import {
+    cancelSpaceDownload,
+    clearCompletedSpaceDownloads,
+    initSpaceDownloadManager,
+    pauseAllSpaceDownloads,
+    pauseSpaceDownload,
+    refreshSpaceDownloadQueue,
+    resumeSpaceDownload
+  } from '@/utils/file/spaceDownloadManager'
+  import {
     cancelSpaceUpload,
     clearCompletedSpaceUploads,
     initSpaceUploadManager,
     pauseAllSpaceUploads,
     pauseSpaceUpload,
+    refreshSpaceUploadQueue,
     resumeSpaceUpload
   } from '@/utils/file/spaceUploadManager'
   import { open } from '@tauri-apps/plugin-dialog'
@@ -433,11 +470,21 @@
   const { t } = useI18n()
   const userStore = useUserStore()
   const spaceUploadStore = useSpaceUploadStore()
-  const { tasks, uploadParallel, downloadParallel, downloadPath, useDefaultDownloadPath } =
+  const spaceDownloadStore = useSpaceDownloadStore()
+  const { tasks, uploadParallel, downloadParallel, downloadPath, useDefaultDownloadPath, transferActiveTab } =
     storeToRefs(spaceUploadStore)
+  const { tasks: downloadTasks } = storeToRefs(spaceDownloadStore)
+  const displayDownloadPath = computed(
+    () => downloadPath.value.trim() || (useDefaultDownloadPath.value ? DEFAULT_SPACE_DOWNLOAD_PATH : '')
+  )
+  const uploadParallelLimit = computed(() => normalizeTransferParallel(uploadParallel.value))
+  const downloadParallelLimit = computed(() => normalizeTransferParallel(downloadParallel.value))
 
   const panelView = ref<PanelView>('list')
-  const activeTab = ref<TransferTab>('uploading')
+  const activeTab = computed({
+    get: () => transferActiveTab.value,
+    set: (value: TransferTab) => spaceUploadStore.setTransferActiveTab(value)
+  })
   const recordKeepDays = SPACE_UPLOAD_RECORD_KEEP_DAYS
 
   const drawerWidth = computed(() => (panelView.value === 'settings' ? 720 : 420))
@@ -448,10 +495,12 @@
     { key: 'completed', labelKey: 'drive.transfer.tabs.completed' }
   ]
 
-  const parallelOptions = computed<SelectOption[]>(() => [
-    { label: () => t('drive.transfer.settings.smart'), value: 'smart' },
-    ...[1, 2, 3, 4, 5, 6, 8, 10].map((value) => ({ label: String(value), value }))
-  ])
+  const parallelOptions = computed<SelectOption[]>(() =>
+    Array.from({ length: MAX_TRANSFER_PARALLEL }, (_, index) => {
+      const value = index + 1
+      return { label: String(value), value }
+    })
+  )
 
   const formatBytes = (bytes: number) => {
     if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
@@ -467,10 +516,16 @@
     return `${formatBytes(bps)}/s`
   }
 
-  const formatRemain = (task: SpaceUploadTask) => {
-    if (!['uploading'].includes(task.status) || task.speedBps <= 0 || task.progress >= 100) return ''
-    const remainBytes = Math.max(0, task.fileSize * (1 - task.progress / 100))
-    const seconds = Math.ceil(remainBytes / task.speedBps)
+  const formatRemainByProgress = (
+    status: string,
+    activeStatus: string,
+    speedBps: number,
+    progress: number,
+    fileSize: number
+  ) => {
+    if (status !== activeStatus || speedBps <= 0 || progress >= 100) return ''
+    const remainBytes = Math.max(0, fileSize * (1 - progress / 100))
+    const seconds = Math.ceil(remainBytes / speedBps)
     if (seconds < 60) return `${seconds}s`
     const minutes = Math.floor(seconds / 60)
     const rest = seconds % 60
@@ -478,6 +533,12 @@
     const hours = Math.floor(minutes / 60)
     return `${hours}h ${String(minutes % 60).padStart(2, '0')}m`
   }
+
+  const formatRemain = (task: SpaceUploadTask) =>
+    formatRemainByProgress(task.status, 'uploading', task.speedBps, task.progress, task.fileSize)
+
+  const formatDownloadRemain = (task: SpaceDownloadTask) =>
+    formatRemainByProgress(task.status, 'downloading', task.speedBps, task.progress, task.fileSize)
 
   const formatDoneTime = (iso: string) => {
     if (!iso) return ''
@@ -531,7 +592,54 @@
       }))
   )
 
-  const downloadingItems = computed<TransferProgressItem[]>(() => [])
+  const resolveDownloadErrorText = (task: SpaceDownloadTask) => {
+    if (!task.errorMsg) return ''
+    if (task.errorMsg === 'EMPTY_DOWNLOAD_URL') return t('drive.transfer.errors.emptyDownloadUrl')
+    if (task.errorMsg === 'DOWNLOAD_FAILED') return t('drive.transfer.errors.downloadFailed')
+    return task.errorMsg
+  }
+
+  const resolveDownloadStatusText = (task: SpaceDownloadTask) => {
+    if (task.status === 'failed') return resolveDownloadErrorText(task) || t('drive.transfer.status.failed')
+    if (task.status === 'paused') return t('drive.transfer.status.paused')
+    if (task.status === 'pending') return t('drive.transfer.status.pending')
+    return ''
+  }
+
+  const resolveDownloadDir = (savePath: string) => {
+    const normalized = (savePath || '').replace(/\\/g, '/').replace(/\/+$/, '')
+    if (!normalized) return ''
+    const index = normalized.lastIndexOf('/')
+    return index > 0 ? normalized.slice(0, index) : normalized
+  }
+
+  const ACTIVE_DOWNLOAD_STATUSES = new Set(['pending', 'downloading', 'paused', 'failed'])
+
+  const downloadingItems = computed<TransferProgressItem[]>(() =>
+    downloadTasks.value
+      .filter((task) => ACTIVE_DOWNLOAD_STATUSES.has(task.status))
+      .map((task) => ({
+        id: task.id,
+        name: task.fileName,
+        path: resolveDownloadDir(task.savePath) || task.savePath,
+        icon: getDriveListFileIconUrl(task.fileName),
+        percent: task.progress,
+        speed: task.status === 'downloading' ? formatSpeed(task.speedBps) : '',
+        remain: formatDownloadRemain(task),
+        canPause: ['pending', 'downloading'].includes(task.status),
+        canResume: ['paused', 'failed'].includes(task.status),
+        failed: task.status === 'failed',
+        statusText: resolveDownloadStatusText(task)
+      }))
+  )
+
+  const getTabBadgeCount = (key: TransferTab) => {
+    if (key === 'uploading') return uploadingItems.value.length
+    if (key === 'downloading') return downloadingItems.value.length
+    return 0
+  }
+
+  const formatBadgeCount = (count: number) => (count > 99 ? '99+' : String(count))
 
   const completedUploads = computed<TransferDoneItem[]>(() =>
     tasks.value
@@ -548,7 +656,20 @@
       }))
   )
 
-  const completedDownloads = computed<TransferDoneItem[]>(() => [])
+  const completedDownloads = computed<TransferDoneItem[]>(() =>
+    downloadTasks.value
+      .filter((task) => task.status === 'completed' || task.status === 'cancelled')
+      .map((task) => ({
+        id: task.id,
+        name: task.fileName,
+        path: task.savePath,
+        icon: getDriveListFileIconUrl(task.fileName),
+        size: formatBytes(task.fileSize),
+        time: formatDoneTime(task.completedAt || task.updatedAt),
+        instant: false,
+        cancelled: task.status === 'cancelled'
+      }))
+  )
 
   const onUpdateShow = (value: boolean) => {
     emit('update:show', value)
@@ -571,22 +692,41 @@
     cancelSpaceUpload(id)
   }
 
+  const onPauseDownload = (id: string) => {
+    pauseSpaceDownload(id)
+  }
+
+  const onResumeDownload = (id: string) => {
+    resumeSpaceDownload(id)
+  }
+
+  const onCancelDownload = (id: string) => {
+    cancelSpaceDownload(id)
+  }
+
   const onPauseAll = () => {
+    if (activeTab.value === 'downloading') {
+      pauseAllSpaceDownloads()
+      return
+    }
     pauseAllSpaceUploads()
   }
 
   const onClearCompleted = () => {
     clearCompletedSpaceUploads()
+    clearCompletedSpaceDownloads()
   }
 
   const onUploadParallelChange = (value: string | number | null) => {
     if (value === null) return
-    spaceUploadStore.setUploadParallel(value === 'smart' ? 'smart' : Number(value))
+    spaceUploadStore.setUploadParallel(normalizeTransferParallel(value))
+    refreshSpaceUploadQueue()
   }
 
   const onDownloadParallelChange = (value: string | number | null) => {
     if (value === null) return
-    spaceUploadStore.setDownloadParallel(value === 'smart' ? 'smart' : Number(value))
+    spaceUploadStore.setDownloadParallel(normalizeTransferParallel(value))
+    refreshSpaceDownloadQueue()
   }
 
   const onDownloadPathChange = (value: string) => {
@@ -602,10 +742,10 @@
       directory: true,
       multiple: false,
       title: t('drive.transfer.settings.browseTitle'),
-      defaultPath: downloadPath.value || undefined
+      defaultPath: displayDownloadPath.value || DEFAULT_SPACE_DOWNLOAD_PATH
     }).then((selected) => {
       if (typeof selected === 'string' && selected) {
-        spaceUploadStore.setDownloadPath(selected)
+        spaceUploadStore.setDownloadPath(selected.replace(/\\/g, '/'))
       }
     })
   }
@@ -614,14 +754,23 @@
     () => props.show,
     (show) => {
       if (!show) panelView.value = 'list'
-      else initSpaceUploadManager(userStore.authInfo.userId)
+      else {
+        initSpaceUploadManager(userStore.authInfo.userId)
+        initSpaceDownloadManager(userStore.authInfo.userId)
+      }
     }
   )
 
   watch(
     () => userStore.authInfo.userId,
     (userId) => {
-      if (userId) initSpaceUploadManager(userId)
+      if (userId) {
+        // 规范化持久化的并行数（非法值回落默认）
+        spaceUploadStore.setUploadParallel(normalizeTransferParallel(uploadParallel.value))
+        spaceUploadStore.setDownloadParallel(normalizeTransferParallel(downloadParallel.value))
+        initSpaceUploadManager(userId)
+        initSpaceDownloadManager(userId)
+      }
     },
     { immediate: true }
   )
@@ -681,8 +830,13 @@
     }
 
     &__tab {
+      position: relative;
       flex: 1;
       height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
       border: none;
       border-radius: 6px;
       background: transparent;
@@ -703,6 +857,32 @@
         color: var(--text-color);
         background: color-mix(in srgb, var(--text-color) 6%, transparent);
       }
+    }
+
+    &__tab-label {
+      line-height: 1;
+      user-select: none;
+    }
+
+    &__tab-badge {
+      position: absolute;
+      top: -4px;
+      right: 2px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 8px;
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1;
+      color: #fff;
+      background: var(--red);
+      pointer-events: none;
+      user-select: none;
     }
 
     &__panel {
@@ -1012,13 +1192,6 @@
     &__settings-select {
       width: 120px;
       flex-shrink: 0;
-    }
-
-    &__settings-tip {
-      font-size: 12px;
-      color: var(--text-secondary-color);
-      white-space: nowrap;
-      user-select: none;
     }
 
     &__settings-path-row {

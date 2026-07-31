@@ -607,6 +607,7 @@
       "completedUploadSection": "上传完成 ({count})",
       "completedDownloadSection": "下载完成 ({count})",
       "from": "来自：{path}",
+      "downloadTo": "下载到：{path}",
       "remain": "剩余 {time}",
       "pause": "暂停",
       "resume": "继续",
@@ -625,14 +626,17 @@
         "hashing": "校验中",
         "checking": "检查中",
         "uploading": "上传中",
+        "downloading": "下载中",
         "paused": "已暂停",
-        "failed": "上传失败",
+        "failed": "失败",
         "cancelled": "已取消"
       },
       "errors": {
         "fileMissing": "本地文件不存在，无法继续上传",
         "checkFailed": "上传检查失败",
         "uploadFailed": "上传失败",
+        "downloadFailed": "下载失败",
+        "emptyDownloadUrl": "文件下载地址无效",
         "invalidFileSize": "文件大小无效，无法上传空文件",
         "skipEmptyFiles": "已跳过大小为 0 的文件"
       },
@@ -645,14 +649,23 @@
         "uploadParallel": "上传并行任务数",
         "downloadParallel": "下载并行任务数",
         "selectPlaceholder": "请选择",
-        "smart": "智能",
-        "smartRecommend": "(推荐智能)",
         "downloadLocation": "下载位置",
         "pathPlaceholder": "请选择下载路径",
         "browse": "浏览",
         "browseTitle": "选择下载目录",
         "setDefaultPath": "设为默认下载路径"
       }
+    },
+    "download": {
+      "downloadTo": "下载到:",
+      "setDefaultPath": "设为默认路径",
+      "cancel": "取消",
+      "confirm": "下载",
+      "fileCount": "等 {count} 个文件",
+      "noFiles": "请选择要下载的文件",
+      "noUrl": "文件下载地址无效",
+      "folderSkipped": "已跳过文件夹，仅支持下载文件",
+      "started": "已加入下载队列"
     }
   },
   "ai": {

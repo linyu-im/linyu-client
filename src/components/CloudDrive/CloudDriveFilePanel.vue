@@ -70,7 +70,11 @@
                 <use href="#share"></use>
               </svg>
             </button>
-            <button type="button" class="cloud-drive-files__toolbar-btn" :title="t('drive.actions.download')">
+            <button
+              type="button"
+              class="cloud-drive-files__toolbar-btn"
+              :title="t('drive.actions.download')"
+              @click="openDownloadForSelection">
               <svg class="size-16px">
                 <use href="#download"></use>
               </svg>
@@ -281,7 +285,11 @@
                   <Avatar round :size="24" class="cloud-drive-files__owner-avatar" :id="file.userId" />
                 </td>
                 <td class="cloud-drive-files__col-actions" @click.stop>
-                  <n-dropdown trigger="click" placement="bottom-end" :options="rowMoreOptions">
+                  <n-dropdown
+                    trigger="click"
+                    placement="bottom-end"
+                    :options="rowMoreOptions"
+                    @select="(key) => onRowMenuSelect(key, file)">
                     <n-button quaternary size="tiny">
                       <svg class="size-16px">
                         <use href="#more"></use>
@@ -333,7 +341,11 @@
                   @update:checked="(checked) => setFileSelected(file.id, checked)" />
               </span>
               <span class="cloud-drive-files__grid-more" @click.stop>
-                <n-dropdown trigger="click" placement="bottom-end" :options="rowMoreOptions">
+                <n-dropdown
+                  trigger="click"
+                  placement="bottom-end"
+                  :options="rowMoreOptions"
+                  @select="(key) => onRowMenuSelect(key, file)">
                   <n-button quaternary size="tiny">
                     <svg class="size-16px">
                       <use href="#more"></use>
@@ -355,20 +367,27 @@
         <div v-show="isDragOver" class="cloud-drive-files__dragmask">{{ t('drive.empty.dragDropHint') }}</div>
       </div>
     </div>
+
+    <CloudDriveDownloadModal
+      v-model:show="downloadModalVisible"
+      :files="downloadModalFiles"
+      @confirm="onDownloadConfirm" />
   </section>
 </template>
 
 <script setup lang="ts">
   import { spaceApi } from '@/api'
   import CloudDriveCategories from '@/components/CloudDrive/CloudDriveCategories.vue'
+  import CloudDriveDownloadModal from '@/components/CloudDrive/CloudDriveDownloadModal.vue'
   import CloudDriveHeader from '@/components/CloudDrive/CloudDriveHeader.vue'
   import { SpaceRootParentId } from '@/constants/space'
   import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { useUserStore } from '@/stores/user/user'
-  import type { SpaceFile } from '@/types/api/space'
+  import { type SpaceFile } from '@/types/api/space'
   import { getFilePath, getFileSize, pickFiles, readPathAsFile } from '@/utils/file/filePick'
   import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
   import { filterExistingFilePaths, listenOsFileDrop } from '@/utils/file/nativeFileDrop'
+  import { enqueueSpaceDownloads, initSpaceDownloadManager } from '@/utils/file/spaceDownloadManager'
   import { enqueueSpaceUploads, initSpaceUploadManager } from '@/utils/file/spaceUploadManager'
   import type { DropdownOption } from 'naive-ui'
   import { storeToRefs } from 'pinia'
@@ -439,6 +458,8 @@
   const creatingFolderSubmitting = ref(false)
   const createFolderInputRef = ref<HTMLInputElement | null>(null)
   const categoriesRef = ref<InstanceType<typeof CloudDriveCategories> | null>(null)
+  const downloadModalVisible = ref(false)
+  const downloadModalFiles = ref<SpaceFile[]>([])
   let skipCreateFolderBlur = false
 
   const currentUserId = computed(() => userStore.authInfo.userId)
@@ -556,7 +577,7 @@
       case 'modified':
         return parseFileTime(a.updatedAt) - parseFileTime(b.updatedAt)
       case 'size':
-        return (a.isDir ? -1 : a.filSize) - (b.isDir ? -1 : b.filSize)
+        return (a.isDir ? -1 : a.fileSize) - (b.isDir ? -1 : b.fileSize)
       default:
         return 0
     }
@@ -619,6 +640,70 @@
     }
   ])
 
+  const openDownloadConfirm = (files: SpaceFile[]) => {
+    const downloadable = files.filter((file) => !file.isDir)
+    if (downloadable.length === 0) {
+      window.$message.warning(t('drive.download.noFiles'))
+      return
+    }
+    if (files.some((file) => file.isDir) && downloadable.length > 0) {
+      window.$message.info(t('drive.download.folderSkipped'))
+    }
+    const withUrl = downloadable.filter((file) => (file.physicalStoragePath || '').trim())
+    if (withUrl.length === 0) {
+      window.$message.error(t('drive.download.noUrl'))
+      return
+    }
+    if (withUrl.length < downloadable.length) {
+      window.$message.warning(t('drive.download.noUrl'))
+    }
+    downloadModalFiles.value = withUrl
+    downloadModalVisible.value = true
+  }
+
+  const openDownloadForSelection = () => {
+    const selected = fileList.value.filter((file) => selectedFileIds.value.has(file.id))
+    openDownloadConfirm(selected)
+  }
+
+  const onRowMenuSelect = (key: string | number, file: SpaceFile) => {
+    if (key === 'download') {
+      openDownloadConfirm([file])
+      return
+    }
+    if (key === 'delete') {
+      selectedFileIds.value = new Set([file.id])
+      confirmDeleteSelectedFiles()
+    }
+  }
+
+  const onDownloadConfirm = (payload: { saveDir: string; setAsDefault: boolean }) => {
+    const files = downloadModalFiles.value
+    if (files.length === 0) return
+
+    if (payload.setAsDefault) {
+      spaceUploadStore.setDownloadPath(payload.saveDir)
+      spaceUploadStore.setUseDefaultDownloadPath(true)
+    }
+
+    enqueueSpaceDownloads({
+      saveDir: payload.saveDir,
+      files: files.map((file) => ({
+        spaceFileId: file.id,
+        fileName: file.fileName,
+        downloadUrl: (file.physicalStoragePath || '').trim(),
+        sourcePath: file.path || file.fileName,
+        fileSize: file.fileSize
+      }))
+    }).then((tasks) => {
+      if (tasks.length > 0) {
+        spaceUploadStore.setTransferActiveTab('downloading')
+        spaceUploadStore.setTransferDrawerVisible(true)
+        window.$message.success(t('drive.download.started'))
+      }
+    })
+  }
+
   const fileIconSrc = (file: SpaceFile) => getDriveListFileIconUrl(file.fileName, file.isDir)
 
   const getFileTypeLabel = (file: SpaceFile) => {
@@ -633,7 +718,7 @@
 
   const getFileSizeLabel = (file: SpaceFile) => {
     if (file.isDir) return '-'
-    return formatBytes(file.filSize)
+    return formatBytes(file.fileSize)
   }
 
   const focusCreateFolderInput = () => {
@@ -927,7 +1012,10 @@
   watch(
     () => userStore.authInfo.userId,
     (userId) => {
-      if (userId) initSpaceUploadManager(userId)
+      if (userId) {
+        initSpaceUploadManager(userId)
+        initSpaceDownloadManager(userId)
+      }
     },
     { immediate: true }
   )

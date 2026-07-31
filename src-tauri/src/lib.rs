@@ -1,7 +1,9 @@
 pub mod cmd;
+pub mod download;
 pub mod upload;
 
 use cmd::{capture_screen, start_oauth_server, write_clipboard_files};
+use download::{cancel_space_file_download, download_space_file};
 use upload::{
     cancel_space_file_upload, compute_space_file_hash, upload_file_chunks, upload_space_file_chunks,
 };
@@ -28,7 +30,9 @@ pub fn run() {
             upload_file_chunks,
             upload_space_file_chunks,
             compute_space_file_hash,
-            cancel_space_file_upload
+            cancel_space_file_upload,
+            download_space_file,
+            cancel_space_file_download
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

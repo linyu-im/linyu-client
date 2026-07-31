@@ -44,15 +44,14 @@ export interface SpaceFile {
   spaceId: string
   userId: string
   physicalId: string
-  storagePath: string
+  physicalStoragePath: string
   parentId: string
   path: string
   level: number
   fileName: string
   isDir: boolean
   fileType: string
-  /** 后端字段名即为 filSize */
-  filSize: number
+  fileSize: number
   status: string
   createdAt: string
   updatedAt: string

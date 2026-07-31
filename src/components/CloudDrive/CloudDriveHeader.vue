@@ -21,16 +21,24 @@
       </div>
 
       <div class="cloud-drive-header__right">
-        <button
-          type="button"
-          class="cloud-drive-header__transfer-btn"
-          :title="t('drive.transfer.title')"
-          @click="openTransferDrawer">
-          <svg class="size-16px" aria-hidden="true">
-            <use href="#list"></use>
-          </svg>
-          <span class="cloud-drive-header__transfer-btn-label">{{ t('drive.transfer.title') }}</span>
-        </button>
+        <n-badge
+          :value="activeTransferCount"
+          :max="99"
+          :show-zero="false"
+          :color="'var(--red)'"
+          :offset="[-4, -2]"
+          class="cloud-drive-header__transfer-badge">
+          <button
+            type="button"
+            class="cloud-drive-header__transfer-btn"
+            :title="t('drive.transfer.title')"
+            @click="openTransferDrawer">
+            <svg class="size-16px" aria-hidden="true">
+              <use href="#list"></use>
+            </svg>
+            <span class="cloud-drive-header__transfer-btn-label">{{ t('drive.transfer.title') }}</span>
+          </button>
+        </n-badge>
       </div>
     </div>
 
@@ -40,6 +48,7 @@
 
 <script setup lang="ts">
   import CloudDriveTransferDrawer from '@/components/CloudDrive/CloudDriveTransferDrawer.vue'
+  import { useSpaceDownloadStore } from '@/stores/cloudDrive/spaceDownload'
   import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
@@ -53,9 +62,20 @@
 
   defineProps<Props>()
 
+  const ACTIVE_UPLOAD_STATUSES = new Set(['pending', 'hashing', 'checking', 'uploading', 'paused', 'failed'])
+  const ACTIVE_DOWNLOAD_STATUSES = new Set(['pending', 'downloading', 'paused', 'failed'])
+
   const { t } = useI18n()
   const spaceUploadStore = useSpaceUploadStore()
-  const { transferDrawerVisible } = storeToRefs(spaceUploadStore)
+  const spaceDownloadStore = useSpaceDownloadStore()
+  const { transferDrawerVisible, tasks } = storeToRefs(spaceUploadStore)
+  const { tasks: downloadTasks } = storeToRefs(spaceDownloadStore)
+
+  const uploadingCount = computed(() => tasks.value.filter((task) => ACTIVE_UPLOAD_STATUSES.has(task.status)).length)
+  const downloadingCount = computed(
+    () => downloadTasks.value.filter((task) => ACTIVE_DOWNLOAD_STATUSES.has(task.status)).length
+  )
+  const activeTransferCount = computed(() => uploadingCount.value + downloadingCount.value)
 
   const openTransferDrawer = () => {
     spaceUploadStore.setTransferDrawerVisible(true)
@@ -90,6 +110,10 @@
       display: flex;
       align-items: center;
       flex-shrink: 0;
+    }
+
+    &__transfer-badge {
+      display: inline-flex;
     }
 
     &__title {

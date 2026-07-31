@@ -38,7 +38,6 @@ const runtimeControls = new Map<string, RuntimeControl>()
 const runningTaskIds = new Set<string>()
 let pumpScheduled = false
 
-const ACTIVE_QUEUE_STATUSES: SpaceUploadStatus[] = ['pending', 'paused', 'failed']
 const RUNNING_STATUSES: SpaceUploadStatus[] = ['hashing', 'checking', 'uploading']
 /** 进度 UI / Pinia 更新节流，防止大文件分片回调打满主线程 */
 const PROGRESS_UI_INTERVAL_MS = 250
@@ -376,15 +375,19 @@ const pumpQueue = () => {
   if (available <= 0) return
 
   const queued = store.tasks
-    .filter((item) => ACTIVE_QUEUE_STATUSES.includes(item.status) && !runningTaskIds.has(item.id))
+    .filter((item) => item.status === 'pending' && !runningTaskIds.has(item.id))
     .slice()
-    // 失败/暂停需手动恢复，自动队列只拉 pending
-    .filter((item) => item.status === 'pending')
+    // 按创建时间升序排队，先来先传
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .slice(0, available)
 
   for (const task of queued) {
     runTask(task.id)
   }
+}
+
+export const refreshSpaceUploadQueue = () => {
+  schedulePump()
 }
 
 export interface EnqueueSpaceUploadFile {

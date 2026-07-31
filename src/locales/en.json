@@ -607,6 +607,7 @@
       "completedUploadSection": "Uploads completed ({count})",
       "completedDownloadSection": "Downloads completed ({count})",
       "from": "From: {path}",
+      "downloadTo": "Download to: {path}",
       "remain": "{time} left",
       "pause": "Pause",
       "resume": "Resume",
@@ -625,6 +626,7 @@
         "hashing": "Verifying",
         "checking": "Checking",
         "uploading": "Uploading",
+        "downloading": "Downloading",
         "paused": "Paused",
         "failed": "Failed",
         "cancelled": "Cancelled"
@@ -633,6 +635,8 @@
         "fileMissing": "Local file is missing",
         "checkFailed": "Upload check failed",
         "uploadFailed": "Upload failed",
+        "downloadFailed": "Download failed",
+        "emptyDownloadUrl": "Invalid download URL",
         "invalidFileSize": "Invalid file size. Empty files cannot be uploaded",
         "skipEmptyFiles": "Skipped empty files"
       },
@@ -645,14 +649,23 @@
         "uploadParallel": "Upload concurrency",
         "downloadParallel": "Download concurrency",
         "selectPlaceholder": "Please select",
-        "smart": "Smart",
-        "smartRecommend": "(Smart recommended)",
         "downloadLocation": "Download location",
         "pathPlaceholder": "Select a download path",
         "browse": "Browse",
         "browseTitle": "Select download folder",
         "setDefaultPath": "Set as default download path"
       }
+    },
+    "download": {
+      "downloadTo": "Download to:",
+      "setDefaultPath": "Set as default path",
+      "cancel": "Cancel",
+      "confirm": "Download",
+      "fileCount": "{count} files",
+      "noFiles": "Please select files to download",
+      "noUrl": "Invalid download URL",
+      "folderSkipped": "Folders skipped; only files can be downloaded",
+      "started": "Added to download queue"
     }
   },
   "ai": {
