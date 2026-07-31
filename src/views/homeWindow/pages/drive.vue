@@ -20,6 +20,7 @@
                 @restored="fetchUserSpace"
                 @deleted="fetchUserSpace"
                 @cleared="fetchUserSpace" />
+              <CloudDriveRecentPanel v-else-if="activeMenu === 'recent'" :search-keyword="searchKeyword" />
               <CloudDriveFilePanel
                 v-else
                 ref="filePanelRef"
@@ -41,6 +42,7 @@
 <script setup lang="ts">
   defineOptions({ name: 'drive' })
   import CloudDriveFilePanel from '@/components/CloudDrive/CloudDriveFilePanel.vue'
+  import CloudDriveRecentPanel from '@/components/CloudDrive/CloudDriveRecentPanel.vue'
   import CloudDriveRecyclePanel from '@/components/CloudDrive/CloudDriveRecyclePanel.vue'
   import CloudDriveSider, { type CloudDriveSidebarMenu } from '@/components/CloudDrive/CloudDriveSider.vue'
   import { spaceApi } from '@/api'
@@ -136,6 +138,32 @@
     min-height: 0;
     overflow: hidden;
     background-color: var(--bg-secondary-color);
+
+    :deep(*:focus),
+    :deep(*:focus-visible) {
+      outline: none !important;
+    }
+
+    :deep(.n-button:focus),
+    :deep(.n-button:focus-visible),
+    :deep(.n-checkbox:focus-within .n-checkbox-box),
+    :deep(.n-checkbox-box--focus),
+    :deep(.n-input.n-input--focus),
+    :deep(.n-input:focus-within),
+    :deep(.n-base-selection.n-base-selection--focus),
+    :deep(.n-base-selection:focus),
+    :deep(.n-base-selection:focus-within) {
+      box-shadow: none !important;
+    }
+
+    :deep(.n-input.n-input--focus .n-input-wrapper),
+    :deep(.n-input:focus-within .n-input-wrapper),
+    :deep(.n-checkbox:focus-within .n-checkbox-box),
+    :deep(.n-checkbox-box--focus),
+    :deep(.n-base-selection.n-base-selection--focus),
+    :deep(.n-base-selection:focus-within) {
+      border-color: var(--border-color) !important;
+    }
 
     :deep(.split) {
       flex: 1;

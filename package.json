@@ -43,6 +43,9 @@
     "@tiptap/starter-kit": "^3.23.4",
     "@tiptap/suggestion": "^3.23.4",
     "@tiptap/vue-3": "^3.23.4",
+    "@vue-office/docx": "^1.6.3",
+    "@vue-office/excel": "^1.7.14",
+    "@vue-office/pdf": "^2.0.10",
     "@vueuse/core": "^14.2.1",
     "highlight.js": "~11.11.1",
     "katex": "^0.17.0",
@@ -57,6 +60,7 @@
     "sass": "^1.98.0",
     "spark-md5": "^3.0.2",
     "vue": "^3.5.30",
+    "vue-demi": "0.14.6",
     "vue-i18n": "^11.3.0",
     "vue-router": "^5.0.4"
   },

@@ -141,6 +141,59 @@ const formatErrorDetail = (error: unknown) => {
   return { value: String(error) }
 }
 
+export class BinarySizeLimitError extends Error {
+  readonly maxBytes: number
+
+  constructor(maxBytes: number) {
+    super('BINARY_SIZE_LIMIT_EXCEEDED')
+    this.name = 'BinarySizeLimitError'
+    this.maxBytes = maxBytes
+  }
+}
+
+const readResponseWithLimit = async (response: Response, maxBytes: number, onProgress?: (progress: number) => void) => {
+  const contentLength = Number(response.headers.get('content-length') || 0)
+  if (contentLength > maxBytes) {
+    throw new BinarySizeLimitError(maxBytes)
+  }
+
+  if (!response.body) {
+    const buffer = await response.arrayBuffer()
+    if (buffer.byteLength > maxBytes) {
+      throw new BinarySizeLimitError(maxBytes)
+    }
+    onProgress?.(100)
+    return buffer
+  }
+
+  const reader = response.body.getReader()
+  const chunks: Uint8Array[] = []
+  let receivedBytes = 0
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    receivedBytes += value.byteLength
+    if (receivedBytes > maxBytes) {
+      await reader.cancel()
+      throw new BinarySizeLimitError(maxBytes)
+    }
+    chunks.push(value)
+    if (contentLength > 0) {
+      onProgress?.(Math.min(99, Math.round((receivedBytes / contentLength) * 100)))
+    }
+  }
+
+  const result = new Uint8Array(receivedBytes)
+  let offset = 0
+  for (const chunk of chunks) {
+    result.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  onProgress?.(100)
+  return result.buffer
+}
+
 export async function fetchBinary(url: string, onProgress?: (progress: number) => void): Promise<ArrayBuffer> {
   const requestUrl = resolveResourceUrl(url)
   const withAuth = isApiOriginUrl(requestUrl)
@@ -178,6 +231,41 @@ export async function fetchBinary(url: string, onProgress?: (progress: number) =
       withAuth,
       error: formatErrorDetail(error)
     })
+    throw error
+  }
+}
+
+export async function fetchBinaryWithLimit(
+  url: string,
+  maxBytes: number,
+  onProgress?: (progress: number) => void
+): Promise<ArrayBuffer> {
+  const requestUrl = resolveResourceUrl(url)
+  onProgress?.(0)
+
+  try {
+    const response = await fetch(requestUrl, {
+      method: 'GET',
+      headers: buildBinaryFetchHeaders(requestUrl)
+    })
+    if (!response.ok) {
+      throw new Error(t('http.networkError'))
+    }
+    return await readResponseWithLimit(response, maxBytes, onProgress)
+  } catch (error) {
+    if (error instanceof BinarySizeLimitError) throw error
+    if (!isApiOriginUrl(requestUrl)) {
+      const response = await globalThis.fetch(requestUrl, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        referrerPolicy: 'no-referrer-when-downgrade'
+      })
+      if (!response.ok) {
+        throw new Error(t('http.networkError'))
+      }
+      return readResponseWithLimit(response, maxBytes, onProgress)
+    }
     throw error
   }
 }
@@ -307,4 +395,4 @@ export async function postSse(
   }
 }
 
-export default { get, post, formData, postSse, fetchBinary }
+export default { get, post, formData, postSse, fetchBinary, fetchBinaryWithLimit }

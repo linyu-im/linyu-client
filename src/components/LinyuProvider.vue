@@ -216,6 +216,9 @@
       colorError: 'var(--bg-muted-color)',
       textColorError: 'var(--text-color)',
       boxShadowError: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+      colorWarning: 'var(--bg-muted-color)',
+      textColorWarning: 'var(--text-color)',
+      boxShadowWarning: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       colorSuccess: 'var(--bg-muted-color)',
       textColorSuccess: 'var(--text-color)',
       boxShadowSuccess: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
@@ -223,6 +226,7 @@
       textColorInfo: 'var(--text-color)',
       boxShadowInfo: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       iconColorInfo: 'var(--primary-color)',
+      iconColorWarning: 'var(--primary-color)',
       iconColorSuccess: 'var(--primary-color)'
     },
     Divider: {

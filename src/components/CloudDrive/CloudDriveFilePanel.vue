@@ -263,17 +263,29 @@
                 </td>
                 <td class="cloud-drive-files__col-name">
                   <div class="cloud-drive-files__file-name">
-                    <span class="cloud-drive-files__file-icon">
+                    <span class="cloud-drive-files__file-icon" @click.stop="onFilePreviewClick(file)">
                       <img
                         class="cloud-drive-files__file-icon-img"
                         :src="fileIconSrc(file)"
                         :alt="file.fileName"
                         draggable="false" />
                     </span>
+                    <input
+                      v-if="renamingFileId === file.id"
+                      :ref="setRenameInputRef"
+                      v-model="renamingFileName"
+                      class="cloud-drive-files__create-input"
+                      maxlength="255"
+                      @keydown="onRenameKeydown"
+                      @blur="onRenameBlur"
+                      @click.stop
+                      @dblclick.stop />
                     <span
+                      v-else
                       class="cloud-drive-files__file-name-text"
                       :class="{ 'cloud-drive-files__file-name-text--folder': file.isDir }"
-                      :title="file.fileName">
+                      :title="file.fileName"
+                      @click.stop="onFilePreviewClick(file)">
                       {{ file.fileName }}
                     </span>
                   </div>
@@ -353,14 +365,26 @@
                   </n-button>
                 </n-dropdown>
               </span>
-              <span class="cloud-drive-files__grid-icon">
+              <span class="cloud-drive-files__grid-icon" @click.stop="onFilePreviewClick(file)">
                 <img
                   class="cloud-drive-files__grid-icon-img"
                   :src="fileIconSrc(file)"
                   :alt="file.fileName"
                   draggable="false" />
               </span>
-              <span class="cloud-drive-files__grid-name">{{ file.fileName }}</span>
+              <input
+                v-if="renamingFileId === file.id"
+                :ref="setRenameInputRef"
+                v-model="renamingFileName"
+                class="cloud-drive-files__grid-create-input"
+                maxlength="255"
+                @keydown="onRenameKeydown"
+                @blur="onRenameBlur"
+                @click.stop
+                @dblclick.stop />
+              <span v-else class="cloud-drive-files__grid-name" @click.stop="onFilePreviewClick(file)">
+                {{ file.fileName }}
+              </span>
             </div>
           </div>
         </n-spin>
@@ -372,6 +396,8 @@
       v-model:show="downloadModalVisible"
       :files="downloadModalFiles"
       @confirm="onDownloadConfirm" />
+
+    <CloudDriveMoveModal v-model:show="moveModalVisible" :space-file-ids="moveModalFileIds" @success="onMoveSuccess" />
   </section>
 </template>
 
@@ -380,13 +406,22 @@
   import CloudDriveCategories from '@/components/CloudDrive/CloudDriveCategories.vue'
   import CloudDriveDownloadModal from '@/components/CloudDrive/CloudDriveDownloadModal.vue'
   import CloudDriveHeader from '@/components/CloudDrive/CloudDriveHeader.vue'
+  import CloudDriveMoveModal from '@/components/CloudDrive/CloudDriveMoveModal.vue'
   import { SpaceRootParentId } from '@/constants/space'
   import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { useUserStore } from '@/stores/user/user'
   import { type SpaceFile } from '@/types/api/space'
+  import { createFilePreviewWindow } from '@/utils/desktop/window'
   import { getFilePath, getFileSize, pickFiles, readPathAsFile } from '@/utils/file/filePick'
   import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
+  import {
+    formatPreviewLimit,
+    isFilePreviewTooLarge,
+    normalizeFileExtension,
+    resolveFilePreviewConfig
+  } from '@/utils/file/filePreview'
   import { filterExistingFilePaths, listenOsFileDrop } from '@/utils/file/nativeFileDrop'
+  import { recordSpaceFileRecentAccess } from '@/utils/file/spaceRecentAccess'
   import { enqueueSpaceDownloads, initSpaceDownloadManager } from '@/utils/file/spaceDownloadManager'
   import { enqueueSpaceUploads, initSpaceUploadManager } from '@/utils/file/spaceUploadManager'
   import type { DropdownOption } from 'naive-ui'
@@ -457,10 +492,18 @@
   const creatingFolderTime = ref('')
   const creatingFolderSubmitting = ref(false)
   const createFolderInputRef = ref<HTMLInputElement | null>(null)
+  const renamingFileId = ref('')
+  const renamingFileName = ref('')
+  const renamingSubmitting = ref(false)
+  const renameInputRef = ref<HTMLInputElement | null>(null)
   const categoriesRef = ref<InstanceType<typeof CloudDriveCategories> | null>(null)
   const downloadModalVisible = ref(false)
   const downloadModalFiles = ref<SpaceFile[]>([])
+  const moveModalVisible = ref(false)
+  const moveModalFileIds = ref<string[]>([])
   let skipCreateFolderBlur = false
+  let skipRenameBlur = false
+  let renamingOriginalName = ''
 
   const currentUserId = computed(() => userStore.authInfo.userId)
   const folderIconSrc = getFolderIconUrl()
@@ -507,6 +550,7 @@
 
   const resetToRoot = () => {
     if (creatingFolder.value) cancelCreateFolder()
+    if (renamingFileId.value) cancelRename()
     folderStack.value = []
     currentFolderId.value = SpaceRootParentId
     selectedFileIds.value = new Set()
@@ -640,25 +684,47 @@
     }
   ])
 
+  const collectDownloadableFiles = (files: SpaceFile[]) => {
+    const directFiles = files.filter((file) => !file.isDir)
+    const folders = files.filter((file) => file.isDir)
+    if (folders.length === 0) return Promise.resolve(directFiles)
+
+    return Promise.all(
+      folders.map((folder) =>
+        spaceApi.listAllSpaceUserFile({ parentId: folder.id }).then((res) => {
+          if (res.code === 0 && res.data) {
+            return res.data.filter((item) => !item.isDir)
+          }
+          window.$message.error(res.msg)
+          return [] as SpaceFile[]
+        })
+      )
+    ).then((nestedLists) => {
+      const merged = new Map<string, SpaceFile>()
+      for (const file of [...directFiles, ...nestedLists.flat()]) {
+        merged.set(file.id, file)
+      }
+      return [...merged.values()]
+    })
+  }
+
   const openDownloadConfirm = (files: SpaceFile[]) => {
-    const downloadable = files.filter((file) => !file.isDir)
-    if (downloadable.length === 0) {
-      window.$message.warning(t('drive.download.noFiles'))
-      return
-    }
-    if (files.some((file) => file.isDir) && downloadable.length > 0) {
-      window.$message.info(t('drive.download.folderSkipped'))
-    }
-    const withUrl = downloadable.filter((file) => (file.physicalStoragePath || '').trim())
-    if (withUrl.length === 0) {
-      window.$message.error(t('drive.download.noUrl'))
-      return
-    }
-    if (withUrl.length < downloadable.length) {
-      window.$message.warning(t('drive.download.noUrl'))
-    }
-    downloadModalFiles.value = withUrl
-    downloadModalVisible.value = true
+    if (files.length === 0) return
+
+    collectDownloadableFiles(files).then((downloadable) => {
+      if (downloadable.length === 0) return
+
+      const withUrl = downloadable.filter((file) => (file.physicalStoragePath || '').trim())
+      if (withUrl.length === 0) {
+        window.$message.error(t('drive.download.noUrl'))
+        return
+      }
+      if (withUrl.length < downloadable.length) {
+        window.$message.warning(t('drive.download.noUrl'))
+      }
+      downloadModalFiles.value = withUrl
+      downloadModalVisible.value = true
+    })
   }
 
   const openDownloadForSelection = () => {
@@ -666,7 +732,39 @@
     openDownloadConfirm(selected)
   }
 
+  const openMoveConfirm = (files: SpaceFile[]) => {
+    if (files.length === 0) {
+      window.$message.warning(t('drive.move.noFiles'))
+      return
+    }
+    moveModalFileIds.value = files.map((file) => file.id)
+    moveModalVisible.value = true
+  }
+
+  const openMoveForSelection = () => {
+    const selected = fileList.value.filter((file) => selectedFileIds.value.has(file.id))
+    openMoveConfirm(selected)
+  }
+
+  const onMoveSuccess = () => {
+    selectedFileIds.value = new Set()
+    fetchFileList(currentFolderId.value)
+    categoriesRef.value?.refresh()
+  }
+
   const onRowMenuSelect = (key: string | number, file: SpaceFile) => {
+    if (key === 'moveTo') {
+      if (selectedFileIds.value.has(file.id) && selectedFileIds.value.size > 1) {
+        openMoveForSelection()
+      } else {
+        openMoveConfirm([file])
+      }
+      return
+    }
+    if (key === 'rename') {
+      startRename(file)
+      return
+    }
     if (key === 'download') {
       openDownloadConfirm([file])
       return
@@ -739,6 +837,7 @@
   }
 
   const startCreateFolder = () => {
+    if (renamingFileId.value) cancelRename()
     if (creatingFolder.value || creatingFolderSubmitting.value) {
       focusCreateFolderInput()
       return
@@ -803,9 +902,112 @@
     commitCreateFolder()
   }
 
+  const focusRenameInput = () => {
+    nextTick(() => {
+      const input = renameInputRef.value
+      if (!input) return
+      input.focus()
+      input.select()
+    })
+  }
+
+  const setRenameInputRef = (el: unknown) => {
+    renameInputRef.value = el instanceof HTMLInputElement ? el : null
+  }
+
+  const cancelRename = () => {
+    skipRenameBlur = true
+    renamingFileId.value = ''
+    renamingFileName.value = ''
+    renamingOriginalName = ''
+    renamingSubmitting.value = false
+  }
+
+  const startRename = (file: SpaceFile) => {
+    if (creatingFolder.value) cancelCreateFolder()
+    if (renamingSubmitting.value) return
+    if (renamingFileId.value === file.id) {
+      focusRenameInput()
+      return
+    }
+    if (renamingFileId.value) cancelRename()
+    renamingFileId.value = file.id
+    renamingFileName.value = file.fileName
+    renamingOriginalName = file.fileName
+    skipRenameBlur = false
+    focusRenameInput()
+  }
+
+  const commitRename = () => {
+    if (!renamingFileId.value || renamingSubmitting.value) return
+
+    const spaceFileId = renamingFileId.value
+    const newName = renamingFileName.value.trim()
+    if (!newName) {
+      cancelRename()
+      return
+    }
+    if (newName === renamingOriginalName) {
+      cancelRename()
+      return
+    }
+
+    renamingSubmitting.value = true
+    spaceApi
+      .renameSpaceUserFile({ spaceFileId, newName })
+      .then((res) => {
+        if (res.code === 0 && res.data) {
+          const index = fileList.value.findIndex((item) => item.id === spaceFileId)
+          if (index !== -1 && res.data) {
+            fileList.value[index] = res.data
+          }
+          const stackIndex = folderStack.value.findIndex((segment) => segment.id === spaceFileId)
+          if (stackIndex !== -1) {
+            const segment = folderStack.value[stackIndex]
+            if (segment) {
+              const nextStack = [...folderStack.value]
+              nextStack[stackIndex] = { ...segment, label: res.data.fileName }
+              folderStack.value = nextStack
+            }
+          }
+          cancelRename()
+          return
+        }
+        window.$message.error(res.msg)
+        renamingSubmitting.value = false
+        focusRenameInput()
+      })
+      .catch(() => {
+        renamingSubmitting.value = false
+        focusRenameInput()
+      })
+  }
+
+  const onRenameKeydown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      skipRenameBlur = true
+      commitRename()
+      return
+    }
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelRename()
+    }
+  }
+
+  const onRenameBlur = () => {
+    if (skipRenameBlur) {
+      skipRenameBlur = false
+      return
+    }
+    commitRename()
+  }
+
   const enterFolder = (file: SpaceFile) => {
     if (!file.isDir) return
     if (creatingFolder.value) cancelCreateFolder()
+    if (renamingFileId.value) cancelRename()
     folderStack.value = [...folderStack.value, { id: file.id, label: file.fileName }]
     currentFolderId.value = file.id
     selectedFileIds.value = new Set()
@@ -814,6 +1016,7 @@
 
   const navigateToSegment = (segmentId: string) => {
     if (creatingFolder.value) cancelCreateFolder()
+    if (renamingFileId.value) cancelRename()
     if (segmentId === SpaceRootParentId) {
       folderStack.value = []
       currentFolderId.value = SpaceRootParentId
@@ -828,6 +1031,7 @@
   }
 
   const onRowClick = (file: SpaceFile) => {
+    if (renamingFileId.value === file.id) return
     if (file.isDir) {
       enterFolder(file)
       return
@@ -836,7 +1040,45 @@
   }
 
   const onRowDblClick = (file: SpaceFile) => {
+    if (renamingFileId.value === file.id) return
     if (file.isDir) enterFolder(file)
+  }
+
+  const onFilePreviewClick = (file: SpaceFile) => {
+    if (renamingFileId.value === file.id) return
+    if (file.isDir) {
+      enterFolder(file)
+      return
+    }
+
+    const config = resolveFilePreviewConfig(file.fileName, file.fileType)
+    if (!config) {
+      const extension = normalizeFileExtension(file.fileName, file.fileType)
+      window.$message.warning(
+        extension === 'doc' ? t('filePreview.legacyWordUnsupported') : t('filePreview.unsupported')
+      )
+      return
+    }
+    if (isFilePreviewTooLarge(Number(file.fileSize), config)) {
+      window.$message.warning(t('filePreview.tooLargeHint', { limit: formatPreviewLimit(config.maxBytes) }))
+      return
+    }
+    if (!file.physicalStoragePath) {
+      window.$message.error(t('filePreview.invalidUrl'))
+      return
+    }
+
+    createFilePreviewWindow({
+      id: file.id,
+      name: file.fileName,
+      url: file.physicalStoragePath,
+      type: config.extension,
+      size: Number(file.fileSize) || 0
+    })
+      .then(() => recordSpaceFileRecentAccess(userStore.authInfo.userId, file))
+      .catch(() => {
+        window.$message.error(t('filePreview.openFailed'))
+      })
   }
 
   const toggleFileSelect = (id: string) => {
@@ -1222,8 +1464,7 @@
       }
 
       &:focus-visible {
-        outline: 2px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
-        outline-offset: 1px;
+        outline: none;
       }
     }
 
@@ -1323,8 +1564,7 @@
       }
 
       &:focus-visible:not(&--active) {
-        outline: 2px solid color-mix(in srgb, var(--primary-color) 35%, transparent);
-        outline-offset: 1px;
+        outline: none;
       }
 
       &--danger:hover:not(&--active) {

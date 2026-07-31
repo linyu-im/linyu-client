@@ -31,6 +31,16 @@ export interface SpaceUserFileDeleteParam {
   spaceFileIDs: string[]
 }
 
+export interface SpaceUserFileMoveParam {
+  spaceFileIds: string[]
+  targetParentId: string
+}
+
+export interface SpaceUserFileRenameParam {
+  spaceFileId: string
+  newName: string
+}
+
 /** 空间文件分类统计项 */
 export interface SpaceUserFileCategoryStat {
   fileCategory: SpaceFileCategory | string
@@ -56,4 +66,14 @@ export interface SpaceFile {
   createdAt: string
   updatedAt: string
   deletedAt: string | null
+}
+
+/** 用户空间文件夹目录树节点 */
+export interface SpaceUserDirTreeNode {
+  id: string
+  fileName: string
+  parentId: string
+  path: string
+  level: number
+  children: SpaceUserDirTreeNode[]
 }

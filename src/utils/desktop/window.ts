@@ -188,6 +188,35 @@ export const createVideoViewerWindow = () =>
     transparent: true
   })
 
+export interface FilePreviewWindowOptions {
+  id: string
+  name: string
+  url: string
+  type: string
+  size: number
+}
+
+export const createFilePreviewWindow = (options: FilePreviewWindowOptions) => {
+  const query = new URLSearchParams({
+    url: options.url,
+    type: options.type,
+    name: options.name,
+    size: String(options.size)
+  })
+  const safeId = options.id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 48) || 'file'
+  const label = `file-preview-${safeId}-${Date.now().toString(36)}`
+
+  return createWebviewWindow(options.name, label, {
+    url: `/filePreview?${query.toString()}`,
+    width: 1040,
+    height: 760,
+    minWidth: 720,
+    minHeight: 520,
+    resizable: true,
+    transparent: true
+  })
+}
+
 export const createChatRecordWindow = () =>
   createWebviewWindow('聊天记录', 'chatRecord', {
     width: 660,

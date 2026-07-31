@@ -131,6 +131,27 @@ export async function initDatabase(): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS idx_t_space_download_user_created ON t_space_download(user_id, created_at DESC)`
   )
+
+  // 网盘最近访问（按 user_id 隔离，按预览时间排序）
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_space_recent_access (
+      id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
+      space_file_id TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      file_type TEXT,
+      file_size INTEGER DEFAULT 0,
+      physical_storage_path TEXT,
+      parent_id TEXT,
+      path TEXT,
+      previewed_at TEXT NOT NULL,
+      UNIQUE(user_id, space_file_id)
+    )
+  `)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_space_recent_access_user_id ON t_space_recent_access(user_id)`)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_space_recent_access_user_previewed ON t_space_recent_access(user_id, previewed_at DESC)`
+  )
 }
 
 /**
@@ -147,3 +168,4 @@ export async function closeDatabase(): Promise<void> {
 export * from './message'
 export * from './spaceUpload'
 export * from './spaceDownload'
+export * from './spaceRecentAccess'

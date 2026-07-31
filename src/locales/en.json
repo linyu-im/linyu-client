@@ -524,6 +524,36 @@
         "success": "Recycle bin emptied"
       }
     },
+    "recent": {
+      "title": "Recently accessed",
+      "hint": "Files you recently previewed",
+      "empty": "No recently accessed files",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "size": "Size",
+        "previewedAt": "Previewed at"
+      },
+      "actions": {
+        "preview": "Preview",
+        "remove": "Remove",
+        "clear": "Clear all"
+      },
+      "remove": {
+        "confirmTitle": "Remove records",
+        "confirmContent": "Remove {count} selected item(s) from recently accessed?",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "success": "Removed"
+      },
+      "clear": {
+        "confirmTitle": "Clear recently accessed",
+        "confirmContent": "Clear all recently accessed records?",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "success": "Cleared"
+      }
+    },
     "title": "My Cloud Drive",
     "path": {
       "label": "Current location",
@@ -662,10 +692,19 @@
       "cancel": "Cancel",
       "confirm": "Download",
       "fileCount": "{count} files",
-      "noFiles": "Please select files to download",
       "noUrl": "Invalid download URL",
-      "folderSkipped": "Folders skipped; only files can be downloaded",
       "started": "Added to download queue"
+    },
+    "move": {
+      "title": "Move to",
+      "empty": "No folders",
+      "newFolder": "New folder",
+      "newFolderSuccess": "Folder created",
+      "cancel": "Cancel",
+      "confirm": "Move here",
+      "success": "Moved successfully",
+      "invalidTarget": "Cannot move to this folder",
+      "noFiles": "Please select items to move"
     }
   },
   "ai": {
@@ -835,6 +874,22 @@
     "versionDownloaded": "New version {version} has been downloaded",
     "later": "Update Later",
     "now": "Update Now"
+  },
+  "filePreview": {
+    "title": "File Preview",
+    "loading": "Loading file",
+    "loadingHint": "The file is loaded temporarily in this window's memory and is not saved locally",
+    "unsupported": "This file format cannot be previewed",
+    "unsupportedHint": "Download the file and open it with a local application",
+    "legacyWordUnsupported": "Legacy DOC files cannot be previewed. Convert the file to DOCX and try again",
+    "legacyWordHint": "DOC is a legacy binary format. This previewer supports DOCX only; convert or download the file to open it locally",
+    "tooLarge": "This file is too large to preview",
+    "tooLargeHint": "The preview limit for this format is {limit}. Download it and open it locally",
+    "failed": "File preview failed",
+    "failedHint": "The remote file may have expired or the network is temporarily unavailable",
+    "retry": "Try Again",
+    "invalidUrl": "The file preview URL is invalid",
+    "openFailed": "Unable to open the file preview window"
   },
   "imgViewer": {
     "zoomIn": "Zoom in",

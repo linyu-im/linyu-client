@@ -524,6 +524,36 @@
         "success": "清空成功"
       }
     },
+    "recent": {
+      "title": "最近访问",
+      "hint": "展示最近预览过的文件",
+      "empty": "暂无最近访问记录",
+      "columns": {
+        "name": "名称",
+        "type": "类型",
+        "size": "大小",
+        "previewedAt": "预览时间"
+      },
+      "actions": {
+        "preview": "预览",
+        "remove": "移除",
+        "clear": "清空记录"
+      },
+      "remove": {
+        "confirmTitle": "移除记录",
+        "confirmContent": "确定从最近访问中移除选中的 {count} 项吗？",
+        "confirm": "确认",
+        "cancel": "取消",
+        "success": "已移除"
+      },
+      "clear": {
+        "confirmTitle": "清空最近访问",
+        "confirmContent": "确定清空全部最近访问记录吗？",
+        "confirm": "确认",
+        "cancel": "取消",
+        "success": "已清空"
+      }
+    },
     "title": "我的云盘",
     "path": {
       "label": "当前位置",
@@ -662,10 +692,19 @@
       "cancel": "取消",
       "confirm": "下载",
       "fileCount": "等 {count} 个文件",
-      "noFiles": "请选择要下载的文件",
       "noUrl": "文件下载地址无效",
-      "folderSkipped": "已跳过文件夹，仅支持下载文件",
       "started": "已加入下载队列"
+    },
+    "move": {
+      "title": "文件移动到",
+      "empty": "暂无文件夹",
+      "newFolder": "新建文件夹",
+      "newFolderSuccess": "创建成功",
+      "cancel": "取消",
+      "confirm": "移动到此",
+      "success": "移动成功",
+      "invalidTarget": "不能移动到该目录",
+      "noFiles": "请选择要移动的文件"
     }
   },
   "ai": {
@@ -835,6 +874,22 @@
     "versionDownloaded": "新版本 {version} 已下载",
     "later": "稍后更新",
     "now": "立即更新"
+  },
+  "filePreview": {
+    "title": "文件预览",
+    "loading": "正在加载文件",
+    "loadingHint": "文件仅在当前窗口内存中临时加载，不会保存到本地",
+    "unsupported": "该格式暂不支持预览",
+    "unsupportedHint": "请下载文件后使用本地应用打开",
+    "legacyWordUnsupported": "旧版 DOC 格式暂不支持预览，请转换为 DOCX 后重试",
+    "legacyWordHint": "DOC 是旧版二进制格式，当前预览器仅支持 DOCX，请转换格式或下载后使用本地应用打开",
+    "tooLarge": "文件太大，无法在线预览",
+    "tooLargeHint": "当前格式最多预览 {limit}，请先下载后在本地打开",
+    "failed": "文件预览失败",
+    "failedHint": "远程文件可能已失效，或当前网络暂时不可用",
+    "retry": "重新加载",
+    "invalidUrl": "文件预览地址无效",
+    "openFailed": "无法打开文件预览窗口"
   },
   "imgViewer": {
     "zoomIn": "放大",
