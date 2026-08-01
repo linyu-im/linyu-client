@@ -130,6 +130,7 @@
                 'forward-modal__bubble--plain': isPlainBubble(props.message),
                 'forward-modal__bubble--text': props.message.msgType === 'text',
                 'forward-modal__bubble--file': props.message.msgType === 'file',
+                'forward-modal__bubble--cloud-share': props.message.msgType === 'cloud_share',
                 'forward-modal__bubble--ecard': props.message.msgType === 'ecard'
               }">
               <MessageItem :message="props.message" :is-self="false" :disable-events="true" />
@@ -632,6 +633,7 @@
       }
 
       &--file,
+      &--cloud-share,
       &--ecard {
         padding: 0;
         background: var(--bg-primary-color);

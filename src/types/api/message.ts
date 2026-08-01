@@ -26,6 +26,20 @@ export interface FileContent {
   fileSize: number
 }
 
+/** 网盘分享单项 */
+export interface CloudShareItem {
+  shareName: string
+  spaceFileId: string
+  fileType: string
+  fileSize: number
+  isDir: boolean
+}
+
+/** 网盘分享消息内容 */
+export interface CloudShareContent {
+  files: CloudShareItem[]
+}
+
 /** 文件消息本地扩展 */
 export interface FileMessageLocalExt {
   status: string
@@ -80,6 +94,7 @@ type MsgTypeMap = {
   image: ImageContent
   video: VideoContent
   file: FileContent
+  cloud_share: CloudShareContent
   ecard: ECardContent
   voice: VoiceContent
   sticker: StickerContent

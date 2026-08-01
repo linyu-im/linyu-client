@@ -65,7 +65,11 @@
           </button>
           <template v-if="hasFileSelection">
             <span class="cloud-drive-files__toolbar-divider"></span>
-            <button type="button" class="cloud-drive-files__toolbar-btn" :title="t('drive.actions.share')">
+            <button
+              type="button"
+              class="cloud-drive-files__toolbar-btn"
+              :title="t('drive.actions.share')"
+              @click="openShareForSelection">
               <svg class="size-16px">
                 <use href="#share"></use>
               </svg>
@@ -398,6 +402,8 @@
       @confirm="onDownloadConfirm" />
 
     <CloudDriveMoveModal v-model:show="moveModalVisible" :space-file-ids="moveModalFileIds" @success="onMoveSuccess" />
+
+    <CloudDriveFileDetailModal v-model:show="detailModalVisible" :space-file-id="detailModalFileId" />
   </section>
 </template>
 
@@ -405,15 +411,19 @@
   import { spaceApi } from '@/api'
   import CloudDriveCategories from '@/components/CloudDrive/CloudDriveCategories.vue'
   import CloudDriveDownloadModal from '@/components/CloudDrive/CloudDriveDownloadModal.vue'
+  import CloudDriveFileDetailModal from '@/components/CloudDrive/CloudDriveFileDetailModal.vue'
   import CloudDriveHeader from '@/components/CloudDrive/CloudDriveHeader.vue'
   import CloudDriveMoveModal from '@/components/CloudDrive/CloudDriveMoveModal.vue'
+  import { useForwardMessageModal } from '@/composables/useForwardMessageModal'
+  import { SceneType } from '@/constants/common'
   import { SpaceRootParentId } from '@/constants/space'
   import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { useUserStore } from '@/stores/user/user'
+  import type { CloudShareItem, Message } from '@/types/api/message'
   import { type SpaceFile } from '@/types/api/space'
   import { createFilePreviewWindow } from '@/utils/desktop/window'
   import { getFilePath, getFileSize, pickFiles, readPathAsFile } from '@/utils/file/filePick'
-  import { getDriveListFileIconUrl, getFolderIconUrl } from '@/utils/file/fileIcon'
+  import { getDriveListFileIconUrl, getFileExtension, getFolderIconUrl } from '@/utils/file/fileIcon'
   import {
     formatPreviewLimit,
     isFilePreviewTooLarge,
@@ -470,6 +480,7 @@
   const { t } = useI18n()
   const dialog = useDialog()
   const userStore = useUserStore()
+  const { openForwardMessageModal } = useForwardMessageModal()
   const spaceUploadStore = useSpaceUploadStore()
   const { completedVersion } = storeToRefs(spaceUploadStore)
 
@@ -501,6 +512,8 @@
   const downloadModalFiles = ref<SpaceFile[]>([])
   const moveModalVisible = ref(false)
   const moveModalFileIds = ref<string[]>([])
+  const detailModalVisible = ref(false)
+  const detailModalFileId = ref('')
   let skipCreateFolderBlur = false
   let skipRenameBlur = false
   let renamingOriginalName = ''
@@ -746,6 +759,60 @@
     openMoveConfirm(selected)
   }
 
+  const openDetailModal = (file: SpaceFile) => {
+    if (!file.id) return
+    detailModalFileId.value = file.id
+    detailModalVisible.value = true
+  }
+
+  const toCloudShareItem = (file: SpaceFile): CloudShareItem => {
+    const isDir = Boolean(file.isDir)
+    const fileType = isDir ? 'folder' : (file.fileType || getFileExtension(file.fileName) || '').trim().toLowerCase()
+    return {
+      shareName: file.fileName,
+      spaceFileId: file.id,
+      fileType,
+      fileSize: Number(file.fileSize) || 0,
+      isDir
+    }
+  }
+
+  const buildCloudShareMessage = (files: SpaceFile[]): Message | null => {
+    const items = files.filter((file) => Boolean(file.id)).map(toCloudShareItem)
+    if (items.length === 0) return null
+    const fromId = currentUserId.value || ''
+    return {
+      id: `cloud-share-${Date.now()}`,
+      sessionId: '',
+      fromId,
+      toId: '',
+      msgType: 'cloud_share',
+      content: { files: items },
+      isShowTime: false,
+      sceneType: SceneType.User,
+      createdAt: '',
+      updatedAt: ''
+    }
+  }
+
+  const openShareConfirm = (files: SpaceFile[]) => {
+    if (files.length === 0) {
+      window.$message.warning(t('drive.share.noFiles'))
+      return
+    }
+    const message = buildCloudShareMessage(files)
+    if (!message) {
+      window.$message.warning(t('drive.share.noFiles'))
+      return
+    }
+    openForwardMessageModal(message)
+  }
+
+  const openShareForSelection = () => {
+    const selected = fileList.value.filter((file) => selectedFileIds.value.has(file.id))
+    openShareConfirm(selected)
+  }
+
   const onMoveSuccess = () => {
     selectedFileIds.value = new Set()
     fetchFileList(currentFolderId.value)
@@ -763,6 +830,14 @@
     }
     if (key === 'rename') {
       startRename(file)
+      return
+    }
+    if (key === 'detail') {
+      openDetailModal(file)
+      return
+    }
+    if (key === 'share') {
+      openShareConfirm([file])
       return
     }
     if (key === 'download') {

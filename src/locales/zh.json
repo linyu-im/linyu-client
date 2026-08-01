@@ -76,6 +76,7 @@
       "image": "图片",
       "video": "视频",
       "file": "文件",
+      "cloud_share": "云盘分享",
       "ecard": "名片",
       "voice": "语音",
       "sticker": "表情",
@@ -104,6 +105,13 @@
     },
     "ecard": {
       "recommend": "好友推荐"
+    },
+    "cloudShare": {
+      "label": "云盘分享",
+      "empty": "分享文件",
+      "multiName": "{name} 等{count}个文件",
+      "multiSuffix": " 等{count}个文件",
+      "multiMeta": "{count}项 · {size}"
     },
     "forward": {
       "search": "搜索",
@@ -705,6 +713,21 @@
       "success": "移动成功",
       "invalidTarget": "不能移动到该目录",
       "noFiles": "请选择要移动的文件"
+    },
+    "share": {
+      "noFiles": "请选择要分享的文件"
+    },
+    "detail": {
+      "title": "详细信息",
+      "close": "关闭",
+      "type": "类型",
+      "location": "位置",
+      "size": "大小",
+      "sizeValue": "{size} ({bytes} 字节)",
+      "contains": "包含",
+      "containsValue": "{fileCount}个文件、{folderCount}个文件夹",
+      "modified": "修改时间",
+      "modifiedValue": "{year}年{month}月{day}日, {hour}:{minute}"
     }
   },
   "ai": {

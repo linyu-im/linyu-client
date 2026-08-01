@@ -3,6 +3,8 @@ import type {
   SpaceUserDirTreeNode,
   SpaceUserFileCategoryStat,
   SpaceUserFileDeleteParam,
+  SpaceUserFileDetailParam,
+  SpaceUserFileDetailResult,
   SpaceUserFileListParam,
   SpaceUserFileMoveParam,
   SpaceUserFileRenameParam,
@@ -45,4 +47,10 @@ export function renameSpaceUserFile(data: SpaceUserFileRenameParam): Promise<Api
 
 export function getSpaceUserFileCategoryStats(): Promise<ApiResponse<SpaceUserFileCategoryStat[]>> {
   return post<SpaceUserFileCategoryStat[], void>('/api/cloud-drive/v1/space/user/file/category/stats')
+}
+
+export function getSpaceUserFileDetail(
+  data: SpaceUserFileDetailParam
+): Promise<ApiResponse<SpaceUserFileDetailResult>> {
+  return post<SpaceUserFileDetailResult, SpaceUserFileDetailParam>('/api/cloud-drive/v1/space/user/file/detail', data)
 }

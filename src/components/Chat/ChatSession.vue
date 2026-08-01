@@ -637,6 +637,16 @@
     return message
   }
 
+  const scrollForwardMessageIntoView = () => {
+    pendingNewCount.value = 0
+    nextTick(() => {
+      messageListRef.value?.scrollToBottom()
+      requestAnimationFrame(() => {
+        messageListRef.value?.scrollToBottom()
+      })
+    })
+  }
+
   const replaceForwardMessageInUi = (localId: string, serverMsg: Message) => {
     const normalized = normalizeMessage({
       ...serverMsg,
@@ -644,7 +654,9 @@
     })
     if (messages.value.some((item) => item.id === localId)) {
       messages.value = messages.value.map((item) => (item.id === localId ? normalized : item))
+      return true
     }
+    return false
   }
 
   const markForwardFailedInUi = (localId: string, message: Message) => {
@@ -654,24 +666,92 @@
     })
   }
 
+  /** 应用转发同步；replace 时若乐观消息不在列表则直接追加，避免静默丢消息 */
+  const applyForwardSync = (payload: { sessionId: string; message: Message; replaceLocalId?: string }): boolean => {
+    if (payload.sessionId !== props.chat.sessionId) return false
+
+    const { message, replaceLocalId } = payload
+    if (replaceLocalId) {
+      if (replaceForwardMessageInUi(replaceLocalId, message)) {
+        scrollForwardMessageIntoView()
+        return true
+      }
+      const beforeLen = messages.value.length
+      appendMessage(message)
+      return messages.value.length > beforeLen
+    }
+    if (messages.value.some((item) => item.id === message.id)) {
+      markForwardFailedInUi(message.id, message)
+      if (isSelfMessage(message)) scrollForwardMessageIntoView()
+      return true
+    }
+    const beforeLen = messages.value.length
+    appendMessage(message)
+    return messages.value.length > beforeLen
+  }
+
+  /**
+   * keep-alive 停用期间 watch 会暂停，回到会话页时补齐：
+   * 1) 最后一次转发 syncPayload
+   * 2) 仍在发送中的本地消息
+   * 3) 会话列表已更新的 lastMsgContent
+   */
+  const reconcileMissedForwardMessages = (): boolean => {
+    let changed = false
+    const payload = messageForwardStore.syncPayload
+    if (payload) changed = applyForwardSync(payload) || changed
+
+    const peerId = props.chat.peerId
+    if (peerId) {
+      for (const pending of sendingMessagesStore.getMessages(peerId)) {
+        if (pending.sessionId && pending.sessionId !== props.chat.sessionId) continue
+        if (messages.value.some((item) => item.id === pending.id)) continue
+        const beforeLen = messages.value.length
+        appendMessage(pending)
+        changed = messages.value.length > beforeLen || changed
+      }
+    }
+
+    const lastMsg = props.chat.lastMsgContent
+    if (lastMsg?.id && lastMsg.sessionId === props.chat.sessionId) {
+      if (!messages.value.some((item) => item.id === lastMsg.id)) {
+        const replaceLocalId = messageForwardStore.syncPayload?.replaceLocalId
+        if (replaceLocalId && messages.value.some((item) => item.id === replaceLocalId)) {
+          if (replaceForwardMessageInUi(replaceLocalId, lastMsg)) {
+            changed = true
+          }
+        } else {
+          const beforeLen = messages.value.length
+          appendMessage(lastMsg)
+          changed = messages.value.length > beforeLen || changed
+        }
+      }
+    }
+
+    return changed
+  }
+
   watch(
     () => messageForwardStore.syncSeq,
     () => {
       const payload = messageForwardStore.syncPayload
-      if (!payload || payload.sessionId !== props.chat.sessionId) return
-
-      const { message, replaceLocalId } = payload
-      if (replaceLocalId) {
-        replaceForwardMessageInUi(replaceLocalId, message)
-        return
-      }
-      if (messages.value.some((item) => item.id === message.id)) {
-        markForwardFailedInUi(message.id, message)
-        return
-      }
-      appendMessage(message)
+      if (!payload) return
+      applyForwardSync(payload)
     }
   )
+
+  onActivated(() => {
+    const changed = reconcileMissedForwardMessages()
+    if (!changed) return
+    // 等 keep-alive 恢复后布局完成再滚底，避免隐藏态 clientHeight=0 导致滚底失效
+    nextTick(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollForwardMessageIntoView()
+        })
+      })
+    })
+  })
 
   const createAndStageLocalMessage = (msgType: SendMessageMsgType, content: SendMessageContent): Message | null => {
     const ctx = getSendContext()

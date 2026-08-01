@@ -69,6 +69,13 @@ const formatMessagePreview = (msg: Message): string => {
       return `[${t('message.msgType.video')}]`
     case 'file':
       return `[${t('message.msgType.file')}] ${msg.content.fileName || ''}`
+    case 'cloud_share': {
+      const files = msg.content.files || []
+      const firstName = files[0]?.shareName || ''
+      const previewName =
+        files.length > 1 ? t('message.cloudShare.multiName', { name: firstName, count: files.length }) : firstName
+      return `[${t('message.msgType.cloud_share')}] ${previewName}`
+    }
     case 'ecard':
       return `[${t('message.msgType.ecard')}] ${msg.content.userName || ''}`
     case 'voice':

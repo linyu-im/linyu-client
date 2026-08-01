@@ -40,10 +40,14 @@
               class="message-list__bubble"
               :class="{
                 'message-list__bubble--self':
-                  isSelf(message) && message.msgType !== 'file' && message.msgType !== 'ecard',
+                  isSelf(message) &&
+                  message.msgType !== 'file' &&
+                  message.msgType !== 'cloud_share' &&
+                  message.msgType !== 'ecard',
                 'message-list__bubble--plain': isPlainBubble(message),
                 'message-list__bubble--text': message.msgType === 'text',
                 'message-list__bubble--file': message.msgType === 'file',
+                'message-list__bubble--cloud-share': message.msgType === 'cloud_share',
                 'message-list__bubble--ecard': message.msgType === 'ecard'
               }">
               <Item
@@ -79,7 +83,6 @@
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
-  import { onBeforeUnmount, onMounted } from 'vue'
   import { SceneType } from '@/constants/common'
   import MessageQuotePreview from '@/components/Message/MessageQuotePreview.vue'
   import { useMessageDbStore } from '@/stores/message/messageDb'
@@ -249,6 +252,10 @@
 
     const container = getScrollContainer()
     if (container) {
+      // keep-alive 隐藏时 clientHeight 为 0，此时不能当作已滚到底，否则会清掉 pending
+      if (container.clientHeight <= 0) {
+        return false
+      }
       container.scrollTop = Math.max(0, container.scrollHeight - container.clientHeight)
       syncAtBottom(container)
       return computeAtBottom(container)
@@ -269,17 +276,23 @@
   const scrollToBottom = () => {
     pendingScrollToBottom = true
 
-    const run = () => {
+    const run = (retry = 0) => {
       pendingQuotesReady.finally(() => {
         if (!isDisplaySynced()) {
-          pendingQuotesReady.finally(() => nextTick(run))
+          if (retry < 30) nextTick(() => run(retry + 1))
           return
         }
         nextTick(() => {
           tryScrollToBottom()
           requestAnimationFrame(() => {
             tryScrollToBottom()
-            requestAnimationFrame(tryScrollToBottom)
+            requestAnimationFrame(() => {
+              tryScrollToBottom()
+              // 布局未稳定（如刚从 keep-alive 恢复）时继续重试，直到真正到底
+              if (pendingScrollToBottom && retry < 30) {
+                requestAnimationFrame(() => run(retry + 1))
+              }
+            })
           })
         })
       })
@@ -307,6 +320,13 @@
         resizeObserver?.observe(innerRef.value)
       }
     })
+  })
+
+  onActivated(() => {
+    // 从其他页返回时重新尝试滚底（隐藏期间的滚底常因 clientHeight=0 失败）
+    if (pendingScrollToBottom || atBottomRef.value) {
+      scrollToBottom()
+    }
   })
 
   onBeforeUnmount(() => {
@@ -564,6 +584,7 @@
       }
 
       &--file,
+      &--cloud-share,
       &--ecard {
         background: var(--bg-primary-color);
         color: var(--text-primary-color);

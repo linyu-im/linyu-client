@@ -5,6 +5,7 @@
       'message-item--plain': isPlain,
       'message-item--text': message.msgType === 'text',
       'message-item--file': message.msgType === 'file',
+      'message-item--cloud-share': message.msgType === 'cloud_share',
       'message-item--ecard': message.msgType === 'ecard',
       'message-item--disabled': disableEvents
     }"
@@ -32,6 +33,7 @@
   import Images from './Images.vue'
   import Video from './Video.vue'
   import File from './File.vue'
+  import CloudShare from './CloudShare.vue'
   import Ecard from './Ecard.vue'
   import Voice from './Voice.vue'
   import Sticker from './Sticker.vue'
@@ -71,6 +73,8 @@
         return Images
       case 'file':
         return File
+      case 'cloud_share':
+        return CloudShare
       case 'ecard':
         return Ecard
       case 'voice':
@@ -129,6 +133,10 @@
           { label: () => t('message.bubbleMenu.copy'), key: 'copy' },
           { label: () => t('message.bubbleMenu.forward'), key: 'forward' }
         )
+        pushQuote()
+        break
+      case 'cloud_share':
+        options.push({ label: () => t('message.bubbleMenu.forward'), key: 'forward' })
         pushQuote()
         break
       case 'image':
@@ -252,12 +260,14 @@
     }
 
     &--file,
+    &--cloud-share,
     &--ecard,
     &--plain {
       padding: 0;
     }
 
     &--file,
+    &--cloud-share,
     &--ecard {
       width: 100%;
       max-width: 100%;

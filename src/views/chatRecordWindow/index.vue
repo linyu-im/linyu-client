@@ -93,6 +93,7 @@
                   'chat-record__item-content--plain': isPlainContent(message),
                   'chat-record__item-content--text': message.msgType === 'text',
                   'chat-record__item-content--file': message.msgType === 'file',
+                  'chat-record__item-content--cloud-share': message.msgType === 'cloud_share',
                   'chat-record__item-content--ecard': message.msgType === 'ecard'
                 }">
                 <Item
@@ -673,6 +674,7 @@
       }
 
       &--file,
+      &--cloud-share,
       &--ecard {
         padding: 0;
         background: var(--bg-primary-color);
@@ -695,6 +697,7 @@
       }
 
       :deep(.message-item--file),
+      :deep(.message-item--cloud-share),
       :deep(.message-item--ecard) {
         width: 100%;
         max-width: 100%;

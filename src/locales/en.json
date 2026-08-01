@@ -76,6 +76,7 @@
       "image": "Image",
       "video": "Video",
       "file": "File",
+      "cloud_share": "Cloud Share",
       "ecard": "Ecard",
       "voice": "Voice",
       "sticker": "Sticker",
@@ -104,6 +105,13 @@
     },
     "ecard": {
       "recommend": "Friend Recommendation"
+    },
+    "cloudShare": {
+      "label": "Cloud Share",
+      "empty": "Shared files",
+      "multiName": "{name} and {count} files",
+      "multiSuffix": " and {count} files",
+      "multiMeta": "{count} items · {size}"
     },
     "forward": {
       "search": "Search",
@@ -705,6 +713,21 @@
       "success": "Moved successfully",
       "invalidTarget": "Cannot move to this folder",
       "noFiles": "Please select items to move"
+    },
+    "share": {
+      "noFiles": "Please select items to share"
+    },
+    "detail": {
+      "title": "Details",
+      "close": "Close",
+      "type": "Type",
+      "location": "Location",
+      "size": "Size",
+      "sizeValue": "{size} ({bytes} bytes)",
+      "contains": "Contains",
+      "containsValue": "{fileCount} files, {folderCount} folders",
+      "modified": "Modified",
+      "modifiedValue": "{month}/{day}/{year}, {hour}:{minute}"
     }
   },
   "ai": {

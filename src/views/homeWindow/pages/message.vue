@@ -262,6 +262,17 @@
             [{t('message.msgType.file')}] {msg.content.fileName}
           </span>
         )
+      case 'cloud_share': {
+        const files = msg.content.files || []
+        const firstName = files[0]?.shareName || ''
+        const previewName =
+          files.length > 1 ? t('message.cloudShare.multiName', { name: firstName, count: files.length }) : firstName
+        return (
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">
+            [{t('message.msgType.cloud_share')}] {previewName}
+          </span>
+        )
+      }
       case 'ecard':
         return (
           <span class="text-[var(--text-secondary-color)] text-12px truncate">

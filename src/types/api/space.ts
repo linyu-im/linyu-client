@@ -77,3 +77,22 @@ export interface SpaceUserDirTreeNode {
   level: number
   children: SpaceUserDirTreeNode[]
 }
+
+export interface SpaceUserFileDetailParam {
+  spaceFileId: string
+}
+
+export interface SpaceUserFileDetailResult {
+  id: string
+  fileName: string
+  isDir: boolean
+  fileType: string
+  fileCategory: string
+  location: string
+  size: number
+  contains: {
+    fileCount: number
+    folderCount: number
+  }
+  updatedAt: string
+}

@@ -102,6 +102,17 @@
             {message.content.fileName || `[${t('message.msgType.file')}]`}
           </span>
         )
+      case 'cloud_share': {
+        const files = message.content.files || []
+        const firstName = files[0]?.shareName || ''
+        const previewName =
+          files.length > 1 ? t('message.cloudShare.multiName', { name: firstName, count: files.length }) : firstName
+        return (
+          <span class="message-quote-preview__preview truncate">
+            {`[${t('message.msgType.cloud_share')}] ${previewName}`.trim()}
+          </span>
+        )
+      }
       case 'voice':
         return <span class="message-quote-preview__preview truncate">[{t('message.msgType.voice')}]</span>
       case 'sticker':
