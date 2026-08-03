@@ -105,6 +105,16 @@ const routes: RouteRecordRaw[] = [
     path: '/moment',
     name: 'momentWindow',
     component: () => import('@/views/momentWindow/index.vue')
+  },
+  {
+    path: '/pluginRuntime',
+    name: 'pluginRuntimeWindow',
+    component: () => import('@/views/pluginRuntimeWindow/index.vue')
+  },
+  {
+    path: '/plugin',
+    name: 'pluginUiWindow',
+    component: () => import('@/views/pluginUiWindow/index.vue')
   }
 ]
 

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-download-space-file"
+description = "Enables the download_space_file command without any pre-configured scope."
+commands.allow = ["download_space_file"]
+
+[[permission]]
+identifier = "deny-download-space-file"
+description = "Denies the download_space_file command without any pre-configured scope."
+commands.deny = ["download_space_file"]

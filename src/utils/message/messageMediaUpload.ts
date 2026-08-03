@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { appDataDir, join } from '@tauri-apps/api/path'
+import { appLocalDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, remove, writeFile } from '@tauri-apps/plugin-fs'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
@@ -34,7 +34,7 @@ const reportUploadError = (options: MessageMediaUploadOptions | undefined, messa
 }
 
 const blobToTempFile = async (blob: Blob, fileName: string): Promise<string> => {
-  const dataDir = await appDataDir()
+  const dataDir = await appLocalDataDir()
   const tempDir = await join(dataDir, 'linyu', 'uploads')
   await mkdir(tempDir, { recursive: true })
 

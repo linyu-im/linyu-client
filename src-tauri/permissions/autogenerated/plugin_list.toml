@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-plugin-list"
+description = "Enables the plugin_list command without any pre-configured scope."
+commands.allow = ["plugin_list"]
+
+[[permission]]
+identifier = "deny-plugin-list"
+description = "Denies the plugin_list command without any pre-configured scope."
+commands.deny = ["plugin_list"]

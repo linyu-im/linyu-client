@@ -1,0 +1,25 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "plugin-ui",
+  "description": "Restricted capability for trusted plugin UI shells",
+  "windows": ["plugin-ui-*"],
+  "permissions": [
+    "core:default",
+    "core:app:allow-set-app-theme",
+    "core:event:allow-listen",
+    "core:event:allow-emit",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "sql:default",
+    "sql:allow-execute",
+    "sql:allow-select",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-write-recursive",
+    "allow-plugin-read-entry",
+    "allow-plugin-invoke-api"
+  ]
+}

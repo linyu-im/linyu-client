@@ -767,22 +767,233 @@
   },
   "application": {
     "title": "应用中心",
-    "subtitle": "连接企业应用，提升团队协作效率",
-    "searchPlaceholder": "搜索应用",
-    "sectionAll": "全部应用",
-    "tabAll": "全部",
-    "tabAcquired": "已获取",
-    "tabUnacquired": "未获取",
+    "subtitle": "发现、安装和管理扩展林语能力的插件",
+    "searchPlaceholder": "搜索插件、作者或标签",
+    "navigationLabel": "插件中心导航",
     "count": "共 {count} 个",
-    "empty": "未找到相关应用",
-    "author": "作者：{name}",
-    "authorBy": "由 {name}",
-    "score": "评分 {score}",
-    "getCount": "下载 {count}",
-    "actionGet": "获取",
-    "actionOpen": "打开",
-    "actionUninstall": "卸载",
-    "todo": "功能开发中"
+    "loading": "正在加载插件市场",
+    "views": {
+      "market": {
+        "title": "插件市场",
+        "description": "浏览由官方市场提供的插件",
+        "emptyTitle": "没有找到插件",
+        "emptyDescription": "尝试更换关键词，或稍后再刷新插件市场。"
+      },
+      "installed": {
+        "title": "已安装",
+        "description": "管理当前设备上安装的插件",
+        "emptyTitle": "尚未安装插件",
+        "emptyDescription": "前往插件市场选择需要的扩展能力。"
+      },
+      "development": {
+        "title": "开发中",
+        "description": "加载并调试本地未打包插件",
+        "emptyTitle": "没有本地开发插件",
+        "emptyDescription": "开启开发者模式后，可以从本地目录加载插件。"
+      }
+    },
+    "source": {
+      "official": "官方",
+      "community": "社区",
+      "local": "本地"
+    },
+    "status": {
+      "available": "可安装",
+      "installed": "已安装",
+      "disabled": "已停用",
+      "update-available": "可更新",
+      "development": "开发中"
+    },
+    "actions": {
+      "install": "安装",
+      "open": "打开",
+      "update": "更新",
+      "enable": "启用",
+      "reload": "重新加载",
+      "disable": "停用",
+      "uninstall": "卸载",
+      "unload": "移除",
+      "export": "打包导出"
+    },
+    "detail": {
+      "title": "插件详情",
+      "publisher": "由 {name} 发布",
+      "version": "当前版本",
+      "source": "来源",
+      "status": "状态",
+      "permissions": "权限",
+      "noPermissions": "此插件未声明额外权限",
+      "developmentPath": "开发目录",
+      "windows": "窗口"
+    },
+    "permissions": {
+      "defaultDescription": "允许插件调用该项林语能力",
+      "storage": {
+        "title": "插件存储",
+        "description": "在插件独立的数据空间中保存配置和数据"
+      },
+      "network_fetch": {
+        "title": "访问网络",
+        "description": "访问清单中声明的网络域名"
+      },
+      "user_profile_read": {
+        "title": "读取个人资料",
+        "description": "读取当前登录用户的基础资料"
+      },
+      "files_read": {
+        "title": "读取文件",
+        "description": "读取用户选择的文件或插件自己的数据文件"
+      },
+      "files_write": {
+        "title": "写入文件",
+        "description": "写入用户选择的位置或插件自己的数据目录"
+      },
+      "window_open": {
+        "title": "打开插件窗口",
+        "description": "打开清单中声明的其他插件窗口"
+      },
+      "window_alwaysOnTop": {
+        "title": "窗口置顶",
+        "description": "允许插件自己的窗口保持在其他窗口上方"
+      },
+      "contacts_read": {
+        "title": "读取联系人",
+        "description": "读取联系人及其基础资料"
+      },
+      "message_read": {
+        "title": "读取消息",
+        "description": "读取会话中的消息内容"
+      },
+      "message_send": {
+        "title": "发送消息",
+        "description": "以当前用户身份发送消息"
+      },
+      "clipboard_read": {
+        "title": "读取剪贴板",
+        "description": "读取系统剪贴板中的内容"
+      },
+      "clipboard_write": {
+        "title": "写入剪贴板",
+        "description": "向系统剪贴板写入内容"
+      },
+      "filesystem_openDialog": {
+        "title": "选择本地文件",
+        "description": "打开系统文件选择窗口"
+      },
+      "filesystem_saveDialog": {
+        "title": "保存本地文件",
+        "description": "打开系统文件保存窗口"
+      },
+      "notification_show": {
+        "title": "显示通知",
+        "description": "在系统通知中心显示通知"
+      },
+      "external_open": {
+        "title": "打开外部链接",
+        "description": "使用系统默认应用打开外部链接"
+      }
+    },
+    "install": {
+      "title": "确认安装",
+      "description": "“{name}”需要以下权限，安装后可在设置中随时停用或卸载。",
+      "windowBehavior": "窗口行为",
+      "windowSummary": "共 {count} 个窗口，主窗口 {width} × {height}",
+      "cancel": "取消",
+      "confirm": "允许并安装"
+    },
+    "windowMode": {
+      "native": "系统标题栏",
+      "linyu": "林语标题栏",
+      "none": "无标题栏"
+    },
+    "window": {
+      "resizable": "可调整大小",
+      "fixed": "固定大小"
+    },
+    "removal": {
+      "title": "卸载插件",
+      "description": "确定卸载“{name}”吗？插件代码将从此设备移除。",
+      "deleteData": "同时删除插件数据",
+      "dataHint": "默认保留按用户隔离的插件数据，重新安装后可以继续使用。",
+      "cancel": "取消",
+      "confirm": "卸载"
+    },
+    "development": {
+      "title": "开发者模式",
+      "description": "仅加载你信任的本地插件目录，目录内容发生变化后可重新载入。",
+      "installPackage": "安装本地插件包",
+      "exportTitle": "导出开发插件包",
+      "loadFolder": "加载本地目录",
+      "selectPackage": "选择 .lyp 插件包",
+      "packageFilter": "林语插件包",
+      "selectFolder": "选择包含 manifest.json 的插件目录",
+      "enableFirst": "请先开启开发者模式",
+      "itemDescription": "从本地目录加载的开发版本插件",
+      "localAuthor": "本地开发者",
+      "pendingPath": "待安装：{path}"
+    },
+    "messages": {
+      "installed": "已安装 {name}",
+      "uninstalled": "已卸载 {name}",
+      "updated": "已更新 {name}",
+      "reloaded": "已重新加载 {name}",
+      "unloaded": "已移除本地插件 {name}",
+      "loaded": "已加载本地插件目录",
+      "exported": "插件包已导出到 {path}"
+    },
+    "errors": {
+      "PLUGIN_URL_MISSING": "市场未提供插件包下载地址",
+      "PLUGIN_INTEGRITY_REQUIRED": "远程插件必须提供 SHA-256 完整性摘要",
+      "PLUGIN_HASH_MISMATCH": "插件包完整性校验失败",
+      "PLUGIN_SIGNATURE_TRUST_ROOT_MISSING": "此版本客户端尚未配置插件签名公钥",
+      "PLUGIN_SIGNATURE_MISMATCH": "插件包签名校验失败",
+      "PLUGIN_ARCHIVE_INVALID": "插件包不是有效的 ZIP 文件",
+      "PLUGIN_ARCHIVE_TOO_MANY_FILES": "插件包包含的文件数量过多",
+      "PLUGIN_ARCHIVE_TOO_LARGE": "插件解压后的体积超过限制",
+      "PLUGIN_ARCHIVE_SYMLINK_FORBIDDEN": "插件包不能包含符号链接",
+      "PLUGIN_ARCHIVE_PATH_INVALID": "插件包包含不安全的文件路径",
+      "PLUGIN_MANIFEST_MISSING": "插件包根目录缺少 manifest.json",
+      "PLUGIN_MANIFEST_INVALID": "插件清单格式无效",
+      "PLUGIN_MANIFEST_VERSION_UNSUPPORTED": "客户端不支持此插件清单版本",
+      "PLUGIN_ID_INVALID": "插件 ID 格式无效",
+      "PLUGIN_NAME_INVALID": "插件名称格式无效",
+      "PLUGIN_PUBLISHER_INVALID": "插件发布者格式无效",
+      "PLUGIN_VERSION_INVALID": "插件版本不是有效的 SemVer",
+      "PLUGIN_ENGINE_VERSION_INVALID": "插件的客户端版本要求格式无效",
+      "PLUGIN_ENGINE_INCOMPATIBLE": "插件与当前客户端版本不兼容",
+      "PLUGIN_MAIN_INVALID": "插件后台入口无效或不存在",
+      "PLUGIN_UI_INVALID": "插件界面入口无效或不存在",
+      "PLUGIN_ICON_INVALID": "插件图标入口无效或不存在",
+      "PLUGIN_PERMISSION_UNSUPPORTED": "插件声明了客户端不支持的权限",
+      "PLUGIN_PERMISSION_DUPLICATED": "插件清单包含重复权限",
+      "PLUGIN_NETWORK_SCOPE_INVALID": "插件网络权限必须声明精确的 HTTPS 域名",
+      "PLUGIN_PACKAGE_INVALID": "本地插件包无效或超过大小限制",
+      "PLUGIN_DEVELOPMENT_PATH_INVALID": "所选目录不是有效的插件开发目录",
+      "PLUGIN_EXPORT_DEVELOPMENT_ONLY": "只有从开发目录加载的插件可以导出",
+      "PLUGIN_EXPORT_PATH_INVALID": "插件包导出路径无效",
+      "PLUGIN_EXPORT_PATH_INSIDE_SOURCE": "插件包不能导出到插件源码目录内部",
+      "PLUGIN_EXPORT_SYMLINK_FORBIDDEN": "插件源码包含符号链接，无法安全导出",
+      "PLUGIN_PACKAGE_TOO_LARGE": "插件包超过 100 MB 限制",
+      "PLUGIN_DOWNLOAD_FAILED": "插件包下载失败",
+      "PLUGIN_UPDATE_METADATA_MISSING": "市场缺少此插件的更新信息",
+      "PLUGIN_COMMAND_CALLER_DENIED": "当前窗口无权执行此插件操作"
+    }
+  },
+  "pluginRuntime": {
+    "title": "插件运行时",
+    "activeCount": "{count} 个插件处于启用状态"
+  },
+  "pluginUi": {
+    "unknownPlugin": "未知插件",
+    "loadingTitle": "正在载入 {name}",
+    "loadingDescription": "正在创建隔离的插件界面…",
+    "noUiTitle": "此插件没有独立界面",
+    "noUiDescription": "该插件仅提供后台能力或命令。",
+    "errorTitle": "插件界面载入失败",
+    "errorDescription": "无法启动 {name} 的插件界面。",
+    "retry": "重试",
+    "notFoundTitle": "未找到插件",
+    "notFoundDescription": "该插件可能已被卸载，或当前窗口参数无效。"
   },
   "settings": {
     "todo": "功能开发中",
@@ -856,8 +1067,18 @@
       "momentsInteractionDesc": "仅在过往出现与我相关的点赞、评论时出现标记"
     },
     "plugins": {
+      "title": "插件管理",
+      "description": "管理插件状态、开发模式和本地扩展",
+      "openCenter": "打开应用中心",
+      "developerMode": "开发者模式",
+      "developerModeDesc": "允许从本地目录加载未打包插件",
+      "storagePath": "插件目录",
+      "storagePathDesc": "插件包、运行数据和注册表统一存放在此目录",
+      "installedTitle": "设备上的插件",
+      "count": "{count} 个",
+      "removeConfirm": "确定移除“{name}”吗？",
       "emptyTitle": "暂无插件",
-      "emptyDesc": "插件功能即将上线，敬请期待"
+      "emptyDesc": "安装的插件和本地开发插件会显示在这里"
     },
     "about": {
       "version": "版本信息",

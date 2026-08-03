@@ -78,7 +78,18 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": {
+        "default-src": "'self' customprotocol: asset: data: blob:",
+        "script-src": "'self' 'unsafe-eval'",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "'self' ipc: http://ipc.localhost http: https: ws: wss:",
+        "img-src": "'self' asset: http://asset.localhost http: https: data: blob:",
+        "media-src": "'self' asset: http://asset.localhost http: https: data: blob:",
+        "font-src": "'self' data:",
+        "worker-src": "'self' blob:",
+        "frame-src": "'self' data: blob:",
+        "object-src": "'none'"
+      },
       "assetProtocol": {
         "enable": true,
         "scope": {

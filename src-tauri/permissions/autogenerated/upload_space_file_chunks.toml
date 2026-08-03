@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-upload-space-file-chunks"
+description = "Enables the upload_space_file_chunks command without any pre-configured scope."
+commands.allow = ["upload_space_file_chunks"]
+
+[[permission]]
+identifier = "deny-upload-space-file-chunks"
+description = "Denies the upload_space_file_chunks command without any pre-configured scope."
+commands.deny = ["upload_space_file_chunks"]

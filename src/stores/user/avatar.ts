@@ -1,6 +1,6 @@
 import { exists, mkdir, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { convertFileSrc } from '@tauri-apps/api/core'
-import { appDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
+import { appLocalDataDir, join, BaseDirectory } from '@tauri-apps/api/path'
 import { fetch } from '@tauri-apps/plugin-http'
 import SparkMD5 from 'spark-md5'
 import { defineStore } from 'pinia'
@@ -47,7 +47,7 @@ export const useAvatarStore = defineStore('avatar', () => {
   }
 
   const toAssetUrl = async (relativePath: string) => {
-    const dir = await appDataDir()
+    const dir = await appLocalDataDir()
     const absolutePath = await join(dir, relativePath)
     return convertFileSrc(absolutePath)
   }
@@ -59,7 +59,7 @@ export const useAvatarStore = defineStore('avatar', () => {
 
     try {
       const avatarPath = getAvatarRelativePath(type, id)
-      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppData })
+      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppLocalData })
       if (isExist) {
         const url = await toAssetUrl(avatarPath)
         cacheSet(cacheKey, url)
@@ -92,11 +92,11 @@ export const useAvatarStore = defineStore('avatar', () => {
     const avatarPath = getAvatarRelativePath(type, id)
     const hash = getAvatarHash(id)
     const fullDir = `avatar/${type}/${hash.slice(0, 2)}`
-    const dirExist = await exists(fullDir, { baseDir: BaseDirectory.AppData })
+    const dirExist = await exists(fullDir, { baseDir: BaseDirectory.AppLocalData })
     if (!dirExist) {
-      await mkdir(fullDir, { baseDir: BaseDirectory.AppData, recursive: true })
+      await mkdir(fullDir, { baseDir: BaseDirectory.AppLocalData, recursive: true })
     }
-    await writeFile(avatarPath, imageData, { baseDir: BaseDirectory.AppData })
+    await writeFile(avatarPath, imageData, { baseDir: BaseDirectory.AppLocalData })
     const url = await toAssetUrl(avatarPath)
     cacheSet(getCacheKey(type, id), url)
     return url
@@ -113,9 +113,9 @@ export const useAvatarStore = defineStore('avatar', () => {
 
     try {
       const avatarPath = getAvatarRelativePath(type, id)
-      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppData })
+      const isExist = await exists(avatarPath, { baseDir: BaseDirectory.AppLocalData })
       if (!isExist) return null
-      return readFile(avatarPath, { baseDir: BaseDirectory.AppData })
+      return readFile(avatarPath, { baseDir: BaseDirectory.AppLocalData })
     } catch {
       return null
     }

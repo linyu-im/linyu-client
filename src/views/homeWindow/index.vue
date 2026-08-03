@@ -101,6 +101,7 @@
   import {
     createEmotionWinodw,
     createFeedbackWinodw,
+    createPluginRuntimeWindow,
     createSetWinodw,
     closeWebviewWindow,
     exitApp,
@@ -258,6 +259,7 @@
 
   onMounted(() => {
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
+    void createPluginRuntimeWindow()
     onCurrentUserInfo()
     prefetchHomePages(route.name as string)
     window.addEventListener('keydown', onKeyDown)

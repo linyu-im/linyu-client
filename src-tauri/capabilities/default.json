@@ -1,9 +1,25 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Capability for trusted Linyu application windows",
   "windows": [
-    "*"
+    "login",
+    "tray",
+    "messageRemind",
+    "screenshot",
+    "home",
+    "emotion",
+    "set",
+    "feedback",
+    "imgViewer",
+    "videoViewer",
+    "file-preview-*",
+    "chatRecord",
+    "addContacts",
+    "groupNotice",
+    "call",
+    "chatSession-*",
+    "moment-*"
   ],
   "permissions": [
     "core:default",
@@ -58,8 +74,8 @@
     "shell:default",
     "fs:default",
     "fs:allow-read-file",
-    "fs:allow-appdata-read-recursive",
-    "fs:allow-appdata-write-recursive",
+    "fs:allow-applocaldata-read-recursive",
+    "fs:allow-applocaldata-write-recursive",
     {
       "identifier": "fs:scope",
       "allow": [
@@ -77,6 +93,26 @@
     "drag:default",
     "sql:default",
     "sql:allow-execute",
-    "sql:allow-select"
+    "sql:allow-select",
+    "allow-capture-screen",
+    "allow-start-oauth-server",
+    "allow-write-clipboard-files",
+    "allow-upload-file-chunks",
+    "allow-upload-space-file-chunks",
+    "allow-compute-space-file-hash",
+    "allow-cancel-space-file-upload",
+    "allow-download-space-file",
+    "allow-cancel-space-file-download",
+    "allow-plugin-get-system-info",
+    "allow-plugin-prepare-remote",
+    "allow-plugin-prepare-local",
+    "allow-plugin-prepare-development",
+    "allow-plugin-export-development",
+    "allow-plugin-abort-install",
+    "allow-plugin-commit-install",
+    "allow-plugin-uninstall",
+    "allow-plugin-set-enabled",
+    "allow-plugin-read-entry",
+    "allow-plugin-invoke-api"
   ]
 }

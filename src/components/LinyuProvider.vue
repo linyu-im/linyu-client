@@ -113,7 +113,24 @@
       textColorFocus: 'var(--text-color)',
       textColorDisabled: 'var(--text-color)',
       textColorHover: 'var(--text-color)',
-      rippleColor: 'var(--button-soft-bg)'
+      rippleColor: 'var(--button-soft-bg)',
+      // 危险 / 错误
+      colorError: 'var(--red)',
+      colorHoverError: 'color-mix(in srgb, var(--red) 88%, #000)',
+      colorPressedError: 'color-mix(in srgb, var(--red) 88%, #000)',
+      colorFocusError: 'color-mix(in srgb, var(--red) 88%, #000)',
+      colorDisabledError: 'color-mix(in srgb, var(--red) 60%, transparent)',
+      borderError: '1px solid var(--red)',
+      borderHoverError: '1px solid var(--red)',
+      borderPressedError: '1px solid var(--red)',
+      borderFocusError: '1px solid var(--red)',
+      borderDisabledError: '1px solid color-mix(in srgb, var(--red) 60%, transparent)',
+      textColorError: '#FFF',
+      textColorHoverError: '#FFF',
+      textColorPressedError: '#FFF',
+      textColorFocusError: '#FFF',
+      textColorDisabledError: '#FFF',
+      rippleColorError: 'var(--red)'
     },
     Dialog: {
       color: 'var(--bg-primary-color)',
@@ -181,7 +198,9 @@
       borderChecked: '1px solid var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       colorChecked: 'var(--primary-color)',
-      color: 'var(--button-soft-bg)'
+      color: 'var(--button-soft-bg)',
+      textColor: 'var(--text-muted-color)',
+      textColorDisabled: 'var(--text-muted-color)'
     },
     Radio: {
       border: '1px solid var(--border-color)',
@@ -243,6 +262,17 @@
       color: 'var(--bg-muted-color)',
       textColor: 'var(--text-color)',
       border: '1px solid var(--border-color)'
+    },
+    Popconfirm: {
+      // 与 Dialog 警告图标一致，使用主题色
+      iconColor: 'var(--primary-color)',
+      peers: {
+        Button: defaultButtonPeers,
+        Popover: {
+          color: 'var(--bg-muted-color)',
+          textColor: 'var(--text-color)'
+        }
+      }
     },
     Badge: {
       color: 'var(--red)',
@@ -448,6 +478,33 @@
       --n-box-shadow-focus: none;
       --n-ripple-color: var(--button-soft-bg);
     }
+  }
+
+  .n-popconfirm {
+    .n-popconfirm__icon {
+      color: var(--primary-color);
+    }
+
+    .n-popconfirm__action .n-button--ghost {
+      --n-color: var(--button-soft-bg);
+      --n-color-hover: color-mix(in srgb, var(--button-soft-bg) 60%, transparent);
+      --n-color-pressed: var(--button-soft-bg);
+      --n-color-focus: var(--button-soft-bg);
+      --n-text-color: var(--text-color);
+      --n-text-color-hover: var(--text-color);
+      --n-text-color-pressed: var(--text-color);
+      --n-text-color-focus: var(--text-color);
+      --n-border: 1px solid var(--button-soft-bg);
+      --n-border-hover: 1px solid var(--button-soft-bg);
+      --n-border-pressed: 1px solid var(--button-soft-bg);
+      --n-border-focus: 1px solid var(--button-soft-bg);
+      --n-box-shadow-focus: none;
+      --n-ripple-color: var(--button-soft-bg);
+    }
+  }
+
+  .n-checkbox .n-checkbox__label {
+    color: var(--text-muted-color);
   }
 
   .n-slider-handle {

@@ -13,6 +13,8 @@ export interface Application {
   appType: string
   iconUrl: string
   pluginUrl: string
+  pluginSha256?: string
+  pluginSignature?: string
   webUrl: string
   getCount: number
   score: number

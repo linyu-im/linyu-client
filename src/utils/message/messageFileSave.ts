@@ -1,4 +1,4 @@
-import { appDataDir, join } from '@tauri-apps/api/path'
+import { appLocalDataDir, join } from '@tauri-apps/api/path'
 import { exists, mkdir, readDir, readFile, writeFile } from '@tauri-apps/plugin-fs'
 import { fetchBinary } from '@/utils/network/http'
 import { resolveLocalMediaFilePath } from '@/utils/file/blobFilePath'
@@ -29,7 +29,7 @@ export const formatYearMonth = (date = new Date()) => {
 export const resolveMessageStorageRoot = (configuredPath?: string) => {
   const trimmed = configuredPath?.trim() ?? ''
   if (trimmed) return Promise.resolve(trimmed)
-  return appDataDir().then((dir) => join(dir, 'linyu', 'data'))
+  return appLocalDataDir().then((dir) => join(dir, 'linyu', 'data'))
 }
 
 export const resolveFileExtension = (fileName?: string, url?: string, defaultExtension = '.jpg'): string => {

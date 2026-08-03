@@ -1,5 +1,5 @@
 import Database from '@tauri-apps/plugin-sql'
-import { appDataDir, BaseDirectory, join } from '@tauri-apps/api/path'
+import { appLocalDataDir, BaseDirectory, join } from '@tauri-apps/api/path'
 import { mkdir } from '@tauri-apps/plugin-fs'
 
 const DB_RELATIVE_DIR = 'data'
@@ -9,13 +9,13 @@ let dbInstance: Database | null = null
 let dbPathPromise: Promise<string> | null = null
 
 /**
- * 获取数据库绝对路径（存放在 appDataDir/data 目录下）
+ * 获取数据库绝对路径（存放在 appLocalDataDir/data 目录下）
  */
 async function getDbPath(): Promise<string> {
   if (!dbPathPromise) {
     dbPathPromise = (async () => {
-      await mkdir(DB_RELATIVE_DIR, { baseDir: BaseDirectory.AppData, recursive: true })
-      const dataDir = await appDataDir()
+      await mkdir(DB_RELATIVE_DIR, { baseDir: BaseDirectory.AppLocalData, recursive: true })
+      const dataDir = await appLocalDataDir()
       const dbPath = await join(dataDir, DB_RELATIVE_DIR, DB_FILE_NAME)
       return dbPath.replace(/\\/g, '/')
     })()
@@ -152,6 +152,43 @@ export async function initDatabase(): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS idx_t_space_recent_access_user_previewed ON t_space_recent_access(user_id, previewed_at DESC)`
   )
+
+  // 插件安装记录
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_plugin_installation (
+      id TEXT PRIMARY KEY NOT NULL,
+      application_id TEXT,
+      name TEXT NOT NULL,
+      version TEXT NOT NULL,
+      description TEXT NOT NULL,
+      author TEXT NOT NULL,
+      icon_url TEXT NOT NULL DEFAULT '',
+      tags_json TEXT NOT NULL DEFAULT '[]',
+      source TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      installed_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      root_path TEXT NOT NULL,
+      package_sha256 TEXT NOT NULL DEFAULT '',
+      signature_status TEXT NOT NULL DEFAULT 'unverified',
+      development_path TEXT,
+      manifest_json TEXT NOT NULL,
+      grants_json TEXT NOT NULL DEFAULT '[]'
+    )
+  `)
+
+  // 插件 KV 存储（按 plugin_id + user_id 隔离）
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_plugin_kv (
+      plugin_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      key TEXT NOT NULL,
+      value_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (plugin_id, user_id, key)
+    )
+  `)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_plugin_kv_plugin_user ON t_plugin_kv(plugin_id, user_id)`)
 }
 
 /**
@@ -169,3 +206,4 @@ export * from './message'
 export * from './spaceUpload'
 export * from './spaceDownload'
 export * from './spaceRecentAccess'
+export * from './plugin'

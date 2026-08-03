@@ -767,22 +767,233 @@
   },
   "application": {
     "title": "App Center",
-    "subtitle": "Connect enterprise apps to boost team productivity",
-    "searchPlaceholder": "Search apps",
-    "sectionAll": "All apps",
-    "tabAll": "All",
-    "tabAcquired": "Installed",
-    "tabUnacquired": "Not installed",
+    "subtitle": "Discover, install, and manage plugins that extend Linyu",
+    "searchPlaceholder": "Search plugins, publishers, or tags",
+    "navigationLabel": "Plugin center navigation",
     "count": "{count} apps",
-    "empty": "No matching apps",
-    "author": "By {name}",
-    "authorBy": "by {name}",
-    "score": "Rating {score}",
-    "getCount": "{count} downloads",
-    "actionGet": "Get",
-    "actionOpen": "Open",
-    "actionUninstall": "Uninstall",
-    "todo": "Coming soon"
+    "loading": "Loading plugin marketplace",
+    "views": {
+      "market": {
+        "title": "Marketplace",
+        "description": "Browse plugins provided by the official marketplace",
+        "emptyTitle": "No plugins found",
+        "emptyDescription": "Try another keyword or refresh the marketplace later."
+      },
+      "installed": {
+        "title": "Installed",
+        "description": "Manage plugins installed on this device",
+        "emptyTitle": "No plugins installed",
+        "emptyDescription": "Visit the marketplace to add the extensions you need."
+      },
+      "development": {
+        "title": "Development",
+        "description": "Load and debug unpacked local plugins",
+        "emptyTitle": "No development plugins",
+        "emptyDescription": "Enable developer mode to load a plugin from a local folder."
+      }
+    },
+    "source": {
+      "official": "Official",
+      "community": "Community",
+      "local": "Local"
+    },
+    "status": {
+      "available": "Available",
+      "installed": "Installed",
+      "disabled": "Disabled",
+      "update-available": "Update available",
+      "development": "Development"
+    },
+    "actions": {
+      "install": "Install",
+      "open": "Open",
+      "update": "Update",
+      "enable": "Enable",
+      "reload": "Reload",
+      "disable": "Disable",
+      "uninstall": "Uninstall",
+      "unload": "Remove",
+      "export": "Package and export"
+    },
+    "detail": {
+      "title": "Plugin details",
+      "publisher": "Published by {name}",
+      "version": "Current version",
+      "source": "Source",
+      "status": "Status",
+      "permissions": "Permissions",
+      "noPermissions": "This plugin does not declare additional permissions",
+      "developmentPath": "Development folder",
+      "windows": "Windows"
+    },
+    "permissions": {
+      "defaultDescription": "Allow the plugin to use this Linyu capability",
+      "storage": {
+        "title": "Plugin storage",
+        "description": "Save settings and data in the plugin's isolated storage"
+      },
+      "network_fetch": {
+        "title": "Network access",
+        "description": "Access network origins declared in the manifest"
+      },
+      "user_profile_read": {
+        "title": "Read profile",
+        "description": "Read the current user's basic profile"
+      },
+      "files_read": {
+        "title": "Read files",
+        "description": "Read user-selected files or files in the plugin data directory"
+      },
+      "files_write": {
+        "title": "Write files",
+        "description": "Write to user-selected locations or the plugin data directory"
+      },
+      "window_open": {
+        "title": "Open plugin windows",
+        "description": "Open additional windows declared by the plugin manifest"
+      },
+      "window_alwaysOnTop": {
+        "title": "Always on top",
+        "description": "Keep the plugin's own window above other windows"
+      },
+      "contacts_read": {
+        "title": "Read contacts",
+        "description": "Read contacts and their basic profiles"
+      },
+      "message_read": {
+        "title": "Read messages",
+        "description": "Read message content from conversations"
+      },
+      "message_send": {
+        "title": "Send messages",
+        "description": "Send messages as the current user"
+      },
+      "clipboard_read": {
+        "title": "Read clipboard",
+        "description": "Read content from the system clipboard"
+      },
+      "clipboard_write": {
+        "title": "Write clipboard",
+        "description": "Write content to the system clipboard"
+      },
+      "filesystem_openDialog": {
+        "title": "Choose local files",
+        "description": "Open the system file picker"
+      },
+      "filesystem_saveDialog": {
+        "title": "Save local files",
+        "description": "Open the system save dialog"
+      },
+      "notification_show": {
+        "title": "Show notifications",
+        "description": "Show notifications in the system notification center"
+      },
+      "external_open": {
+        "title": "Open external links",
+        "description": "Open external links with the system default app"
+      }
+    },
+    "install": {
+      "title": "Confirm installation",
+      "description": "“{name}” requires the following permissions. You can disable or uninstall it later in Settings.",
+      "windowBehavior": "Window behavior",
+      "windowSummary": "{count} window(s), main window {width} × {height}",
+      "cancel": "Cancel",
+      "confirm": "Allow and install"
+    },
+    "windowMode": {
+      "native": "Native title bar",
+      "linyu": "Linyu title bar",
+      "none": "No title bar"
+    },
+    "window": {
+      "resizable": "Resizable",
+      "fixed": "Fixed size"
+    },
+    "removal": {
+      "title": "Uninstall plugin",
+      "description": "Uninstall “{name}”? Its code will be removed from this device.",
+      "deleteData": "Also delete plugin data",
+      "dataHint": "User-isolated plugin data is retained by default and can be reused after reinstalling.",
+      "cancel": "Cancel",
+      "confirm": "Uninstall"
+    },
+    "development": {
+      "title": "Developer mode",
+      "description": "Only load local plugin folders you trust. Reload after files change.",
+      "installPackage": "Install local package",
+      "exportTitle": "Export development plugin",
+      "loadFolder": "Load local folder",
+      "selectPackage": "Select a .lyp plugin package",
+      "packageFilter": "Linyu plugin package",
+      "selectFolder": "Select a plugin folder containing manifest.json",
+      "enableFirst": "Enable developer mode first",
+      "itemDescription": "Development plugin loaded from a local folder",
+      "localAuthor": "Local developer",
+      "pendingPath": "Pending installation: {path}"
+    },
+    "messages": {
+      "installed": "Installed {name}",
+      "uninstalled": "Uninstalled {name}",
+      "updated": "Updated {name}",
+      "reloaded": "Reloaded {name}",
+      "unloaded": "Removed local plugin {name}",
+      "loaded": "Local plugin folder loaded",
+      "exported": "Plugin package exported to {path}"
+    },
+    "errors": {
+      "PLUGIN_URL_MISSING": "The marketplace did not provide a plugin package URL",
+      "PLUGIN_INTEGRITY_REQUIRED": "Remote plugins must include a SHA-256 digest",
+      "PLUGIN_HASH_MISMATCH": "Plugin package integrity verification failed",
+      "PLUGIN_SIGNATURE_TRUST_ROOT_MISSING": "This client build has no plugin signing public key",
+      "PLUGIN_SIGNATURE_MISMATCH": "Plugin package signature verification failed",
+      "PLUGIN_ARCHIVE_INVALID": "The plugin package is not a valid ZIP file",
+      "PLUGIN_ARCHIVE_TOO_MANY_FILES": "The plugin package contains too many files",
+      "PLUGIN_ARCHIVE_TOO_LARGE": "The unpacked plugin exceeds the size limit",
+      "PLUGIN_ARCHIVE_SYMLINK_FORBIDDEN": "Plugin packages cannot contain symbolic links",
+      "PLUGIN_ARCHIVE_PATH_INVALID": "The plugin package contains an unsafe path",
+      "PLUGIN_MANIFEST_MISSING": "manifest.json is missing from the package root",
+      "PLUGIN_MANIFEST_INVALID": "The plugin manifest is invalid",
+      "PLUGIN_MANIFEST_VERSION_UNSUPPORTED": "This manifest version is not supported",
+      "PLUGIN_ID_INVALID": "The plugin ID is invalid",
+      "PLUGIN_NAME_INVALID": "The plugin name is invalid",
+      "PLUGIN_PUBLISHER_INVALID": "The plugin publisher is invalid",
+      "PLUGIN_VERSION_INVALID": "The plugin version is not valid SemVer",
+      "PLUGIN_ENGINE_VERSION_INVALID": "The client version requirement is invalid",
+      "PLUGIN_ENGINE_INCOMPATIBLE": "The plugin is incompatible with this client version",
+      "PLUGIN_MAIN_INVALID": "The plugin worker entry is invalid or missing",
+      "PLUGIN_UI_INVALID": "The plugin UI entry is invalid or missing",
+      "PLUGIN_ICON_INVALID": "The plugin icon entry is invalid or missing",
+      "PLUGIN_PERMISSION_UNSUPPORTED": "The plugin requests an unsupported permission",
+      "PLUGIN_PERMISSION_DUPLICATED": "The plugin manifest contains a duplicated permission",
+      "PLUGIN_NETWORK_SCOPE_INVALID": "Network permission hosts must be exact HTTPS origins",
+      "PLUGIN_PACKAGE_INVALID": "The local plugin package is invalid or too large",
+      "PLUGIN_DEVELOPMENT_PATH_INVALID": "The selected folder is not a valid development plugin",
+      "PLUGIN_EXPORT_DEVELOPMENT_ONLY": "Only plugins loaded from a development folder can be exported",
+      "PLUGIN_EXPORT_PATH_INVALID": "The plugin export path is invalid",
+      "PLUGIN_EXPORT_PATH_INSIDE_SOURCE": "The package cannot be exported inside the plugin source folder",
+      "PLUGIN_EXPORT_SYMLINK_FORBIDDEN": "The plugin source contains a symbolic link and cannot be exported safely",
+      "PLUGIN_PACKAGE_TOO_LARGE": "The plugin package exceeds the 100 MB limit",
+      "PLUGIN_DOWNLOAD_FAILED": "The plugin package download failed",
+      "PLUGIN_UPDATE_METADATA_MISSING": "Marketplace update metadata is missing",
+      "PLUGIN_COMMAND_CALLER_DENIED": "This window cannot perform the plugin operation"
+    }
+  },
+  "pluginRuntime": {
+    "title": "Plugin runtime",
+    "activeCount": "{count} plugins enabled"
+  },
+  "pluginUi": {
+    "unknownPlugin": "Unknown plugin",
+    "loadingTitle": "Loading {name}",
+    "loadingDescription": "Creating an isolated plugin interface…",
+    "noUiTitle": "This plugin has no standalone interface",
+    "noUiDescription": "This plugin only contributes background capabilities or commands.",
+    "errorTitle": "Plugin interface failed to load",
+    "errorDescription": "Could not start the interface for {name}.",
+    "retry": "Retry",
+    "notFoundTitle": "Plugin not found",
+    "notFoundDescription": "The plugin may have been uninstalled or the window parameters are invalid."
   },
   "settings": {
     "todo": "Coming soon",
@@ -856,8 +1067,18 @@
       "momentsInteractionDesc": "Show badge only for likes and comments on your Moment posts"
     },
     "plugins": {
+      "title": "Plugin management",
+      "description": "Manage plugin status, developer mode, and local extensions",
+      "openCenter": "Open App Center",
+      "developerMode": "Developer mode",
+      "developerModeDesc": "Allow loading unpacked plugins from local folders",
+      "storagePath": "Plugin directory",
+      "storagePathDesc": "Plugin packages, runtime data, and the registry are stored here",
+      "installedTitle": "Plugins on this device",
+      "count": "{count} plugins",
+      "removeConfirm": "Remove “{name}”?",
       "emptyTitle": "No plugins yet",
-      "emptyDesc": "Plugins are coming soon"
+      "emptyDesc": "Installed and local development plugins will appear here"
     },
     "about": {
       "version": "Version",

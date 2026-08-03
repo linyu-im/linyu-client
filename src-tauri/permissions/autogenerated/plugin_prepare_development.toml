@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-plugin-prepare-development"
+description = "Enables the plugin_prepare_development command without any pre-configured scope."
+commands.allow = ["plugin_prepare_development"]
+
+[[permission]]
+identifier = "deny-plugin-prepare-development"
+description = "Denies the plugin_prepare_development command without any pre-configured scope."
+commands.deny = ["plugin_prepare_development"]

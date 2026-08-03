@@ -228,10 +228,6 @@
       margin-left: 4px;
       font-size: 13px;
       color: var(--text-muted-color);
-
-      :deep(.n-checkbox__label) {
-        color: var(--text-muted-color);
-      }
     }
 
     &__footer {

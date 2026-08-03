@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-plugin-export-development"
+description = "Enables the plugin_export_development command without any pre-configured scope."
+commands.allow = ["plugin_export_development"]
+
+[[permission]]
+identifier = "deny-plugin-export-development"
+description = "Denies the plugin_export_development command without any pre-configured scope."
+commands.deny = ["plugin_export_development"]

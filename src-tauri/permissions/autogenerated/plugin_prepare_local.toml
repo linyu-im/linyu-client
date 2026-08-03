@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-plugin-prepare-local"
+description = "Enables the plugin_prepare_local command without any pre-configured scope."
+commands.allow = ["plugin_prepare_local"]
+
+[[permission]]
+identifier = "deny-plugin-prepare-local"
+description = "Denies the plugin_prepare_local command without any pre-configured scope."
+commands.deny = ["plugin_prepare_local"]

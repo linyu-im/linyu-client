@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-plugin-invoke-api"
+description = "Enables the plugin_invoke_api command without any pre-configured scope."
+commands.allow = ["plugin_invoke_api"]
+
+[[permission]]
+identifier = "deny-plugin-invoke-api"
+description = "Denies the plugin_invoke_api command without any pre-configured scope."
+commands.deny = ["plugin_invoke_api"]

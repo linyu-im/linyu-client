@@ -5,7 +5,7 @@ import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
 import type { SpaceUploadFileParam, UploadFileProgressPayload } from '@/types/cmd/upload'
 import { DEFAULT_FILE_CHUNK_SIZE } from '@/utils/file/fileChunk'
-import { appDataDir, join } from '@tauri-apps/api/path'
+import { appLocalDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, open, writeFile } from '@tauri-apps/plugin-fs'
 
 const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
@@ -170,7 +170,7 @@ const TEMP_WRITE_CHUNK_SIZE = 2 * 1024 * 1024
 
 /** 大文件禁止整包 arrayBuffer + writeFile，否则 IPC/内存会直接卡死应用 */
 export const blobToSpaceTempFile = async (blob: Blob, fileName: string): Promise<string> => {
-  const dataDir = await appDataDir()
+  const dataDir = await appLocalDataDir()
   const tempDir = await join(dataDir, 'linyu', 'space-uploads')
   await mkdir(tempDir, { recursive: true })
 

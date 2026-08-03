@@ -71,7 +71,7 @@ function buildUrl(url: string, params?: Record<string, any>): string {
   return `${SERVICE_URL}${url}${query ? `?${query}` : ''}`
 }
 
-function resolveResourceUrl(url: string): string {
+export function resolveResourceUrl(url: string): string {
   if (/^https?:\/\//i.test(url)) return url
   const path = url.startsWith('/') ? url : `/${url}`
   return `${SERVICE_URL}${path}`
@@ -85,7 +85,7 @@ const getServiceOrigin = () => {
   }
 }
 
-const isApiOriginUrl = (requestUrl: string) => {
+export const isApiOriginUrl = (requestUrl: string) => {
   const serviceOrigin = getServiceOrigin()
   if (!serviceOrigin) return false
   try {

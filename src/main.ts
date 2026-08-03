@@ -9,6 +9,9 @@ import i18n from '@/services/i18n'
 import router from '@/router'
 import { initDatabase } from '@/db'
 
-initDatabase().then(() => {
+const skipDatabaseInitialization = ['/pluginRuntime', '/plugin'].includes(window.location.pathname)
+const databaseReady = skipDatabaseInitialization ? Promise.resolve() : initDatabase()
+
+databaseReady.then(() => {
   createApp(App).use(router).use(pinia).use(i18n).mount('#app')
 })

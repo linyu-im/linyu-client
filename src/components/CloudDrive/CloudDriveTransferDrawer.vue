@@ -352,10 +352,7 @@
                 {{ t('drive.transfer.settings.browse') }}
               </button>
             </div>
-            <n-checkbox
-              :checked="useDefaultDownloadPath"
-              class="cloud-drive-transfer__settings-checkbox"
-              @update:checked="onUseDefaultDownloadPathChange">
+            <n-checkbox :checked="useDefaultDownloadPath" @update:checked="onUseDefaultDownloadPathChange">
               {{ t('drive.transfer.settings.setDefaultPath') }}
             </n-checkbox>
           </div>
@@ -1222,12 +1219,6 @@
       &:hover {
         border-color: var(--primary-color);
         color: var(--primary-color);
-      }
-    }
-
-    &__settings-checkbox {
-      :deep(.n-checkbox__label) {
-        color: var(--text-muted-color);
       }
     }
 
