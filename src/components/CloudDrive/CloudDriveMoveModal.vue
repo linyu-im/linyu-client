@@ -2,7 +2,7 @@
   <n-modal v-model:show="visible" :mask-closable="true" :auto-focus="false" transform-origin="center">
     <div class="cloud-drive-move-modal">
       <div class="cloud-drive-move-modal__header">
-        <h2 class="cloud-drive-move-modal__title">{{ t('drive.move.title') }}</h2>
+        <h2 class="cloud-drive-move-modal__title">{{ modalTitle }}</h2>
         <button
           type="button"
           class="cloud-drive-move-modal__close"
@@ -96,9 +96,9 @@
             type="primary"
             class="cloud-drive-move-modal__btn"
             :loading="moving"
-            :disabled="!canMove"
+            :disabled="!canConfirm"
             @click="onConfirm">
-            {{ t('drive.move.confirm') }}
+            {{ confirmLabel }}
           </n-button>
         </div>
       </div>
@@ -148,20 +148,29 @@
 
   const props = withDefaults(
     defineProps<{
+      /** move：移动文件；select：仅选择目录并回传 */
+      mode?: 'move' | 'select'
       spaceFileIds?: string[]
+      /** 打开时预选中的目录 id */
+      initialSelectedId?: string
     }>(),
     {
-      spaceFileIds: () => []
+      mode: 'move',
+      spaceFileIds: () => [],
+      initialSelectedId: SpaceRootParentId
     }
   )
 
   const emit = defineEmits<{
-    success: [targetParentId: string]
+    success: [targetParentId: string, targetName: string]
     cancel: []
   }>()
 
   const { t } = useI18n()
   const folderIcon = getFolderIconUrl()
+  const isSelectMode = computed(() => props.mode === 'select')
+  const modalTitle = computed(() => (isSelectMode.value ? t('drive.move.selectTitle') : t('drive.move.title')))
+  const confirmLabel = computed(() => (isSelectMode.value ? t('drive.move.selectConfirm') : t('drive.move.confirm')))
 
   const treeLoading = ref(false)
   const moving = ref(false)
@@ -261,14 +270,13 @@
   const isBreadcrumbEllipsis = (item: DisplayBreadcrumbItem): item is BreadcrumbEllipsisDisplay =>
     item.itemKey === 'ellipsis'
 
-  const canMove = computed(
-    () =>
-      Boolean(selectedId.value) &&
-      !disabledIds.value.has(selectedId.value) &&
-      props.spaceFileIds.length > 0 &&
-      !moving.value &&
-      !creatingParentId.value
-  )
+  const canConfirm = computed(() => {
+    if (!selectedId.value || disabledIds.value.has(selectedId.value) || moving.value || creatingParentId.value) {
+      return false
+    }
+    if (isSelectMode.value) return true
+    return props.spaceFileIds.length > 0
+  })
 
   const mapApiNodes = (nodes: SpaceUserDirTreeNode[]): TreeViewNode[] =>
     (nodes || []).map((node) => ({
@@ -340,8 +348,20 @@
     emit('cancel')
   }
 
+  const resolveSelectedName = () =>
+    nodeMap.value.get(selectedId.value)?.fileName ||
+    (selectedId.value === SpaceRootParentId ? t('drive.path.allFiles') : selectedId.value)
+
   const onConfirm = () => {
-    if (!canMove.value) return
+    if (!canConfirm.value) return
+    const targetName = resolveSelectedName()
+
+    if (isSelectMode.value) {
+      visible.value = false
+      emit('success', selectedId.value, targetName)
+      return
+    }
+
     const spaceFileIds = props.spaceFileIds.filter(Boolean)
     if (spaceFileIds.length === 0) return
 
@@ -355,7 +375,7 @@
         if (res.code === 0) {
           window.$message.success(t('drive.move.success'))
           visible.value = false
-          emit('success', selectedId.value)
+          emit('success', selectedId.value, targetName)
           return
         }
         window.$message.error(res.msg)
@@ -580,9 +600,10 @@
         cancelCreateFolder()
         return
       }
-      selectedId.value = SpaceRootParentId
+      const preferId = props.initialSelectedId || SpaceRootParentId
+      selectedId.value = preferId
       expandedIds.value = new Set([SpaceRootParentId])
-      fetchTree(SpaceRootParentId)
+      fetchTree(preferId)
     }
   )
 </script>

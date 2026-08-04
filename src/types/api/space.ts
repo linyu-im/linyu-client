@@ -36,6 +36,12 @@ export interface SpaceUserFileMoveParam {
   targetParentId: string
 }
 
+/** 内容转存到用户空间 */
+export interface SpaceUserFileTransferParam {
+  spaceFileIds: string[]
+  targetDirId: string
+}
+
 export interface SpaceUserFileRenameParam {
   spaceFileId: string
   newName: string

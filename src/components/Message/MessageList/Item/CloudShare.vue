@@ -1,5 +1,5 @@
 <template>
-  <div class="message-cloud-share">
+  <div class="message-cloud-share" @click.stop="onClick">
     <div class="message-cloud-share__main">
       <img class="message-cloud-share__icon" :src="iconUrl" :alt="displayName" draggable="false" />
       <div class="message-cloud-share__info">
@@ -18,11 +18,14 @@
     </div>
     <div class="message-cloud-share__footer">{{ t('message.cloudShare.label') }}</div>
   </div>
+
+  <CloudShareSaveModal v-model:show="saveModalVisible" :files="files" />
 </template>
 
 <script setup lang="ts">
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
+  import CloudShareSaveModal from '@/components/Modal/CloudShareSaveModal.vue'
   import type { CloudShareContent, CloudShareItem } from '@/types/api/message'
   import {
     getFileExtension,
@@ -39,11 +42,16 @@
   /** 文件扩展名预留，多文件时让给「等 x 个文件」 */
   const NAME_EXT_RESERVE = 4
 
-  const props = defineProps<{
-    content: CloudShareContent
-  }>()
+  const props = withDefaults(
+    defineProps<{
+      content: CloudShareContent
+      disableEvents?: boolean
+    }>(),
+    { disableEvents: false }
+  )
 
   const { t } = useI18n()
+  const saveModalVisible = ref(false)
 
   const tooltipContentStyle: CSSProperties = {
     background: 'var(--bg-primary-color)',
@@ -136,6 +144,11 @@
     }
     return formatSize(item.fileSize)
   })
+
+  const onClick = () => {
+    if (props.disableEvents) return
+    saveModalVisible.value = true
+  }
 </script>
 
 <style scoped lang="scss">
@@ -147,6 +160,7 @@
     overflow: hidden;
     color: var(--text-primary-color);
     user-select: none;
+    cursor: pointer;
 
     &__main {
       display: flex;

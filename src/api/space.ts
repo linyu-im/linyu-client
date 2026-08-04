@@ -8,6 +8,7 @@ import type {
   SpaceUserFileListParam,
   SpaceUserFileMoveParam,
   SpaceUserFileRenameParam,
+  SpaceUserFileTransferParam,
   SpaceFile,
   SpaceUserInfoResult
 } from '@/types/api/space'
@@ -39,6 +40,10 @@ export function deleteSpaceUserFile(data: SpaceUserFileDeleteParam): Promise<Api
 
 export function moveSpaceUserFile(data: SpaceUserFileMoveParam): Promise<ApiResponse<null>> {
   return post<null, SpaceUserFileMoveParam>('/api/cloud-drive/v1/space/user/file/move', data)
+}
+
+export function transferSpaceUserFile(data: SpaceUserFileTransferParam): Promise<ApiResponse<void>> {
+  return post<void, SpaceUserFileTransferParam>('/api/cloud-drive/v1/space/user/file/transfer', data)
 }
 
 export function renameSpaceUserFile(data: SpaceUserFileRenameParam): Promise<ApiResponse<SpaceFile>> {

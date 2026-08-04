@@ -105,6 +105,9 @@
     if (msg.msgType === 'sticker') {
       return { messageId: msg.id, content: msg.content, localExt: msg.localExt }
     }
+    if (msg.msgType === 'cloud_share') {
+      return { content: msg.content, disableEvents: props.disableEvents }
+    }
     return { content: msg.content }
   })
 
@@ -136,7 +139,6 @@
         pushQuote()
         break
       case 'cloud_share':
-        options.push({ label: () => t('message.bubbleMenu.forward'), key: 'forward' })
         pushQuote()
         break
       case 'image':

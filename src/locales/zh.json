@@ -111,7 +111,12 @@
       "empty": "分享文件",
       "multiName": "{name} 等{count}个文件",
       "multiSuffix": " 等{count}个文件",
-      "multiMeta": "{count}项 · {size}"
+      "multiMeta": "{count}项 · {size}",
+      "saveTitle": "保存到云盘",
+      "selectDir": "选择保存目录",
+      "save": "保存",
+      "saveSuccess": "转存成功",
+      "close": "关闭"
     },
     "forward": {
       "search": "搜索",
@@ -705,11 +710,13 @@
     },
     "move": {
       "title": "文件移动到",
+      "selectTitle": "保存到",
       "empty": "暂无文件夹",
       "newFolder": "新建文件夹",
       "newFolderSuccess": "创建成功",
       "cancel": "取消",
       "confirm": "移动到此",
+      "selectConfirm": "选择到此",
       "success": "移动成功",
       "invalidTarget": "不能移动到该目录",
       "noFiles": "请选择要移动的文件"

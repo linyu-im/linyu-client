@@ -111,7 +111,12 @@
       "empty": "Shared files",
       "multiName": "{name} and {count} files",
       "multiSuffix": " and {count} files",
-      "multiMeta": "{count} items · {size}"
+      "multiMeta": "{count} items · {size}",
+      "saveTitle": "Save to Cloud Drive",
+      "selectDir": "Choose folder",
+      "save": "Save",
+      "saveSuccess": "Saved successfully",
+      "close": "Close"
     },
     "forward": {
       "search": "Search",
@@ -705,11 +710,13 @@
     },
     "move": {
       "title": "Move to",
+      "selectTitle": "Save to",
       "empty": "No folders",
       "newFolder": "New folder",
       "newFolderSuccess": "Folder created",
       "cancel": "Cancel",
       "confirm": "Move here",
+      "selectConfirm": "Select here",
       "success": "Moved successfully",
       "invalidTarget": "Cannot move to this folder",
       "noFiles": "Please select items to move"
