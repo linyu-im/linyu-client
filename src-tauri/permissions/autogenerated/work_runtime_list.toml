@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-runtime-list"
+description = "Enables the work_runtime_list command without any pre-configured scope."
+commands.allow = ["work_runtime_list"]
+
+[[permission]]
+identifier = "deny-work-runtime-list"
+description = "Denies the work_runtime_list command without any pre-configured scope."
+commands.deny = ["work_runtime_list"]

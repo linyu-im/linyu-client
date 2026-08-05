@@ -51,7 +51,7 @@
     &__section-title {
       margin: 0 0 8px 2px;
       font-size: 13px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__section-title + .setting-card {

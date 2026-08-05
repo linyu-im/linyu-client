@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-runtime-check-update"
+description = "Enables the work_runtime_check_update command without any pre-configured scope."
+commands.allow = ["work_runtime_check_update"]
+
+[[permission]]
+identifier = "deny-work-runtime-check-update"
+description = "Denies the work_runtime_check_update command without any pre-configured scope."
+commands.deny = ["work_runtime_check_update"]

@@ -75,7 +75,7 @@
       padding: 0;
       border: none;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       transition: color 0.15s ease;
 
@@ -85,7 +85,7 @@
     }
 
     &__sep {
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       opacity: 0.6;
     }
 
@@ -93,7 +93,7 @@
       margin-top: 12px;
       text-align: center;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       line-height: 1.6;
 
       p {

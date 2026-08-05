@@ -1,36 +1,41 @@
 <template>
-  <div class="set-window">
-    <div data-tauri-drag-region class="set-window__toolbar">
-      <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
-      <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeCurrentWindow" />
-    </div>
+  <n-config-provider :theme-overrides="settingsThemeOverrides">
+    <div class="set-window">
+      <div data-tauri-drag-region class="set-window__toolbar">
+        <SvgIconButton href="#minimize" @click="minimizeCurrentWindow" />
+        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeCurrentWindow" />
+      </div>
 
-    <div class="set-window__body">
-      <aside class="set-window__sider">
-        <button
-          v-for="item in menuItems"
-          :key="item.key"
-          type="button"
-          class="set-window__nav"
-          :class="{ 'set-window__nav--active': activeKey === item.key }"
-          @click="activeKey = item.key">
-          <svg class="set-window__nav-icon" aria-hidden="true">
-            <use :href="item.icon"></use>
-          </svg>
-          <span class="set-window__nav-label">{{ t(item.labelKey) }}</span>
-        </button>
-      </aside>
+      <div class="set-window__body">
+        <aside class="set-window__sider">
+          <button
+            v-for="item in menuItems"
+            :key="item.key"
+            type="button"
+            class="set-window__nav"
+            :class="{ 'set-window__nav--active': activeKey === item.key }"
+            @click="activeKey = item.key">
+            <svg class="set-window__nav-icon" aria-hidden="true">
+              <use :href="item.icon"></use>
+            </svg>
+            <span class="set-window__nav-label">{{ t(item.labelKey) }}</span>
+          </button>
+        </aside>
 
-      <n-scrollbar class="set-window__content">
-        <component :is="activePage" />
-      </n-scrollbar>
+        <n-scrollbar class="set-window__content">
+          <component :is="activePage" />
+        </n-scrollbar>
+      </div>
     </div>
-  </div>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
   import '@/components/Set/settingsSelect.scss'
   import { computed, markRaw, ref } from 'vue'
+  import { useRoute } from 'vue-router'
+  import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+  import type { GlobalThemeOverrides } from 'naive-ui'
   import { useI18n } from 'vue-i18n'
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
@@ -40,17 +45,50 @@
   import NotificationPage from './pages/notification.vue'
   import PluginsPage from './pages/plugins.vue'
   import AboutPage from './pages/about.vue'
+  import WorkAssistantPage from './pages/work-assistant.vue'
 
-  type SettingsMenuKey = 'account' | 'general' | 'shortcuts' | 'notification' | 'plugins' | 'about'
+  type SettingsMenuKey = 'account' | 'general' | 'shortcuts' | 'notification' | 'work' | 'plugins' | 'about'
 
   const { t } = useI18n()
-  const activeKey = ref<SettingsMenuKey>('account')
+  const route = useRoute()
+  const routeTab = String(route.query.tab || '')
+  const activeKey = ref<SettingsMenuKey>(routeTab === 'work' ? 'work' : 'account')
+
+  const mutedButtonText = {
+    textColor: 'var(--text-muted-color)',
+    textColorHover: 'var(--text-muted-color)',
+    textColorPressed: 'var(--text-muted-color)',
+    textColorFocus: 'var(--text-muted-color)',
+    textColorDisabled: 'var(--text-muted-color)',
+    textColorText: 'var(--text-muted-color)',
+    textColorTextHover: 'var(--text-muted-color)',
+    textColorTextPressed: 'var(--text-muted-color)',
+    textColorTextFocus: 'var(--text-muted-color)',
+    textColorTextDisabled: 'var(--text-muted-color)',
+    textColorGhost: 'var(--text-muted-color)',
+    textColorGhostHover: 'var(--text-muted-color)',
+    textColorGhostPressed: 'var(--text-muted-color)',
+    textColorGhostFocus: 'var(--text-muted-color)',
+    textColorGhostDisabled: 'var(--text-muted-color)'
+  }
+
+  const settingsThemeOverrides: GlobalThemeOverrides = {
+    Button: {
+      ...mutedButtonText,
+      textColorPrimary: '#FFF',
+      textColorHoverPrimary: '#FFF',
+      textColorPressedPrimary: '#FFF',
+      textColorFocusPrimary: '#FFF',
+      textColorDisabledPrimary: '#FFF'
+    }
+  }
 
   const menuItems: { key: SettingsMenuKey; labelKey: string; icon: string }[] = [
     { key: 'account', labelKey: 'settings.menu.account', icon: '#user' },
     { key: 'general', labelKey: 'settings.menu.general', icon: '#settings' },
     { key: 'shortcuts', labelKey: 'settings.menu.shortcuts', icon: '#keyboard' },
     { key: 'notification', labelKey: 'settings.menu.notification', icon: '#alarm' },
+    { key: 'work', labelKey: 'settings.menu.work', icon: '#ai' },
     { key: 'plugins', labelKey: 'settings.menu.plugins', icon: '#plug' },
     { key: 'about', labelKey: 'settings.menu.about', icon: '#info' }
   ]
@@ -60,17 +98,25 @@
     general: markRaw(GeneralPage),
     shortcuts: markRaw(ShortcutsPage),
     notification: markRaw(NotificationPage),
+    work: markRaw(WorkAssistantPage),
     plugins: markRaw(PluginsPage),
     about: markRaw(AboutPage)
   }
 
   const activePage = computed(() => pageMap[activeKey.value])
+  let unlistenSettingsNavigation: UnlistenFn | undefined
 
-  onMounted(() => {
+  onMounted(async () => {
+    unlistenSettingsNavigation = await listen<{ tab?: string }>('settings:navigate', (event) => {
+      const tab = event.payload.tab
+      if (tab && tab in pageMap) activeKey.value = tab as SettingsMenuKey
+    })
     nextTick(() => {
       ShowCurrentWindow()
     })
   })
+
+  onBeforeUnmount(() => unlistenSettingsNavigation?.())
 </script>
 
 <style scoped lang="scss">
@@ -147,7 +193,7 @@
       flex-shrink: 0;
       width: 18px;
       height: 18px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       transition: color 0.15s ease;
     }
 

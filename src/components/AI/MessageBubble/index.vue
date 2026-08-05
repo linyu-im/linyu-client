@@ -1,5 +1,6 @@
 <template>
   <article
+    ref="messageRef"
     class="ai-message"
     :class="[`ai-message--${role}`, { 'ai-message--streaming': streaming, 'ai-message--rich': rich }]">
     <div class="ai-message__row">
@@ -28,6 +29,8 @@
           <MessageBody v-if="rich" :content="content" :streaming="streaming" />
           <div v-else class="ai-message__plain">{{ content }}</div>
         </div>
+
+        <WorkAttachmentList v-if="attachments.length" :attachments="attachments" compact />
 
         <footer class="ai-message__actions">
           <n-tooltip placement="top" :show-arrow="false">
@@ -58,10 +61,11 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user/user'
   import Avatar from '@/components/Avatar.vue'
+  import WorkAttachmentList from '@/components/AI/Work/WorkAttachmentList.vue'
+  import type { WorkAttachmentRecord } from '@/db/workAssistant'
   import MessageBody from './MessageBody.vue'
 
   export type AiMessageRole = 'user' | 'assistant'
@@ -72,16 +76,19 @@
       content?: string
       rich?: boolean
       streaming?: boolean
+      attachments?: WorkAttachmentRecord[]
     }>(),
     {
       content: '',
       rich: undefined,
-      streaming: false
+      streaming: false,
+      attachments: () => []
     }
   )
 
   const emit = defineEmits<{
     regenerate: []
+    resized: []
   }>()
 
   const { t } = useI18n()
@@ -89,6 +96,7 @@
 
   const userId = computed(() => userStore.authInfo.userId)
   const copied = ref(false)
+  const messageRef = ref<HTMLElement | null>(null)
 
   const rich = computed(() => {
     if (props.rich !== undefined) return props.rich
@@ -111,6 +119,14 @@
       window.$message?.error(t('ai.messageBubble.copyFailed'))
     }
   }
+
+  let resizeObserver: ResizeObserver | undefined
+  onMounted(() => {
+    if (!messageRef.value) return
+    resizeObserver = new ResizeObserver(() => emit('resized'))
+    resizeObserver.observe(messageRef.value)
+  })
+  onBeforeUnmount(() => resizeObserver?.disconnect())
 </script>
 
 <style scoped lang="scss">
@@ -192,6 +208,8 @@
 
     &--assistant &__main {
       align-items: flex-start;
+      width: min(760px, calc(100% - 48px));
+      max-width: none;
     }
 
     &__content {
@@ -211,11 +229,14 @@
       }
 
       &--assistant {
-        background-color: var(--bg-primary-color);
+        padding: 4px 0;
+        border-color: transparent;
+        background-color: transparent;
+        box-shadow: none;
       }
 
       &--streaming {
-        border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
+        border-color: transparent;
       }
     }
 

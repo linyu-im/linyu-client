@@ -189,6 +189,79 @@ export async function initDatabase(): Promise<void> {
     )
   `)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_plugin_kv_plugin_user ON t_plugin_kv(plugin_id, user_id)`)
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_work_conversation (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      runtime_id TEXT NOT NULL,
+      provider_id TEXT NOT NULL DEFAULT '',
+      model TEXT NOT NULL DEFAULT '',
+      workspace_path TEXT NOT NULL DEFAULT '',
+      scope_mode TEXT NOT NULL DEFAULT 'chat',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `)
+  const workConversationColumns = await db.select<Array<{ name: string }>>('PRAGMA table_info(t_work_conversation)')
+  if (!workConversationColumns.some((column) => column.name === 'scope_mode')) {
+    await db.execute("ALTER TABLE t_work_conversation ADD COLUMN scope_mode TEXT NOT NULL DEFAULT 'chat'")
+  }
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_work_conversation_updated ON t_work_conversation(updated_at DESC)`)
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_work_message (
+      id TEXT PRIMARY KEY NOT NULL,
+      conversation_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      run_id TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL
+    )
+  `)
+  const workMessageColumns = await db.select<Array<{ name: string }>>('PRAGMA table_info(t_work_message)')
+  if (!workMessageColumns.some((column) => column.name === 'run_id')) {
+    await db.execute("ALTER TABLE t_work_message ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
+  }
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_work_message_conversation ON t_work_message(conversation_id, created_at ASC)`
+  )
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_work_message_attachment (
+      id TEXT PRIMARY KEY NOT NULL,
+      message_id TEXT NOT NULL,
+      conversation_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      path TEXT NOT NULL,
+      mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+      size INTEGER NOT NULL DEFAULT 0,
+      category TEXT NOT NULL DEFAULT 'other',
+      created_at TEXT NOT NULL
+    )
+  `)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_work_attachment_message ON t_work_message_attachment(message_id, created_at ASC)`
+  )
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_work_step (
+      id TEXT PRIMARY KEY NOT NULL,
+      conversation_id TEXT NOT NULL,
+      run_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      status TEXT NOT NULL,
+      detail TEXT NOT NULL DEFAULT '',
+      payload_json TEXT NOT NULL DEFAULT '{}',
+      sequence INTEGER NOT NULL DEFAULT 0,
+      started_at TEXT NOT NULL,
+      completed_at TEXT NOT NULL DEFAULT ''
+    )
+  `)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_work_step_run ON t_work_step(conversation_id, run_id, sequence ASC)`
+  )
 }
 
 /**
@@ -207,3 +280,4 @@ export * from './spaceUpload'
 export * from './spaceDownload'
 export * from './spaceRecentAccess'
 export * from './plugin'
+export * from './workAssistant'

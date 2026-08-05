@@ -392,8 +392,8 @@
       const msg = event.payload
       if (!msg?.sessionId || msg.sessionId !== props.chat.sessionId) return
       appendMessage(msg)
-      // 对方消息且当前窗口未聚焦时，任务栏对应窗口闪烁提醒
-      if (!isSelfMessage(msg)) {
+      // 仅真正在查看该会话时才闪任务栏；其它 Tab 的未读改由托盘闪烁提醒
+      if (!isSelfMessage(msg) && chatStore.isChatActive(props.chat.id)) {
         void requestCurrentWindowAttention()
       }
     }).then((unlisten) => {
@@ -1182,7 +1182,7 @@
     flex-direction: column;
     overflow: hidden;
     color: var(--text-color);
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-content-color);
 
     .chat-session__header {
       position: relative;

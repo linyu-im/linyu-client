@@ -144,7 +144,7 @@
       flex-shrink: 0;
       font-size: 12px;
       font-weight: 500;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
       white-space: nowrap;
     }
@@ -186,7 +186,7 @@
       border: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
       border-radius: 8px;
       background: var(--bg-muted-color);
-      color: var(--text-color);
+      color: var(--text-muted-color);
       font-size: 13px;
       cursor: pointer;
       transition:

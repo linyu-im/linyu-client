@@ -37,6 +37,7 @@ clipboard-rs = "0.3"
 screenshots = "0.8"
 base64 = "0.22"
 reqwest = { version = "0.12", features = ["multipart", "json", "stream"] }
+futures-util = "0.3"
 sha2 = "0.10"
 semver = { version = "1", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
@@ -44,3 +45,12 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 ed25519-dalek = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-drag = "2.1.1"
+keyring = { version = "3", features = [
+  "apple-native",
+  "windows-native",
+  "linux-native-sync-persistent",
+  "crypto-rust",
+] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+notify-rust = "4.18.0"

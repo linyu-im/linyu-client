@@ -69,7 +69,7 @@
 
     &__hold {
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       white-space: nowrap;
     }
 

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-session-close"
+description = "Enables the work_session_close command without any pre-configured scope."
+commands.allow = ["work_session_close"]
+
+[[permission]]
+identifier = "deny-work-session-close"
+description = "Denies the work_session_close command without any pre-configured scope."
+commands.deny = ["work_session_close"]

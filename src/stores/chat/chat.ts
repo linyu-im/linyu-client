@@ -1,4 +1,5 @@
 import { chatApi } from '@/api'
+import router from '@/router'
 import { useMessageDbStore } from '@/stores/message/messageDb'
 import { useChatDetachedStore } from '@/stores/chat/chatDetached'
 import { useUserStore } from '@/stores/user/user'
@@ -7,6 +8,8 @@ import type { Message } from '@/types/api/message'
 import { closeChatSessionWindow } from '@/utils/desktop/window'
 import { defineStore } from 'pinia'
 import { isValidBackendTime, nowBackendDatetime, parseBackendTime } from '@/utils/common/time'
+
+const MESSAGE_TAB_PATH = '/home/message'
 
 type ChatStore = {
   chatList: Chat[]
@@ -70,9 +73,11 @@ export const useChatStore = defineStore('chat', {
       return useChatDetachedStore().isDetached(chatId)
     },
 
-    /** 是否正在查看该会话（主窗选中或独立窗打开），用于未读/提醒，不用于列表高亮 */
+    /** 是否正在查看该会话（主窗消息页选中或独立窗打开），用于未读/提醒，不用于列表高亮 */
     isChatActive(chatId: string) {
-      return this.selectedChatId === chatId || useChatDetachedStore().isDetached(chatId)
+      if (useChatDetachedStore().isDetached(chatId)) return true
+      // keep-alive 会保留 selectedChatId；离开消息 Tab 时不应视为正在查看
+      return this.selectedChatId === chatId && router.currentRoute.value.path === MESSAGE_TAB_PATH
     },
 
     setSelectedChatId(chatId: string) {

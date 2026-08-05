@@ -1,4 +1,5 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
+import { emitTo } from '@tauri-apps/api/event'
 import { Effect, EffectState, UserAttentionType } from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
 import { WEBVIEW_ADDITIONAL_BROWSER_ARGS } from '@/constants/webview'
@@ -65,8 +66,9 @@ export const createWebviewWindow = async (
 
   let webview = await WebviewWindow.getByLabel(label)
   if (webview) {
-    await webview.setFocus()
     await webview.show()
+    await webview.unminimize()
+    await webview.setFocus()
     return webview
   }
 
@@ -191,7 +193,19 @@ export const createHomeWinodw = () =>
 export const createEmotionWinodw = () =>
   createWebviewWindow('心情', 'emotion', { width: 320, height: 525, transparent: true })
 
-export const createSetWinodw = () => createWebviewWindow('设置', 'set', { width: 800, height: 600, transparent: true })
+export const createSetWinodw = async (tab?: string) => {
+  const window = await createWebviewWindow('设置', 'set', {
+    width: 900,
+    height: 680,
+    minWidth: 820,
+    minHeight: 620,
+    resizable: true,
+    transparent: true,
+    url: tab ? `/set?tab=${encodeURIComponent(tab)}` : '/set'
+  })
+  if (tab) await emitTo('set', 'settings:navigate', { tab })
+  return window
+}
 
 export const createFeedbackWinodw = () =>
   createWebviewWindow('意见反馈', 'feedback', {

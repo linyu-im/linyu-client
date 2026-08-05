@@ -1,7 +1,8 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use screenshots::image::ImageFormat as ScreenshotImageFormat;
 use screenshots::Screen;
-use serde_json::json;
+use serde::Deserialize;
+use serde_json::{json, Value};
 use std::io::Cursor;
 use std::sync::Mutex;
 use tauri::async_runtime::JoinHandle;
@@ -12,6 +13,73 @@ use url::Url;
 
 pub struct OauthServerState {
     pub handle: Mutex<Option<JoinHandle<()>>>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppNotificationInput {
+    pub title: String,
+    pub body: Option<String>,
+    pub extra: Option<Value>,
+}
+
+#[tauri::command]
+pub fn show_app_notification(
+    app: AppHandle,
+    input: AppNotificationInput,
+) -> Result<(), String> {
+    let title = input.title.trim();
+    if title.is_empty() {
+        return Err("notification title is required".into());
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        use notify_rust::{Notification, NotificationResponse};
+
+        let mut notification = Notification::new();
+        notification.summary(title);
+        if let Some(body) = input.body.as_deref().map(str::trim).filter(|value| !value.is_empty()) {
+            notification.body(body);
+        }
+
+        let identifier = app.config().identifier.clone();
+        let current_dir = std::env::current_exe()
+            .ok()
+            .and_then(|path| path.parent().map(|parent| parent.display().to_string()))
+            .unwrap_or_default();
+        let is_unbundled =
+            current_dir.ends_with("target\\debug") || current_dir.ends_with("target\\release");
+        if !is_unbundled {
+            notification.app_id(&identifier);
+        }
+
+        let handle = notification.show().map_err(|error| error.to_string())?;
+        if let Some(extra) = input.extra {
+            std::thread::spawn(move || {
+                let _ = handle.wait_for_response(|response: &NotificationResponse| {
+                    if matches!(
+                        response,
+                        NotificationResponse::Default | NotificationResponse::Action(_)
+                    ) {
+                        let _ = app.emit("app://notification-action", extra);
+                    }
+                });
+            });
+        }
+        return Ok(());
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        use tauri_plugin_notification::NotificationExt;
+
+        let mut builder = app.notification().builder().title(title);
+        if let Some(body) = input.body.as_deref().map(str::trim).filter(|value| !value.is_empty()) {
+            builder = builder.body(body);
+        }
+        builder.show().map_err(|error| error.to_string())
+    }
 }
 
 impl Default for OauthServerState {

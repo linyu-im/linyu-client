@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-skill-uninstall"
+description = "Enables the work_skill_uninstall command without any pre-configured scope."
+commands.allow = ["work_skill_uninstall"]
+
+[[permission]]
+identifier = "deny-work-skill-uninstall"
+description = "Denies the work_skill_uninstall command without any pre-configured scope."
+commands.deny = ["work_skill_uninstall"]

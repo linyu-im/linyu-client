@@ -14,6 +14,7 @@
         --bg-secondary-color: #F5F5F5;
         --bg-muted-color: #F7F7F7;
         --bg-tertiary-color: #EBEBEB;
+        --bg-content-color: #FAFAFA;
         --bg-primary-rgb: 255, 255, 255;
         --bg-secondary-rgb: 245, 245, 245;
         --bg-muted-rgb: 247, 247, 247;
@@ -33,7 +34,7 @@
         //按钮浅色背景
         --button-soft-bg: #EBEBEB;
         //输入框浅色背景
-        --input-soft-bg: #EBEBEB;
+        --input-soft-bg: #F3F3F3;
         //icon按钮的hover颜色
         --icon-hover-color: rgba(169, 169, 169, 0.25);
         //操作栏背景色
@@ -46,6 +47,7 @@
         --card-bg-color: #EBEBEB;
         //卡片背景颜色
         --card-bg-secondary-color: #e8e8e8;
+        --content-card-bg: #F5F5F5;
         //滚动条颜色
         --scrollbar-color: #b1b1b1;
     }
@@ -71,9 +73,10 @@ html[data-theme="dark"] {
 
         //主背景色
         --bg-primary-color: #282828;
-        --bg-secondary-color: #202020;
+        --bg-secondary-color: #222222;
         --bg-muted-color: #282828;
         --bg-tertiary-color: #282828;
+        --bg-content-color: #282828;
         --bg-primary-rgb: 40, 40, 40;
         --bg-secondary-rgb: 32, 32, 32;
         --bg-muted-rgb: 40, 40, 40;
@@ -99,6 +102,7 @@ html[data-theme="dark"] {
         --card-bg-color: #3A3A3B;
         //卡片背景颜色
         --card-bg-secondary-color: #383838;
+        --content-card-bg: #343434;
         //滚动条颜色
         --scrollbar-color: #6f6f6f;
     }

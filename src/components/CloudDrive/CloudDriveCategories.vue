@@ -222,7 +222,7 @@
     &__meta {
       font-size: 11px;
       line-height: 1.3;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

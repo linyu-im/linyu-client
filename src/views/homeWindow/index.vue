@@ -94,7 +94,12 @@
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
-  import { useHomeTabStore, type HomeTabId } from '@/stores/app/homeTab'
+  import {
+    HOME_TAB_NAVIGATE_EVENT,
+    useHomeTabStore,
+    type HomeTabId,
+    type HomeTabNavigatePayload
+  } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
   import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
@@ -110,6 +115,8 @@
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
   } from '@/utils/desktop/window'
+  import { ensureNotificationActionListener, stopNotificationActionListener } from '@/utils/desktop/notification'
+  import { listen } from '@tauri-apps/api/event'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
   import { useRoute, useRouter } from 'vue-router'
@@ -123,6 +130,7 @@
   const isMaximize = ref(false)
   const showUpdateModal = ref(false)
   let unlistenCloseRequested: (() => void) | undefined
+  let unlistenHomeTabNavigate: (() => void) | undefined
 
   const onCloseMainWindow = () => {
     if (appSettings.general.closeMainPanelAction === 'exit') {
@@ -260,9 +268,17 @@
   onMounted(() => {
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     void createPluginRuntimeWindow()
+    void ensureNotificationActionListener()
     onCurrentUserInfo()
     prefetchHomePages(route.name as string)
     window.addEventListener('keydown', onKeyDown)
+    void listen<HomeTabNavigatePayload>(HOME_TAB_NAVIGATE_EVENT, (event) => {
+      const { tabId, payload } = event.payload
+      if (!tabId) return
+      void homeTabStore.navigateTo(tabId, payload)
+    }).then((unlisten) => {
+      unlistenHomeTabNavigate = unlisten
+    })
     void WebviewWindow.getCurrent()
       .onCloseRequested((event) => {
         event.preventDefault()
@@ -279,6 +295,8 @@
 
   onUnmounted(() => {
     unlistenCloseRequested?.()
+    unlistenHomeTabNavigate?.()
+    void stopNotificationActionListener()
     window.removeEventListener('keydown', onKeyDown)
     void disconnectWebSocket().catch((err) => console.error('[WebSocket] disconnect failed:', err))
   })

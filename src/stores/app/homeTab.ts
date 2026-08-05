@@ -1,3 +1,4 @@
+import { emitTo } from '@tauri-apps/api/event'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { defineStore } from 'pinia'
 import { chatApi } from '@/api'
@@ -5,6 +6,8 @@ import { SceneType } from '@/constants/common'
 import type { SceneType as SceneTypeValue } from '@/constants/common'
 import router from '@/router'
 import { useChatStore } from '@/stores/chat/chat'
+
+export const HOME_TAB_NAVIGATE_EVENT = 'home-tab://navigate'
 
 export type HomeTabId = 'message' | 'contacts' | 'moment' | 'ai' | 'drive' | 'application'
 
@@ -19,15 +22,24 @@ export interface HomeTabContactsPayload {
   peerId?: string
 }
 
+export interface HomeTabAiPayload {
+  conversationId?: string
+}
+
 type HomeTabBadgeCounts = Record<HomeTabId, number>
 
 type HomeTabPayloadMap = {
   message: HomeTabMessagePayload
   contacts: HomeTabContactsPayload
   moment: Record<string, never>
-  ai: Record<string, never>
+  ai: HomeTabAiPayload
   drive: Record<string, never>
   application: Record<string, never>
+}
+
+export interface HomeTabNavigatePayload {
+  tabId: HomeTabId
+  payload?: HomeTabPayloadMap[HomeTabId]
 }
 
 type HomeTabStore = {
@@ -123,10 +135,19 @@ export const useHomeTabStore = defineStore('homeTab', {
           return this.openMessageWithPeer(messagePayload.peerId, messagePayload.sceneType ?? SceneType.User)
         }
         if (messagePayload?.chatId) {
-          useChatStore().setSelectedChatId(messagePayload.chatId)
+          const chatStore = useChatStore()
+          chatStore.markReopen()
+          return Promise.resolve(chatStore.setSelectedChatId(messagePayload.chatId)).then(() => {
+            this.applyNavigate('message', { chatId: messagePayload.chatId })
+          })
         }
       }
 
+      this.applyNavigate(tabId, payload)
+    },
+
+    /** 非 home 窗口调用时，通过事件让主窗执行路由跳转 */
+    applyNavigate(tabId: HomeTabId, payload?: HomeTabPayloadMap[HomeTabId]): Promise<void> | void {
       if (payload && Object.keys(payload).length > 0) {
         this.setTabPayload(tabId, payload)
       }
@@ -135,7 +156,11 @@ export const useHomeTabStore = defineStore('homeTab', {
         state.activeTabId = tabId
       })
 
-      if (WebviewWindow.getCurrent().label !== 'home') return
+      if (WebviewWindow.getCurrent().label !== 'home') {
+        const eventPayload: HomeTabNavigatePayload = { tabId, payload }
+        return emitTo('home', HOME_TAB_NAVIGATE_EVENT, eventPayload).then(() => undefined)
+      }
+
       if (router.currentRoute.value.path !== TAB_PATHS[tabId]) {
         return router.push(TAB_PATHS[tabId]).then(() => undefined)
       }
@@ -154,10 +179,15 @@ export const useHomeTabStore = defineStore('homeTab', {
         return chatStore.loadList().then(() => {
           return Promise.resolve(chatStore.setSelectedChatId(chatId)).then(() => {
             chatStore.markReopen()
-            this.navigateTo('message', { chatId })
+            this.applyNavigate('message', { chatId })
           })
         })
       })
+    },
+
+    openAiConversation(conversationId: string): Promise<void> | void {
+      if (!conversationId) return
+      return this.navigateTo('ai', { conversationId })
     }
   }
 })

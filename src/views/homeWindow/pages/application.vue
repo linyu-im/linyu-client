@@ -26,7 +26,7 @@
           :placeholder="t('application.searchPlaceholder')"
           clearable>
           <template #prefix>
-            <svg class="size-16px text-[var(--text-secondary-color)]"><use href="#search" /></svg>
+            <svg class="size-16px text-[var(--text-muted-color)]"><use href="#search" /></svg>
           </template>
         </n-input>
       </div>
@@ -151,7 +151,7 @@
           <n-button size="small" :disabled="committing" @click="onCancelInstall">
             {{ t('application.install.cancel') }}
           </n-button>
-          <n-button size="small" :loading="committing" @click="onConfirmInstall">
+          <n-button size="small" type="primary" :loading="committing" @click="onConfirmInstall">
             {{ t('application.install.confirm') }}
           </n-button>
         </div>
@@ -676,7 +676,7 @@
     height: 100%;
     overflow: hidden;
     color: var(--text-color);
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-content-color);
 
     &__header {
       flex-shrink: 0;
@@ -698,7 +698,7 @@
 
       p {
         margin: 5px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 12px;
       }
     }
@@ -730,7 +730,7 @@
       padding: 7px 11px;
       border: none;
       border-radius: 7px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       background: transparent;
       font-size: 12px;
       cursor: pointer;
@@ -790,7 +790,7 @@
       p,
       > span {
         margin: 4px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
     }
@@ -813,7 +813,7 @@
 
       p {
         margin: 3px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
     }
@@ -841,7 +841,7 @@
       align-items: center;
       justify-content: center;
       min-height: 260px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 12px;
     }
 
@@ -886,7 +886,7 @@
 
       > p {
         margin: 0 0 6px;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 12px;
         line-height: 1.6;
       }
@@ -894,7 +894,7 @@
       > small {
         display: block;
         margin-top: 4px;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 10px;
         line-height: 1.5;
       }
@@ -927,7 +927,7 @@
       }
 
       span {
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
 
@@ -959,7 +959,7 @@
       }
 
       span {
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
     }

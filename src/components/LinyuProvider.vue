@@ -33,6 +33,83 @@
     }
   })
 
+  const warningButtonPeers = {
+    colorWarning: 'var(--primary-color)',
+    colorHoverWarning: 'rgba(var(--primary-rgb), 0.8)',
+    colorPressedWarning: 'rgba(var(--primary-rgb), 0.8)',
+    colorFocusWarning: 'rgba(var(--primary-rgb), 0.8)',
+    colorDisabledWarning: 'rgba(var(--primary-rgb), 0.6)',
+    borderWarning: '1px solid var(--primary-color)',
+    borderHoverWarning: '1px solid var(--primary-color)',
+    borderPressedWarning: '1px solid var(--primary-color)',
+    borderFocusWarning: '1px solid var(--primary-color)',
+    borderDisabledWarning: '1px solid rgba(var(--primary-rgb), 0.6)',
+    textColorWarning: '#FFF',
+    textColorHoverWarning: '#FFF',
+    textColorPressedWarning: '#FFF',
+    textColorFocusWarning: '#FFF',
+    textColorDisabledWarning: '#FFF',
+    rippleColorWarning: 'var(--primary-color)',
+    textColorGhostWarning: 'var(--primary-color)',
+    textColorGhostHoverWarning: 'var(--primary-color)',
+    textColorGhostPressedWarning: 'var(--primary-color)',
+    textColorGhostFocusWarning: 'var(--primary-color)',
+    textColorGhostDisabledWarning: 'var(--primary-color)',
+    textColorTextWarning: 'var(--primary-color)',
+    textColorTextHoverWarning: 'var(--primary-color)',
+    textColorTextPressedWarning: 'var(--primary-color)',
+    textColorTextFocusWarning: 'var(--primary-color)',
+    textColorTextDisabledWarning: 'var(--text-secondary-color)'
+  }
+
+  const infoSuccessButtonPeers = {
+    colorInfo: 'var(--primary-color)',
+    colorHoverInfo: 'rgba(var(--primary-rgb), 0.8)',
+    colorPressedInfo: 'rgba(var(--primary-rgb), 0.8)',
+    colorFocusInfo: 'rgba(var(--primary-rgb), 0.8)',
+    colorDisabledInfo: 'rgba(var(--primary-rgb), 0.6)',
+    borderInfo: '1px solid var(--primary-color)',
+    borderHoverInfo: '1px solid var(--primary-color)',
+    borderPressedInfo: '1px solid var(--primary-color)',
+    borderFocusInfo: '1px solid var(--primary-color)',
+    borderDisabledInfo: '1px solid rgba(var(--primary-rgb), 0.6)',
+    textColorInfo: '#FFF',
+    textColorHoverInfo: '#FFF',
+    textColorPressedInfo: '#FFF',
+    textColorFocusInfo: '#FFF',
+    textColorDisabledInfo: '#FFF',
+    rippleColorInfo: 'var(--primary-color)',
+    colorSuccess: 'var(--primary-color)',
+    colorHoverSuccess: 'rgba(var(--primary-rgb), 0.8)',
+    colorPressedSuccess: 'rgba(var(--primary-rgb), 0.8)',
+    colorFocusSuccess: 'rgba(var(--primary-rgb), 0.8)',
+    colorDisabledSuccess: 'rgba(var(--primary-rgb), 0.6)',
+    borderSuccess: '1px solid var(--primary-color)',
+    borderHoverSuccess: '1px solid var(--primary-color)',
+    borderPressedSuccess: '1px solid var(--primary-color)',
+    borderFocusSuccess: '1px solid var(--primary-color)',
+    borderDisabledSuccess: '1px solid rgba(var(--primary-rgb), 0.6)',
+    textColorSuccess: '#FFF',
+    textColorHoverSuccess: '#FFF',
+    textColorPressedSuccess: '#FFF',
+    textColorFocusSuccess: '#FFF',
+    textColorDisabledSuccess: '#FFF',
+    rippleColorSuccess: 'var(--primary-color)'
+  }
+
+  const ghostButtonPeers = {
+    textColorGhost: 'var(--text-color)',
+    textColorGhostHover: 'var(--text-color)',
+    textColorGhostPressed: 'var(--text-color)',
+    textColorGhostFocus: 'var(--text-color)',
+    textColorGhostDisabled: 'var(--text-secondary-color)',
+    textColorText: 'var(--text-color)',
+    textColorTextHover: 'var(--text-color)',
+    textColorTextPressed: 'var(--text-color)',
+    textColorTextFocus: 'var(--text-color)',
+    textColorTextDisabled: 'var(--text-secondary-color)'
+  }
+
   const defaultButtonPeers = {
     borderRadius: '5px',
     color: 'var(--button-soft-bg)',
@@ -74,7 +151,10 @@
     textColorError: '#FFF',
     textColorHoverError: '#FFF',
     textColorPressedError: '#FFF',
-    textColorFocusError: '#FFF'
+    textColorFocusError: '#FFF',
+    ...ghostButtonPeers,
+    ...warningButtonPeers,
+    ...infoSuccessButtonPeers
   }
 
   const themeOverrides: GlobalThemeOverrides = {
@@ -130,7 +210,35 @@
       textColorPressedError: '#FFF',
       textColorFocusError: '#FFF',
       textColorDisabledError: '#FFF',
-      rippleColorError: 'var(--red)'
+      rippleColorError: 'var(--red)',
+      // ghost / text 取消键等：中性文字，避免串 success/warning 色
+      textColorGhost: 'var(--text-color)',
+      textColorGhostHover: 'var(--text-color)',
+      textColorGhostPressed: 'var(--text-color)',
+      textColorGhostFocus: 'var(--text-color)',
+      textColorGhostDisabled: 'var(--text-secondary-color)',
+      textColorText: 'var(--text-color)',
+      textColorTextHover: 'var(--text-color)',
+      textColorTextPressed: 'var(--text-color)',
+      textColorTextFocus: 'var(--text-color)',
+      textColorTextDisabled: 'var(--text-secondary-color)',
+      // warning 实心钮与主题色对齐（dialog.warning 确认钮用 type=warning）
+      colorWarning: 'var(--primary-color)',
+      colorHoverWarning: 'rgba(var(--primary-rgb), 0.8)',
+      colorPressedWarning: 'rgba(var(--primary-rgb), 0.8)',
+      colorFocusWarning: 'rgba(var(--primary-rgb), 0.8)',
+      colorDisabledWarning: 'rgba(var(--primary-rgb), 0.6)',
+      borderWarning: '1px solid var(--primary-color)',
+      borderHoverWarning: '1px solid var(--primary-color)',
+      borderPressedWarning: '1px solid var(--primary-color)',
+      borderFocusWarning: '1px solid var(--primary-color)',
+      borderDisabledWarning: '1px solid rgba(var(--primary-rgb), 0.6)',
+      textColorWarning: '#FFF',
+      textColorHoverWarning: '#FFF',
+      textColorPressedWarning: '#FFF',
+      textColorFocusWarning: '#FFF',
+      textColorDisabledWarning: '#FFF',
+      rippleColorWarning: 'var(--primary-color)'
     },
     Dialog: {
       color: 'var(--bg-primary-color)',
@@ -160,6 +268,41 @@
           }
         }
       }
+    },
+    Card: {
+      color: 'var(--bg-primary-color)',
+      colorModal: 'var(--bg-primary-color)',
+      colorPopover: 'var(--bg-muted-color)',
+      colorEmbedded: 'var(--bg-secondary-color)',
+      colorEmbeddedModal: 'var(--bg-secondary-color)',
+      textColor: 'var(--text-color)',
+      titleTextColor: 'var(--text-color)',
+      borderColor: 'var(--border-color)',
+      actionColor: 'var(--bg-secondary-color)',
+      closeIconColor: 'var(--text-secondary-color)',
+      closeIconColorHover: 'var(--text-color)',
+      closeColorHover: 'var(--bg-muted-color)',
+      closeColorPressed: 'var(--bg-muted-color)'
+    },
+    Tabs: {
+      tabTextColorLine: 'var(--text-secondary-color)',
+      tabTextColorActiveLine: 'var(--primary-color)',
+      tabTextColorHoverLine: 'var(--primary-color)',
+      barColor: 'var(--primary-color)',
+      paneTextColor: 'var(--text-color)'
+    },
+    Progress: {
+      fillColor: 'var(--primary-color)',
+      fillColorInfo: 'var(--primary-color)',
+      lineBgProcessing: 'var(--primary-color)',
+      railColor: 'var(--bg-muted-color)'
+    },
+    Form: {
+      labelTextColor: 'var(--text-color)',
+      asteriskColor: 'var(--red)',
+      feedbackTextColor: 'var(--text-secondary-color)',
+      feedbackTextColorError: 'var(--red)',
+      labelFontWeight: '500'
     },
     Drawer: {
       color: 'var(--bg-secondary-color)',
@@ -222,13 +365,27 @@
       borderRadius: '5px',
       borderFocus: '1px solid var(--primary-color)',
       borderHover: '1px solid var(--primary-color)',
+      borderDisabled: '1px solid var(--border-color)',
       loadingColor: 'var(--primary-color)',
       caretColor: 'var(--primary-color)',
       boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
       placeholderColor: 'var(--text-secondary-color)',
+      placeholderColorDisabled: 'var(--text-muted-color)',
       textColor: 'var(--text-color)',
+      textColorDisabled: 'var(--text-secondary-color)',
+      countTextColor: 'var(--text-secondary-color)',
+      countTextColorDisabled: 'var(--text-muted-color)',
       color: 'var(--input-soft-bg)',
-      colorFocus: 'var(--input-soft-bg)'
+      colorFocus: 'var(--input-soft-bg)',
+      colorDisabled: 'var(--input-soft-bg)',
+      iconColor: 'var(--text-secondary-color)',
+      iconColorDisabled: 'var(--text-muted-color)',
+      iconColorHover: 'var(--text-color)',
+      iconColorPressed: 'var(--text-color)',
+      clearColor: 'var(--text-secondary-color)',
+      clearColorHover: 'var(--text-color)',
+      clearColorPressed: 'var(--text-color)',
+      suffixTextColor: 'var(--text-secondary-color)'
     },
     Message: {
       maxWidth: '90vw',
@@ -255,7 +412,10 @@
       color: 'color-mix(in srgb, var(--bg-muted-color) 80%, transparent)',
       optionTextColor: 'var(--text-color)',
       optionTextColorHover: 'var(--primary-color)',
+      optionTextColorActive: 'var(--primary-color)',
+      optionTextColorChildActive: 'var(--primary-color)',
       optionColorHover: 'color-mix(in srgb, var(--bg-muted-color) 60%, transparent)',
+      optionColorActive: 'rgba(var(--primary-rgb), 0.1)',
       dividerColor: 'var(--divider-color)'
     },
     Popover: {
@@ -335,6 +495,26 @@
           groupHeaderTextColor: 'var(--text-secondary-color)',
           actionDividerColor: 'var(--divider-color)'
         }
+      }
+    },
+    DynamicTags: {
+      peers: {
+        Input: {
+          border: '1px solid var(--border-color)',
+          borderFocus: '1px solid var(--primary-color)',
+          borderHover: '1px solid var(--primary-color)',
+          borderDisabled: '1px solid var(--border-color)',
+          boxShadowFocus: '0 0 0 1px rgba(var(--primary-rgb),0.3)',
+          caretColor: 'var(--primary-color)',
+          color: 'var(--input-soft-bg)',
+          colorFocus: 'var(--input-soft-bg)',
+          colorDisabled: 'var(--input-soft-bg)',
+          textColor: 'var(--text-color)',
+          textColorDisabled: 'var(--text-secondary-color)',
+          placeholderColor: 'var(--text-secondary-color)',
+          placeholderColorDisabled: 'var(--text-muted-color)'
+        },
+        Button: defaultButtonPeers
       }
     },
     Tag: {
@@ -478,6 +658,27 @@
       --n-box-shadow-focus: none;
       --n-ripple-color: var(--button-soft-bg);
     }
+
+    .n-dialog__action .n-button--warning-type,
+    .n-dialog__action .n-button--info-type,
+    .n-dialog__action .n-button--success-type {
+      --n-color: var(--primary-color);
+      --n-color-hover: rgba(var(--primary-rgb), 0.8);
+      --n-color-pressed: rgba(var(--primary-rgb), 0.8);
+      --n-color-focus: rgba(var(--primary-rgb), 0.8);
+      --n-color-disabled: rgba(var(--primary-rgb), 0.6);
+      --n-text-color: #fff;
+      --n-text-color-hover: #fff;
+      --n-text-color-pressed: #fff;
+      --n-text-color-focus: #fff;
+      --n-text-color-disabled: #fff;
+      --n-border: 1px solid var(--primary-color);
+      --n-border-hover: 1px solid var(--primary-color);
+      --n-border-pressed: 1px solid var(--primary-color);
+      --n-border-focus: 1px solid var(--primary-color);
+      --n-border-disabled: 1px solid rgba(var(--primary-rgb), 0.6);
+      --n-ripple-color: var(--primary-color);
+    }
   }
 
   .n-popconfirm {
@@ -500,6 +701,25 @@
       --n-border-focus: 1px solid var(--button-soft-bg);
       --n-box-shadow-focus: none;
       --n-ripple-color: var(--button-soft-bg);
+    }
+
+    .n-popconfirm__action .n-button--warning-type,
+    .n-popconfirm__action .n-button--info-type,
+    .n-popconfirm__action .n-button--success-type,
+    .n-popconfirm__action .n-button--primary-type {
+      --n-color: var(--primary-color);
+      --n-color-hover: rgba(var(--primary-rgb), 0.8);
+      --n-color-pressed: rgba(var(--primary-rgb), 0.8);
+      --n-color-focus: rgba(var(--primary-rgb), 0.8);
+      --n-text-color: #fff;
+      --n-text-color-hover: #fff;
+      --n-text-color-pressed: #fff;
+      --n-text-color-focus: #fff;
+      --n-border: 1px solid var(--primary-color);
+      --n-border-hover: 1px solid var(--primary-color);
+      --n-border-pressed: 1px solid var(--primary-color);
+      --n-border-focus: 1px solid var(--primary-color);
+      --n-ripple-color: var(--primary-color);
     }
   }
 

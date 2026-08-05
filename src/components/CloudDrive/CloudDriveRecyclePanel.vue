@@ -401,7 +401,7 @@
       flex: 1;
       font-size: 12px;
       line-height: 1.5;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
@@ -500,11 +500,11 @@
 
       &::-webkit-scrollbar-thumb {
         border-radius: 3px;
-        background: color-mix(in srgb, var(--text-secondary-color) 35%, transparent);
+        background: color-mix(in srgb, var(--text-muted-color) 35%, transparent);
       }
 
       &::-webkit-scrollbar-thumb:hover {
-        background: color-mix(in srgb, var(--text-secondary-color) 50%, transparent);
+        background: color-mix(in srgb, var(--text-muted-color) 50%, transparent);
       }
     }
 
@@ -535,7 +535,7 @@
       text-align: center;
       font-size: 13px;
       line-height: 1.6;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
 
       p {
         margin: 0;
@@ -563,7 +563,7 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 1.3;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         background-color: var(--bg-muted-color);
         user-select: none;
         box-shadow: 0 1px 0 color-mix(in srgb, var(--border-color) 55%, transparent);

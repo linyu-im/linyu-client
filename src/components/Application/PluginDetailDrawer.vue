@@ -73,7 +73,12 @@
 
       <template #footer>
         <div v-if="item" class="plugin-detail__footer">
-          <n-button v-if="item.status === 'available'" size="small" :loading="item.busy" @click="emit('install', item)">
+          <n-button
+            v-if="item.status === 'available'"
+            size="small"
+            type="primary"
+            :loading="item.busy"
+            @click="emit('install', item)">
             {{ t('application.actions.install') }}
           </n-button>
           <template v-else>
@@ -191,14 +196,14 @@
 
       p {
         margin: 5px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 12px;
       }
     }
 
     &__description {
       margin: 20px 0;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 13px;
       line-height: 1.7;
     }
@@ -218,7 +223,7 @@
       }
 
       span {
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 10px;
       }
 
@@ -245,7 +250,7 @@
         padding: 10px 12px;
         border-radius: 8px;
         overflow-wrap: anywhere;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         background-color: var(--bg-secondary-color);
         font-size: 11px;
       }
@@ -279,7 +284,7 @@
 
       p {
         margin: 3px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
         line-height: 1.5;
       }
@@ -293,7 +298,7 @@
     }
 
     &__muted {
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 12px;
     }
 
@@ -320,7 +325,7 @@
 
       span,
       p {
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
 

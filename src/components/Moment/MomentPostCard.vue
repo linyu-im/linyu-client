@@ -233,12 +233,11 @@
 
 <style scoped lang="scss">
   .moment-post {
-    background: color-mix(in srgb, var(--card-bg-color) 35%, transparent);
+    background: var(--content-card-bg);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 16px;
-    backdrop-filter: blur(12px);
     transition: border-color 0.2s;
 
     &:hover {

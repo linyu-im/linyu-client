@@ -742,12 +742,17 @@
     "menu": {
       "newChat": "New chat",
       "tasks": "My tasks",
-      "skills": "Skill square"
+      "skills": "Skills marketplace"
     },
     "history": {
       "title": "Chat history",
       "empty": "No chats yet",
-      "more": "More actions"
+      "more": "More actions",
+      "rename": "Rename",
+      "renamePlaceholder": "Enter chat name",
+      "delete": "Delete chat",
+      "deleteConfirm": "Delete this chat? This action cannot be undone.",
+      "deleted": "Chat deleted"
     },
     "welcome": {
       "title": "Hello, I'm Nana",
@@ -770,6 +775,212 @@
       "copyCode": "Copy code",
       "regenerate": "Regenerate",
       "imageAlt": "Image"
+    },
+    "work": {
+      "brand": "Linyu Work",
+      "nav": { "skills": "Skills marketplace" },
+      "welcome": {
+        "title": "What would you like to get done?",
+        "subtitle": "Work with spreadsheets, documents, images, or files on your computer",
+        "newTask": "New work task"
+      },
+      "workspace": {
+        "label": "Work folder",
+        "choose": "Choose folder",
+        "dialogTitle": "Choose the folder the Agent can work in",
+        "required": "Choose a work folder first"
+      },
+      "scope": {
+        "label": "Work scope",
+        "chat": "Chat",
+        "workspace": "Folder workspace",
+        "chatDescription": "No folder required"
+      },
+      "setup": {
+        "runtimeTitle": "Install an Agent runtime",
+        "runtimeDesc": "The AI assistant runs on Reasonix. Please install Reasonix before you get started",
+        "providerTitle": "No model is configured",
+        "providerDesc": "Configure Base API, API Key, and models in Linyu without editing Reasonix files",
+        "workspaceTitle": "Choose a work folder",
+        "workspaceDesc": "The Agent uses this folder as the work scope for the current task",
+        "install": "Download and install Reasonix",
+        "configure": "Configure model",
+        "installerOpened": "The installer is open. Refresh after installation finishes"
+      },
+      "quick": {
+        "sheet": {
+          "title": "Work with a spreadsheet",
+          "desc": "Clean, analyze, format, and fix formulas",
+          "prompt": "Help me work with a spreadsheet: "
+        },
+        "document": {
+          "title": "Edit a document",
+          "desc": "Rewrite, format, and organize content",
+          "prompt": "Help me edit a document: "
+        },
+        "image": {
+          "title": "Process an image",
+          "desc": "Crop, compress, remove backgrounds, or convert",
+          "prompt": "Help me process an image: "
+        },
+        "files": {
+          "title": "Find and organize files",
+          "desc": "Search, classify, rename, and safely delete",
+          "prompt": "Help me find or organize files: "
+        }
+      },
+      "input": {
+        "placeholder": "Describe the work to complete, or attach files…",
+        "hint": "File changes, deletions, and commands follow your approval policy",
+        "attachTitle": "Choose files for the Agent",
+        "stop": "Stop task"
+      },
+      "messages": {
+        "backToBottom": "Jump to latest"
+      },
+      "attachments": {
+        "remove": "Remove attachment",
+        "localFile": "Local file",
+        "attachmentOnlyPrompt": "Please review and process the attached files.",
+        "categories": {
+          "image": "Image",
+          "document": "Document",
+          "spreadsheet": "Spreadsheet",
+          "pdf": "PDF",
+          "archive": "Archive",
+          "other": "File"
+        }
+      },
+      "run": {
+        "preparing": "Preparing task",
+        "running": "Running",
+        "waitingApproval": "Waiting for your approval",
+        "stalled": "Taking longer than expected",
+        "stalledDescription": "The Agent has not reported new progress. You can keep waiting or stop this task.",
+        "failed": "Task failed",
+        "cancelled": "Stopped",
+        "completed": "Task completed",
+        "elapsed": "Elapsed {seconds}s",
+        "contentDetails": "View content details",
+        "continueWaiting": "Keep waiting",
+        "stop": "Stop task"
+      },
+      "notify": {
+        "completed": "\"{title}\" task completed",
+        "failed": "\"{title}\" task failed",
+        "permission": "\"{title}\" needs approval: {action}"
+      },
+      "policy": {
+        "workMode": "Work mode",
+        "approvalMode": "Actions and approvals",
+        "enableFullAccess": "Enable full automation",
+        "fullAccessTitle": "Enable full automation?",
+        "fullAccessDescription": "The Agent will execute file changes and commands automatically. System-sensitive actions may still require approval. Use only for trusted tasks.",
+        "workModes": {
+          "economy": { "label": "Concise", "description": "Less progress detail for clear, straightforward tasks" },
+          "balanced": { "label": "Balanced", "description": "Balance speed, progress visibility, and result quality" },
+          "delivery": {
+            "label": "Full delivery",
+            "description": "Plan, execute, and verify thoroughly for complex work"
+          }
+        },
+        "approvalModes": {
+          "ask": {
+            "label": "Ask before actions",
+            "description": "Confirm file changes, commands, and other actions before execution"
+          },
+          "auto": {
+            "label": "Auto-run low-risk actions",
+            "description": "Run low-risk actions automatically and ask for higher-risk actions"
+          },
+          "yolo": {
+            "label": "Full automation",
+            "description": "Complete actions with minimal interruptions; use only for trusted tasks"
+          }
+        }
+      },
+      "activity": {
+        "title": "Task progress",
+        "running": "Running",
+        "plan": "Plan",
+        "tools": "Activity",
+        "tool": "Agent action",
+        "status": { "pending": "Pending", "in_progress": "Running", "completed": "Completed", "failed": "Failed" }
+      },
+      "permission": {
+        "title": "Your approval is needed",
+        "action": "The Agent wants to perform an action",
+        "description": "Review the action and its scope before continuing.",
+        "contentDetails": "Content details",
+        "reject": "Reject",
+        "options": {
+          "allow_once": "Allow once",
+          "allow_always": "Always allow",
+          "reject_once": "Reject once",
+          "reject_always": "Always reject"
+        }
+      },
+      "approval": { "ask": "Ask before actions", "auto": "Auto-run low-risk actions", "yolo": "Fully automatic" },
+      "status": {
+        "notInstalled": "Not installed",
+        "noModel": "No model",
+        "noModelOptions": "No models for the current provider. Configure one in settings first.",
+        "selectModel": "Select model",
+        "skills": "{count} Skills",
+        "installedSkills": "Installed Skills",
+        "noInstalledSkills": "No installed Skills yet",
+        "ready": "Connected",
+        "setup": "Setup needed"
+      },
+      "skills": {
+        "eyebrow": "Linyu Skills",
+        "title": "Add capabilities to your assistant",
+        "subtitle": "Install reviewed workflows that the Agent can use for matching tasks.",
+        "search": "Search Skills",
+        "tip": "Ready to use",
+        "tipTitle": "Give your assistant a few more skills",
+        "tipDesc": "Install a Skill and hand off spreadsheets, documents, images, or file cleanup. Turn them on when you need them, off when you don't—risky actions still wait for your say.",
+        "official": "Official",
+        "install": "Install",
+        "installed": "Skill installed",
+        "uninstall": "Uninstall",
+        "uninstalled": "Skill uninstalled",
+        "uninstallConfirm": "Uninstall \"{name}\"? The local skill files will be removed.",
+        "empty": "No skills available",
+        "filters": {
+          "all": "All"
+        }
+      },
+      "errors": {
+        "failed": "The task failed. Please try again",
+        "providerNotConfigured": "No model provider is ready. Configure one before sending",
+        "keyRequired": "This provider has no saved API key",
+        "keyInvalid": "The API key is invalid or lacks access",
+        "keySaveFailed": "The API key could not be saved to the system credential vault",
+        "endpointInvalid": "The Base API address is invalid",
+        "endpointNotFound": "The model endpoint was not found. Check the Base API version path",
+        "connectionFailed": "Could not connect to the model service. Check the network and Base API",
+        "responseInvalid": "The model service returned an unsupported response",
+        "timeout": "The model service connection timed out",
+        "modelNotConfigured": "The active model is not configured correctly",
+        "modelUnavailable": "The default model is not available from this provider",
+        "runtimeMissing": "Reasonix is not installed yet",
+        "runtimeStartFailed": "The Agent could not start. Detect the runtime again in settings",
+        "runtimeDisconnected": "The Agent connection was interrupted. This task has stopped; try again",
+        "workspaceRequired": "Folder workspace mode requires a selected folder",
+        "workspaceMissing": "The selected work folder is missing or inaccessible",
+        "attachmentMissing": "An attachment was moved or deleted. Add it again and retry",
+        "attachmentReadFailed": "The attachment could not be read. Check its permissions or add it again",
+        "skillContentRequired": "This skill has no installable content. Please try again later",
+        "skillIdInvalid": "The skill ID is invalid and cannot be installed locally",
+        "skillListFailed": "Failed to load Skills. Please try again later",
+        "actions": {
+          "settings": "Configure",
+          "install": "Install Agent",
+          "workspace": "Choose folder",
+          "retry": "Dismiss"
+        }
+      }
     }
   },
   "application": {
@@ -1002,6 +1213,11 @@
     "notFoundTitle": "Plugin not found",
     "notFoundDescription": "The plugin may have been uninstalled or the window parameters are invalid."
   },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit"
+  },
   "settings": {
     "todo": "Coming soon",
     "menu": {
@@ -1009,8 +1225,81 @@
       "general": "General",
       "shortcuts": "Shortcuts",
       "notification": "Notifications",
+      "work": "AI Assistant",
       "plugins": "Plugins",
       "about": "About"
+    },
+    "work": {
+      "title": "AI Assistant",
+      "description": "Manage Agent runtimes, model providers, approval policies, and Skills",
+      "tabs": { "runtime": "Agent", "providers": "Providers", "model": "Model & Permissions", "skills": "Skills" },
+      "runtime": {
+        "ready": "Runtime ready",
+        "missing": "Installation needed",
+        "missingDesc": "Linyu detects default system locations. You never need to enter a CLI path manually",
+        "install": "Download and install",
+        "detect": "Detect again",
+        "protocol": "Runtime protocol",
+        "protocolDesc": "Linyu connects through a generic ACP layer so more CLIs can be added later",
+        "installerOpened": "The installer is open",
+        "updateTitle": "Update available",
+        "updateConfirm": "A newer Reasonix version is available.\nCurrent: {current}\nLatest: {latest}\nInstall the latest version?",
+        "upToDate": "You already have the latest version",
+        "updateCheckFailed": "Failed to check for updates",
+        "stage": {
+          "checking": "Checking the latest release",
+          "downloading": "Downloading and installing the CLI",
+          "waiting_user": "Waiting for installation",
+          "completed": "Installation complete"
+        }
+      },
+      "provider": {
+        "title": "Model providers",
+        "description": "API keys stay in your system credential vault and are exposed only while the Agent is running",
+        "add": "Add provider",
+        "modelCount": "{count} models",
+        "delete": "Delete",
+        "deleteConfirm": "Delete provider “{name}” and its stored key?",
+        "deleted": "Provider deleted",
+        "empty": "No model provider configured",
+        "keySaved": "Key saved",
+        "keyMissing": "Key missing",
+        "editorTitle": "Provider configuration",
+        "name": "Display name",
+        "id": "Provider ID",
+        "kind": "API protocol",
+        "baseUrl": "Base API",
+        "apiKey": "API Key",
+        "keepKey": "Leave blank to keep the current key",
+        "models": "Available models",
+        "defaultModel": "Default model",
+        "test": "Test connection",
+        "testSuccess": "Connected in {latency} ms",
+        "required": "Complete the provider, endpoint, and default model fields",
+        "saved": "Provider configuration saved"
+      },
+      "model": {
+        "provider": "Active provider",
+        "providerDesc": "Choose the model service used by Agent sessions",
+        "model": "Active model",
+        "modelDesc": "Models come from the provider configuration",
+        "workMode": "Work intensity",
+        "workModeDesc": "Balances speed, planning depth, and delivery completeness",
+        "approval": "Action approvals",
+        "approvalDesc": "Asking is recommended for deletes, overwrites, and commands",
+        "workModes": { "economy": "Fast & economical", "balanced": "Balanced", "delivery": "Complete delivery" },
+        "approvalModes": {
+          "ask": "Ask before actions",
+          "auto": "Auto-run low-risk actions",
+          "yolo": "Fully automatic (risky)"
+        }
+      },
+      "skills": {
+        "install": "Install",
+        "installed": "Skill installed",
+        "uninstall": "Uninstall",
+        "uninstalled": "Skill uninstalled"
+      }
     },
     "account": {
       "logout": "Log out",

@@ -7,7 +7,7 @@
     --n-color-active: var(--input-soft-bg);
     --n-color-disabled: var(--input-soft-bg);
     --n-text-color: var(--text-color);
-    --n-placeholder-color: var(--text-secondary-color);
+    --n-placeholder-color: var(--text-muted-color);
     --n-border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
     --n-border-hover: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
     --n-border-active: 1px solid var(--primary-color);
@@ -15,7 +15,7 @@
     --n-box-shadow-hover: none;
     --n-box-shadow-active: none;
     --n-box-shadow-focus: 0 0 0 1px rgba(var(--primary-rgb), 0.28);
-    --n-arrow-color: var(--text-secondary-color);
+    --n-arrow-color: var(--text-muted-color);
     --n-caret-color: var(--primary-color);
     --n-loading-color: var(--primary-color);
   }
@@ -32,7 +32,7 @@
   }
 
   .n-base-selection-placeholder {
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
   }
 
   /* 已有选中值时 hover 不改变文字/背景色 */
@@ -48,6 +48,6 @@
   }
 
   .n-base-selection:hover .n-base-suffix .n-base-selection-arrow {
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
   }
 }

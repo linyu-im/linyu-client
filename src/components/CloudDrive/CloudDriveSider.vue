@@ -9,7 +9,7 @@
       clearable
       @update:value="onSearchUpdate">
       <template #prefix>
-        <svg class="size-16px text-[var(--text-secondary-color)]">
+        <svg class="size-16px text-[var(--text-muted-color)]">
           <use href="#search"></use>
         </svg>
       </template>
@@ -20,7 +20,7 @@
           <n-tooltip placement="right" :show-arrow="false">
             <template #trigger>
               <button type="button" class="cloud-drive-sider__nav-item cloud-drive-sider__nav-item--icon-only">
-                <svg class="size-18px shrink-0 text-[var(--text-secondary-color)]">
+                <svg class="size-18px shrink-0 text-[var(--text-muted-color)]">
                   <use href="#search"></use>
                 </svg>
               </button>
@@ -204,7 +204,7 @@
     &__nav-section {
       margin: 10px 10px 4px;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
 
       &--compact {
@@ -228,7 +228,7 @@
       border: 1px solid transparent;
       border-radius: 8px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 14px;
       cursor: pointer;
       text-align: left;

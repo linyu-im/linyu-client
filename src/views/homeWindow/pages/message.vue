@@ -99,6 +99,7 @@
   import { useChatStore } from '@/stores/chat/chat'
   import { useChatDetachedStore } from '@/stores/chat/chatDetached'
   import { useMessageDbStore } from '@/stores/message/messageDb'
+  import { useMessageRemindStore } from '@/stores/message/messageRemind'
   import ChatSession from '@/components/Chat/ChatSession.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
   import { Chat } from '@/types/api/chat'
@@ -111,6 +112,7 @@
   const chatStore = useChatStore()
   const chatDetachedStore = useChatDetachedStore()
   const messageDbStore = useMessageDbStore()
+  const messageRemindStore = useMessageRemindStore()
   const chatSessionRef = ref<InstanceType<typeof ChatSession> | null>(null)
   const showCreateGroupModal = ref(false)
   const messagePageActive = ref(true)
@@ -354,6 +356,12 @@
   onActivated(() => {
     messagePageActive.value = true
     chatStore.reportActiveSessions(true)
+    // 从其它 Tab 回来时，若仍选中会话，补已读（离开期间 isChatActive 为 false 会累计未读）
+    if (chatStore.selectedChatId && !chatStore.isDetachedChat(chatStore.selectedChatId)) {
+      void chatStore.markRead(chatStore.selectedChatId).then(() => {
+        messageRemindStore.syncFromChatList()
+      })
+    }
     chatStore.loadList()
   })
 
@@ -373,7 +381,7 @@
       width: 100%;
       align-items: center;
       justify-content: center;
-      background-color: var(--bg-primary-color);
+      background-color: var(--bg-content-color);
     }
 
     .chatlist {

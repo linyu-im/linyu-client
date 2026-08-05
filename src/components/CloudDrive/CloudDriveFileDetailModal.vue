@@ -238,7 +238,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -322,7 +322,7 @@
 
       dt {
         margin: 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         user-select: none;
       }
 

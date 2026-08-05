@@ -570,6 +570,7 @@
       height: 100%;
       box-sizing: border-box;
       overflow: hidden;
+      background-color: var(--bg-content-color);
     }
 
     &__detail-empty {
@@ -578,7 +579,7 @@
       width: 100%;
       align-items: center;
       justify-content: center;
-      background-color: var(--bg-primary-color);
+      background-color: var(--bg-content-color);
     }
   }
 </style>

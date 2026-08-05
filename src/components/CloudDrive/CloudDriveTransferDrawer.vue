@@ -792,7 +792,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -837,7 +837,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 13px;
       cursor: pointer;
       transition:
@@ -896,7 +896,7 @@
       flex-shrink: 0;
       margin-bottom: 12px;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
 
       &--done {
@@ -932,14 +932,14 @@
       flex: 1;
       min-height: 120px;
       font-size: 13px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
     &__status-text {
       margin-top: 4px;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
@@ -996,7 +996,7 @@
       text-overflow: ellipsis;
       font-size: 13px;
       font-weight: 500;
-      color: var(--text-color);
+      color: var(--text-muted-color);
     }
 
     &__file-path {
@@ -1006,7 +1006,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__item-actions {
@@ -1025,7 +1025,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -1054,7 +1054,7 @@
       align-items: center;
       gap: 10px;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
@@ -1085,7 +1085,7 @@
       :deep(.n-collapse-item__header) {
         padding: 6px 0;
         font-size: 13px;
-        color: var(--text-color);
+        color: var(--text-muted-color);
       }
 
       :deep(.n-collapse-item__content-inner) {
@@ -1105,7 +1105,7 @@
     &__done-time {
       flex-shrink: 0;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__done-status {
@@ -1114,7 +1114,7 @@
       gap: 4px;
       margin-top: 4px;
       font-size: 11px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
 
       svg {
         color: var(--primary-color);
@@ -1232,7 +1232,7 @@
       border: none;
       background: transparent;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       user-select: none;
 
@@ -1257,13 +1257,13 @@
       min-width: 0;
       flex: 1;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
     &__footer-icon {
       flex-shrink: 0;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__footer-btn {

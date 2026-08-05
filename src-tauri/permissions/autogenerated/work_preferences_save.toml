@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-preferences-save"
+description = "Enables the work_preferences_save command without any pre-configured scope."
+commands.allow = ["work_preferences_save"]
+
+[[permission]]
+identifier = "deny-work-preferences-save"
+description = "Denies the work_preferences_save command without any pre-configured scope."
+commands.deny = ["work_preferences_save"]

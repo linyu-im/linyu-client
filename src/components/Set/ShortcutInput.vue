@@ -70,7 +70,7 @@
       border: none;
       border-radius: 50%;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       transition:
         background-color 0.15s ease,

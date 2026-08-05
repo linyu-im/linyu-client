@@ -137,7 +137,7 @@
     min-width: 0;
     min-height: 0;
     overflow: hidden;
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-content-color);
 
     :deep(*:focus),
     :deep(*:focus-visible) {
@@ -177,7 +177,7 @@
       width: 100%;
       min-width: 0;
       min-height: 0;
-      background-color: var(--bg-secondary-color);
+      background-color: var(--bg-content-color);
       overflow: hidden;
     }
 

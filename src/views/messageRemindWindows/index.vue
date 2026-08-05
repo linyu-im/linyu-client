@@ -86,14 +86,22 @@
   }
 
   const onItemClick = (item: MessageRemindItem) => {
-    const sceneType = item.peerType === 'group' ? SceneType.Group : SceneType.User
-    void homeTabStore.openMessageWithPeer(item.peerId, sceneType).then(() => {
-      void createHomeWinodw()
-      messageRemindStore.removeItem(item.sessionId)
-      if (messageRemindStore.items.length === 0) {
-        closeRemindWindow()
-      }
-    })
+    void createHomeWinodw()
+      .then(() => {
+        if (item.chatId) {
+          return homeTabStore.navigateTo('message', { chatId: item.chatId })
+        }
+        const sceneType = item.peerType === 'group' ? SceneType.Group : SceneType.User
+        return homeTabStore.openMessageWithPeer(item.peerId, sceneType)
+      })
+      .then(() => {
+        messageRemindStore.removeItem(item.sessionId)
+        if (messageRemindStore.items.length === 0) {
+          closeRemindWindow()
+        } else {
+          messageRemindStore.hideWindow()
+        }
+      })
   }
 
   watch(

@@ -181,7 +181,7 @@
 
       p {
         margin: 5px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 11px;
       }
     }
@@ -195,7 +195,7 @@
       font-size: 12px;
 
       small {
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 10px;
       }
     }
@@ -206,7 +206,7 @@
       padding: 8px 10px;
       border-radius: 6px;
       overflow-wrap: anywhere;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       background-color: var(--bg-secondary-color);
       font-size: 10px;
       box-sizing: border-box;
@@ -236,7 +236,7 @@
       p {
         margin: 4px 0 0;
         overflow: hidden;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 10px;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -286,7 +286,7 @@
 
       span {
         flex-shrink: 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 9px;
       }
     }
@@ -354,7 +354,7 @@
       svg {
         width: 36px;
         height: 36px;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         opacity: 0.55;
       }
 
@@ -367,7 +367,7 @@
 
       p {
         margin: 5px 0 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         font-size: 10px;
       }
     }

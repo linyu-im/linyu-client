@@ -647,7 +647,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -694,7 +694,7 @@
       border: none;
       border-radius: 4px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -714,7 +714,7 @@
       height: 28px;
       font-size: 13px;
       line-height: 1;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {
@@ -772,7 +772,7 @@
       justify-content: center;
       height: 280px;
       font-size: 13px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       user-select: none;
     }
 
@@ -860,7 +860,7 @@
     border: none;
     border-radius: 4px;
     background: transparent;
-    color: var(--text-secondary-color);
+    color: var(--text-muted-color);
     cursor: pointer;
     flex-shrink: 0;
     transform: rotate(0deg);

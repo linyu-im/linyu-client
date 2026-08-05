@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-provider-delete"
+description = "Enables the work_provider_delete command without any pre-configured scope."
+commands.allow = ["work_provider_delete"]
+
+[[permission]]
+identifier = "deny-work-provider-delete"
+description = "Denies the work_provider_delete command without any pre-configured scope."
+commands.deny = ["work_provider_delete"]

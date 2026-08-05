@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-session-prompt"
+description = "Enables the work_session_prompt command without any pre-configured scope."
+commands.allow = ["work_session_prompt"]
+
+[[permission]]
+identifier = "deny-work-session-prompt"
+description = "Denies the work_session_prompt command without any pre-configured scope."
+commands.deny = ["work_session_prompt"]

@@ -66,7 +66,7 @@
     position: relative;
     height: 100%;
     overflow: hidden;
-    background-color: var(--bg-secondary-color);
+    background-color: var(--bg-content-color);
     display: flex;
     justify-content: center;
 

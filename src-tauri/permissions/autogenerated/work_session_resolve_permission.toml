@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-session-resolve-permission"
+description = "Enables the work_session_resolve_permission command without any pre-configured scope."
+commands.allow = ["work_session_resolve_permission"]
+
+[[permission]]
+identifier = "deny-work-session-resolve-permission"
+description = "Denies the work_session_resolve_permission command without any pre-configured scope."
+commands.deny = ["work_session_resolve_permission"]

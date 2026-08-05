@@ -51,7 +51,12 @@
       </div>
 
       <div class="plugin-card__actions" @click.stop>
-        <n-button v-if="item.status === 'available'" size="small" :loading="item.busy" @click="emit('install', item)">
+        <n-button
+          v-if="item.status === 'available'"
+          size="small"
+          type="primary"
+          :loading="item.busy"
+          @click="emit('install', item)">
           {{ t('application.actions.install') }}
         </n-button>
         <template v-else>
@@ -124,19 +129,14 @@
     padding: 16px;
     border: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
     border-radius: 12px;
-    background-color: var(--bg-primary-color);
+    background-color: var(--content-card-bg);
     cursor: pointer;
     outline: none;
-    transition:
-      border-color 0.16s ease,
-      box-shadow 0.16s ease,
-      transform 0.16s ease;
+    transition: border-color 0.16s ease;
 
     &:hover,
     &:focus-visible {
       border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
-      box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-color) 9%, transparent);
-      transform: translateY(-1px);
     }
 
     &__header {
@@ -197,7 +197,7 @@
 
     &__version {
       flex-shrink: 0;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 10px;
     }
 
@@ -207,7 +207,7 @@
       gap: 4px;
       margin-top: 5px;
       overflow: hidden;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 11px;
       white-space: nowrap;
 
@@ -225,7 +225,7 @@
       flex-shrink: 0;
       padding: 3px 7px;
       border-radius: 999px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       background-color: var(--button-soft-bg);
       font-size: 10px;
 
@@ -245,7 +245,7 @@
       min-height: 36px;
       margin: 0;
       overflow: hidden;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       display: -webkit-box;
       font-size: 12px;
       line-height: 1.5;
@@ -275,7 +275,7 @@
       gap: 6px;
       min-width: 0;
       min-height: 20px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 10px;
       line-height: 20px;
     }
@@ -305,7 +305,7 @@
       align-items: center;
       gap: 10px;
       min-width: 0;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       font-size: 11px;
 
       span {

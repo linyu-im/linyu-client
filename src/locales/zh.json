@@ -742,12 +742,17 @@
     "menu": {
       "newChat": "新建对话",
       "tasks": "我的任务",
-      "skills": "技能广场"
+      "skills": "Skills市场"
     },
     "history": {
       "title": "历史对话",
       "empty": "暂无对话",
-      "more": "更多操作"
+      "more": "更多操作",
+      "rename": "重命名",
+      "renamePlaceholder": "输入对话名称",
+      "delete": "删除对话",
+      "deleteConfirm": "确定删除这条历史对话吗？删除后无法恢复。",
+      "deleted": "对话已删除"
     },
     "welcome": {
       "title": "你好，我是 Nana",
@@ -770,6 +775,190 @@
       "copyCode": "复制代码",
       "regenerate": "重新生成",
       "imageAlt": "图片"
+    },
+    "work": {
+      "brand": "林语工作助手",
+      "nav": {
+        "skills": "Skills市场"
+      },
+      "welcome": {
+        "title": "今天想处理什么工作？",
+        "subtitle": "整理表格、修改文档、处理图片，或查找和整理电脑里的文件",
+        "newTask": "新工作任务"
+      },
+      "workspace": {
+        "label": "工作文件夹",
+        "choose": "选择文件夹",
+        "dialogTitle": "选择 Agent 可以工作的文件夹",
+        "required": "请先选择一个工作文件夹"
+      },
+      "scope": {
+        "label": "工作范围",
+        "chat": "普通对话",
+        "workspace": "文件夹工作区",
+        "chatDescription": "无需选择文件夹"
+      },
+      "setup": {
+        "runtimeTitle": "需要安装 Agent 运行时",
+        "runtimeDesc": "AI 助手基于 Reasonix 运行，请先安装 Reasonix 后再开始使用",
+        "providerTitle": "还没有可用的模型",
+        "providerDesc": "在林语中配置 Base API、API Key 和模型，无需修改 Reasonix 文件",
+        "workspaceTitle": "请选择工作文件夹",
+        "workspaceDesc": "Agent 只会把此文件夹作为当前任务的工作范围",
+        "install": "下载并安装 Reasonix",
+        "configure": "配置模型",
+        "installerOpened": "安装程序已打开，安装完成后点击刷新"
+      },
+      "quick": {
+        "sheet": { "title": "处理电子表格", "desc": "清洗、统计、公式与格式调整", "prompt": "帮我处理一份电子表格：" },
+        "document": { "title": "修改文档", "desc": "润色、排版与内容整理", "prompt": "帮我修改一份文档：" },
+        "image": { "title": "处理图片", "desc": "裁剪、压缩、抠图与格式转换", "prompt": "帮我处理一张图片：" },
+        "files": { "title": "查找整理文件", "desc": "搜索、归类、重命名与安全删除", "prompt": "帮我查找或整理文件：" }
+      },
+      "input": {
+        "placeholder": "描述你希望完成的工作，可以拖入或添加文件…",
+        "hint": "Agent 的文件修改、删除和命令操作会按权限策略请求确认",
+        "attachTitle": "选择要交给 Agent 的文件",
+        "stop": "停止任务"
+      },
+      "messages": {
+        "backToBottom": "回到最新消息"
+      },
+      "attachments": {
+        "remove": "移除附件",
+        "localFile": "本地文件",
+        "attachmentOnlyPrompt": "请查看并处理我添加的附件。",
+        "categories": {
+          "image": "图片",
+          "document": "文档",
+          "spreadsheet": "表格",
+          "pdf": "PDF",
+          "archive": "压缩包",
+          "other": "文件"
+        }
+      },
+      "run": {
+        "preparing": "正在准备任务",
+        "running": "正在执行",
+        "waitingApproval": "等待你的确认",
+        "stalled": "响应时间较长",
+        "stalledDescription": "Agent 暂时没有返回新进展，你可以继续等待或停止本次任务。",
+        "failed": "执行失败",
+        "cancelled": "已停止",
+        "completed": "任务已完成",
+        "elapsed": "已用时 {seconds} 秒",
+        "contentDetails": "查看内容详情",
+        "continueWaiting": "继续等待",
+        "stop": "停止任务"
+      },
+      "notify": {
+        "completed": "「{title}」任务已完成",
+        "failed": "「{title}」任务执行失败",
+        "permission": "「{title}」需要确认：{action}"
+      },
+      "policy": {
+        "workMode": "工作模式",
+        "approvalMode": "操作与审批",
+        "enableFullAccess": "启用完全自动",
+        "fullAccessTitle": "确认启用完全自动？",
+        "fullAccessDescription": "Agent 将自动执行文件修改和命令。系统级敏感操作仍可能请求确认，请只在可信任务中使用。",
+        "workModes": {
+          "economy": { "label": "简洁", "description": "减少过程输出，适合清晰直接的日常任务" },
+          "balanced": { "label": "均衡", "description": "兼顾执行速度、过程可见性与结果质量" },
+          "delivery": { "label": "完整交付", "description": "充分规划、执行并检查，适合复杂工作" }
+        },
+        "approvalModes": {
+          "ask": { "label": "操作前询问", "description": "文件修改、命令等操作执行前由你确认" },
+          "auto": { "label": "自动处理低风险操作", "description": "低风险操作自动执行，高风险操作仍需确认" },
+          "yolo": { "label": "完全自动", "description": "尽可能自动完成所有操作，仅适合可信任务" }
+        }
+      },
+      "activity": {
+        "title": "任务进度",
+        "running": "执行中",
+        "plan": "计划",
+        "tools": "操作记录",
+        "tool": "Agent 操作",
+        "status": {
+          "pending": "等待执行",
+          "in_progress": "正在执行",
+          "completed": "已完成",
+          "failed": "执行失败"
+        }
+      },
+      "permission": {
+        "title": "需要你的确认",
+        "action": "Agent 请求执行操作",
+        "description": "请检查本次操作的内容和影响范围。",
+        "contentDetails": "内容详情",
+        "reject": "拒绝",
+        "options": {
+          "allow_once": "允许一次",
+          "allow_always": "始终允许",
+          "reject_once": "拒绝本次",
+          "reject_always": "始终拒绝"
+        }
+      },
+      "approval": {
+        "ask": "操作前询问",
+        "auto": "自动处理低风险操作",
+        "yolo": "完全自动"
+      },
+      "status": {
+        "notInstalled": "未安装",
+        "noModel": "未配置模型",
+        "noModelOptions": "当前供应商暂无可用模型，请先在设置中配置",
+        "selectModel": "选择模型",
+        "skills": "{count} 个 Skills",
+        "installedSkills": "已安装 Skills",
+        "noInstalledSkills": "暂无已安装的 Skills",
+        "ready": "已连接",
+        "setup": "待配置"
+      },
+      "skills": {
+        "eyebrow": "Linyu Skills",
+        "title": "给工作助手添加能力",
+        "subtitle": "安装经过审核的工作流，Agent 会在合适的任务中自动调用。",
+        "search": "搜索 Skills",
+        "tip": "即装即用",
+        "tipTitle": "让助手多几分本事",
+        "tipDesc": "挑一个 Skill 装上，表格、文档、图片和文件整理都能交给它。想用就开，不用就关，风险操作始终由你拍板。",
+        "official": "官方",
+        "install": "安装",
+        "installed": "Skill 已安装",
+        "uninstall": "卸载",
+        "uninstalled": "Skill 已卸载",
+        "uninstallConfirm": "确定卸载「{name}」吗？本地技能文件将被删除。",
+        "empty": "暂无可用 Skills",
+        "filters": {
+          "all": "全部"
+        }
+      },
+      "errors": {
+        "failed": "任务执行失败，请稍后重试",
+        "providerNotConfigured": "还没有配置可用的模型供应商，请先完成模型设置",
+        "keyRequired": "这个供应商还没有保存 API Key，请补充密钥后再试",
+        "keyInvalid": "API Key 无效或没有访问权限，请检查后重试",
+        "keySaveFailed": "API Key 无法保存到系统凭据库，请检查系统权限",
+        "endpointInvalid": "Base API 地址格式不正确",
+        "endpointNotFound": "找不到模型接口，请检查 Base API 是否包含正确的版本路径",
+        "connectionFailed": "无法连接模型服务，请检查网络和 Base API",
+        "responseInvalid": "模型服务返回了无法识别的数据",
+        "timeout": "连接模型服务超时，请检查网络后重试",
+        "modelNotConfigured": "当前模型没有正确配置，请重新选择供应商和模型",
+        "modelUnavailable": "模型服务中没有找到默认模型，请选择服务实际支持的模型",
+        "runtimeMissing": "Reasonix 尚未安装，请先下载并安装 Agent",
+        "runtimeStartFailed": "Agent 启动失败，请在设置中重新检测运行时",
+        "runtimeDisconnected": "Agent 连接已中断，本次任务已停止，请重试",
+        "workspaceRequired": "文件夹工作区模式需要先选择一个文件夹",
+        "workspaceMissing": "选择的工作文件夹不存在或无法访问",
+        "attachmentMissing": "附件已被移动或删除，请重新添加后再试",
+        "attachmentReadFailed": "无法读取附件，请检查文件权限或重新添加",
+        "skillContentRequired": "该技能缺少可安装内容，请稍后重试",
+        "skillIdInvalid": "技能 ID 无效，无法安装到本地",
+        "skillListFailed": "获取 Skills 列表失败，请稍后重试",
+        "actions": { "settings": "去配置", "install": "安装 Agent", "workspace": "选择文件夹", "retry": "知道了" }
+      }
     }
   },
   "application": {
@@ -1002,6 +1191,11 @@
     "notFoundTitle": "未找到插件",
     "notFoundDescription": "该插件可能已被卸载，或当前窗口参数无效。"
   },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "edit": "编辑"
+  },
   "settings": {
     "todo": "功能开发中",
     "menu": {
@@ -1009,8 +1203,77 @@
       "general": "通用",
       "shortcuts": "快捷键",
       "notification": "通知",
+      "work": "AI 助手",
       "plugins": "插件",
       "about": "关于"
+    },
+    "work": {
+      "title": "AI 助手",
+      "description": "管理 Agent 运行时、模型供应商、权限策略与 Skills",
+      "tabs": { "runtime": "Agent", "providers": "供应商", "model": "模型与权限", "skills": "Skills" },
+      "runtime": {
+        "ready": "运行时就绪",
+        "missing": "需要安装",
+        "missingDesc": "林语会自动检测系统默认安装位置，无需手动填写 CLI 路径",
+        "install": "下载并安装",
+        "detect": "重新检测",
+        "protocol": "运行时协议",
+        "protocolDesc": "林语通过通用 ACP 层连接 Agent，后续可扩展其他 CLI",
+        "installerOpened": "安装程序已打开",
+        "updateTitle": "发现新版本",
+        "updateConfirm": "检测到 Reasonix 有新版本可用。\n当前版本：{current}\n最新版本：{latest}\n是否安装最新版本？",
+        "upToDate": "当前已是最新版本",
+        "updateCheckFailed": "检查更新失败",
+        "stage": {
+          "checking": "正在检查最新版本",
+          "downloading": "正在下载并安装 CLI",
+          "waiting_user": "等待完成安装",
+          "completed": "安装完成"
+        }
+      },
+      "provider": {
+        "title": "模型供应商",
+        "description": "API Key 存入系统凭据库，仅在 Agent 运行期间临时提供",
+        "add": "添加供应商",
+        "modelCount": "{count} 个模型",
+        "delete": "删除",
+        "deleteConfirm": "确定删除供应商“{name}”及其密钥吗？",
+        "deleted": "供应商已删除",
+        "empty": "尚未配置模型供应商",
+        "keySaved": "密钥已保存",
+        "keyMissing": "缺少密钥",
+        "editorTitle": "供应商配置",
+        "name": "显示名称",
+        "id": "供应商 ID",
+        "kind": "接口协议",
+        "baseUrl": "Base API",
+        "apiKey": "API Key",
+        "keepKey": "留空则保留现有密钥",
+        "models": "可用模型",
+        "defaultModel": "默认模型",
+        "test": "测试连接",
+        "testSuccess": "连接成功，耗时 {latency} ms",
+        "required": "请完整填写供应商、地址和默认模型",
+        "saved": "供应商配置已保存"
+      },
+      "model": {
+        "provider": "当前供应商",
+        "providerDesc": "切换 Agent 会话使用的模型服务",
+        "model": "当前模型",
+        "modelDesc": "模型列表来自供应商配置",
+        "workMode": "工作强度",
+        "workModeDesc": "控制速度、规划深度与交付完整度",
+        "approval": "操作审批",
+        "approvalDesc": "删除、覆盖和执行命令等高风险操作仍建议询问",
+        "workModes": { "economy": "快速省用量", "balanced": "平衡", "delivery": "完整交付" },
+        "approvalModes": { "ask": "操作前询问", "auto": "自动低风险操作", "yolo": "完全自动（高风险）" }
+      },
+      "skills": {
+        "install": "安装",
+        "installed": "Skill 已安装",
+        "uninstall": "卸载",
+        "uninstalled": "Skill 已卸载"
+      }
     },
     "account": {
       "logout": "退出登录",

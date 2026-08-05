@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-session-cancel"
+description = "Enables the work_session_cancel command without any pre-configured scope."
+commands.allow = ["work_session_cancel"]
+
+[[permission]]
+identifier = "deny-work-session-cancel"
+description = "Denies the work_session_cancel command without any pre-configured scope."
+commands.deny = ["work_session_cancel"]

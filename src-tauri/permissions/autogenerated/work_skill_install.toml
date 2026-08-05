@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-skill-install"
+description = "Enables the work_skill_install command without any pre-configured scope."
+commands.allow = ["work_skill_install"]
+
+[[permission]]
+identifier = "deny-work-skill-install"
+description = "Denies the work_skill_install command without any pre-configured scope."
+commands.deny = ["work_skill_install"]

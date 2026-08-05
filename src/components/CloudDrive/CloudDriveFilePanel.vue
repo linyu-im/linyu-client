@@ -1394,7 +1394,7 @@
 
     &__path-sep {
       flex-shrink: 0;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__path-link {
@@ -1409,7 +1409,7 @@
       font-size: 15px;
       font-weight: 500;
       line-height: 1;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       flex-shrink: 1;
       box-sizing: border-box;
@@ -1445,7 +1445,7 @@
       border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
       border-radius: 6px;
       background: var(--bg-muted-color);
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       flex-shrink: 0;
       box-sizing: border-box;
@@ -1621,7 +1621,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
       flex-shrink: 0;
       box-sizing: border-box;
@@ -1690,11 +1690,11 @@
 
       &::-webkit-scrollbar-thumb {
         border-radius: 3px;
-        background: color-mix(in srgb, var(--text-secondary-color) 35%, transparent);
+        background: color-mix(in srgb, var(--text-muted-color) 35%, transparent);
       }
 
       &::-webkit-scrollbar-thumb:hover {
-        background: color-mix(in srgb, var(--text-secondary-color) 50%, transparent);
+        background: color-mix(in srgb, var(--text-muted-color) 50%, transparent);
       }
     }
 
@@ -1745,7 +1745,7 @@
       text-align: center;
       font-size: 13px;
       line-height: 1.6;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
 
       p {
         margin: 0;
@@ -1817,7 +1817,7 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 1.3;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         background-color: var(--bg-muted-color);
         user-select: none;
         box-shadow: 0 1px 0 color-mix(in srgb, var(--border-color) 55%, transparent);
@@ -1860,7 +1860,7 @@
         margin-left: 4px;
         flex-shrink: 0;
         opacity: 0;
-        color: var(--text-secondary-color);
+        color: var(--text-muted-color);
         transition:
           opacity 0.12s ease,
           transform 0.12s ease,

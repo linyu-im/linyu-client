@@ -175,7 +175,7 @@
 
     &__count {
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__path-bar {
@@ -192,7 +192,7 @@
     &__path-label {
       flex-shrink: 0;
       font-size: 13px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__path-value {
@@ -215,7 +215,7 @@
       border: none;
       border-radius: 6px;
       background: transparent;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       cursor: pointer;
 
       &:hover {

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-work-skill-local-state"
+description = "Enables the work_skill_local_state command without any pre-configured scope."
+commands.allow = ["work_skill_local_state"]
+
+[[permission]]
+identifier = "deny-work-skill-local-state"
+description = "Denies the work_skill_local_state command without any pre-configured scope."
+commands.deny = ["work_skill_local_state"]

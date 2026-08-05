@@ -201,7 +201,7 @@
     &__sub {
       margin-top: 2px;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__devices {
@@ -230,7 +230,7 @@
     &__devices-group-title {
       margin-bottom: 8px;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       line-height: 1.4;
     }
 
@@ -266,7 +266,7 @@
       display: block;
       width: 20px;
       height: 20px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
     }
 
     &__device-info {
@@ -284,14 +284,14 @@
     &__device-platform {
       margin-top: 2px;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       line-height: 1.35;
     }
 
     &__device-current {
       flex-shrink: 0;
       font-size: 12px;
-      color: var(--text-secondary-color);
+      color: var(--text-muted-color);
       white-space: nowrap;
     }
 
