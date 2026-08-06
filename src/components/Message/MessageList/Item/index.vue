@@ -37,6 +37,7 @@
   import Ecard from './Ecard.vue'
   import Voice from './Voice.vue'
   import Sticker from './Sticker.vue'
+  import CallRecord from './CallRecord.vue'
 
   const props = withDefaults(
     defineProps<{
@@ -83,6 +84,8 @@
         return Sticker
       case 'video':
         return Video
+      case 'call_record':
+        return CallRecord
       default:
         return null
     }
@@ -167,6 +170,13 @@
         )
         pushQuote()
         break
+      case 'call_record':
+        options.push({
+          label: () => t('message.bubbleMenu.delete'),
+          key: 'delete',
+          props: { class: 'menu-item--danger' }
+        })
+        return options
     }
 
     options.push({ type: 'divider', key: 'd1' })
@@ -252,13 +262,18 @@
 
 <style scoped lang="scss">
   .message-item {
+    display: flex;
+    align-items: center;
     max-width: min(72%, 520px);
     padding: 8px 10px;
     box-sizing: border-box;
+    // 避免内部 inline-flex（语音/通话记录）按基线对齐时底部多出空隙
+    line-height: 0;
 
     &--text {
       max-width: 100%;
       width: fit-content;
+      line-height: normal;
     }
 
     &--file,
@@ -266,6 +281,7 @@
     &--ecard,
     &--plain {
       padding: 0;
+      line-height: normal;
     }
 
     &--file,
@@ -285,6 +301,7 @@
     }
 
     &__unknown {
+      line-height: 1.4;
       color: var(--text-secondary-color);
     }
   }

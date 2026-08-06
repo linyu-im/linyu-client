@@ -12,6 +12,11 @@
         <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
       </div>
     </div>
+    <GroupCallStatusBar
+      v-if="props.chat.sceneType === SceneType.Group"
+      :session-id="props.chat.sessionId"
+      :joining="groupCallJoining"
+      @join="onJoinGroupCall" />
     <div class="chat-session__body">
       <Split
         class="chat-session__split"
@@ -67,7 +72,7 @@
                   </template>
                   <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
                 </n-popover>
-                <SvgIconButton href="#scissor" @click="openAndFocusWindow('screenshot')" />
+                <SvgIconButton href="#scissor" @click="openAndFocusWindow(SCREENSHOT_WINDOW_LABEL)" />
                 <SvgIconButton href="#folder" @click="onPickFiles" />
                 <SvgIconButton href="#image" @click="onPickImages" />
                 <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
@@ -82,8 +87,8 @@
                   @send="onVoiceRecordSend" />
               </div>
               <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
-                <SvgIconButton href="#phone" @click="createCallWindow('audio')" />
-                <SvgIconButton href="#video" @click="createCallWindow('video')" />
+                <SvgIconButton href="#phone" @click="onStartCall('audio')" />
+                <SvgIconButton href="#video" @click="onStartCall('video')" />
                 <n-button size="tiny" type="primary" class="w-56px m-l-10px p-y-12px" @click="onSend()">
                   {{ t('message.editor.send') }}
                 </n-button>
@@ -102,12 +107,17 @@
         @history-deleted="onChatHistoryDeleted"
         @group-dissolved="onGroupDissolved"
         @friend-deleted="onFriendDeleted" />
+      <SelectGroupCallMembersModal
+        v-if="props.chat.sceneType === SceneType.Group"
+        v-model:show="groupCallModalVisible"
+        :group-id="props.chat.peerId"
+        @confirm="onGroupCallMembersConfirm" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { groupApi, messageApi, robotApi } from '@/api'
+  import { avCallApi, groupApi, messageApi, robotApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useUserStore } from '@/stores/user/user'
   import { useNameStore } from '@/stores/user/name'
@@ -129,6 +139,7 @@
   import { useMessageForwardStore } from '@/stores/message/messageForward'
   import { useSendingMessagesStore } from '@/stores/message/sendingMessages'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useAvCallStore } from '@/stores/app/avCall'
   import { useMessageBubbleActions } from '@/composables/useMessageBubbleActions'
   import MessageEditor, { type EditorPayload } from '../Message/MessageEditor/index.vue'
   import type { MentionItem } from '@/types/common'
@@ -137,6 +148,9 @@
   import VoiceRecordBar from '../Message/VoiceRecordBar.vue'
   import ChatSessionSettingsDrawer from './ChatSessionSettingsDrawer/index.vue'
   import ChatSessionPeerInfo from './ChatSessionPeerInfo.vue'
+  import SelectGroupCallMembersModal from '@/components/Modal/group/SelectGroupCallMembersModal.vue'
+  import GroupCallStatusBar from '@/components/Chat/GroupCallStatusBar.vue'
+  import type { AvCallType } from '@/types/api/avCall'
   import type { Sticker } from '@/types/api/sticker'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import {
@@ -155,11 +169,14 @@
   import {
     closeCurrentWindow,
     createCallWindow,
+    focusCallWindow,
+    isCallWindowOpen,
     isCurrentWindowLabel,
     openAndFocusWindow,
     requestCurrentWindowAttention
   } from '@/utils/desktop/window.ts'
-  import { CHAT_SERVER_MESSAGE_EVENT } from '@/constants/common'
+  import { HOME_WINDOW_LABEL, SCREENSHOT_WINDOW_LABEL } from '@/constants/window'
+  import { CHAT_SERVER_MESSAGE_EVENT } from '@/constants/event'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
   const props = defineProps<{
@@ -175,6 +192,7 @@
   const messageForwardStore = useMessageForwardStore()
   const sendingMessagesStore = useSendingMessagesStore()
   const appSettingsStore = useAppSettingsStore()
+  const avCallStore = useAvCallStore()
   const messageBubbleActions = useMessageBubbleActions()
 
   initOsFileDropListener().catch(() => undefined)
@@ -192,6 +210,10 @@
   const emojiPickerVisible = ref(false)
   const voiceRecordingVisible = ref(false)
   const voiceSending = ref(false)
+  const groupCallModalVisible = ref(false)
+  const pendingGroupCallType = ref<AvCallType>('video')
+  const callStarting = ref(false)
+  const groupCallJoining = ref(false)
   const {
     durationSec: voiceDurationSec,
     start: startVoiceRecord,
@@ -237,6 +259,96 @@
 
   const onOpenChatRecord = () => {
     openChatRecord(props.chat)
+  }
+
+  const resolveCallDisplayName = () => {
+    if (props.chat.sceneType === SceneType.Group) {
+      return groupInfo.value?.info.name?.trim() || props.chat.peerRemark?.trim() || props.chat.peerId
+    }
+    return peerInfo.value?.remark?.trim() || peerInfo.value?.username?.trim() || props.chat.peerId
+  }
+
+  const openCallAfterInvite = (sessionId: string, callType: AvCallType, inviteUserIds?: string[]) => {
+    const sceneType = props.chat.sceneType === SceneType.Group ? 'group' : 'user'
+    void createCallWindow({
+      // 群聊统一进视频通话窗
+      mode: sceneType === 'group' ? 'video' : callType,
+      callType,
+      sessionId,
+      sceneType,
+      peerId: props.chat.peerId,
+      displayName: resolveCallDisplayName(),
+      chatSessionId: props.chat.sessionId,
+      inviteUserIds: sceneType === 'group' ? inviteUserIds : undefined
+    })
+  }
+
+  const startUserCall = (callType: AvCallType) => {
+    if (callStarting.value) return
+    callStarting.value = true
+    avCallApi
+      .inviteUser({ userId: props.chat.peerId, callType })
+      .then((res) => {
+        if (res.code === 0 && res.data?.sessionId) {
+          openCallAfterInvite(res.data.sessionId, callType)
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        callStarting.value = false
+      })
+  }
+
+  const onStartCall = (callType: AvCallType) => {
+    if (props.chat.sceneType === SceneType.Group) {
+      pendingGroupCallType.value = callType
+      groupCallModalVisible.value = true
+      return
+    }
+    startUserCall(callType)
+  }
+
+  const onGroupCallMembersConfirm = (userIds: string[]) => {
+    if (callStarting.value || userIds.length === 0) return
+    const callType = pendingGroupCallType.value
+    callStarting.value = true
+    avCallApi
+      .inviteGroup({ groupId: props.chat.peerId, callType, userIds })
+      .then((res) => {
+        if (res.code === 0 && res.data?.sessionId) {
+          openCallAfterInvite(res.data.sessionId, callType, userIds)
+        } else {
+          window.$message.error(res.msg)
+        }
+      })
+      .finally(() => {
+        callStarting.value = false
+      })
+  }
+
+  const onJoinGroupCall = () => {
+    if (groupCallJoining.value || props.chat.sceneType !== SceneType.Group) return
+    groupCallJoining.value = true
+    isCallWindowOpen()
+      .then(async (busy) => {
+        if (busy) {
+          const sameGroup = avCallStore.sceneType === 'group' && avCallStore.peerId === props.chat.peerId
+          if (sameGroup) {
+            await focusCallWindow()
+            return
+          }
+          window.$message?.warning(t('callInvite.inCallBusy'))
+          return
+        }
+        openCallAfterInvite(props.chat.sessionId, 'video')
+      })
+      .catch(() => {
+        window.$message?.error(t('audioVideoCall.connectFailed'))
+      })
+      .finally(() => {
+        groupCallJoining.value = false
+      })
   }
 
   const onForwardMessage = (message: Message) => {
@@ -285,7 +397,7 @@
   }
 
   const closeIfNotHomeWindow = () => {
-    if (!isCurrentWindowLabel('home')) {
+    if (!isCurrentWindowLabel(HOME_WINDOW_LABEL)) {
       closeCurrentWindow()
     }
   }

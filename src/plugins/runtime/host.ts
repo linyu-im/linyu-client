@@ -1,4 +1,5 @@
 import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { PLUGIN_LIFECYCLE_EVENT, PLUGIN_RUNTIME_REQUEST_EVENT, PLUGIN_RUNTIME_RESPONSE_EVENT } from '@/constants/event'
 import * as pluginApiService from '@/services/pluginApiService'
 import * as pluginService from '@/services/pluginService'
 import { useUserStore } from '@/stores/user/user'
@@ -68,8 +69,8 @@ export class PluginHost {
       })
     })
     return Promise.all([
-      listen<PluginLifecycleEvent>('plugin:lifecycle', (event) => this.onLifecycle(event.payload)),
-      listen<PluginRuntimeRequest>('plugin-runtime:request', (event) => this.onRuntimeRequest(event.payload)),
+      listen<PluginLifecycleEvent>(PLUGIN_LIFECYCLE_EVENT, (event) => this.onLifecycle(event.payload)),
+      listen<PluginRuntimeRequest>(PLUGIN_RUNTIME_REQUEST_EVENT, (event) => this.onRuntimeRequest(event.payload)),
       pluginService.list().then((plugins) => {
         return Promise.all(
           plugins
@@ -280,7 +281,7 @@ export class PluginHost {
   }
 
   private reply(request: PluginRuntimeRequest, response: PluginRuntimeResponse) {
-    emitTo(request.replyLabel, 'plugin-runtime:response', response).catch((error) => {
+    emitTo(request.replyLabel, PLUGIN_RUNTIME_RESPONSE_EVENT, response).catch((error) => {
       console.error('[plugin-runtime] failed to reply', error)
     })
   }

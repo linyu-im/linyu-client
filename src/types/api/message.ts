@@ -89,6 +89,19 @@ export interface StickerContent {
   stickerName: string
 }
 
+export type CallRecordCallType = 'audio' | 'video'
+export type CallRecordCallStatus = 'ended' | 'missed' | 'rejected' | 'canceled'
+
+/** 通话记录消息内容 */
+export interface CallRecordContent {
+  /** 通话时长（秒） */
+  duration: number
+  /** audio / video */
+  callType: CallRecordCallType | string
+  /** ended / missed / rejected / canceled */
+  callStatus: CallRecordCallStatus | string
+}
+
 type MsgTypeMap = {
   text: TextContent
   image: ImageContent
@@ -98,6 +111,7 @@ type MsgTypeMap = {
   ecard: ECardContent
   voice: VoiceContent
   sticker: StickerContent
+  call_record: CallRecordContent
 }
 
 type MessageLocalExtMap = {

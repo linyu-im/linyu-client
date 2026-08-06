@@ -11,7 +11,7 @@
   import { useSystemSettingStore } from '@/stores/app/systemSetting'
   import LinyuProvider from './components/LinyuProvider.vue'
   import { loadLanguage } from './services/i18n'
-  import { ThemePatternEnum } from './constants/system'
+  import { ThemePatternEnum } from '@/constants/system'
   import { setTheme } from '@tauri-apps/api/app'
   import { Theme } from '@tauri-apps/api/window'
 

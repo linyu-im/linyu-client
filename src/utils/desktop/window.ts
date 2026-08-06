@@ -1,9 +1,120 @@
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { emitTo } from '@tauri-apps/api/event'
-import { Effect, EffectState, UserAttentionType } from '@tauri-apps/api/window'
+import {
+  Effect,
+  EffectState,
+  LogicalSize,
+  PhysicalPosition,
+  UserAttentionType,
+  currentMonitor,
+  primaryMonitor
+} from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
+import {
+  CALL_JOIN_EVENT,
+  CALL_INVITE_HANGUP_EVENT,
+  CALL_INVITE_UPDATE_EVENT,
+  SETTINGS_NAVIGATE_EVENT
+} from '@/constants/event'
+import { pluginWindowBoundsKey } from '@/constants/storage'
 import { WEBVIEW_ADDITIONAL_BROWSER_ARGS } from '@/constants/webview'
+import {
+  ADD_CONTACTS_WINDOW_HEIGHT,
+  ADD_CONTACTS_WINDOW_LABEL,
+  ADD_CONTACTS_WINDOW_MIN_HEIGHT,
+  ADD_CONTACTS_WINDOW_MIN_WIDTH,
+  ADD_CONTACTS_WINDOW_WIDTH,
+  CALL_AUDIO_WINDOW_HEIGHT,
+  CALL_AUDIO_WINDOW_URL,
+  CALL_AUDIO_WINDOW_WIDTH,
+  CALL_INVITE_WINDOW_HEIGHT,
+  CALL_INVITE_WINDOW_LABEL,
+  CALL_INVITE_WINDOW_MARGIN,
+  CALL_INVITE_WINDOW_URL,
+  CALL_INVITE_WINDOW_WIDTH,
+  CALL_VIDEO_WINDOW_HEIGHT,
+  CALL_VIDEO_WINDOW_URL,
+  CALL_VIDEO_WINDOW_WIDTH,
+  CALL_WINDOW_LABEL,
+  CHAT_RECORD_WINDOW_HEIGHT,
+  CHAT_RECORD_WINDOW_LABEL,
+  CHAT_RECORD_WINDOW_MIN_HEIGHT,
+  CHAT_RECORD_WINDOW_MIN_WIDTH,
+  CHAT_RECORD_WINDOW_WIDTH,
+  CHAT_SESSION_WINDOW_HEIGHT,
+  CHAT_SESSION_WINDOW_LABEL_PREFIX,
+  CHAT_SESSION_WINDOW_MIN_HEIGHT,
+  CHAT_SESSION_WINDOW_MIN_WIDTH,
+  CHAT_SESSION_WINDOW_URL,
+  CHAT_SESSION_WINDOW_WIDTH,
+  EMOTION_WINDOW_HEIGHT,
+  EMOTION_WINDOW_LABEL,
+  EMOTION_WINDOW_WIDTH,
+  FEEDBACK_WINDOW_HEIGHT,
+  FEEDBACK_WINDOW_LABEL,
+  FEEDBACK_WINDOW_MIN_HEIGHT,
+  FEEDBACK_WINDOW_MIN_WIDTH,
+  FEEDBACK_WINDOW_WIDTH,
+  FILE_PREVIEW_WINDOW_HEIGHT,
+  FILE_PREVIEW_WINDOW_LABEL_PREFIX,
+  FILE_PREVIEW_WINDOW_MIN_HEIGHT,
+  FILE_PREVIEW_WINDOW_MIN_WIDTH,
+  FILE_PREVIEW_WINDOW_URL,
+  FILE_PREVIEW_WINDOW_WIDTH,
+  GROUP_NOTICE_WINDOW_HEIGHT,
+  GROUP_NOTICE_WINDOW_LABEL,
+  GROUP_NOTICE_WINDOW_MIN_HEIGHT,
+  GROUP_NOTICE_WINDOW_MIN_WIDTH,
+  GROUP_NOTICE_WINDOW_WIDTH,
+  HOME_WINDOW_HEIGHT,
+  HOME_WINDOW_LABEL,
+  HOME_WINDOW_MIN_HEIGHT,
+  HOME_WINDOW_MIN_WIDTH,
+  HOME_WINDOW_WIDTH,
+  IMG_VIEWER_WINDOW_HEIGHT,
+  IMG_VIEWER_WINDOW_LABEL,
+  IMG_VIEWER_WINDOW_MIN_HEIGHT,
+  IMG_VIEWER_WINDOW_MIN_WIDTH,
+  IMG_VIEWER_WINDOW_WIDTH,
+  MESSAGE_REMIND_WINDOW_LABEL,
+  MOMENT_WINDOW_HEIGHT,
+  MOMENT_WINDOW_LABEL_PREFIX,
+  MOMENT_WINDOW_MIN_HEIGHT,
+  MOMENT_WINDOW_MIN_WIDTH,
+  MOMENT_WINDOW_URL,
+  MOMENT_WINDOW_WIDTH,
+  PLUGIN_RUNTIME_WINDOW_HEIGHT,
+  PLUGIN_RUNTIME_WINDOW_LABEL,
+  PLUGIN_RUNTIME_WINDOW_URL,
+  PLUGIN_RUNTIME_WINDOW_WIDTH,
+  PLUGIN_UI_WINDOW_LABEL_PREFIX,
+  PLUGIN_UI_WINDOW_URL,
+  SET_WINDOW_HEIGHT,
+  SET_WINDOW_LABEL,
+  SET_WINDOW_MIN_HEIGHT,
+  SET_WINDOW_MIN_WIDTH,
+  SET_WINDOW_WIDTH,
+  VIDEO_VIEWER_WINDOW_HEIGHT,
+  VIDEO_VIEWER_WINDOW_LABEL,
+  VIDEO_VIEWER_WINDOW_MIN_HEIGHT,
+  VIDEO_VIEWER_WINDOW_MIN_WIDTH,
+  VIDEO_VIEWER_WINDOW_WIDTH
+} from '@/constants/window'
+import type { CallInviteWindowPayload } from '@/types/api/avCall'
 import type { InstalledPlugin, PluginWindow } from '@/types/plugin'
+
+const syncCallInviteWindowSize = (webview: WebviewWindow) =>
+  webview.setSize(new LogicalSize(CALL_INVITE_WINDOW_WIDTH, CALL_INVITE_WINDOW_HEIGHT))
+
+const placeWindowBottomRight = async (webview: WebviewWindow, margin = CALL_INVITE_WINDOW_MARGIN) => {
+  const monitor = (await currentMonitor()) ?? (await primaryMonitor())
+  if (!monitor) return
+  const [outerSize, scaleFactor] = await Promise.all([webview.outerSize(), webview.scaleFactor()])
+  const marginPx = Math.round(margin * scaleFactor)
+  const x = monitor.workArea.position.x + monitor.workArea.size.width - outerSize.width - marginPx
+  const y = monitor.workArea.position.y + monitor.workArea.size.height - outerSize.height - marginPx
+  await webview.setPosition(new PhysicalPosition(Math.max(0, Math.round(x)), Math.max(0, Math.round(y))))
+}
 
 type WebviewWindowCreateOptions = NonNullable<ConstructorParameters<typeof WebviewWindow>[1]> & {
   additionalBrowserArgs?: string
@@ -39,9 +150,6 @@ interface PersistedPluginWindowBounds {
   x?: number
   y?: number
 }
-
-const pluginWindowBoundsKey = (pluginId: string, windowId: string) =>
-  `linyu:plugin-window-bounds:${pluginId}:${windowId}`
 
 const readPluginWindowBounds = (pluginId: string, windowId: string): PersistedPluginWindowBounds | null => {
   try {
@@ -176,11 +284,11 @@ export const exitApp = async () => {
 }
 
 export const createHomeWinodw = () =>
-  createWebviewWindow('林语', 'home', {
-    width: 960,
-    height: 675,
-    minWidth: 800,
-    minHeight: 600,
+  createWebviewWindow('林语', HOME_WINDOW_LABEL, {
+    width: HOME_WINDOW_WIDTH,
+    height: HOME_WINDOW_HEIGHT,
+    minWidth: HOME_WINDOW_MIN_WIDTH,
+    minHeight: HOME_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true,
     // Windows WebView2 只有在创建时可见，才会注册原生文件 DropTarget。
@@ -191,40 +299,44 @@ export const createHomeWinodw = () =>
   })
 
 export const createEmotionWinodw = () =>
-  createWebviewWindow('心情', 'emotion', { width: 320, height: 525, transparent: true })
+  createWebviewWindow('心情', EMOTION_WINDOW_LABEL, {
+    width: EMOTION_WINDOW_WIDTH,
+    height: EMOTION_WINDOW_HEIGHT,
+    transparent: true
+  })
 
 export const createSetWinodw = async (tab?: string) => {
-  const window = await createWebviewWindow('设置', 'set', {
-    width: 900,
-    height: 680,
-    minWidth: 820,
-    minHeight: 620,
+  const window = await createWebviewWindow('设置', SET_WINDOW_LABEL, {
+    width: SET_WINDOW_WIDTH,
+    height: SET_WINDOW_HEIGHT,
+    minWidth: SET_WINDOW_MIN_WIDTH,
+    minHeight: SET_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true,
     url: tab ? `/set?tab=${encodeURIComponent(tab)}` : '/set'
   })
-  if (tab) await emitTo('set', 'settings:navigate', { tab })
+  if (tab) await emitTo(SET_WINDOW_LABEL, SETTINGS_NAVIGATE_EVENT, { tab })
   return window
 }
 
 export const createFeedbackWinodw = () =>
-  createWebviewWindow('意见反馈', 'feedback', {
-    width: 600,
-    height: 640,
-    minWidth: 480,
-    minHeight: 520,
+  createWebviewWindow('意见反馈', FEEDBACK_WINDOW_LABEL, {
+    width: FEEDBACK_WINDOW_WIDTH,
+    height: FEEDBACK_WINDOW_HEIGHT,
+    minWidth: FEEDBACK_WINDOW_MIN_WIDTH,
+    minHeight: FEEDBACK_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 
 export const createPluginRuntimeWindow = async () => {
-  const runtimeWindow = await WebviewWindow.getByLabel('plugin-runtime')
+  const runtimeWindow = await WebviewWindow.getByLabel(PLUGIN_RUNTIME_WINDOW_LABEL)
   if (runtimeWindow) return runtimeWindow
 
-  return createWebviewWindow('Linyu Plugin Runtime', 'plugin-runtime', {
-    url: '/pluginRuntime',
-    width: 1,
-    height: 1,
+  return createWebviewWindow('Linyu Plugin Runtime', PLUGIN_RUNTIME_WINDOW_LABEL, {
+    url: PLUGIN_RUNTIME_WINDOW_URL,
+    width: PLUGIN_RUNTIME_WINDOW_WIDTH,
+    height: PLUGIN_RUNTIME_WINDOW_HEIGHT,
     visible: false,
     center: false,
     skipTaskbar: true,
@@ -294,25 +406,29 @@ export const createPluginUiWindow = async (plugin: InstalledPlugin, windowId?: s
   const safeWindowId = declaredWindow.id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32) || 'main'
   const instance = declaredWindow.behavior.singleton ? '' : `-${Date.now().toString(36)}`
   const query = new URLSearchParams({ pluginId: plugin.id, windowId: declaredWindow.id })
-  return createWebviewWindow(declaredWindow.title || plugin.name, `plugin-ui-${safeId}-${safeWindowId}${instance}`, {
-    url: `/plugin?${query.toString()}`,
-    width,
-    height,
-    minWidth: declaredWindow.size.minWidth,
-    minHeight: declaredWindow.size.minHeight,
-    maxWidth: declaredWindow.size.maxWidth,
-    maxHeight: declaredWindow.size.maxHeight,
-    resizable: declaredWindow.behavior.resizable,
-    fullscreen: declaredWindow.behavior.fullscreen,
-    center: persisted?.x === undefined || persisted.y === undefined ? declaredWindow.behavior.center : false,
-    x: persisted?.x,
-    y: persisted?.y,
-    alwaysOnTop: declaredWindow.behavior.alwaysOnTop,
-    skipTaskbar: declaredWindow.behavior.skipTaskbar,
-    decorations: declaredWindow.decorations.mode === 'native',
-    visible: true,
-    transparent: false
-  })
+  return createWebviewWindow(
+    declaredWindow.title || plugin.name,
+    `${PLUGIN_UI_WINDOW_LABEL_PREFIX}-${safeId}-${safeWindowId}${instance}`,
+    {
+      url: `${PLUGIN_UI_WINDOW_URL}?${query.toString()}`,
+      width,
+      height,
+      minWidth: declaredWindow.size.minWidth,
+      minHeight: declaredWindow.size.minHeight,
+      maxWidth: declaredWindow.size.maxWidth,
+      maxHeight: declaredWindow.size.maxHeight,
+      resizable: declaredWindow.behavior.resizable,
+      fullscreen: declaredWindow.behavior.fullscreen,
+      center: persisted?.x === undefined || persisted.y === undefined ? declaredWindow.behavior.center : false,
+      x: persisted?.x,
+      y: persisted?.y,
+      alwaysOnTop: declaredWindow.behavior.alwaysOnTop,
+      skipTaskbar: declaredWindow.behavior.skipTaskbar,
+      decorations: declaredWindow.decorations.mode === 'native',
+      visible: true,
+      transparent: false
+    }
+  )
 }
 
 export const trackCurrentPluginWindowBounds = async (pluginId: string, windowId: string) => {
@@ -355,21 +471,21 @@ export const resetPluginWindowBounds = (pluginId: string, windowId: string) => {
 }
 
 export const createImgViewerWindow = () =>
-  createWebviewWindow('图片', 'imgViewer', {
-    width: 900,
-    height: 640,
-    minWidth: 640,
-    minHeight: 480,
+  createWebviewWindow('图片', IMG_VIEWER_WINDOW_LABEL, {
+    width: IMG_VIEWER_WINDOW_WIDTH,
+    height: IMG_VIEWER_WINDOW_HEIGHT,
+    minWidth: IMG_VIEWER_WINDOW_MIN_WIDTH,
+    minHeight: IMG_VIEWER_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 
 export const createVideoViewerWindow = () =>
-  createWebviewWindow('视频', 'videoViewer', {
-    width: 900,
-    height: 640,
-    minWidth: 640,
-    minHeight: 480,
+  createWebviewWindow('视频', VIDEO_VIEWER_WINDOW_LABEL, {
+    width: VIDEO_VIEWER_WINDOW_WIDTH,
+    height: VIDEO_VIEWER_WINDOW_HEIGHT,
+    minWidth: VIDEO_VIEWER_WINDOW_MIN_WIDTH,
+    minHeight: VIDEO_VIEWER_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
@@ -390,73 +506,203 @@ export const createFilePreviewWindow = (options: FilePreviewWindowOptions) => {
     size: String(options.size)
   })
   const safeId = options.id.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 48) || 'file'
-  const label = `file-preview-${safeId}-${Date.now().toString(36)}`
+  const label = `${FILE_PREVIEW_WINDOW_LABEL_PREFIX}-${safeId}-${Date.now().toString(36)}`
 
   return createWebviewWindow(options.name, label, {
-    url: `/filePreview?${query.toString()}`,
-    width: 1040,
-    height: 760,
-    minWidth: 720,
-    minHeight: 520,
+    url: `${FILE_PREVIEW_WINDOW_URL}?${query.toString()}`,
+    width: FILE_PREVIEW_WINDOW_WIDTH,
+    height: FILE_PREVIEW_WINDOW_HEIGHT,
+    minWidth: FILE_PREVIEW_WINDOW_MIN_WIDTH,
+    minHeight: FILE_PREVIEW_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 }
 
 export const createChatRecordWindow = () =>
-  createWebviewWindow('聊天记录', 'chatRecord', {
-    width: 660,
-    minWidth: 660,
-    height: 700,
-    minHeight: 580,
+  createWebviewWindow('聊天记录', CHAT_RECORD_WINDOW_LABEL, {
+    width: CHAT_RECORD_WINDOW_WIDTH,
+    minWidth: CHAT_RECORD_WINDOW_MIN_WIDTH,
+    height: CHAT_RECORD_WINDOW_HEIGHT,
+    minHeight: CHAT_RECORD_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 
 export const createAddContactsWindow = () =>
-  createWebviewWindow('添加联系人/群聊', 'addContacts', {
-    width: 640,
-    minWidth: 640,
-    height: 680,
-    minHeight: 560,
+  createWebviewWindow('添加联系人/群聊', ADD_CONTACTS_WINDOW_LABEL, {
+    width: ADD_CONTACTS_WINDOW_WIDTH,
+    minWidth: ADD_CONTACTS_WINDOW_MIN_WIDTH,
+    height: ADD_CONTACTS_WINDOW_HEIGHT,
+    minHeight: ADD_CONTACTS_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 
 export const createGroupNoticeWindow = () =>
-  createWebviewWindow('群公告', 'groupNotice', {
-    width: 520,
-    minWidth: 420,
-    height: 640,
-    minHeight: 480,
+  createWebviewWindow('群公告', GROUP_NOTICE_WINDOW_LABEL, {
+    width: GROUP_NOTICE_WINDOW_WIDTH,
+    minWidth: GROUP_NOTICE_WINDOW_MIN_WIDTH,
+    height: GROUP_NOTICE_WINDOW_HEIGHT,
+    minHeight: GROUP_NOTICE_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })
 
-export const createMessageRemindWindow = () => openAndFocusWindow('messageRemind')
+export const createMessageRemindWindow = () => openAndFocusWindow(MESSAGE_REMIND_WINDOW_LABEL)
 
-export const createCallWindow = (mode: 'video' | 'audio' = 'video') =>
-  mode === 'audio'
-    ? createWebviewWindow('语音通话', 'call', {
-        url: '/call/audio',
-        width: 350,
-        height: 600,
-        minWidth: 350,
-        minHeight: 600,
+export const isCallWindowOpen = async (): Promise<boolean> => {
+  const existing = await WebviewWindow.getByLabel(CALL_WINDOW_LABEL)
+  return !!existing
+}
+
+export const focusCallWindow = async (): Promise<boolean> => {
+  const existing = await WebviewWindow.getByLabel(CALL_WINDOW_LABEL)
+  if (!existing) return false
+  await existing.show()
+  await existing.unminimize()
+  await existing.setFocus()
+  return true
+}
+
+export const createCallWindow = async (input: {
+  mode?: 'video' | 'audio'
+  /** 原始通话类型（写入通话记录；默认同 mode） */
+  callType?: 'video' | 'audio'
+  sessionId: string
+  sceneType: 'user' | 'group'
+  peerId: string
+  displayName: string
+  chatSessionId?: string
+  inviteUserIds?: string[]
+}) => {
+  const sceneType = input.sceneType === 'group' ? 'group' : 'user'
+  // 群聊一律打开视频通话窗
+  const mode = sceneType === 'group' ? 'video' : input.mode === 'audio' ? 'audio' : 'video'
+  const callType = input.callType === 'audio' || input.callType === 'video' ? input.callType : mode
+  const chatSessionId = input.chatSessionId?.trim() || ''
+  const inviteUserIds = (input.inviteUserIds || []).map((id) => id.trim()).filter(Boolean)
+  const payload = {
+    sessionId: input.sessionId,
+    sceneType,
+    callType,
+    peerId: input.peerId,
+    displayName: input.displayName || input.peerId,
+    chatSessionId,
+    inviteUserIds
+  }
+  const params = new URLSearchParams({
+    sessionId: payload.sessionId,
+    scene: payload.sceneType,
+    peerId: payload.peerId,
+    displayName: payload.displayName,
+    callType: payload.callType
+  })
+  if (chatSessionId) {
+    params.set('chatSessionId', chatSessionId)
+  }
+  if (inviteUserIds.length) {
+    params.set('inviteUserIds', inviteUserIds.join(','))
+  }
+  const existing = await WebviewWindow.getByLabel(CALL_WINDOW_LABEL)
+  if (existing) {
+    await existing.show()
+    await existing.unminimize()
+    await existing.setFocus()
+    await emitTo(CALL_WINDOW_LABEL, CALL_JOIN_EVENT, payload)
+    return existing
+  }
+
+  return mode === 'audio'
+    ? createWebviewWindow('语音通话', CALL_WINDOW_LABEL, {
+        url: `${CALL_AUDIO_WINDOW_URL}?${params.toString()}`,
+        width: CALL_AUDIO_WINDOW_WIDTH,
+        height: CALL_AUDIO_WINDOW_HEIGHT,
+        minWidth: CALL_AUDIO_WINDOW_WIDTH,
+        minHeight: CALL_AUDIO_WINDOW_HEIGHT,
         resizable: false,
         transparent: true
       })
-    : createWebviewWindow('视频通话', 'call', {
-        url: '/call/video',
-        width: 1080,
-        height: 720,
-        minWidth: 1080,
-        minHeight: 720,
+    : createWebviewWindow('视频通话', CALL_WINDOW_LABEL, {
+        url: `${CALL_VIDEO_WINDOW_URL}?${params.toString()}`,
+        width: CALL_VIDEO_WINDOW_WIDTH,
+        height: CALL_VIDEO_WINDOW_HEIGHT,
+        minWidth: CALL_VIDEO_WINDOW_WIDTH,
+        minHeight: CALL_VIDEO_WINDOW_HEIGHT,
         resizable: true,
         transparent: true
       })
+}
 
-const toChatSessionLabel = (chatId: string) => `chatSession-${chatId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
+/** 通话邀请浮窗（右下角） */
+export const createCallInviteWindow = async (payload: CallInviteWindowPayload) => {
+  const sceneType = payload.sceneType === 'group' ? 'group' : 'user'
+  const callType = payload.callType === 'audio' ? 'audio' : 'video'
+  const toUserIds = (payload.toUserIds || []).map((id) => id.trim()).filter(Boolean)
+  const nextPayload: CallInviteWindowPayload = {
+    sessionId: payload.sessionId,
+    fromId: payload.fromId,
+    callType,
+    sceneType,
+    displayName: payload.displayName || payload.fromId,
+    toUserIds
+  }
+  const params = new URLSearchParams({
+    scene: nextPayload.sceneType,
+    callType: nextPayload.callType,
+    fromId: nextPayload.fromId,
+    sessionId: nextPayload.sessionId,
+    displayName: nextPayload.displayName
+  })
+  if (toUserIds.length) {
+    params.set('toUserIds', toUserIds.join(','))
+  }
+  const existing = await WebviewWindow.getByLabel(CALL_INVITE_WINDOW_LABEL)
+  if (existing) {
+    await syncCallInviteWindowSize(existing)
+    await placeWindowBottomRight(existing)
+    await existing.show()
+    await existing.unminimize()
+    await existing.setFocus()
+    await emitTo(CALL_INVITE_WINDOW_LABEL, CALL_INVITE_UPDATE_EVENT, nextPayload)
+    return existing
+  }
+
+  const webview = await createWebviewWindow('通话邀请', CALL_INVITE_WINDOW_LABEL, {
+    url: `${CALL_INVITE_WINDOW_URL}?${params.toString()}`,
+    width: CALL_INVITE_WINDOW_WIDTH,
+    height: CALL_INVITE_WINDOW_HEIGHT,
+    minWidth: CALL_INVITE_WINDOW_WIDTH,
+    minHeight: CALL_INVITE_WINDOW_HEIGHT,
+    maxWidth: CALL_INVITE_WINDOW_WIDTH,
+    maxHeight: CALL_INVITE_WINDOW_HEIGHT,
+    center: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    transparent: false,
+    visible: false
+  })
+
+  webview.once('tauri://created', () => {
+    void placeWindowBottomRight(webview)
+  })
+  return webview
+}
+
+/** 关闭通话邀请窗；传入 sessionId 时仅匹配才关闭 */
+export const closeCallInviteWindow = async (sessionId?: string) => {
+  const webview = await WebviewWindow.getByLabel(CALL_INVITE_WINDOW_LABEL)
+  if (!webview) return
+  if (sessionId) {
+    await emitTo(CALL_INVITE_WINDOW_LABEL, CALL_INVITE_HANGUP_EVENT, { sessionId })
+    return
+  }
+  await webview.close()
+}
+
+const toChatSessionLabel = (chatId: string) =>
+  `${CHAT_SESSION_WINDOW_LABEL_PREFIX}-${chatId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
 
 export const getChatSessionWindowLabel = (chatId: string) => toChatSessionLabel(chatId)
 
@@ -473,11 +719,11 @@ export const createChatSessionWindow = (chat: { id: string; peerName?: string; p
   const title = chat.peerRemark?.trim() || chat.peerName?.trim() || '聊天'
   const label = toChatSessionLabel(chat.id)
   return createWebviewWindow(title, label, {
-    url: `/chatSession?chatId=${encodeURIComponent(chat.id)}`,
-    width: 660,
-    height: 700,
-    minWidth: 520,
-    minHeight: 480,
+    url: `${CHAT_SESSION_WINDOW_URL}?chatId=${encodeURIComponent(chat.id)}`,
+    width: CHAT_SESSION_WINDOW_WIDTH,
+    height: CHAT_SESSION_WINDOW_HEIGHT,
+    minWidth: CHAT_SESSION_WINDOW_MIN_WIDTH,
+    minHeight: CHAT_SESSION_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true,
     visible: true,
@@ -485,15 +731,15 @@ export const createChatSessionWindow = (chat: { id: string; peerName?: string; p
   })
 }
 
-const toMomentLabel = (userId: string) => `moment-${userId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
+const toMomentLabel = (userId: string) => `${MOMENT_WINDOW_LABEL_PREFIX}-${userId.replace(/[^a-zA-Z0-9_-]/g, '_')}`
 
 export const createMomentWindow = (userId: string) =>
   createWebviewWindow('过往', toMomentLabel(userId), {
-    url: `/moment?userId=${encodeURIComponent(userId)}`,
-    width: 720,
-    height: 800,
-    minWidth: 720,
-    minHeight: 600,
+    url: `${MOMENT_WINDOW_URL}?userId=${encodeURIComponent(userId)}`,
+    width: MOMENT_WINDOW_WIDTH,
+    height: MOMENT_WINDOW_HEIGHT,
+    minWidth: MOMENT_WINDOW_MIN_WIDTH,
+    minHeight: MOMENT_WINDOW_MIN_HEIGHT,
     resizable: true,
     transparent: true
   })

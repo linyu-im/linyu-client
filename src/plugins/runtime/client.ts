@@ -1,4 +1,6 @@
 import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { PLUGIN_RUNTIME_REQUEST_EVENT, PLUGIN_RUNTIME_RESPONSE_EVENT } from '@/constants/event'
+import { PLUGIN_RUNTIME_WINDOW_LABEL } from '@/constants/window'
 import { getCurrentWindowLabel } from '@/utils/desktop/window'
 import type { PluginRuntimeRequest, PluginRuntimeResponse } from '@/types/plugin'
 
@@ -13,7 +15,7 @@ let unlistenPromise: Promise<UnlistenFn> | null = null
 
 const ensureListener = () => {
   if (!unlistenPromise) {
-    unlistenPromise = listen<PluginRuntimeResponse>('plugin-runtime:response', (event) => {
+    unlistenPromise = listen<PluginRuntimeResponse>(PLUGIN_RUNTIME_RESPONSE_EVENT, (event) => {
       const request = pending.get(event.payload.requestId)
       if (!request) return
       clearTimeout(request.timeout)
@@ -42,7 +44,7 @@ export function executePluginCommand(pluginId: string, command: string, args?: u
           command,
           args
         }
-        emitTo('plugin-runtime', 'plugin-runtime:request', request).catch((error) => {
+        emitTo(PLUGIN_RUNTIME_WINDOW_LABEL, PLUGIN_RUNTIME_REQUEST_EVENT, request).catch((error) => {
           clearTimeout(timeout)
           pending.delete(requestId)
           reject(error)

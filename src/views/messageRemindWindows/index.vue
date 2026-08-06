@@ -34,6 +34,7 @@
   import { listen } from '@tauri-apps/api/event'
   import { useI18n } from 'vue-i18n'
   import { SceneType } from '@/constants/common'
+  import { MESSAGE_REMIND_SHOW_EVENT } from '@/constants/event'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import {
     MESSAGE_REMIND_ITEM_HEIGHT,
@@ -114,7 +115,7 @@
 
   onMounted(() => {
     messageRemindStore.bindWindowEvents()
-    listen<MessageRemindTrayRect>('message-remind://show-near-tray', (event) => {
+    listen<MessageRemindTrayRect>(MESSAGE_REMIND_SHOW_EVENT, (event) => {
       void messageRemindStore.showNearTray(event.payload)
     }).then((unlisten) => {
       unlistenShow = unlisten

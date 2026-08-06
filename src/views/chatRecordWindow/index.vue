@@ -658,11 +658,13 @@
 
     &__item-content {
       position: relative;
+      display: flex;
+      align-items: center;
       width: fit-content;
       max-width: 100%;
       border-radius: 8px;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 0;
       background: var(--bg-primary-color);
       color: var(--text-color);
       word-break: break-word;
@@ -671,6 +673,7 @@
         box-sizing: border-box;
         width: fit-content;
         max-width: 70%;
+        line-height: normal;
       }
 
       &--file,
@@ -679,12 +682,14 @@
         padding: 0;
         background: var(--bg-primary-color);
         color: var(--text-color);
+        line-height: normal;
       }
 
       &--plain {
         padding: 0;
         background: transparent;
         color: inherit;
+        line-height: normal;
       }
 
       :deep(.message-item) {

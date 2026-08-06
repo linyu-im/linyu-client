@@ -102,6 +102,7 @@
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { usePluginStore } from '@/stores/app/plugin'
   import { createPluginUiWindow, openAndFocusWindow } from '@/utils/desktop/window'
+  import { HOME_WINDOW_LABEL } from '@/constants/window'
   import { useI18n } from 'vue-i18n'
 
   interface SettingsPluginItem {
@@ -135,7 +136,7 @@
 
   const onOpenPluginCenter = () => {
     homeTabStore.navigateTo('application')
-    openAndFocusWindow('home')
+    openAndFocusWindow(HOME_WINDOW_LABEL)
   }
 
   const onTogglePlugin = (plugin: SettingsPluginItem, enabled: boolean) => {

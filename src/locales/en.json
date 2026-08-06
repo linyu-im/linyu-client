@@ -80,6 +80,7 @@
       "ecard": "Ecard",
       "voice": "Voice",
       "sticker": "Sticker",
+      "call_record": "Call Record",
       "unknown": "Unknown Type"
     },
     "contextMenu": {
@@ -105,6 +106,16 @@
     },
     "ecard": {
       "recommend": "Friend Recommendation"
+    },
+    "callRecord": {
+      "audio": "Voice Call",
+      "video": "Video Call",
+      "ended": "Duration {duration}s",
+      "missed": "Missed",
+      "rejected": "Rejected",
+      "canceled": "Canceled",
+      "fallback": "Call",
+      "withType": "[{type}] {text}"
     },
     "cloudShare": {
       "label": "Cloud Share",
@@ -1482,7 +1493,52 @@
     "cameraOff": "Turn on camera",
     "hangup": "Leave",
     "inviteParticipant": "Invite",
-    "cameraOffLabel": "Camera off"
+    "cameraOffLabel": "Camera off",
+    "connecting": "Connecting…",
+    "connectFailed": "Failed to connect the call",
+    "localPreview": "You",
+    "waitingRemote": "Waiting for others to join…",
+    "waitingAnswer": "Waiting for answer",
+    "waitingUserAnswer": "Waiting",
+    "peerDisconnected": "Poor network",
+    "callEnded": "Call ended",
+    "nobodyAnswered": "Nobody answered",
+    "meLabel": "(Me)",
+    "groupCallStatus": "{count} people in a call",
+    "groupCallJoin": "Join call",
+    "groupCallExpand": "Expand members",
+    "groupCallCollapse": "Collapse members",
+    "groupCallMore": "{count} more",
+    "errors": {
+      "deviceInUse": "Camera or microphone is in use by another app. Close other call windows, browser tabs, or meeting apps and try again",
+      "permissionDenied": "Camera or microphone permission denied. Allow access for Linyu in system settings and try again",
+      "deviceNotFound": "No camera or microphone found. Please check your devices",
+      "connectFailed": "Failed to connect the call. Please try again later"
+    }
+  },
+  "callInvite": {
+    "userVideoTitle": "Video call invitation",
+    "userAudioTitle": "Voice call invitation",
+    "groupVideoTitle": "Group video call invitation",
+    "groupAudioTitle": "Group voice call invitation",
+    "userVideoDesc": "Inviting you to a video call",
+    "userAudioDesc": "Inviting you to a voice call",
+    "hangup": "Decline",
+    "reject": "Decline",
+    "accept": "Accept",
+    "join": "Join",
+    "inCallBusy": "You are already in a call. Please end the current call first.",
+    "previewUserName": "Lin Xiaoyu",
+    "previewGroupName": "Product Discussion",
+    "selectMembers": {
+      "title": "Invite members to call",
+      "search": "Search members",
+      "selectMembers": "Select members",
+      "empty": "No members",
+      "removeSelected": "Remove",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    }
   },
   "screenshot": {
     "size": "{width} × {height}",

@@ -7,6 +7,3 @@ export const SceneType = {
 } as const
 
 export type SceneType = (typeof SceneType)[keyof typeof SceneType]
-
-/** 服务端聊天消息跨窗口广播事件（WS 仅在 home 连接） */
-export const CHAT_SERVER_MESSAGE_EVENT = 'chat://server-message'

@@ -50,6 +50,7 @@
     "@vueuse/core": "^14.2.1",
     "highlight.js": "~11.11.1",
     "katex": "^0.17.0",
+    "livekit-client": "^2.21.0",
     "lowlight": "^3.3.0",
     "markdown-it": "^14.2.0",
     "mitt": "^3.0.1",

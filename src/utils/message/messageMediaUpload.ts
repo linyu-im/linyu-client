@@ -2,12 +2,12 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { appLocalDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, remove, writeFile } from '@tauri-apps/plugin-fs'
+import { UPLOAD_FILE_PROGRESS_EVENT } from '@/constants/event'
+import { SERVICE_URL } from '@/constants/network'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
 import type { MessageUploadFileParam, UploadFileProgressPayload } from '@/types/cmd/upload'
 import { getBlobFilePath } from '@/utils/file/blobFilePath'
-
-const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
 
 export type UploadProgressHandler = (progress: number) => void
 export type UploadErrorHandler = (message: string) => void
@@ -61,7 +61,7 @@ export const invokeChunkUpload = (
   const userStore = useUserStore()
   const systemSettingStore = useSystemSettingStore()
 
-  const unlistenPromise = listen<UploadFileProgressPayload>('upload-file-progress', (event) => {
+  const unlistenPromise = listen<UploadFileProgressPayload>(UPLOAD_FILE_PROGRESS_EVENT, (event) => {
     report(event.payload.progress)
   })
 

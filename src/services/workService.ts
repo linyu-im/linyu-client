@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { skillApi } from '@/api'
+import { WORK_EVENT } from '@/constants/event'
 import type { SkillListParam } from '@/types/api/skill'
 import type {
   WorkEvent,
@@ -107,4 +108,4 @@ export const resolvePermission = (runtimeId: string, requestId: string, optionId
 
 export const getStatus = () => invoke<WorkStatus>('work_status')
 export const onWorkEvent = (handler: (event: WorkEvent) => void): Promise<UnlistenFn> =>
-  listen<WorkEvent>('work://event', (event) => handler(event.payload))
+  listen<WorkEvent>(WORK_EVENT, (event) => handler(event.payload))

@@ -19,6 +19,7 @@
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useNameStore } from '@/stores/user/name'
   import { resolveLocalMediaDisplayUrl, toLocalFileDisplayUrl } from '@/utils/file/blobFilePath'
+  import { formatCallRecordSummary } from '@/utils/message/callRecord'
 
   const props = withDefaults(
     defineProps<{
@@ -121,6 +122,12 @@
         return (
           <span class="message-quote-preview__preview truncate">
             {`[${t('message.msgType.ecard')}] ${message.content.userName || ''}`.trim()}
+          </span>
+        )
+      case 'call_record':
+        return (
+          <span class="message-quote-preview__preview truncate">
+            {formatCallRecordSummary(message.content, t, { withType: true })}
           </span>
         )
       default:

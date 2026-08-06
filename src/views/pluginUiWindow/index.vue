@@ -54,6 +54,7 @@
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
   import { useI18n } from 'vue-i18n'
   import { useRoute } from 'vue-router'
+  import { PLUGIN_LIFECYCLE_EVENT } from '@/constants/event'
   import { executePluginCommand } from '@/plugins/runtime/client'
   import {
     executePluginContextApi,
@@ -243,7 +244,7 @@
   onMounted(() => {
     window.addEventListener('message', onFrameMessage)
     stopAppearanceSubscription = subscribePluginAppearance(notifyAppearance)
-    void listen<{ action: string; pluginId: string }>('plugin:lifecycle', (event) => {
+    void listen<{ action: string; pluginId: string }>(PLUGIN_LIFECYCLE_EVENT, (event) => {
       if (event.payload.pluginId !== pluginId.value) return
       if (event.payload.action === 'disable' || event.payload.action === 'uninstall') {
         void closeCurrentWindow()

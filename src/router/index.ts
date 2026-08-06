@@ -97,6 +97,11 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/callinvite',
+    name: 'callinvite',
+    component: () => import('@/views/callinviteWindow/index.vue')
+  },
+  {
     path: '/chatSession',
     name: 'chatSession',
     component: () => import('@/views/chatSessionWindow/index.vue')

@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { isPermissionGranted, requestPermission } from '@tauri-apps/plugin-notification'
+import { APP_NOTIFICATION_ACTION_EVENT } from '@/constants/event'
 import { useHomeTabStore } from '@/stores/app/homeTab'
 import { createHomeWinodw } from '@/utils/desktop/window'
 
@@ -77,7 +78,7 @@ export const ensureNotificationActionListener = async (): Promise<void> => {
   if (actionListening) return
   actionListening = true
   try {
-    actionListener = await listen<Record<string, unknown>>('app://notification-action', (event) => {
+    actionListener = await listen<Record<string, unknown>>(APP_NOTIFICATION_ACTION_EVENT, (event) => {
       handleWorkNotificationAction(event.payload)
     })
   } catch (error) {

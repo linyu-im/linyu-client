@@ -127,6 +127,7 @@
   import { useUserStore } from '@/stores/user/user'
   import type { Group } from '@/types/api/group'
   import type { User } from '@/types/api/user'
+  import { HOME_WINDOW_LABEL } from '@/constants/window'
   import {
     closeCurrentWindow,
     minimizeCurrentWindow,
@@ -428,7 +429,7 @@
           chatStore.markReopen()
           homeTabStore.setActiveTabId('message')
           homeTabStore.setTabPayload('message', { chatId })
-          return openAndFocusWindow('home')
+          return openAndFocusWindow(HOME_WINDOW_LABEL)
         })
         .finally(() => {
           sendingMessageUserId.value = ''

@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n'
 import zh from '@/locales/zh.json'
 import en from '@/locales/en.json'
 import { LangEnum } from '@/constants/system'
+import { STORAGE_LANG_KEY } from '@/constants/storage'
 
 type MessageSchema = typeof zh
 
@@ -24,7 +25,7 @@ const localeModules = import.meta.glob<{ default: MessageSchema }>('@/locales/*.
 function setLanguage(lang: string): string {
   i18n.global.locale.value = lang
   document.querySelector('html')?.setAttribute('lang', lang)
-  localStorage.setItem('lang', lang)
+  localStorage.setItem(STORAGE_LANG_KEY, lang)
   return lang
 }
 

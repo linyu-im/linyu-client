@@ -1,9 +1,12 @@
 import { getVersion } from '@tauri-apps/api/app'
 import { watch } from 'vue'
+import { PLUGIN_APPEARANCE_EVENT } from '@/constants/event'
 import { ThemePatternEnum } from '@/constants/system'
 import * as pluginApiService from '@/services/pluginApiService'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
+
+export { PLUGIN_APPEARANCE_EVENT }
 
 export interface PluginCurrentUser {
   avatar: string
@@ -21,8 +24,6 @@ export interface PluginAppearance {
   resolvedTheme: ThemePatternEnum.LIGHT | ThemePatternEnum.DARK
   scheme: string
 }
-
-export const PLUGIN_APPEARANCE_EVENT = 'system.appearanceChanged'
 
 export function getPluginAppearance(): PluginAppearance {
   const systemSetting = useSystemSettingStore()

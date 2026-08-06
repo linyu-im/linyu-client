@@ -4,10 +4,10 @@ import { defineStore } from 'pinia'
 import { chatApi } from '@/api'
 import { SceneType } from '@/constants/common'
 import type { SceneType as SceneTypeValue } from '@/constants/common'
+import { HOME_TAB_NAVIGATE_EVENT } from '@/constants/event'
+import { HOME_WINDOW_LABEL } from '@/constants/window'
 import router from '@/router'
 import { useChatStore } from '@/stores/chat/chat'
-
-export const HOME_TAB_NAVIGATE_EVENT = 'home-tab://navigate'
 
 export type HomeTabId = 'message' | 'contacts' | 'moment' | 'ai' | 'drive' | 'application'
 
@@ -156,9 +156,9 @@ export const useHomeTabStore = defineStore('homeTab', {
         state.activeTabId = tabId
       })
 
-      if (WebviewWindow.getCurrent().label !== 'home') {
+      if (WebviewWindow.getCurrent().label !== HOME_WINDOW_LABEL) {
         const eventPayload: HomeTabNavigatePayload = { tabId, payload }
-        return emitTo('home', HOME_TAB_NAVIGATE_EVENT, eventPayload).then(() => undefined)
+        return emitTo(HOME_WINDOW_LABEL, HOME_TAB_NAVIGATE_EVENT, eventPayload).then(() => undefined)
       }
 
       if (router.currentRoute.value.path !== TAB_PATHS[tabId]) {

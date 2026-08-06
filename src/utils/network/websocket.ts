@@ -1,17 +1,17 @@
 import WebSocket, { type Message } from '@tauri-apps/plugin-websocket'
+import {
+  WS_DEVICE,
+  WS_HEARTBEAT_INTERVAL_MS,
+  WS_HEARTBEAT_ROUTE,
+  WS_MAX_RECONNECT_ATTEMPTS,
+  WS_RECONNECT_BASE_INTERVAL_MS,
+  WS_URL
+} from '@/constants/network'
+import { handleAvCallWs } from '@/services/avCallWs'
 import { useUserStore } from '@/stores/user/user'
 import { useWebSocketStore } from '@/stores/chat/websocket'
+import type { Message as ChatMessage } from '@/types/api/message'
 import { WsResponse, type WsRequest } from '@/types/api/websocket'
-
-const WS_URL: string = import.meta.env.VITE_WEBSOCKET_URL + '/api/ws'
-const DEVICE = 'desktop'
-const HEARTBEAT_ROUTE = 'heartbeat'
-const HEARTBEAT_INTERVAL_MS = 30_000
-
-/** 最大重连次 */
-const MAX_RECONNECT_ATTEMPTS = 10
-/** 重连基础间隔 t（ms）*/
-const RECONNECT_BASE_INTERVAL_MS = 3_000
 
 let socket: WebSocket | null = null
 let removeMessageListener: (() => void) | null = null
@@ -31,7 +31,7 @@ function nextSeqId(): string {
 
 function buildRequest(route: string, device?: string, seqId?: string, data?: unknown): WsRequest {
   const request: WsRequest = {
-    device: device || DEVICE,
+    device: device || WS_DEVICE,
     seqId: seqId || nextSeqId(),
     route
   }
@@ -42,7 +42,7 @@ function buildRequest(route: string, device?: string, seqId?: string, data?: unk
 }
 
 function getReconnectDelayMs(attempt: number): number {
-  return RECONNECT_BASE_INTERVAL_MS * attempt
+  return WS_RECONNECT_BASE_INTERVAL_MS * attempt
 }
 
 function clearReconnectTimer() {
@@ -65,15 +65,15 @@ function scheduleReconnect(reason: string) {
   if (!canReconnect()) return
   if (connecting) return
 
-  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-    console.error(`[WebSocket] reconnect gave up after ${MAX_RECONNECT_ATTEMPTS} attempts, last reason: ${reason}`)
+  if (reconnectAttempts >= WS_MAX_RECONNECT_ATTEMPTS) {
+    console.error(`[WebSocket] reconnect gave up after ${WS_MAX_RECONNECT_ATTEMPTS} attempts, last reason: ${reason}`)
     return
   }
 
   reconnectAttempts += 1
   const delay = getReconnectDelayMs(reconnectAttempts)
   console.warn(
-    `[WebSocket] will reconnect in ${delay}ms (attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}), reason: ${reason}`
+    `[WebSocket] will reconnect in ${delay}ms (attempt ${reconnectAttempts}/${WS_MAX_RECONNECT_ATTEMPTS}), reason: ${reason}`
   )
 
   clearReconnectTimer()
@@ -113,7 +113,16 @@ function onMessage(msg: Message) {
       if (response.route === 'server') {
         //回复ack消息
         sendWsRequest('ack', response.device, response.seqId)
-        wsStore.receiveMsg(response.data?.content || null)
+        const payload = response.data
+        if (!payload) return
+        // call 信令单独处理，避免进入聊天消息入库/提醒链路
+        if (payload.type === 'call') {
+          void handleAvCallWs(payload.content).catch((error) => {
+            console.error('[WebSocket] handle call failed:', error)
+          })
+          return
+        }
+        wsStore.receiveMsg((payload.content as ChatMessage) || null)
       }
     } catch {
       console.log('[WebSocket] received:', msg.data)
@@ -137,7 +146,7 @@ function stopHeartbeat() {
 
 async function sendHeartbeat() {
   try {
-    await sendWsRequest(HEARTBEAT_ROUTE)
+    await sendWsRequest(WS_HEARTBEAT_ROUTE)
   } catch (error) {
     console.error('[WebSocket] heartbeat failed:', error)
     void handleConnectionLost('heartbeat failed')
@@ -149,7 +158,7 @@ function startHeartbeat() {
   void sendHeartbeat()
   heartbeatTimer = setInterval(() => {
     void sendHeartbeat()
-  }, HEARTBEAT_INTERVAL_MS)
+  }, WS_HEARTBEAT_INTERVAL_MS)
 }
 
 async function cleanupSocket() {
@@ -192,7 +201,7 @@ async function connectWebSocketInternal(): Promise<void> {
     socket = await WebSocket.connect(WS_URL, {
       headers: {
         Authorization: token,
-        device: DEVICE
+        device: WS_DEVICE
       }
     })
 

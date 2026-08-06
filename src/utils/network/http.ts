@@ -1,8 +1,8 @@
 import { fetch } from '@tauri-apps/plugin-http'
+import { SERVICE_URL } from '@/constants/network'
 import { useUserStore } from '@/stores/user/user'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import i18n from '@/services/i18n'
-const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
 
 const t = i18n.global.t
 

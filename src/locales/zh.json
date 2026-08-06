@@ -80,6 +80,7 @@
       "ecard": "名片",
       "voice": "语音",
       "sticker": "表情",
+      "call_record": "通话记录",
       "unknown": "未知类型"
     },
     "contextMenu": {
@@ -105,6 +106,16 @@
     },
     "ecard": {
       "recommend": "好友推荐"
+    },
+    "callRecord": {
+      "audio": "语音通话",
+      "video": "视频通话",
+      "ended": "通话时长 {duration} 秒",
+      "missed": "未接通",
+      "rejected": "已拒绝",
+      "canceled": "已取消",
+      "fallback": "通话记录",
+      "withType": "[{type}] {text}"
     },
     "cloudShare": {
       "label": "云盘分享",
@@ -1456,7 +1467,52 @@
     "cameraOff": "开启摄像头",
     "hangup": "挂断",
     "inviteParticipant": "邀请成员",
-    "cameraOffLabel": "摄像头已关闭"
+    "cameraOffLabel": "摄像头已关闭",
+    "connecting": "正在连接…",
+    "connectFailed": "通话连接失败",
+    "localPreview": "我",
+    "waitingRemote": "等待对方加入…",
+    "waitingAnswer": "等待接听中",
+    "waitingUserAnswer": "等待接听",
+    "peerDisconnected": "对方网络不佳",
+    "callEnded": "通话已结束",
+    "nobodyAnswered": "暂时无人接听",
+    "meLabel": "（我）",
+    "groupCallStatus": "{count}人正在通话中",
+    "groupCallJoin": "加入通话",
+    "groupCallExpand": "展开成员",
+    "groupCallCollapse": "收起成员",
+    "groupCallMore": "另有 {count} 人",
+    "errors": {
+      "deviceInUse": "摄像头或麦克风正被其它应用占用，请关闭其它通话窗口、浏览器标签或会议软件后重试",
+      "permissionDenied": "未获得摄像头或麦克风权限，请在系统设置中允许林语访问后重试",
+      "deviceNotFound": "未检测到摄像头或麦克风，请检查设备是否已连接",
+      "connectFailed": "通话连接失败，请稍后重试"
+    }
+  },
+  "callInvite": {
+    "userVideoTitle": "视频通话邀请",
+    "userAudioTitle": "语音通话邀请",
+    "groupVideoTitle": "群视频通话邀请",
+    "groupAudioTitle": "群语音通话邀请",
+    "userVideoDesc": "邀请你进行视频通话",
+    "userAudioDesc": "邀请你进行语音通话",
+    "hangup": "挂断",
+    "reject": "拒绝",
+    "accept": "接受",
+    "join": "加入",
+    "inCallBusy": "正在通话中，请先关闭当前通话",
+    "previewUserName": "林小雨",
+    "previewGroupName": "产品讨论群",
+    "selectMembers": {
+      "title": "邀请成员通话",
+      "search": "搜索成员",
+      "selectMembers": "选择成员",
+      "empty": "暂无成员",
+      "removeSelected": "移除",
+      "confirm": "确定",
+      "cancel": "取消"
+    }
   },
   "screenshot": {
     "size": "{width} × {height}",

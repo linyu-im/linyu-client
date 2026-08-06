@@ -1,3 +1,4 @@
+import type { AvCallWsContent } from '@/types/api/avCall'
 import type { Message } from '@/types/api/message'
 
 export interface WsRequest<T = unknown> {
@@ -18,5 +19,6 @@ export interface WsResponse {
 export interface WsServerPayload {
   seqId: string
   type: string
-  content: Message
+  /** type=call 时为 AvCallWsContent，其它聊天类消息仍为 Message */
+  content: Message | AvCallWsContent
 }

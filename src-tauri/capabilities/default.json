@@ -18,6 +18,7 @@
     "addContacts",
     "groupNotice",
     "call",
+    "callinvite",
     "chatSession-*",
     "moment-*"
   ],

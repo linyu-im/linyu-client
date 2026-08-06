@@ -20,6 +20,8 @@ import * as spaceApi from './space'
 import * as spaceRecycleApi from './spaceRecycle'
 import * as spaceUploadApi from './spaceUpload'
 import * as skillApi from './skill'
+import * as avCallApi from './avCall'
+import * as livekitApi from './livekit'
 
 export {
   userApi,
@@ -43,5 +45,7 @@ export {
   spaceApi,
   spaceRecycleApi,
   spaceUploadApi,
-  skillApi
+  skillApi,
+  avCallApi,
+  livekitApi
 }

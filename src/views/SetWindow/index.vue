@@ -38,6 +38,7 @@
   import type { GlobalThemeOverrides } from 'naive-ui'
   import { useI18n } from 'vue-i18n'
   import SvgIconButton from '@/components/SvgIconButton.vue'
+  import { SETTINGS_NAVIGATE_EVENT } from '@/constants/event'
   import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
   import AccountPage from './pages/account.vue'
   import GeneralPage from './pages/general.vue'
@@ -107,7 +108,7 @@
   let unlistenSettingsNavigation: UnlistenFn | undefined
 
   onMounted(async () => {
-    unlistenSettingsNavigation = await listen<{ tab?: string }>('settings:navigate', (event) => {
+    unlistenSettingsNavigation = await listen<{ tab?: string }>(SETTINGS_NAVIGATE_EVENT, (event) => {
       const tab = event.payload.tab
       if (tab && tab in pageMap) activeKey.value = tab as SettingsMenuKey
     })

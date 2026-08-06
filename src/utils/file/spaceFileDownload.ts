@@ -1,9 +1,8 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { SPACE_DOWNLOAD_FILE_PROGRESS_EVENT as SPACE_PROGRESS_EVENT } from '@/constants/event'
 import type { SpaceDownloadFileParam, SpaceDownloadProgressPayload } from '@/types/cmd/download'
 import { DEFAULT_FILE_CHUNK_SIZE } from '@/utils/file/fileChunk'
-
-const SPACE_PROGRESS_EVENT = 'space-download-file-progress'
 
 export const DOWNLOAD_CANCELLED = 'DOWNLOAD_CANCELLED'
 

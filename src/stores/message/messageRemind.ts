@@ -1,9 +1,11 @@
 import { SceneType } from '@/constants/common'
+import { MESSAGE_REMIND_WINDOW_LABEL } from '@/constants/window'
 import i18n from '@/services/i18n'
 import { useChatStore } from '@/stores/chat/chat'
 import { useUserStore } from '@/stores/user/user'
 import type { Message } from '@/types/api/message'
 import type { FromType } from '@/types/common'
+import { formatCallRecordSummary } from '@/utils/message/callRecord'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/window'
 import { defineStore } from 'pinia'
@@ -82,6 +84,8 @@ const formatMessagePreview = (msg: Message): string => {
       return `[${t('message.msgType.voice')}]`
     case 'sticker':
       return `[${t('message.msgType.sticker')}] ${msg.content.stickerName || ''}`
+    case 'call_record':
+      return formatCallRecordSummary(msg.content, t, { withType: true })
     default:
       return `[${t('message.msgType.unknown')}]`
   }
@@ -277,13 +281,13 @@ export const useMessageRemindStore = defineStore('messageRemind', {
       this.$patch((state) => {
         state.windowHovered = false
       })
-      return WebviewWindow.getByLabel('messageRemind').then((remindWindow) => {
+      return WebviewWindow.getByLabel(MESSAGE_REMIND_WINDOW_LABEL).then((remindWindow) => {
         return remindWindow?.hide()
       })
     },
 
     bindWindowEvents() {
-      return WebviewWindow.getByLabel('messageRemind').then((remindWindow) => {
+      return WebviewWindow.getByLabel(MESSAGE_REMIND_WINDOW_LABEL).then((remindWindow) => {
         if (!remindWindow) return
         return remindWindow.listen('tauri://blur', () => {
           void this.scheduleHideWindow()
@@ -294,7 +298,7 @@ export const useMessageRemindStore = defineStore('messageRemind', {
     /** 按未读条数同步窗口高度：≤8 按条数，>8 固定为 8 条并滚动 */
     syncWindowSize() {
       const height = Math.max(calcMessageRemindWindowHeight(this.items.length), HEADER_HEIGHT + ITEM_HEIGHT)
-      return WebviewWindow.getByLabel('messageRemind').then((remindWindow) => {
+      return WebviewWindow.getByLabel(MESSAGE_REMIND_WINDOW_LABEL).then((remindWindow) => {
         if (!remindWindow) return
         return remindWindow
           .setSize(new LogicalSize(WINDOW_WIDTH, height))
@@ -331,7 +335,7 @@ export const useMessageRemindStore = defineStore('messageRemind', {
 
       const height = Math.max(calcMessageRemindWindowHeight(this.items.length), HEADER_HEIGHT + ITEM_HEIGHT)
 
-      return WebviewWindow.getByLabel('messageRemind').then((remindWindow) => {
+      return WebviewWindow.getByLabel(MESSAGE_REMIND_WINDOW_LABEL).then((remindWindow) => {
         if (!remindWindow) return
 
         // 必须按 setSize → 定位 → show；勿用 isVisible 提前 return，否则 setSize 后偶发误判会跳过打开

@@ -94,12 +94,9 @@
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
-  import {
-    HOME_TAB_NAVIGATE_EVENT,
-    useHomeTabStore,
-    type HomeTabId,
-    type HomeTabNavigatePayload
-  } from '@/stores/app/homeTab'
+  import { HOME_TAB_NAVIGATE_EVENT } from '@/constants/event'
+  import { LOGIN_WINDOW_LABEL } from '@/constants/window'
+  import { useHomeTabStore, type HomeTabId, type HomeTabNavigatePayload } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
   import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
@@ -289,7 +286,7 @@
       })
     nextTick(() => {
       ShowCurrentWindow()
-      void closeWebviewWindow('login')
+      void closeWebviewWindow(LOGIN_WINDOW_LABEL)
     })
   })
 

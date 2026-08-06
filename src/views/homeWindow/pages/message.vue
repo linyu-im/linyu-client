@@ -105,6 +105,7 @@
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
   import { formatTime } from '@/utils/common/time'
+  import { formatCallRecordSummary } from '@/utils/message/callRecord'
   import { createAddContactsWindow, createChatSessionWindow, hasChatSessionWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
 
@@ -287,6 +288,12 @@
         return (
           <span class="text-[var(--text-secondary-color)] text-12px truncate">
             [{t('message.msgType.sticker')}] {msg.content.stickerName}
+          </span>
+        )
+      case 'call_record':
+        return (
+          <span class="text-[var(--text-secondary-color)] text-12px truncate">
+            {formatCallRecordSummary(msg.content, t, { withType: true })}
           </span>
         )
       default:

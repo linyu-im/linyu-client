@@ -67,7 +67,7 @@
 
 <style scoped lang="scss">
   .message-voice {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 8px;
     min-width: 72px;
@@ -77,6 +77,7 @@
     cursor: pointer;
     color: inherit;
     font: inherit;
+    line-height: 1;
 
     &__icon {
       width: 20px;

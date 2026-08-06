@@ -1,15 +1,14 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { spaceUploadApi } from '@/api'
+import { SPACE_UPLOAD_FILE_PROGRESS_EVENT as SPACE_PROGRESS_EVENT } from '@/constants/event'
+import { SERVICE_URL } from '@/constants/network'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
 import type { SpaceUploadFileParam, UploadFileProgressPayload } from '@/types/cmd/upload'
 import { DEFAULT_FILE_CHUNK_SIZE } from '@/utils/file/fileChunk'
 import { appLocalDataDir, join } from '@tauri-apps/api/path'
 import { mkdir, open, writeFile } from '@tauri-apps/plugin-fs'
-
-const SERVICE_URL: string = import.meta.env.VITE_SERVICE_URL
-const SPACE_PROGRESS_EVENT = 'space-upload-file-progress'
 
 /** 与网盘其它接口一致，业务成功码为 0 */
 export const CLOUD_DRIVE_SUCCESS_CODE = 0

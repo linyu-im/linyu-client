@@ -3,6 +3,8 @@ import { emit } from '@tauri-apps/api/event'
 import { TrayIcon, TrayIconEvent, TrayIconOptions } from '@tauri-apps/api/tray'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { getAllWindows, PhysicalPosition } from '@tauri-apps/api/window'
+import { MESSAGE_REMIND_SHOW_EVENT } from '@/constants/event'
+import { HOME_WINDOW_LABEL, LOGIN_WINDOW_LABEL, TRAY_WINDOW_LABEL } from '@/constants/window'
 import { useMessageRemindStore, type MessageRemindTrayRect } from '@/stores/message/messageRemind'
 
 export const TRAY_ID = 'tray'
@@ -13,7 +15,7 @@ const toTrayRect = (rect: TrayIconEvent['rect']): MessageRemindTrayRect => ({
 })
 
 export const setTrayEvent = async () => {
-  const trayWindow = await WebviewWindow.getByLabel('tray')
+  const trayWindow = await WebviewWindow.getByLabel(TRAY_WINDOW_LABEL)
   if (trayWindow) {
     await trayWindow.listen('tauri://blur', async () => {
       trayWindow.hide()
@@ -39,7 +41,7 @@ export const initSystemTray = async () => {
           const rect = toTrayRect(event.rect)
           messageRemindStore.cancelHideWindow()
           void messageRemindStore.showNearTray(rect)
-          void emit('message-remind://show-near-tray', rect)
+          void emit(MESSAGE_REMIND_SHOW_EVENT, rect)
           break
         }
         case 'Leave': {
@@ -50,7 +52,7 @@ export const initSystemTray = async () => {
           if (event.button === 'Left') {
             void getAllWindows().then((windows) => {
               for (const window of windows) {
-                if (window.label === 'home' || window.label === 'login') {
+                if (window.label === HOME_WINDOW_LABEL || window.label === LOGIN_WINDOW_LABEL) {
                   void window
                     .show()
                     .then(() => window.unminimize())
@@ -61,7 +63,7 @@ export const initSystemTray = async () => {
             break
           }
           if (event.button === 'Right') {
-            void WebviewWindow.getByLabel('tray').then((trayWindow) => {
+            void WebviewWindow.getByLabel(TRAY_WINDOW_LABEL).then((trayWindow) => {
               if (!trayWindow) {
                 console.log('tray window not found')
                 return
