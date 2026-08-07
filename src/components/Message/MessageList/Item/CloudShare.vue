@@ -54,7 +54,7 @@
   const saveModalVisible = ref(false)
 
   const tooltipContentStyle: CSSProperties = {
-    background: 'var(--bg-primary-color)',
+    background: 'var(--message-card-bg)',
     color: 'var(--text-primary-color)',
     maxWidth: '308px'
   }
@@ -155,7 +155,7 @@
   .message-cloud-share {
     box-sizing: border-box;
     width: 240px;
-    background: var(--bg-primary-color);
+    background: var(--message-card-bg);
     border-radius: 8px;
     overflow: hidden;
     color: var(--text-primary-color);

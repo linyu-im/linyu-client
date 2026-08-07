@@ -141,7 +141,7 @@
   .message-ecard {
     box-sizing: border-box;
     width: 240px;
-    background: var(--bg-primary-color);
+    background: var(--message-card-bg);
     border-radius: 8px;
     overflow: hidden;
     color: var(--text-primary-color);

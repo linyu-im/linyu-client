@@ -137,7 +137,9 @@
 
         <div class="contacts-profile__actions">
           <n-button class="w-110px" round @click="onShare">{{ t('contacts.actions.share') }}</n-button>
-          <n-button class="w-110px" round>{{ t('contacts.actions.audioVideo') }}</n-button>
+          <n-button class="w-110px" round @click="onStartAudioCall">
+            {{ t('contacts.actions.audioCall') }}
+          </n-button>
           <n-button class="w-110px" type="primary" round :loading="sendingMessage" @click="onSendMessage">
             {{ t('contacts.actions.sendMessage') }}
           </n-button>
@@ -149,13 +151,16 @@
 
 <script setup lang="ts">
   import { useOverflowTooltip } from '@/composables/useOverflowTooltip'
-  import { contactsApi } from '@/api'
+  import { avCallApi, contactsApi } from '@/api'
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useForwardMessageModal } from '@/composables/useForwardMessageModal'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
+  import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
   import type { User } from '@/types/api/user'
+  import { createCallWindow } from '@/utils/desktop/window'
+  import { buildSessionId } from '@/utils/message/session'
   import type { InputInst } from 'naive-ui'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
@@ -179,9 +184,11 @@
   const { t } = useI18n()
   const peerInfoStore = usePeerInfoStore()
   const homeTabStore = useHomeTabStore()
+  const userStore = useUserStore()
   const { openForwardMessageModal } = useForwardMessageModal()
 
   const sendingMessage = ref(false)
+  const callStarting = ref(false)
 
   const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as User | null)
   const loading = computed(() => !!props.userId && !userInfo.value)
@@ -349,6 +356,33 @@
   const onShare = () => {
     if (!shareMessage.value) return
     openForwardMessageModal(shareMessage.value)
+  }
+
+  const onStartAudioCall = () => {
+    if (callStarting.value || !props.userId) return
+    callStarting.value = true
+    avCallApi
+      .inviteUser({ userId: props.userId, callType: 'audio' })
+      .then((res) => {
+        if (res.code === 0 && res.data?.sessionId) {
+          const displayName = userInfo.value?.remark?.trim() || userInfo.value?.username?.trim() || props.userId
+          const chatSessionId = buildSessionId(props.userId, SceneType.User, userStore.authInfo.userId)
+          void createCallWindow({
+            mode: 'audio',
+            callType: 'audio',
+            sessionId: res.data.sessionId,
+            sceneType: 'user',
+            peerId: props.userId,
+            displayName,
+            chatSessionId
+          })
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .finally(() => {
+        callStarting.value = false
+      })
   }
 
   const onSendMessage = () => {

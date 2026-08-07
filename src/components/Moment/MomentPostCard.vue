@@ -33,7 +33,7 @@
       </p>
 
       <div v-if="media.length" class="moment-post__images" :class="imageGridClass(media.length)">
-        <div v-for="(item, i) in media" :key="i" class="moment-post__img-wrap">
+        <div v-for="(item, i) in media" :key="i" class="moment-post__img-wrap" @click="onPreviewMedia(i)">
           <img :src="item.thumbUrl || item.url" alt="" />
           <div v-if="item.mediaType === 'video'" class="moment-post__video-overlay">
             <div class="moment-post__play-btn" />
@@ -137,6 +137,8 @@
 
 <script setup lang="ts">
   import type { MomentComment, MomentRecord } from '@/types/api/moment'
+  import { openImgViewer } from '@/utils/desktop/imgViewer'
+  import { openVideoViewer } from '@/utils/desktop/videoViewer'
   import { formatTime } from '@/utils/common/time'
   import { imageGridClass, parseMomentContent, sortMomentMedia } from '@/utils/common/moment'
   import { useI18n } from 'vue-i18n'
@@ -175,6 +177,34 @@
   const displayLikes = computed(() => likes.value.slice(0, 5))
   const likeMoreCount = computed(() => Math.max(0, likeCount.value - displayLikes.value.length))
   const previewComments = computed(() => comments.value.slice(-5))
+
+  const onPreviewMedia = (index: number) => {
+    const target = media.value[index]
+    if (!target) return
+
+    if (target.mediaType === 'video') {
+      const url = target.url || target.thumbUrl
+      if (!url) return
+      openVideoViewer([{ url, name: moment.value.username || 'video' }], 0)
+      return
+    }
+
+    const images = media.value
+      .filter((item) => item.mediaType !== 'video')
+      .map((item) => ({
+        url: item.url || item.thumbUrl,
+        name: moment.value.username || 'image'
+      }))
+      .filter((item) => !!item.url)
+    if (!images.length) return
+
+    const currentUrl = target.url || target.thumbUrl
+    const startIndex = Math.max(
+      0,
+      images.findIndex((item) => item.url === currentUrl)
+    )
+    openImgViewer(images, startIndex)
+  }
 
   const commentPlaceholder = computed(() => {
     if (!replyParentId.value) return t('moment.post.commentPlaceholder')

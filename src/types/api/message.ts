@@ -67,10 +67,12 @@ export interface VideoMessageLocalExt {
 /** 表情消息本地扩展 */
 export interface StickerMessageLocalExt {
   localPath?: string
-  /** 消息列表展示宽度（图片原始宽高） */
   displayWidth?: number
-  /** 消息列表展示高度（图片原始宽高） */
   displayHeight?: number
+  contentX?: number
+  contentY?: number
+  contentWidth?: number
+  contentHeight?: number
 }
 
 export interface ECardContent {

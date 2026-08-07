@@ -334,7 +334,7 @@
     height: 100vh;
     overflow: hidden;
     color: var(--text-color);
-    background: var(--bg-secondary-color);
+    background: var(--bg-content-color);
     user-select: none;
 
     :deep(*:focus) {
@@ -665,7 +665,7 @@
       border-radius: 8px;
       font-size: 14px;
       line-height: 0;
-      background: var(--bg-primary-color);
+      background: var(--message-card-bg);
       color: var(--text-color);
       word-break: break-word;
 
@@ -680,7 +680,7 @@
       &--cloud-share,
       &--ecard {
         padding: 0;
-        background: var(--bg-primary-color);
+        background: var(--message-card-bg);
         color: var(--text-color);
         line-height: normal;
       }
@@ -694,6 +694,10 @@
 
       :deep(.message-item) {
         max-width: min(72%, 520px);
+      }
+
+      :deep(.message-item--plain) {
+        max-width: 560px;
       }
 
       :deep(.message-item--text) {

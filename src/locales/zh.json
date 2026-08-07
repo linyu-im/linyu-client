@@ -337,7 +337,7 @@
       "unknown": "未知状态",
       "share": "分享",
       "sendMessage": "发消息",
-      "audioVideo": "音视频通话"
+      "audioCall": "音频通话"
     },
     "fields": {
       "linyuId": "林语号",

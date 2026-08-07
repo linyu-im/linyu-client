@@ -569,7 +569,7 @@
       padding: 0;
       border-radius: 8px;
       font-size: 14px;
-      background: var(--bg-primary-color);
+      background: var(--message-card-bg);
       color: var(--text-primary-color);
       word-break: break-word;
 
@@ -586,7 +586,7 @@
       &--file,
       &--cloud-share,
       &--ecard {
-        background: var(--bg-primary-color);
+        background: var(--message-card-bg);
         color: var(--text-primary-color);
       }
 

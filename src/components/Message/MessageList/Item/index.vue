@@ -267,7 +267,6 @@
     max-width: min(72%, 520px);
     padding: 8px 10px;
     box-sizing: border-box;
-    // 避免内部 inline-flex（语音/通话记录）按基线对齐时底部多出空隙
     line-height: 0;
 
     &--text {
@@ -292,7 +291,7 @@
     }
 
     &--plain {
-      max-width: min(80%, 560px);
+      max-width: 560px;
     }
 
     &--disabled {

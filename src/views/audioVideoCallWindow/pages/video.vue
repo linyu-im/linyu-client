@@ -70,7 +70,7 @@
                       hover-color="var(--text-color)"
                       hover-bg="var(--icon-hover-color)"
                       @click="onToggleMic" />
-                    <span v-if="micOn" class="video-call__ctrl-dot video-call__ctrl-dot--green" />
+                    <span v-if="micOn" class="video-call__ctrl-dot video-call__ctrl-dot--on" />
                     <span v-else class="video-call__ctrl-dot video-call__ctrl-dot--red" />
                   </div>
                 </template>
@@ -89,7 +89,7 @@
                       hover-color="var(--text-color)"
                       hover-bg="var(--icon-hover-color)"
                       @click="onToggleCamera" />
-                    <span v-if="cameraOn" class="video-call__ctrl-dot video-call__ctrl-dot--green" />
+                    <span v-if="cameraOn" class="video-call__ctrl-dot video-call__ctrl-dot--on" />
                     <span v-else class="video-call__ctrl-dot video-call__ctrl-dot--red" />
                   </div>
                 </template>
@@ -927,8 +927,8 @@
       border-radius: 50%;
       pointer-events: none;
 
-      &--green {
-        background: var(--green);
+      &--on {
+        background: var(--primary-color);
       }
 
       &--red {

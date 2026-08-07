@@ -9,11 +9,12 @@ export const DEFAULT_MEDIA_COVER_SIZE = {
   displayHeight: MEDIA_COVER_HEIGHT
 }
 
-export const STICKER_MAX_HEIGHT = 144
+/** 贴纸最长边上限；未知尺寸时用 DEFAULT 占位防闪烁 */
+export const STICKER_MAX_SIZE = 144
 
 export const DEFAULT_STICKER_SIZE = {
-  displayWidth: STICKER_MAX_HEIGHT,
-  displayHeight: STICKER_MAX_HEIGHT
+  displayWidth: STICKER_MAX_SIZE,
+  displayHeight: STICKER_MAX_SIZE
 }
 
 type MediaLocalExt = ImageMessageLocalExt | VideoMessageLocalExt | StickerMessageLocalExt
@@ -28,18 +29,13 @@ export function calcMediaCoverDisplaySize(naturalW: number, naturalH: number) {
   return { ...DEFAULT_MEDIA_COVER_SIZE }
 }
 
-export function calcStickerDisplaySize(naturalW: number, naturalH: number) {
-  if (naturalW > 0 && naturalH > 0) {
-    if (naturalH <= STICKER_MAX_HEIGHT) {
-      return {
-        displayWidth: naturalW,
-        displayHeight: naturalH
-      }
-    }
-    const scale = STICKER_MAX_HEIGHT / naturalH
+/** 按贴纸原始比例缩放：高度优先，最长边不超过 STICKER_MAX_SIZE；无效尺寸回退占位 */
+export function calcStickerDisplaySize(naturalW?: number, naturalH?: number) {
+  if (naturalW && naturalW > 0 && naturalH && naturalH > 0) {
+    const scale = Math.min(1, STICKER_MAX_SIZE / naturalW, STICKER_MAX_SIZE / naturalH)
     return {
-      displayWidth: Math.round(naturalW * scale),
-      displayHeight: STICKER_MAX_HEIGHT
+      displayWidth: Math.max(1, Math.round(naturalW * scale)),
+      displayHeight: Math.max(1, Math.round(naturalH * scale))
     }
   }
   return { ...DEFAULT_STICKER_SIZE }

@@ -85,7 +85,7 @@ export interface WorkSkill {
   featured: boolean
   capabilities: string[]
   content: string
-  iconUrl?: string
+  iconUrl: string
   createdAt: string
   updatedAt: string
   installed: boolean

@@ -11,7 +11,7 @@
       <div class="work-permission__body">
         <div v-if="request" class="work-permission__content">
           <span class="work-permission__icon">
-            <svg><use href="#shield" /></svg>
+            <svg><use href="#ai" /></svg>
           </span>
           <div class="work-permission__main">
             <strong>{{ request.title }}</strong>

@@ -33,6 +33,12 @@
     getMediaDisplaySizeFromLocalExt,
     hasSameDisplaySize
   } from '@/utils/message/messageMediaLayout'
+  import {
+    cropStickerFile,
+    cropStickerImage,
+    isAnimatedMediaName,
+    type StickerContentBox
+  } from '@/utils/message/stickerCrop'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { preloadMediaDisplaySrc } from '@/utils/message/mediaDisplaySrc'
@@ -56,6 +62,8 @@
   const displayWidth = ref(DEFAULT_STICKER_SIZE.displayWidth)
   const displayHeight = ref(DEFAULT_STICKER_SIZE.displayHeight)
   let assetFallbackAttempted = false
+  /** 当前 displaySrc 是否为裁剪后的内容图，避免裁剪图加载再次触发测量裁剪 */
+  let croppedApplied = false
 
   const stickerLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
 
@@ -75,6 +83,9 @@
     return String(raw).trim()
   })
 
+  const isAnimatedSticker = () =>
+    isAnimatedMediaName(props.content.stickerName) || isAnimatedMediaName(props.content.stickerUrl)
+
   const revokeBlobObjectUrl = () => {
     if (!blobObjectUrl.value) return
     URL.revokeObjectURL(blobObjectUrl.value)
@@ -84,6 +95,9 @@
   const applyLayoutFromLocalExt = (localExt?: StickerMessageLocalExt) => {
     const size = getMediaDisplaySizeFromLocalExt(localExt)
     if (!size) return
+    if (stickerReady.value && displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight) {
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
   }
@@ -96,10 +110,71 @@
 
   const persistDisplaySize = (naturalW: number, naturalH: number) => {
     const size = calcStickerDisplaySize(naturalW, naturalH)
+    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
+    if (sizeUnchanged) {
+      if (!hasSameDisplaySize(stickerLocalExt.value, size)) persistLocalExt(size)
+      return
+    }
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
     if (hasSameDisplaySize(stickerLocalExt.value, size)) return
     persistLocalExt(size)
+  }
+
+  const readCachedContentBox = (): StickerContentBox | undefined => {
+    const ext = stickerLocalExt.value
+    if (ext?.contentX != null && ext.contentY != null && ext.contentWidth != null && ext.contentHeight != null) {
+      return {
+        x: ext.contentX,
+        y: ext.contentY,
+        width: ext.contentWidth,
+        height: ext.contentHeight,
+        sourceWidth: 0,
+        sourceHeight: 0
+      }
+    }
+    return undefined
+  }
+
+  const hasSameContentBox = (box: StickerContentBox) => {
+    const ext = stickerLocalExt.value
+    return (
+      ext?.contentX === box.x &&
+      ext?.contentY === box.y &&
+      ext?.contentWidth === box.width &&
+      ext?.contentHeight === box.height
+    )
+  }
+
+  const applyContentSize = (box: StickerContentBox) => {
+    const size = calcStickerDisplaySize(box.width, box.height)
+    displayWidth.value = size.displayWidth
+    displayHeight.value = size.displayHeight
+  }
+
+  const persistContentBox = (box: StickerContentBox) => {
+    if (hasSameContentBox(box)) return
+    const size = calcStickerDisplaySize(box.width, box.height)
+    persistLocalExt({
+      contentX: box.x,
+      contentY: box.y,
+      contentWidth: box.width,
+      contentHeight: box.height,
+      displayWidth: size.displayWidth,
+      displayHeight: size.displayHeight
+    })
+  }
+
+  const tryCropFromLocalPath = async (localPath: string) => {
+    if (isAnimatedSticker()) return null
+    try {
+      const cropped = await cropStickerFile(localPath, readCachedContentBox())
+      if (!cropped) return null
+      persistContentBox(cropped.box)
+      return cropped
+    } catch {
+      return null
+    }
   }
 
   const findSharedStickerCachePath = (storageRoot: string) => {
@@ -125,7 +200,14 @@
         })
       )
       .then((localPath) => {
+        if (normalizedStickerId.value !== stickerId) return
         persistLocalExt({ localPath })
+        void tryCropFromLocalPath(localPath).then((cropped) => {
+          if (!cropped || normalizedStickerId.value !== stickerId) return
+          applyContentSize(cropped.box)
+          croppedApplied = true
+          applyDisplaySrc(cropped.url, localPath)
+        })
       })
       .catch((error) => {
         console.error('[sticker] cache failed', {
@@ -179,14 +261,28 @@
 
       const localPath = stickerLocalExt.value?.localPath
       if (localPath && (await exists(localPath))) {
-        applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
+        const cropped = await tryCropFromLocalPath(localPath)
+        if (cropped) {
+          applyContentSize(cropped.box)
+          croppedApplied = true
+          applyDisplaySrc(cropped.url, localPath)
+        } else {
+          applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
+        }
         return
       }
 
       const sharedPath = await findSharedStickerCachePath(storageRoot)
       if (sharedPath) {
         persistLocalExt({ localPath: sharedPath })
-        applyDisplaySrc(toLocalFileDisplayUrl(sharedPath), sharedPath)
+        const cropped = await tryCropFromLocalPath(sharedPath)
+        if (cropped) {
+          applyContentSize(cropped.box)
+          croppedApplied = true
+          applyDisplaySrc(cropped.url, sharedPath)
+        } else {
+          applyDisplaySrc(toLocalFileDisplayUrl(sharedPath), sharedPath)
+        }
         return
       }
 
@@ -203,11 +299,33 @@
     void run()
   }
 
+  const tryCropLoadedImage = (image: HTMLImageElement) => {
+    const stickerId = normalizedStickerId.value
+    void cropStickerImage(image)
+      .then((cropped) => {
+        if (normalizedStickerId.value !== stickerId) return
+        if (!cropped) {
+          persistDisplaySize(image.naturalWidth, image.naturalHeight)
+          return
+        }
+        applyContentSize(cropped.box)
+        persistContentBox(cropped.box)
+        croppedApplied = true
+        applyDisplaySrc(cropped.url, currentLocalPath.value)
+        stickerReady.value = true
+      })
+      .catch(() => {
+        if (normalizedStickerId.value !== stickerId) return
+        persistDisplaySize(image.naturalWidth, image.naturalHeight)
+      })
+  }
+
   const resetMediaState = () => {
     receivedLocalExt.value = undefined
     cacheInFlight.value = false
     displayWidth.value = DEFAULT_STICKER_SIZE.displayWidth
     displayHeight.value = DEFAULT_STICKER_SIZE.displayHeight
+    croppedApplied = false
   }
 
   watch(
@@ -235,10 +353,23 @@
 
   const onStickerLoad = (event: Event) => {
     const image = event.target as HTMLImageElement
-    persistDisplaySize(image.naturalWidth, image.naturalHeight)
+    if (croppedApplied) {
+      stickerReady.value = true
+      stickerError.value = false
+      scheduleStickerCache()
+      return
+    }
+    if (isAnimatedSticker()) {
+      persistDisplaySize(image.naturalWidth, image.naturalHeight)
+      stickerReady.value = true
+      stickerError.value = false
+      scheduleStickerCache()
+      return
+    }
     stickerReady.value = true
     stickerError.value = false
     scheduleStickerCache()
+    tryCropLoadedImage(image)
   }
 
   const onStickerError = () => {
@@ -248,6 +379,7 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
+          croppedApplied = false
           stickerReady.value = false
           displaySrc.value = url
         })
@@ -268,17 +400,15 @@
 
 <style scoped lang="scss">
   .message-sticker-wrap {
-    display: grid;
+    position: relative;
+    box-sizing: border-box;
     line-height: 0;
-
-    > * {
-      grid-area: 1 / 1;
-    }
+    overflow: hidden;
   }
 
   .message-sticker__placeholder {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: 0;
     border-radius: 6px;
     background: var(--bg-secondary-color);
   }

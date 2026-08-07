@@ -2,6 +2,11 @@ export interface ApplicationListParam {
   keyword: string
 }
 
+export interface ApplicationPluginPermission {
+  name: string
+  scope?: unknown
+}
+
 export interface Application {
   id: string
   appName: string
@@ -15,6 +20,7 @@ export interface Application {
   pluginUrl: string
   pluginSha256?: string
   pluginSignature?: string
+  pluginPermissions?: ApplicationPluginPermission[]
   webUrl: string
   getCount: number
   score: number

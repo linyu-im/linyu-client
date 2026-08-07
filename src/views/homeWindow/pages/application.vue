@@ -301,7 +301,9 @@
         score: application.score,
         getCount: application.getCount,
         installedAt: installed?.installedAt,
-        permissions: installed?.grantedPermissions || [],
+        permissions: installed?.grantedPermissions?.length
+          ? installed.grantedPermissions
+          : (application.pluginPermissions ?? []),
         apiVersion: installed?.manifest.apiVersion || 1,
         windows: installed?.manifest.windows || [],
         application

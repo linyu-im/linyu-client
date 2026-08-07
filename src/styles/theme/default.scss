@@ -48,6 +48,8 @@
         //卡片背景颜色
         --card-bg-secondary-color: #e8e8e8;
         --content-card-bg: #F5F5F5;
+        //消息气泡/文件卡片背景（对方文本、文件、名片等）
+        --message-card-bg: #ececec;
         //滚动条颜色
         --scrollbar-color: #b1b1b1;
     }
@@ -103,6 +105,8 @@ html[data-theme="dark"] {
         //卡片背景颜色
         --card-bg-secondary-color: #383838;
         --content-card-bg: #343434;
+        //消息气泡/文件卡片背景（对方文本、文件、名片等）
+        --message-card-bg: #373737;
         //滚动条颜色
         --scrollbar-color: #6f6f6f;
     }

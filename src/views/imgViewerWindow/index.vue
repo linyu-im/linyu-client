@@ -7,7 +7,7 @@
         <SvgIconButton
           :href="isMaximized ? '#restore' : '#maximize'"
           @click="() => restoreOrMaximizeCurrentWindow().then((v) => (isMaximized = !v))" />
-        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="hideCurrentWindow" />
+        <SvgIconButton href="#close" hover-bg="var(--red)" hover-color="#FFF" @click="closeViewer" />
       </div>
     </ToolBar>
 
@@ -36,6 +36,8 @@
           @mousemove="onDragMove"
           @mouseup="onDragEnd">
           <img
+            v-show="imageReady"
+            :key="imageKey"
             ref="imageRef"
             class="img-viewer__image"
             :class="{
@@ -178,6 +180,7 @@
   const saving = ref(false)
   const isDragging = ref(false)
   const disableTransition = ref(false)
+  const imageReady = ref(false)
   const stageRef = ref<HTMLElement | null>(null)
   const imageRef = ref<HTMLImageElement | null>(null)
   const layoutVersion = ref(0)
@@ -197,9 +200,16 @@
   }
 
   const currentImage = computed(() => imgViewerStore.images[imgViewerStore.currentIndex])
+  const imageKey = computed(() => `${imgViewerStore.currentIndex}:${currentImage.value?.url ?? ''}`)
   const canGoPrev = computed(() => imgViewerStore.currentIndex > 0)
   const canGoNext = computed(() => imgViewerStore.currentIndex < imgViewerStore.images.length - 1)
   const scalePercent = computed(() => Math.round(scale.value * 100))
+
+  const closeViewer = () => {
+    imageReady.value = false
+    imgViewerStore.reset()
+    hideCurrentWindow()
+  }
 
   const getPanBounds = (): PanBounds => {
     const stage = stageRef.value
@@ -343,11 +353,19 @@
   }
 
   const onImageLoad = () => {
+    imageReady.value = true
     resetTransform()
     nextTick(() => {
       bumpLayout()
       applyOffsetClamp()
     })
+  }
+
+  const syncImageReady = () => {
+    const img = imageRef.value
+    if (img?.complete && img.naturalWidth > 0) {
+      onImageLoad()
+    }
   }
 
   const setupResizeObserver = () => {
@@ -404,7 +422,7 @@
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      hideCurrentWindow()
+      closeViewer()
       return
     }
 
@@ -429,11 +447,14 @@
   }
 
   watch(
-    () => currentImage.value?.url,
+    imageKey,
     () => {
+      imageReady.value = false
+      resetTransform()
       nextTick(() => {
         bumpLayout()
         setupResizeObserver()
+        syncImageReady()
       })
     },
     { immediate: true }

@@ -337,7 +337,7 @@
       "unknown": "Unknown",
       "share": "Share",
       "sendMessage": "Send Message",
-      "audioVideo": "Audio/Video Call"
+      "audioCall": "Audio Call"
     },
     "fields": {
       "linyuId": "Linyu ID",

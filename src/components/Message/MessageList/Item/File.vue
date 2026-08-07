@@ -118,7 +118,7 @@
   const isNameTruncated = computed(() => isFileNameTruncated(fileNameParts.value.base))
 
   const tooltipContentStyle: CSSProperties = {
-    background: 'var(--bg-primary-color)',
+    background: 'var(--message-card-bg)',
     color: 'var(--text-primary-color)',
     maxWidth: '308px'
   }

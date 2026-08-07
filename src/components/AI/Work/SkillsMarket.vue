@@ -37,7 +37,7 @@
 
     <div class="skills-market__grid">
       <article v-for="skill in filteredSkills" :key="skill.id" class="skills-market__card">
-        <div class="skills-market__icon">
+        <div class="skills-market__icon" :class="{ 'skills-market__icon--image': Boolean(skill.iconUrl) }">
           <img v-if="skill.iconUrl" :src="skill.iconUrl" :alt="skill.name" />
           <svg v-else><use href="#star" /></svg>
         </div>
@@ -158,9 +158,7 @@
   }
 
   onMounted(() => {
-    if (!store.skills.length) {
-      store.refreshSkills().catch(showError)
-    }
+    store.refreshSkills().catch(showError)
   })
 </script>
 
@@ -328,7 +326,7 @@
     }
     &__card {
       display: grid;
-      grid-template-columns: 42px 1fr;
+      grid-template-columns: 46px 1fr;
       gap: 12px;
       padding: 16px;
       border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
@@ -340,23 +338,36 @@
       border-color: color-mix(in srgb, var(--primary-color) 35%, var(--border-color));
     }
     &__icon {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 11px;
       overflow: hidden;
-      background: var(--bg-muted-color);
+      color: var(--text-on-primary-color);
+      background: linear-gradient(145deg, var(--primary-soft-color), var(--primary-color));
+    }
+    &__icon--image {
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary-color);
       color: var(--primary-color);
     }
     &__icon svg {
       width: 20px;
       height: 20px;
+      color: #fff;
+    }
+    &__icon--image svg {
+      color: var(--primary-color);
     }
     &__icon img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      padding: 6px;
+      box-sizing: border-box;
       display: block;
     }
     &__identity {

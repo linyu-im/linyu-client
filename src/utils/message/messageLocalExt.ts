@@ -16,11 +16,20 @@ const parseMediaMessageLocalExt = (parsed: Record<string, unknown>): MediaMessag
   const displayHeight =
     typeof parsed.displayHeight === 'number' && parsed.displayHeight > 0 ? parsed.displayHeight : undefined
 
-  if (!localPath && (!displayWidth || !displayHeight)) return undefined
+  const contentX = typeof parsed.contentX === 'number' && parsed.contentX >= 0 ? parsed.contentX : undefined
+  const contentY = typeof parsed.contentY === 'number' && parsed.contentY >= 0 ? parsed.contentY : undefined
+  const contentWidth =
+    typeof parsed.contentWidth === 'number' && parsed.contentWidth > 0 ? parsed.contentWidth : undefined
+  const contentHeight =
+    typeof parsed.contentHeight === 'number' && parsed.contentHeight > 0 ? parsed.contentHeight : undefined
+  const hasContentBox = contentX != null && contentY != null && contentWidth != null && contentHeight != null
+
+  if (!localPath && !hasContentBox && (!displayWidth || !displayHeight)) return undefined
 
   return {
     ...(localPath ? { localPath } : {}),
-    ...(displayWidth && displayHeight ? { displayWidth, displayHeight } : {})
+    ...(displayWidth && displayHeight ? { displayWidth, displayHeight } : {}),
+    ...(hasContentBox ? { contentX, contentY, contentWidth, contentHeight } : {})
   }
 }
 
@@ -28,11 +37,26 @@ export function mergeMediaMessageLocalExt<T extends MediaMessageLocalExt>(
   existing: T | undefined,
   patch: Partial<T>
 ): T {
-  return {
+  const merged: Record<string, unknown> = {
     localPath: patch.localPath ?? existing?.localPath,
     displayWidth: patch.displayWidth ?? existing?.displayWidth,
     displayHeight: patch.displayHeight ?? existing?.displayHeight
-  } as T
+  }
+
+  const stickerPatch = patch as Partial<StickerMessageLocalExt>
+  const stickerExisting = existing as StickerMessageLocalExt | undefined
+  const contentX = stickerPatch.contentX ?? stickerExisting?.contentX
+  const contentY = stickerPatch.contentY ?? stickerExisting?.contentY
+  const contentWidth = stickerPatch.contentWidth ?? stickerExisting?.contentWidth
+  const contentHeight = stickerPatch.contentHeight ?? stickerExisting?.contentHeight
+  if (contentX != null && contentY != null && contentWidth != null && contentHeight != null) {
+    merged.contentX = contentX
+    merged.contentY = contentY
+    merged.contentWidth = contentWidth
+    merged.contentHeight = contentHeight
+  }
+
+  return merged as T
 }
 
 export const serializeMessageLocalExt = (msgType: string, localExt: unknown): string | undefined => {

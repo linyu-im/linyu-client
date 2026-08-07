@@ -53,7 +53,7 @@
             bg="var(--card-bg-color)"
             hover-bg="var(--button-soft-bg)"
             @click="onToggleMic" />
-          <span v-if="micOn" class="audio-call__action-dot audio-call__action-dot--green" />
+          <span v-if="micOn" class="audio-call__action-dot audio-call__action-dot--on" />
           <span v-else class="audio-call__action-dot audio-call__action-dot--red" />
         </div>
         <span class="audio-call__action-label audio-call__action-label--mic">
@@ -554,8 +554,8 @@
       border: 2px solid var(--bg-secondary-color);
       transform: translateX(-50%);
 
-      &--green {
-        background: var(--green);
+      &--on {
+        background: var(--primary-color);
       }
 
       &--red {

@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { skillApi } from '@/api'
 import { WORK_EVENT } from '@/constants/event'
-import type { SkillListParam } from '@/types/api/skill'
+import type { Skill, SkillListParam } from '@/types/api/skill'
 import type {
   WorkEvent,
   WorkPreferences,
@@ -63,10 +63,12 @@ export const listSkills = (param?: SkillListParam): Promise<WorkSkill[]> =>
     const disabled = new Set(local.disabledIds)
     return rows.map((skill) => {
       const isInstalled = installed.has(skill.id)
+      const raw = skill as Skill & { icon_url?: string }
       return {
         ...skill,
         capabilities: normalizeCapabilities(skill.capabilities),
         content: skill.content || '',
+        iconUrl: (raw.iconUrl || raw.icon_url || '').trim(),
         installed: isInstalled,
         enabled: isInstalled && !disabled.has(skill.id)
       }
