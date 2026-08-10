@@ -1,9 +1,13 @@
+pub mod app_update;
 pub mod cmd;
 pub mod download;
 pub mod plugin;
 pub mod upload;
 pub mod work;
 
+use app_update::{
+    cancel_app_update_download, download_app_update, install_app_update, AppUpdateState,
+};
 use cmd::{capture_screen, show_app_notification, start_oauth_server, write_clipboard_files};
 use download::{cancel_space_file_download, download_space_file};
 use plugin::commands::{
@@ -35,6 +39,7 @@ pub fn run() {
             app.manage(manager);
             let work_manager = work::WorkManager::initialize(local_data.join("work-assistant"))?;
             app.manage(work_manager);
+            app.manage(AppUpdateState::default());
             Ok(())
         })
         .plugin(tauri_plugin_sql::Builder::default().build())
@@ -47,6 +52,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_notification::init())
@@ -61,6 +67,9 @@ pub fn run() {
             cancel_space_file_upload,
             download_space_file,
             cancel_space_file_download,
+            download_app_update,
+            cancel_app_update_download,
+            install_app_update,
             plugin_get_system_info,
             plugin_prepare_remote,
             plugin_prepare_local,

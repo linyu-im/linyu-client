@@ -193,12 +193,11 @@
   import ContactsGroupProfile from '@/components/Contacts/detail/ContactsGroupProfile.vue'
   import ContactsNewFriend from '@/components/Contacts/detail/ContactsNewFriend.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
-  import { userBadgeApi } from '@/api'
   import { UserBadgeCode } from '@/constants/userBadge'
-  import { useContactsStore } from '@/stores/user/contacts'
+  import { useHomeNavBadgeStore } from '@/stores/app/homeNavBadge'
   import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useContactsStore } from '@/stores/user/contacts'
   import type { Contact, ContactsMenuView } from '@/types/api/contacts'
-  import type { UserBadge } from '@/types/api/userBadge'
   import { getNameInitial } from '@/utils/common/pinyin'
   import { createAddContactsWindow } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
@@ -208,11 +207,11 @@
 
   const { t } = useI18n()
   const homeTabStore = useHomeTabStore()
+  const homeNavBadgeStore = useHomeNavBadgeStore()
   const contactsStore = useContactsStore()
 
   const showCreateGroupModal = ref(false)
   const selectedId = ref('')
-  const badgeList = ref<UserBadge[]>([])
   const expandedGroups = ref<Record<GroupKey, boolean>>({
     enterprise: false,
     group: false,
@@ -258,27 +257,19 @@
     'group-notice': UserBadgeCode.GroupNotion
   }
 
-  const getBadgeCount = (badgeCode: string) =>
-    badgeList.value.find((item) => item.badgeCode === badgeCode)?.unreadCount ?? 0
-
-  const newFriendBadgeCount = computed(() => getBadgeCount(UserBadgeCode.NewFriend))
-  const groupNoticeBadgeCount = computed(() => getBadgeCount(UserBadgeCode.GroupNotion))
-
-  const clearBadgeCount = (badgeCode: string) => {
-    const index = badgeList.value.findIndex((item) => item.badgeCode === badgeCode)
-    if (index === -1 || badgeList.value[index].unreadCount === 0) return
-    badgeList.value[index] = { ...badgeList.value[index], unreadCount: 0 }
-  }
+  const newFriendBadgeCount = computed(
+    () => homeNavBadgeStore.contactsBadges.find((item) => item.badgeCode === UserBadgeCode.NewFriend)?.unreadCount ?? 0
+  )
+  const groupNoticeBadgeCount = computed(
+    () =>
+      homeNavBadgeStore.contactsBadges.find((item) => item.badgeCode === UserBadgeCode.GroupNotion)?.unreadCount ?? 0
+  )
 
   const fetchBadgeList = () => {
-    userBadgeApi.list().then((res) => {
-      if (res.code === 0 && res.data) {
-        badgeList.value = res.data
-        const activeBadgeCode = MENU_BADGE_CODE[selectedId.value]
-        if (activeBadgeCode) clearBadgeCount(activeBadgeCode)
-      } else {
-        window.$message.error(res.msg)
-      }
+    homeNavBadgeStore.refreshContactsBadges().then((ok) => {
+      if (!ok) return
+      const activeBadgeCode = MENU_BADGE_CODE[selectedId.value]
+      if (activeBadgeCode) homeNavBadgeStore.clearContactsBadge(activeBadgeCode)
     })
   }
 
@@ -312,7 +303,7 @@
   const onSelect = (id: string) => {
     selectedId.value = id
     const badgeCode = MENU_BADGE_CODE[id]
-    if (badgeCode) clearBadgeCount(badgeCode)
+    if (badgeCode) homeNavBadgeStore.clearContactsBadge(badgeCode)
   }
 
   const onFriendRemarkUpdated = (payload: { peerId: string; remark: string }) => {

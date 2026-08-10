@@ -1431,9 +1431,26 @@
   },
   "update": {
     "title": "Version Update",
+    "forceTitle": "New Version Available",
+    "versionAvailable": "New version {version} is available",
+    "latestVersionLabel": "Latest version {version}",
+    "currentVersion": "Current version {version}",
+    "versionCompare": "Current {current} {arrow} New {latest}",
+    "versionCompareDownloaded": "Current {current} {arrow} New {latest} downloaded",
     "versionDownloaded": "New version {version} has been downloaded",
+    "forceDesc": "Your version is too old. Please update to continue.",
     "later": "Update Later",
-    "now": "Update Now"
+    "now": "Update Now",
+    "cancel": "Cancel Update",
+    "retry": "Retry",
+    "downloading": "Downloading update…",
+    "installing": "Installing, the app will restart…",
+    "checking": "Checking for updates…",
+    "latest": "You are on the latest version",
+    "checkFailed": "Failed to check for updates",
+    "downloadFailed": "Failed to download the update",
+    "installFailed": "Failed to install the update",
+    "unsupportedPlatform": "Automatic install is not supported on this system"
   },
   "filePreview": {
     "title": "File Preview",

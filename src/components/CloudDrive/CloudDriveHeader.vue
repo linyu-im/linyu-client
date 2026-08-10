@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
   import CloudDriveTransferDrawer from '@/components/CloudDrive/CloudDriveTransferDrawer.vue'
+  import { ACTIVE_DOWNLOAD_STATUSES, ACTIVE_UPLOAD_STATUSES } from '@/stores/app/homeNavBadge'
   import { useSpaceDownloadStore } from '@/stores/cloudDrive/spaceDownload'
   import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { storeToRefs } from 'pinia'
@@ -61,9 +62,6 @@
   }
 
   defineProps<Props>()
-
-  const ACTIVE_UPLOAD_STATUSES = new Set(['pending', 'hashing', 'checking', 'uploading', 'paused', 'failed'])
-  const ACTIVE_DOWNLOAD_STATUSES = new Set(['pending', 'downloading', 'paused', 'failed'])
 
   const { t } = useI18n()
   const spaceUploadStore = useSpaceUploadStore()

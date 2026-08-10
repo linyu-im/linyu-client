@@ -1,5 +1,10 @@
 <template>
-  <n-modal v-model:show="visible" :mask-closable="false" :close-on-esc="false" transform-origin="center">
+  <n-modal
+    v-model:show="visible"
+    :mask-closable="false"
+    :close-on-esc="false"
+    transform-origin="center"
+    :auto-focus="false">
     <div class="update-modal">
       <div class="update-modal__decor">
         <div class="update-modal__decor-circle update-modal__decor-circle--1" />
@@ -7,27 +12,50 @@
       </div>
       <div class="update-modal__header">
         <div class="update-modal__title">{{ t('update.title') }}</div>
-        <div class="update-modal__subtitle">
-          {{ t('update.versionDownloaded', { version }) }}
+        <div class="update-modal__versions">
+          <i18n-t :keypath="versionLineKey" tag="span" class="update-modal__versions-line">
+            <template #current>
+              <span>{{ currentVersion || '-' }}</span>
+            </template>
+            <template #arrow>
+              <svg class="update-modal__arrow" aria-hidden="true">
+                <use href="#left-arrow" />
+              </svg>
+            </template>
+            <template #latest>
+              <span class="update-modal__latest">{{ version || '-' }}</span>
+            </template>
+          </i18n-t>
         </div>
       </div>
       <div v-if="description" class="update-modal__desc">{{ description }}</div>
-      <div v-if="changelog.length > 0" class="update-modal__changelog">
-        <div v-for="(group, gIdx) in changelog" :key="gIdx" class="update-modal__changelog-group">
-          <div class="update-modal__changelog-category">{{ group.category }}</div>
-          <ul class="update-modal__changelog-list">
-            <li v-for="(item, iIdx) in group.items" :key="iIdx" class="update-modal__changelog-item">
-              {{ item }}
-            </li>
-          </ul>
-        </div>
+      <div v-if="stage === 'error'" class="update-modal__error">
+        <svg class="update-modal__error-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" />
+          <path d="M15 9l-6 6M9 9l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <span>{{ t('update.downloadFailed') }}</span>
+      </div>
+      <div v-else-if="showProgress" class="update-modal__progress">
+        <n-progress
+          type="line"
+          :percentage="progressPercent"
+          :show-indicator="true"
+          :height="8"
+          :border-radius="4"
+          :fill-border-radius="4"
+          :status="progressStatus" />
+        <div class="update-modal__progress-text">{{ progressText }}</div>
       </div>
       <div class="update-modal__footer">
-        <n-button size="medium" :bordered="false" @click="onLater">
+        <n-button v-if="stage === 'downloading'" size="medium" :bordered="false" @click="onCancel">
+          {{ t('update.cancel') }}
+        </n-button>
+        <n-button v-else-if="canLater && stage !== 'installing'" size="medium" :bordered="false" @click="onLater">
           {{ t('update.later') }}
         </n-button>
-        <n-button type="primary" size="medium" @click="onUpdate">
-          {{ t('update.now') }}
+        <n-button type="primary" size="medium" :loading="busy" :disabled="busy" @click="onPrimary">
+          {{ stage === 'installing' ? t('update.installing') : primaryLabel }}
         </n-button>
       </div>
     </div>
@@ -35,50 +63,80 @@
 </template>
 
 <script setup lang="ts">
+  import { storeToRefs } from 'pinia'
   import { useEscapeOverlay } from '@/composables/useEscapeOverlayStack'
+  import { useAppUpdateStore } from '@/stores/app/appUpdate'
+  import { getAppVersion } from '@/utils/app/version'
   import { useI18n } from 'vue-i18n'
-
-  export interface ChangelogGroup {
-    category: string
-    items: string[]
-  }
 
   const visible = defineModel<boolean>('show', { default: false })
 
+  const { t } = useI18n()
+  const appUpdateStore = useAppUpdateStore()
+  const { checkResult, stage, progress, needForce } = storeToRefs(appUpdateStore)
+
+  const version = computed(() => checkResult.value?.latestVersion || '')
+  const description = computed(() => checkResult.value?.updateDesc || '')
+  const currentVersion = ref('')
+
+  onMounted(() => {
+    getAppVersion().then((v) => {
+      currentVersion.value = v
+    })
+  })
+
+  const busy = computed(() => stage.value === 'downloading' || stage.value === 'installing')
+  const canLater = computed(() => !needForce.value)
+
   useEscapeOverlay(() => {
-    visible.value = false
+    if (!busy.value && !needForce.value) {
+      visible.value = false
+    }
   }, visible)
 
-  withDefaults(
-    defineProps<{
-      version?: string
-      description?: string
-      changelog?: ChangelogGroup[]
-    }>(),
-    {
-      version: '1.0.1',
-      description:
-        '为了提供更流畅、更安全的即时通讯体验，我们对消息收发、群组管理和文件传输等核心功能进行了全面优化，建议尽快升级到最新版本。',
-      changelog: () => []
-    }
+  const showProgress = computed(() => stage.value === 'downloading' || stage.value === 'installing')
+  const progressPercent = computed(() => Math.round((progress.value || 0) * 100))
+  const progressStatus = computed(() => 'default' as const)
+
+  const versionLineKey = computed(() =>
+    stage.value === 'ready' ? 'update.versionCompareDownloaded' : 'update.versionCompare'
   )
 
-  const emit = defineEmits<{
-    update: []
-    later: []
-  }>()
+  const progressText = computed(() => {
+    if (stage.value === 'downloading') return t('update.downloading')
+    if (stage.value === 'installing') return t('update.installing')
+    return ''
+  })
 
-  const { t } = useI18n()
-
-  const onUpdate = () => {
-    visible.value = false
-    emit('update')
-  }
+  const primaryLabel = computed(() => {
+    if (stage.value === 'error') return t('update.retry')
+    return t('update.now')
+  })
 
   const onLater = () => {
     visible.value = false
-    emit('later')
   }
+
+  const onCancel = () => {
+    appUpdateStore.cancelDownload().catch(() => undefined)
+  }
+
+  const onPrimary = () => {
+    if (busy.value) return
+    appUpdateStore.updateNow().catch(() => {
+      window.$message?.error(t('update.installFailed'))
+    })
+  }
+
+  watch(visible, (show) => {
+    if (show && stage.value === 'error') {
+      appUpdateStore.$patch((state) => {
+        state.stage = 'idle'
+        state.progress = 0
+        state.errorMsg = ''
+      })
+    }
+  })
 </script>
 
 <style scoped lang="scss">
@@ -137,11 +195,31 @@
       line-height: 1.4;
     }
 
-    &__subtitle {
+    &__versions {
       margin-top: 6px;
       font-size: 13px;
       color: var(--text-secondary-color);
       line-height: 1.5;
+    }
+
+    &__versions-line {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    &__arrow {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      color: var(--text-muted-color);
+      transform: rotate(180deg);
+    }
+
+    &__latest {
+      color: var(--primary-color);
+      font-weight: 600;
     }
 
     &__desc {
@@ -151,44 +229,48 @@
       font-size: 13px;
       color: var(--text-muted-color);
       line-height: 1.7;
+      white-space: pre-wrap;
     }
 
-    &__changelog {
+    &__progress {
       position: relative;
       z-index: 1;
-      margin: 0 28px;
-      padding: 16px 20px;
-      background: var(--bg-muted-color);
-      border-radius: 10px;
-    }
+      padding: 0 28px 4px;
 
-    &__changelog-group {
-      & + & {
-        margin-top: 12px;
+      :deep(.n-progress-icon),
+      :deep(.n-progress .n-progress-custom-content),
+      :deep(.n-progress-content) {
+        color: var(--text-muted-color);
+      }
+
+      :deep(.n-progress.n-progress--line .n-progress-icon) {
+        color: var(--text-muted-color);
       }
     }
 
-    &__changelog-category {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-color);
+    &__progress-text {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted-color);
       line-height: 1.5;
     }
 
-    &__changelog-list {
-      margin: 8px 0 0;
-      padding-left: 18px;
-      list-style: disc;
+    &__error {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 28px 4px;
+      font-size: 13px;
+      color: var(--red);
+      line-height: 1.5;
     }
 
-    &__changelog-item {
-      font-size: 13px;
-      color: var(--text-muted-color);
-      line-height: 1.7;
-
-      & + & {
-        margin-top: 2px;
-      }
+    &__error-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
     }
 
     &__footer {

@@ -3,12 +3,20 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'node:fs'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 const host = process.env.TAURI_DEV_HOST
+
+const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as {
+  version?: string
+  versionCode?: number
+}
+const appVersion = String(packageJson.version ?? '0.0.0')
+const appVersionCode = Number(packageJson.versionCode ?? 101)
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -38,6 +46,11 @@ export default defineConfig(async () => ({
   ],
 
   clearScreen: false,
+
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_VERSION_CODE__: JSON.stringify(appVersionCode)
+  },
 
   resolve: {
     alias: {

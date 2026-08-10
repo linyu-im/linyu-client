@@ -22,135 +22,143 @@
 
     <!-- 内容部分 -->
     <div data-tauri-drag-region class="login__content">
-      <div class="flex justify-center m-t-40px m-b-40px select-none">
-        <div class="login__avatar-wrapper">
-          <Avatar v-if="currentAccountUserId" :id="currentAccountUserId" :size="72" round />
-          <n-avatar v-else class="w-full h-full bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
+      <template v-if="versionChecking">
+        <div class="flex flex-1 flex-col items-center justify-center gap-12px select-none">
+          <n-spin size="medium" />
+          <div class="text-12px text-[var(--text-secondary-color)]">{{ t('update.checking') }}</div>
         </div>
-      </div>
+      </template>
+      <template v-else>
+        <div class="flex justify-center m-t-40px m-b-40px select-none">
+          <div class="login__avatar-wrapper">
+            <Avatar v-if="currentAccountUserId" :id="currentAccountUserId" :size="72" round />
+            <n-avatar v-else class="w-full h-full bg-#FFF" fallback-src="/avatar.png" src="/avatar.png" />
+          </div>
+        </div>
 
-      <!-- 账号密码 -->
-      <div class="flex flex-col gap-10px">
-        <div ref="accountInputRef" class="login__account-input">
-          <n-input type="text" v-model:value="accountInfo.account" :placeholder="t('login.input.account')" clearable>
-            <template v-if="loginHistoryStore.accounts.length" #suffix>
-              <div class="n-input__eye" @click.stop="toggleAccountHistory">
-                <i class="n-base-icon">
-                  <svg
-                    class="login__account-chevron"
-                    :class="{ 'login__account-chevron--open': accountHistoryVisible }">
-                    <use href="#left-arrow" />
-                  </svg>
-                </i>
-              </div>
-            </template>
-          </n-input>
-          <div v-if="accountHistoryVisible && loginHistoryStore.accounts.length" class="login__account-history">
-            <div class="login__account-history__scroll">
-              <div
-                v-for="item in loginHistoryStore.accounts"
-                :key="item.account"
-                class="login__account-history__item"
-                @click="onSelectHistoryAccount(item)">
-                <Avatar :id="item.userId" :size="28" round />
-                <span class="login__account-history__text">{{ item.account }}</span>
-                <button
-                  type="button"
-                  class="login__account-history__remove"
-                  @click.stop="onRemoveHistoryAccount(item.account)">
-                  <svg class="size-12px"><use href="#close" /></svg>
-                </button>
+        <!-- 账号密码 -->
+        <div class="flex flex-col gap-10px">
+          <div ref="accountInputRef" class="login__account-input">
+            <n-input type="text" v-model:value="accountInfo.account" :placeholder="t('login.input.account')" clearable>
+              <template v-if="loginHistoryStore.accounts.length" #suffix>
+                <div class="n-input__eye" @click.stop="toggleAccountHistory">
+                  <i class="n-base-icon">
+                    <svg
+                      class="login__account-chevron"
+                      :class="{ 'login__account-chevron--open': accountHistoryVisible }">
+                      <use href="#left-arrow" />
+                    </svg>
+                  </i>
+                </div>
+              </template>
+            </n-input>
+            <div v-if="accountHistoryVisible && loginHistoryStore.accounts.length" class="login__account-history">
+              <div class="login__account-history__scroll">
+                <div
+                  v-for="item in loginHistoryStore.accounts"
+                  :key="item.account"
+                  class="login__account-history__item"
+                  @click="onSelectHistoryAccount(item)">
+                  <Avatar :id="item.userId" :size="28" round />
+                  <span class="login__account-history__text">{{ item.account }}</span>
+                  <button
+                    type="button"
+                    class="login__account-history__remove"
+                    @click.stop="onRemoveHistoryAccount(item.account)">
+                    <svg class="size-12px"><use href="#close" /></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <n-input
-          type="password"
-          show-password-on="click"
-          v-model:value="accountInfo.password"
-          :placeholder="t('login.input.password')"
-          clearable />
-        <div class="flex items-center">
-          <n-checkbox size="small" v-model:checked="globalStore.isAutoLogin" @update:checked="onAutoLoginChange" />
-          <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.autoLogin') }}</span>
-        </div>
-      </div>
-
-      <!-- 登录和协议 -->
-      <div class="m-t-25px">
-        <n-button
-          class="login__btn-gradient"
-          type="primary"
-          :loading="loginLoading"
-          :disabled="loginButtonDisabled"
-          @click="onAccountLogin">
-          {{ loginText }}
-        </n-button>
-        <div class="flex gap-5px m-t-10px justify-center items-center select-none">
-          <n-checkbox v-model:checked="termsChecked" size="small" />
-          <i18n-t
-            scope="global"
-            keypath="login.terms.text1"
-            tag="div"
-            class="inline text-12px text-[var(--text-secondary-color)]">
-            <template #text2>
-              <span class="color-[var(--primary-color)] cursor-pointer">
-                {{ t('login.terms.text2') }}
-              </span>
-            </template>
-            <template #text3>
-              <span class="color-[var(--primary-color)] cursor-pointer">
-                {{ t('login.terms.text3') }}
-              </span>
-            </template>
-          </i18n-t>
-        </div>
-      </div>
-
-      <!-- 其他登录方式 -->
-      <div class="m-t-25px flex flex-col flex-1">
-        <n-divider class="text-12px text-[var(--text-secondary-color)] select-none !m-0">
-          <span class="font-400">{{ t('login.other.text') }}</span>
-        </n-divider>
-        <div class="flex flex-col justify-center items-center flex-1">
-          <div class="flex gap-20px">
-            <n-tooltip trigger="hover">
-              <template #trigger>
-                <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('scan')">
-                  <template #icon>
-                    <svg class="size-20px color-[var(--primary-color)]"><use href="#scanqr" /></svg>
-                  </template>
-                </n-button>
-              </template>
-              {{ t('login.other.scan') }}
-            </n-tooltip>
-            <n-tooltip trigger="hover">
-              <template #trigger>
-                <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('github')">
-                  <template #icon>
-                    <svg class="size-20px"><use href="#github" /></svg>
-                  </template>
-                </n-button>
-              </template>
-              {{ t('login.other.github') }}
-            </n-tooltip>
-            <n-tooltip trigger="hover">
-              <template #trigger>
-                <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('gitee')">
-                  <template #icon>
-                    <svg class="size-18px color-[#C71D23]"><use href="#gitee" /></svg>
-                  </template>
-                </n-button>
-              </template>
-              {{ t('login.other.gitee') }}
-            </n-tooltip>
-          </div>
-          <div class="text-12px text-[var(--text-secondary-color)] m-t-20px">
-            <span>{{ t('login.register.tip') }}</span>
-            <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.register.text') }}</span>
+          <n-input
+            type="password"
+            show-password-on="click"
+            v-model:value="accountInfo.password"
+            :placeholder="t('login.input.password')"
+            clearable />
+          <div class="flex items-center">
+            <n-checkbox size="small" v-model:checked="globalStore.isAutoLogin" @update:checked="onAutoLoginChange" />
+            <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.autoLogin') }}</span>
           </div>
         </div>
-      </div>
+
+        <!-- 登录和协议 -->
+        <div class="m-t-25px">
+          <n-button
+            class="login__btn-gradient"
+            type="primary"
+            :loading="loginLoading"
+            :disabled="loginButtonDisabled"
+            @click="onAccountLogin">
+            {{ loginText }}
+          </n-button>
+          <div class="flex gap-5px m-t-10px justify-center items-center select-none">
+            <n-checkbox v-model:checked="termsChecked" size="small" />
+            <i18n-t
+              scope="global"
+              keypath="login.terms.text1"
+              tag="div"
+              class="inline text-12px text-[var(--text-secondary-color)]">
+              <template #text2>
+                <span class="color-[var(--primary-color)] cursor-pointer">
+                  {{ t('login.terms.text2') }}
+                </span>
+              </template>
+              <template #text3>
+                <span class="color-[var(--primary-color)] cursor-pointer">
+                  {{ t('login.terms.text3') }}
+                </span>
+              </template>
+            </i18n-t>
+          </div>
+        </div>
+
+        <!-- 其他登录方式 -->
+        <div class="m-t-25px flex flex-col flex-1">
+          <n-divider class="text-12px text-[var(--text-secondary-color)] select-none !m-0">
+            <span class="font-400">{{ t('login.other.text') }}</span>
+          </n-divider>
+          <div class="flex flex-col justify-center items-center flex-1">
+            <div class="flex gap-20px">
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('scan')">
+                    <template #icon>
+                      <svg class="size-20px color-[var(--primary-color)]"><use href="#scanqr" /></svg>
+                    </template>
+                  </n-button>
+                </template>
+                {{ t('login.other.scan') }}
+              </n-tooltip>
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('github')">
+                    <template #icon>
+                      <svg class="size-20px"><use href="#github" /></svg>
+                    </template>
+                  </n-button>
+                </template>
+                {{ t('login.other.github') }}
+              </n-tooltip>
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <n-button circle size="large" class="other-login__button" @click="() => onOauth2Login('gitee')">
+                    <template #icon>
+                      <svg class="size-18px color-[#C71D23]"><use href="#gitee" /></svg>
+                    </template>
+                  </n-button>
+                </template>
+                {{ t('login.other.gitee') }}
+              </n-tooltip>
+            </div>
+            <div class="text-12px text-[var(--text-secondary-color)] m-t-20px">
+              <span>{{ t('login.register.tip') }}</span>
+              <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.register.text') }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- 底部内容 -->
@@ -158,13 +166,17 @@
       <div>{{ t('login.footer.provider') }}</div>
       <div class="cursor-pointer">{{ t('login.footer.support') }}</div>
     </div>
+
+    <ForceUpdatePanel v-model:show="showForceUpdate" />
   </div>
 </template>
 
 <script setup lang="tsx">
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import Avatar from '@/components/Avatar.vue'
+  import ForceUpdatePanel from '@/components/Modal/ForceUpdatePanel.vue'
   import { authApi, oauth2Api } from '@/api'
+  import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import {
     createHomeWinodw,
     exitApp,
@@ -191,6 +203,9 @@
   const globalStore = useGlobalStore()
   const loginHistoryStore = useLoginHistoryStore()
   const systemSetting = useSystemSettingStore()
+  const appUpdateStore = useAppUpdateStore()
+  const showForceUpdate = ref(false)
+  const versionChecking = ref(true)
 
   const accountInputRef = ref<HTMLElement>()
   const accountHistoryVisible = ref(false)
@@ -399,9 +414,25 @@
     if (latestAccount) {
       accountInfo.value.account = latestAccount.account
     }
-    if (globalStore.isAutoLogin) {
-      onAutoLogin()
-    }
+    versionChecking.value = true
+    appUpdateStore
+      .check({ silent: true })
+      .then((info) => {
+        showForceUpdate.value = info.needForce
+        versionChecking.value = false
+        if (info.needForce) return
+        if (globalStore.isAutoLogin) {
+          onAutoLogin()
+        }
+      })
+      .catch((error: Error) => {
+        console.error('[AppUpdate] login check failed:', error)
+        showForceUpdate.value = false
+        versionChecking.value = false
+        if (globalStore.isAutoLogin) {
+          onAutoLogin()
+        }
+      })
     nextTick(() => {
       ShowCurrentWindow()
     })

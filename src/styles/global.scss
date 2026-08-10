@@ -77,12 +77,24 @@ body {
   }
 }
 
-.n-dropdown-menu {
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+/* 右键 / 点击下拉 / Select 浮层：实色背景，无透明与磨砂 */
+.n-dropdown-menu,
+.n-base-select-menu {
+  --n-color: var(--bg-muted-color) !important;
   border: 1px solid var(--border-color) !important;
+  background-color: var(--bg-muted-color) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
-  .v-binder-follower-content {
-    background-color: color-mix(in srgb, var(--bg-muted-color) 80%, transparent) !important;
-  }
+.n-popover:not(.n-popover--raw) > .n-popover__content,
+.n-popover:not(.n-popover--raw) .n-popover__content {
+  background-color: var(--bg-muted-color) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.v-binder-follower-content:has(.n-dropdown-menu),
+.v-binder-follower-content:has(.n-base-select-menu) {
+  background-color: transparent !important;
 }

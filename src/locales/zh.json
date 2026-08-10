@@ -1405,9 +1405,26 @@
   },
   "update": {
     "title": "版本更新",
+    "forceTitle": "发现新版本",
+    "versionAvailable": "发现新版本 {version}",
+    "latestVersionLabel": "最新版本 {version}",
+    "currentVersion": "当前版本 {version}",
+    "versionCompare": "当前版本 {current} {arrow} 新版本 {latest}",
+    "versionCompareDownloaded": "当前版本 {current} {arrow} 新版本 {latest} 已下载",
     "versionDownloaded": "新版本 {version} 已下载",
+    "forceDesc": "当前版本过低，请更新后继续使用",
     "later": "稍后更新",
-    "now": "立即更新"
+    "now": "立即更新",
+    "cancel": "取消更新",
+    "retry": "重试",
+    "downloading": "正在下载更新…",
+    "installing": "正在安装，即将重启…",
+    "checking": "正在检查更新…",
+    "latest": "当前已是最新版本",
+    "checkFailed": "检查更新失败",
+    "downloadFailed": "下载更新失败",
+    "installFailed": "安装更新失败",
+    "unsupportedPlatform": "当前系统暂不支持自动安装"
   },
   "filePreview": {
     "title": "文件预览",

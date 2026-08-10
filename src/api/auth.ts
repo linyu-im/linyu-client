@@ -1,14 +1,27 @@
-import { AccountLoginParam, LoginResult, Oauth2LoginParam } from '@/types/api/auth'
+import type { AccountLoginParam, LoginClientParam, LoginResult, Oauth2LoginParam } from '@/types/api/auth'
 import { ApiResponse, post } from '@/utils/network/http'
+import { getAppPlatform, getAppVersionCode } from '@/utils/app/version'
+
+function withClientMeta<T extends object>(params: T): Promise<T & LoginClientParam> {
+  return getAppPlatform().then((platform) => ({
+    ...params,
+    platform,
+    versionCode: getAppVersionCode()
+  }))
+}
 
 export function accountLogin(params: AccountLoginParam): Promise<ApiResponse<LoginResult>> {
-  return post<LoginResult, AccountLoginParam>('/api/auth/v1/login/pwd', params)
+  return withClientMeta(params).then((body) =>
+    post<LoginResult, AccountLoginParam & LoginClientParam>('/api/auth/v1/login/pwd', body)
+  )
 }
 
 export function tokenReset(): Promise<ApiResponse<LoginResult>> {
-  return post<LoginResult, void>('/api/auth/v1/login/token/reset')
+  return withClientMeta({}).then((body) => post<LoginResult, LoginClientParam>('/api/auth/v1/login/token/reset', body))
 }
 
 export function oauth2Login(params: Oauth2LoginParam): Promise<ApiResponse<LoginResult>> {
-  return post<LoginResult, Oauth2LoginParam>('/api/auth/v1/login/oauth2', params)
+  return withClientMeta(params).then((body) =>
+    post<LoginResult, Oauth2LoginParam & LoginClientParam>('/api/auth/v1/login/oauth2', body)
+  )
 }

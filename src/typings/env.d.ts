@@ -1,4 +1,8 @@
 /// <reference types="vite/client" />
+
+declare const __APP_VERSION__: string
+declare const __APP_VERSION_CODE__: number
+
 declare module 'spark-md5' {
   const SparkMD5: {
     hash(str: string): string

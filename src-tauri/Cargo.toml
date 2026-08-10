@@ -1,6 +1,6 @@
 [package]
 name = "linyu"
-version = "0.1.0"
+version = "2.0.1"
 description = "Linyu im"
 authors = ["Heath"]
 edition = "2021"
@@ -51,6 +51,7 @@ keyring = { version = "3", features = [
   "linux-native-sync-persistent",
   "crypto-rust",
 ] }
+tauri-plugin-os = "2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 notify-rust = "4.18.0"

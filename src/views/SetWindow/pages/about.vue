@@ -2,8 +2,12 @@
   <div class="settings-page">
     <div class="settings-page__main">
       <SettingCard>
-        <SettingRow :label="t('settings.about.version')" :desc="appVersion" :border="false">
-          <n-button size="small" @click="onTodo">{{ t('settings.about.checkUpdate') }}</n-button>
+        <SettingRow :label="t('settings.about.version')" :desc="appVersion || '-'" :border="false">
+          <n-badge :show="hasUpdateBadge" dot :color="'var(--red)'" :offset="[-2, 2]">
+            <n-button size="small" :loading="checking" @click="onCheckUpdate">
+              {{ t('settings.about.checkUpdate') }}
+            </n-button>
+          </n-badge>
         </SettingRow>
         <SettingRow :label="t('settings.about.help')">
           <n-button size="small" @click="onTodo">{{ t('settings.about.viewHelp') }}</n-button>
@@ -27,21 +31,52 @@
         <p>{{ t('settings.about.rights') }}</p>
       </div>
     </footer>
+
+    <UpdateModal v-model:show="showUpdateModal" />
   </div>
 </template>
 
 <script setup lang="ts">
+  import { storeToRefs } from 'pinia'
   import { useI18n } from 'vue-i18n'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
+  import UpdateModal from '@/components/Modal/UpdateModal.vue'
+  import { useAppUpdateStore } from '@/stores/app/appUpdate'
+  import { getAppVersion } from '@/utils/app/version'
 
   const { t } = useI18n()
+  const appUpdateStore = useAppUpdateStore()
+  const { checking, needUpdate, needForce } = storeToRefs(appUpdateStore)
 
-  const appVersion = '0.1.0'
+  const appVersion = ref('')
+  const showUpdateModal = ref(false)
+  const hasUpdateBadge = computed(() => needUpdate.value || needForce.value)
+
+  const onCheckUpdate = () => {
+    appUpdateStore
+      .check()
+      .then((info) => {
+        if (info.needUpdate || info.needForce) {
+          showUpdateModal.value = true
+        } else {
+          window.$message?.success(t('update.latest'))
+        }
+      })
+      .catch(() => {
+        window.$message?.error(t('update.checkFailed'))
+      })
+  }
 
   const onTodo = () => {
     window.$message?.info(t('settings.todo'))
   }
+
+  onMounted(() => {
+    getAppVersion().then((version) => {
+      appVersion.value = version
+    })
+  })
 </script>
 
 <style scoped lang="scss">

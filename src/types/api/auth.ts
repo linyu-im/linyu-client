@@ -1,3 +1,9 @@
+// 登录客户端信息（各登录接口共用）
+export interface LoginClientParam {
+  platform: string
+  versionCode: number
+}
+
 // 账号密码登录参数
 export interface AccountLoginParam {
   account: string

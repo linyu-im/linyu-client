@@ -99,8 +99,6 @@
     border-radius: 6px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
     padding: 4px;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
     color: var(--text-color);
     overflow: hidden;
     box-sizing: border-box;

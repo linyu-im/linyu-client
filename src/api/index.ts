@@ -1,4 +1,5 @@
 import * as userApi from './user'
+import * as appVersionApi from './appVersion'
 import * as oauth2Api from './oauth2'
 import * as emotionApi from './emotion'
 import * as authApi from './auth'
@@ -25,6 +26,7 @@ import * as livekitApi from './livekit'
 
 export {
   userApi,
+  appVersionApi,
   oauth2Api,
   emotionApi,
   authApi,

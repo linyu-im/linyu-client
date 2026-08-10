@@ -26,8 +26,6 @@ export interface HomeTabAiPayload {
   conversationId?: string
 }
 
-type HomeTabBadgeCounts = Record<HomeTabId, number>
-
 type HomeTabPayloadMap = {
   message: HomeTabMessagePayload
   contacts: HomeTabContactsPayload
@@ -44,7 +42,6 @@ export interface HomeTabNavigatePayload {
 
 type HomeTabStore = {
   activeTabId: HomeTabId
-  badgeCounts: HomeTabBadgeCounts
   tabPayload: Partial<HomeTabPayloadMap>
 }
 
@@ -57,15 +54,6 @@ const TAB_PATHS: Record<HomeTabId, string> = {
   application: '/home/application'
 }
 
-const createDefaultBadgeCounts = (): HomeTabBadgeCounts => ({
-  message: 0,
-  contacts: 0,
-  moment: 0,
-  ai: 0,
-  drive: 0,
-  application: 0
-})
-
 export const useHomeTabStore = defineStore('homeTab', {
   persist: {
     pick: ['activeTabId']
@@ -76,29 +64,12 @@ export const useHomeTabStore = defineStore('homeTab', {
   },
   state: (): HomeTabStore => ({
     activeTabId: 'message',
-    badgeCounts: createDefaultBadgeCounts(),
     tabPayload: {}
   }),
   actions: {
     setActiveTabId(tabId: HomeTabId) {
       this.$patch((state) => {
         state.activeTabId = tabId
-      })
-    },
-
-    setBadgeCount(tabId: HomeTabId, count: number) {
-      this.$patch((state) => {
-        state.badgeCounts[tabId] = Math.max(0, count)
-      })
-    },
-
-    setBadgeCounts(counts: Partial<HomeTabBadgeCounts>) {
-      this.$patch((state) => {
-        for (const [tabId, count] of Object.entries(counts) as [HomeTabId, number][]) {
-          if (typeof count === 'number') {
-            state.badgeCounts[tabId] = Math.max(0, count)
-          }
-        }
       })
     },
 

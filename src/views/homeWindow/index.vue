@@ -40,9 +40,8 @@
           <n-popover v-for="item in menuOptions" :key="item.id" :show-arrow="false" placement="right" trigger="hover">
             <template #trigger>
               <n-badge
-                :value="homeTabStore.badgeCounts[item.id]"
-                :max="99"
-                :show-zero="false"
+                :show="homeNavBadgeStore.counts[item.id] > 0"
+                dot
                 :color="'var(--red)'"
                 class="home__tab-badge"
                 :offset="[-2, 2]">
@@ -68,7 +67,9 @@
             @select="onMoreMenuSelect">
             <n-popover :z-index="99" :show-arrow="false" placement="right" trigger="hover">
               <template #trigger>
-                <SvgIconButton :size="34" :radius="5" href="#list" icon-size="22px" />
+                <n-badge :show="homeNavBadgeStore.counts.more > 0" dot :color="'var(--red)'" :offset="[-2, 2]">
+                  <SvgIconButton :size="34" :radius="5" href="#list" icon-size="22px" />
+                </n-badge>
               </template>
               <span class="select-none">{{ t('home.options.more.text') }}</span>
             </n-popover>
@@ -94,9 +95,14 @@
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useAppUpdateStore } from '@/stores/app/appUpdate'
+  import { useHomeNavBadgeStore } from '@/stores/app/homeNavBadge'
   import { HOME_TAB_NAVIGATE_EVENT } from '@/constants/event'
   import { LOGIN_WINDOW_LABEL } from '@/constants/window'
   import { useHomeTabStore, type HomeTabId, type HomeTabNavigatePayload } from '@/stores/app/homeTab'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useSpaceDownloadStore } from '@/stores/cloudDrive/spaceDownload'
+  import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
   import { useUserStore } from '@/stores/user/user'
   import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
@@ -118,10 +124,18 @@
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
   import { useI18n } from 'vue-i18n'
   import { useRoute, useRouter } from 'vue-router'
+  import { storeToRefs } from 'pinia'
 
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
   const homeTabStore = useHomeTabStore()
+  const homeNavBadgeStore = useHomeNavBadgeStore()
+  const appUpdateStore = useAppUpdateStore()
+  const chatStore = useChatStore()
+  const spaceUploadStore = useSpaceUploadStore()
+  const spaceDownloadStore = useSpaceDownloadStore()
+  const { needUpdate, needForce } = storeToRefs(appUpdateStore)
+  const { counts: navBadgeCounts } = storeToRefs(homeNavBadgeStore)
 
   initOsFileDropListener().catch(() => undefined)
 
@@ -201,7 +215,36 @@
 
   const moreOptions = computed(() => [
     {
-      label: () => t('home.options.more.update'),
+      label: () =>
+        h(
+          'span',
+          {
+            style: {
+              position: 'relative',
+              display: 'inline-block',
+              alignSelf: 'center',
+              lineHeight: '1.2',
+              paddingRight: navBadgeCounts.value.more > 0 ? '10px' : '0'
+            }
+          },
+          [
+            t('home.options.more.update'),
+            navBadgeCounts.value.more > 0
+              ? h('span', {
+                  style: {
+                    position: 'absolute',
+                    top: '0',
+                    right: '0',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--red)',
+                    transform: 'translate(50%, -35%)'
+                  }
+                })
+              : null
+          ]
+        ),
       key: 'update'
     },
     {
@@ -230,7 +273,18 @@
     if (key === 'setting') {
       createSetWinodw()
     } else if (key === 'update') {
-      showUpdateModal.value = true
+      appUpdateStore
+        .check()
+        .then((info) => {
+          if (info.needUpdate || info.needForce) {
+            showUpdateModal.value = true
+          } else {
+            window.$message?.success(t('update.latest'))
+          }
+        })
+        .catch(() => {
+          window.$message?.error(t('update.checkFailed'))
+        })
     } else if (key === 'feedback') {
       createFeedbackWinodw()
     } else if (key === 'searchChatRecord') {
@@ -259,6 +313,30 @@
     }
   )
 
+  watch(
+    () => chatStore.chatList.map((item) => item.unreadNum),
+    () => {
+      homeNavBadgeStore.syncMessageFromChatList(chatStore.chatList)
+    },
+    { immediate: true }
+  )
+
+  watch(
+    [() => spaceUploadStore.tasks, () => spaceDownloadStore.tasks],
+    () => {
+      homeNavBadgeStore.syncDriveFromTasks(spaceUploadStore.tasks, spaceDownloadStore.tasks)
+    },
+    { deep: true, immediate: true }
+  )
+
+  watch(
+    [needUpdate, needForce],
+    ([update, force]) => {
+      homeNavBadgeStore.syncMoreFromUpdate(update, force)
+    },
+    { immediate: true }
+  )
+
   const onCurrentUserInfo = () => {
     userApi.currentUserInfo().then((res) => {
       if (res.code === 0 && res.data) {
@@ -274,8 +352,17 @@
     void createPluginRuntimeWindow()
     void ensureNotificationActionListener()
     onCurrentUserInfo()
+    void homeNavBadgeStore.refreshContactsBadges()
     prefetchHomePages(route.name as string)
     window.addEventListener('keydown', onKeyDown)
+    void appUpdateStore
+      .check({ silent: true })
+      .then((info) => {
+        if (info.needUpdate || info.needForce) {
+          showUpdateModal.value = true
+        }
+      })
+      .catch(() => undefined)
     void listen<HomeTabNavigatePayload>(HOME_TAB_NAVIGATE_EVENT, (event) => {
       const { tabId, payload } = event.payload
       if (!tabId) return

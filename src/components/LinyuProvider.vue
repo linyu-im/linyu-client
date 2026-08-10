@@ -294,8 +294,12 @@
     Progress: {
       fillColor: 'var(--primary-color)',
       fillColorInfo: 'var(--primary-color)',
+      fillColorSuccess: 'var(--primary-color)',
+      fillColorWarning: 'var(--primary-color)',
       lineBgProcessing: 'var(--primary-color)',
-      railColor: 'var(--bg-muted-color)'
+      railColor: 'var(--bg-muted-color)',
+      textColorCircle: 'var(--text-muted-color)',
+      iconColor: 'var(--text-muted-color)'
     },
     Form: {
       labelTextColor: 'var(--text-color)',
@@ -409,13 +413,13 @@
       color: 'var(--divider-color)'
     },
     Dropdown: {
-      color: 'color-mix(in srgb, var(--bg-muted-color) 80%, transparent)',
+      color: 'var(--bg-muted-color)',
       optionTextColor: 'var(--text-color)',
       optionTextColorHover: 'var(--primary-color)',
       optionTextColorActive: 'var(--primary-color)',
       optionTextColorChildActive: 'var(--primary-color)',
-      optionColorHover: 'color-mix(in srgb, var(--bg-muted-color) 60%, transparent)',
-      optionColorActive: 'rgba(var(--primary-rgb), 0.1)',
+      optionColorHover: 'var(--bg-tertiary-color)',
+      optionColorActive: 'var(--bg-tertiary-color)',
       dividerColor: 'var(--divider-color)'
     },
     Popover: {
@@ -488,9 +492,9 @@
           optionTextColor: 'var(--text-color)',
           optionTextColorActive: 'var(--primary-color)',
           optionTextColorPressed: 'var(--primary-color)',
-          optionColorPending: 'color-mix(in srgb, var(--icon-hover-color) 85%, transparent)',
-          optionColorActive: 'color-mix(in srgb, var(--primary-color) 10%, transparent)',
-          optionColorActivePending: 'color-mix(in srgb, var(--primary-color) 10%, transparent)',
+          optionColorPending: 'var(--bg-tertiary-color)',
+          optionColorActive: 'var(--bg-tertiary-color)',
+          optionColorActivePending: 'var(--bg-tertiary-color)',
           optionCheckColor: 'var(--primary-color)',
           groupHeaderTextColor: 'var(--text-secondary-color)',
           actionDividerColor: 'var(--divider-color)'

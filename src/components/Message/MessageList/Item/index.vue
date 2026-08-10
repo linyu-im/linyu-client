@@ -186,12 +186,16 @@
         return options
     }
 
-    options.push({ type: 'divider', key: 'd1' })
     options.push({
       label: () => t('message.bubbleMenu.delete'),
       key: 'delete',
       props: { class: 'menu-item--danger' }
     })
+
+    // 仅有「删除」时不插分割线，避免菜单顶部留白
+    if (options.length > 1) {
+      options.splice(options.length - 1, 0, { type: 'divider', key: 'd1' })
+    }
 
     return options
   })
