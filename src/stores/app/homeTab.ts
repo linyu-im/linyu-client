@@ -132,7 +132,9 @@ export const useHomeTabStore = defineStore('homeTab', {
       if (tabId === 'message') {
         const messagePayload = payload as HomeTabMessagePayload | undefined
         if (messagePayload?.peerId) {
-          return this.openMessageWithPeer(messagePayload.peerId, messagePayload.sceneType ?? SceneType.User)
+          return this.openMessageWithPeer(messagePayload.peerId, messagePayload.sceneType ?? SceneType.User).then(
+            (): void => {}
+          )
         }
         if (messagePayload?.chatId) {
           const chatStore = useChatStore()
@@ -166,20 +168,20 @@ export const useHomeTabStore = defineStore('homeTab', {
       }
     },
 
-    openMessageWithPeer(peerId: string, sceneType: SceneTypeValue = SceneType.User): Promise<void> {
+    openMessageWithPeer(peerId: string, sceneType: SceneTypeValue = SceneType.User): Promise<boolean> {
       const chatStore = useChatStore()
 
       return chatApi.create({ peerId, sceneType }).then((res) => {
         if (res.code !== 0 || !res.data) {
           window.$message.error(res.msg)
-          return
+          return false
         }
 
         const chatId = res.data.id
         return chatStore.loadList().then(() => {
           return Promise.resolve(chatStore.setSelectedChatId(chatId)).then(() => {
             chatStore.markReopen()
-            this.applyNavigate('message', { chatId })
+            return Promise.resolve(this.applyNavigate('message', { chatId })).then(() => true)
           })
         })
       })

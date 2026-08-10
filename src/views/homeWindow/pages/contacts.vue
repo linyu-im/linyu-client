@@ -4,18 +4,7 @@
       <template #first>
         <div class="contacts__sider">
           <div class="contacts__toolbar">
-            <n-input
-              size="small"
-              type="text"
-              class="contacts__search text-14px"
-              :placeholder="t('contacts.searchPlaceholder')"
-              clearable>
-              <template #prefix>
-                <svg class="size-16px text-[var(--text-secondary-color)]">
-                  <use href="#search"></use>
-                </svg>
-              </template>
-            </n-input>
+            <ContactsSearchPopover :placeholder="t('contacts.searchPlaceholder')" />
             <n-dropdown :options="addMenuOptions" placement="bottom-start" trigger="click" @select="onAddMenuSelect">
               <n-button class="contacts__toolbar-btn">
                 <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
@@ -197,6 +186,7 @@
 
 <script setup lang="ts">
   defineOptions({ name: 'contacts' })
+  import ContactsSearchPopover from '@/components/Contacts/ContactsSearchPopover.vue'
   import ContactsEnterpriseProfile from '@/components/Contacts/detail/ContactsEnterpriseProfile.vue'
   import ContactsFriendProfile from '@/components/Contacts/detail/ContactsFriendProfile.vue'
   import ContactsGroupNotice from '@/components/Contacts/detail/ContactsGroupNotice.vue'
@@ -395,12 +385,6 @@
       align-items: center;
       flex-shrink: 0;
       padding: 10px 15px;
-    }
-
-    &__search {
-      flex: 1;
-      min-width: 0;
-      height: 28px;
     }
 
     &__toolbar-btn {

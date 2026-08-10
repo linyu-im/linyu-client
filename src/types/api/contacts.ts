@@ -14,10 +14,14 @@ export interface Contact {
   updatedAt: string
   deletedAt: string | null
   username: string
+  account?: string
   userLevel: number
   emotionName: string
   emotionUrl: string
   groupName?: string
+  name?: string
+  groupNumber?: string
+  group_number?: string
   groupMemberNum?: number
   enterpriseName?: string
   enterpriseMemberNum?: number
@@ -38,6 +42,11 @@ export interface ContactsTagUpdateParam {
 }
 
 export type ContactsListResult = Contact[]
+
+export interface ContactsSearchResult {
+  friends: Contact[]
+  groups: Contact[]
+}
 
 export type ContactsMenuView =
   | 'empty'

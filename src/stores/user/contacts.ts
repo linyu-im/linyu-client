@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { contactsApi } from '@/api'
-import type { Contact } from '@/types/api/contacts'
+import { usePeerInfoStore } from '@/stores/user/peerInfo'
+import type { Contact, ContactsSearchResult } from '@/types/api/contacts'
+import type { GroupInfoResult } from '@/types/api/group'
+import type { User } from '@/types/api/user'
 
 type ContactsStore = {
   enterpriseList: Contact[]
@@ -9,6 +12,23 @@ type ContactsStore = {
   enterpriseListLoading: boolean
   groupListLoading: boolean
   friendListLoading: boolean
+}
+
+const pickText = (...values: Array<string | null | undefined>) => {
+  for (const value of values) {
+    const text = value?.trim()
+    if (text) return text
+  }
+  return ''
+}
+
+const includesKeyword = (text: string, keyword: string) => {
+  if (!keyword) return false
+  return text.toLocaleLowerCase().includes(keyword.toLocaleLowerCase())
+}
+
+const matchFields = (fields: Array<string | null | undefined>, keyword: string) => {
+  return fields.some((field) => includesKeyword(field || '', keyword))
 }
 
 export const useContactsStore = defineStore('contacts', {
@@ -71,6 +91,30 @@ export const useContactsStore = defineStore('contacts', {
         const group = state.groupList.find((item) => item.peerId === peerId)
         if (group) group.remark = remark
       })
+    },
+    /** 本地聚合搜索 */
+    search(keyword: string): ContactsSearchResult {
+      const trimmed = keyword.trim()
+      if (!trimmed) {
+        return { friends: [], groups: [] }
+      }
+
+      const peerInfoStore = usePeerInfoStore()
+
+      const friends = this.friendList.filter((item) => {
+        const user = peerInfoStore.read(item.peerId, 'user') as User | null
+        const account = pickText(item.account, user?.account)
+        return matchFields([item.username, account, item.remark], trimmed)
+      })
+
+      const groups = this.groupList.filter((item) => {
+        const group = peerInfoStore.read(item.peerId, 'group') as GroupInfoResult | null
+        const groupName = pickText(item.groupName, item.name, group?.info?.name)
+        const groupNumber = pickText(item.groupNumber, item.group_number, group?.info?.groupNumber)
+        return matchFields([groupName, groupNumber, item.remark], trimmed)
+      })
+
+      return { friends, groups }
     },
     fetchEnterpriseList() {
       if (this.enterpriseListLoading) return

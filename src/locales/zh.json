@@ -289,6 +289,13 @@
   },
   "contacts": {
     "searchPlaceholder": "搜索",
+    "search": {
+      "friends": "联系人",
+      "groups": "群聊",
+      "viewAll": "查看全部({count})",
+      "empty": "无搜索结果",
+      "loading": "搜索中..."
+    },
     "loading": "加载中...",
     "emptyFriends": "暂无好友",
     "emptyGroups": "暂无群聊",

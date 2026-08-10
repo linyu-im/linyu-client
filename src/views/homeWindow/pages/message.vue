@@ -4,18 +4,7 @@
       <template #first>
         <div class="chatlist">
           <div class="chatlist__toolbar">
-            <n-input
-              size="small"
-              type="text"
-              class="chatlist__search text-14px"
-              :placeholder="t('message.searchPlaceholder')"
-              clearable>
-              <template #prefix>
-                <svg class="size-16px text-[var(--text-secondary-color)]">
-                  <use href="#search"></use>
-                </svg>
-              </template>
-            </n-input>
+            <ContactsSearchPopover :placeholder="t('message.searchPlaceholder')" />
             <n-dropdown :options="addMenuOptions" placement="bottom-start" trigger="click" @select="onAddMenuSelect">
               <n-button class="chatlist__toolbar-btn">
                 <svg class="size-16px text-[var(--text-secondary-color)] bg-transparent">
@@ -101,6 +90,7 @@
   import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useMessageRemindStore } from '@/stores/message/messageRemind'
   import ChatSession from '@/components/Chat/ChatSession.vue'
+  import ContactsSearchPopover from '@/components/Contacts/ContactsSearchPopover.vue'
   import CreateGroupModal from '@/components/Modal/CreateGroupModal.vue'
   import { Chat } from '@/types/api/chat'
   import { Message } from '@/types/api/message'
@@ -402,12 +392,6 @@
         align-items: center;
         flex-shrink: 0;
         padding: 0 5px;
-      }
-
-      .chatlist__search {
-        flex: 1;
-        min-width: 0;
-        height: 28px;
       }
 
       .chatlist__toolbar-btn {

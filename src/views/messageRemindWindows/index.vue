@@ -93,7 +93,7 @@
           return homeTabStore.navigateTo('message', { chatId: item.chatId })
         }
         const sceneType = item.peerType === 'group' ? SceneType.Group : SceneType.User
-        return homeTabStore.openMessageWithPeer(item.peerId, sceneType)
+        return homeTabStore.openMessageWithPeer(item.peerId, sceneType).then((): void => {})
       })
       .then(() => {
         messageRemindStore.removeItem(item.sessionId)

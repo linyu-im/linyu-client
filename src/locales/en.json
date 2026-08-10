@@ -289,6 +289,13 @@
   },
   "contacts": {
     "searchPlaceholder": "Search",
+    "search": {
+      "friends": "Contacts",
+      "groups": "Groups",
+      "viewAll": "View all ({count})",
+      "empty": "No results",
+      "loading": "Searching..."
+    },
     "loading": "Loading...",
     "emptyFriends": "No friends yet",
     "emptyGroups": "No groups yet",

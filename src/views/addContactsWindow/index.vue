@@ -136,6 +136,7 @@
   } from '@/utils/desktop/window'
   import AddFriendApplyModal from '@/components/Modal/AddFriendApplyModal.vue'
   import AddGroupApplyModal from '@/components/Modal/AddGroupApplyModal.vue'
+  import { getHighlightSegments } from '@/utils/common/highlight'
 
   const { t } = useI18n()
   const userStore = useUserStore()
@@ -143,11 +144,6 @@
   const homeTabStore = useHomeTabStore()
 
   type AddContactsTab = 'user' | 'group'
-
-  interface HighlightSegment {
-    text: string
-    highlight: boolean
-  }
 
   const SEARCH_PAGE_SIZE = 10
   const SCROLL_BOTTOM_THRESHOLD = 48
@@ -212,41 +208,6 @@
     }
     return groupHasSearched.value ? t('addContacts.noResultGroup') : t('addContacts.empty')
   })
-
-  const getHighlightSegments = (text: string, keywordText: string): HighlightSegment[] => {
-    if (!text) return []
-    const trimmedKeyword = keywordText.trim()
-    if (!trimmedKeyword) {
-      return [{ text, highlight: false }]
-    }
-
-    const lowerText = text.toLowerCase()
-    const lowerKeyword = trimmedKeyword.toLowerCase()
-    const highlightIndices = new Set<number>()
-    let keywordIndex = 0
-
-    for (let textIndex = 0; textIndex < lowerText.length && keywordIndex < lowerKeyword.length; textIndex++) {
-      if (lowerText[textIndex] === lowerKeyword[keywordIndex]) {
-        highlightIndices.add(textIndex)
-        keywordIndex++
-      }
-    }
-
-    const segments: HighlightSegment[] = []
-    let start = 0
-
-    while (start < text.length) {
-      const highlighted = highlightIndices.has(start)
-      let end = start + 1
-      while (end < text.length && highlightIndices.has(end) === highlighted) {
-        end++
-      }
-      segments.push({ text: text.slice(start, end), highlight: highlighted })
-      start = end
-    }
-
-    return segments
-  }
 
   const resetListScroll = () => {
     nextTick(() => {
