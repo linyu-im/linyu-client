@@ -92,3 +92,42 @@ export function formatChatRecordDateTime(timeStr: string, locale: string): strin
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${monthNames[inputDate.getMonth()]} ${d}, ${y} ${time}`
 }
+
+/**
+ * 会话列表日期：
+ * - 今天：HH:mm
+ * - 含今天在内的近 7 天（非今天）：星期
+ * - 今年更早：MM/DD
+ * - 往年：YYYY/MM/DD
+ */
+export function formatSessionListDate(timeStr: string, locale: string): string {
+  const inputDate = parseBackendTime(timeStr)
+  if (Number.isNaN(inputDate.getTime())) return ''
+
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const startOfInputDay = new Date(inputDate.getFullYear(), inputDate.getMonth(), inputDate.getDate())
+  const diffDays = Math.floor((startOfToday.getTime() - startOfInputDay.getTime()) / (24 * 60 * 60 * 1000))
+
+  if (diffDays === 0) {
+    return `${pad(inputDate.getHours())}:${pad(inputDate.getMinutes())}`
+  }
+
+  if (diffDays >= 1 && diffDays <= 6) {
+    if (locale.startsWith('zh')) {
+      const weekMap = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+      return weekMap[inputDate.getDay()]
+    }
+    const weekMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    return weekMap[inputDate.getDay()]
+  }
+
+  const m = pad(inputDate.getMonth() + 1)
+  const d = pad(inputDate.getDate())
+
+  if (inputDate.getFullYear() === now.getFullYear()) {
+    return `${m}/${d}`
+  }
+
+  return `${inputDate.getFullYear()}/${m}/${d}`
+}

@@ -15,6 +15,7 @@
     "videoViewer",
     "file-preview-*",
     "chatRecord",
+    "searchChatRecord",
     "addContacts",
     "groupNotice",
     "call",

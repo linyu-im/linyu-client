@@ -45,8 +45,9 @@
       isSelf?: boolean
       disableEvents?: boolean
       menuPreset?: 'chat' | 'record'
+      highlightKeyword?: string
     }>(),
-    { disableEvents: false, menuPreset: 'chat' }
+    { disableEvents: false, menuPreset: 'chat', highlightKeyword: '' }
   )
 
   const emit = defineEmits<{
@@ -110,6 +111,12 @@
     }
     if (msg.msgType === 'cloud_share') {
       return { content: msg.content, disableEvents: props.disableEvents }
+    }
+    if (msg.msgType === 'text') {
+      return {
+        content: msg.content,
+        highlightKeyword: props.highlightKeyword
+      }
     }
     return { content: msg.content }
   })

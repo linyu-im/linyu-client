@@ -12,12 +12,14 @@
   const props = withDefaults(defineProps<Props>(), {
     size: 100
   })
+
+  const sizePx = computed(() => `${props.size}px`)
 </script>
 
 <style scoped lang="scss">
   svg {
-    width: v-bind(size) + 'px';
-    height: v-bind(size) + 'px';
+    width: v-bind(sizePx);
+    height: v-bind(sizePx);
     color: var(--card-bg-color);
   }
 </style>

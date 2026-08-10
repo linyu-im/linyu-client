@@ -6,11 +6,12 @@ import {
   queryMessageById,
   queryMessagesByIds,
   queryMessagesByPage,
+  searchSessionsByKeyword,
   softDeleteMessageById,
   softDeleteMessagesBySessionId,
   updateMessageLocalExt
 } from '@/db/message'
-import type { DbMessage, MessageDateRange } from '@/db/message'
+import type { DbMessage, MessageDateRange, MessageSessionSearchHit } from '@/db/message'
 import type {
   FileMessageLocalExt,
   ImageMessageLocalExt,
@@ -185,6 +186,15 @@ export const useMessageDbStore = defineStore('messageDb', {
         pageSize: result.pageSize,
         hasMore: messages.length > 0 && messages.length >= pageSize
       }
+    },
+
+    /**
+     * 跨会话关键词搜索（按 session 聚合）
+     */
+    async searchSessionsByKeyword(keyword: string): Promise<MessageSessionSearchHit[]> {
+      const userId = getCurrentUserId()
+      if (!userId || !keyword.trim()) return []
+      return searchSessionsByKeyword(userId, keyword)
     },
 
     /**

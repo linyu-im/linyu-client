@@ -136,6 +136,60 @@
                   {{ t('contacts.search.viewAll', { count: groups.length }) }}
                 </button>
               </div>
+
+              <div v-if="chatSessions.length > 0" class="contacts-search-panel__section">
+                <div class="contacts-search-panel__section-title">{{ t('contacts.search.chatRecords') }}</div>
+                <div
+                  v-for="item in visibleChatSessions"
+                  :key="item.sessionId"
+                  class="contacts-search-panel__chat-item"
+                  @click="onOpenChatRecords">
+                  <Avatar
+                    class="contacts-search-panel__avatar size-34px rounded-5px bg-#FFF shrink-0"
+                    :id="resolveChatPeerId(item)"
+                    :type="resolveChatSceneType(item)"
+                    :round="false"
+                    instant />
+                  <div class="contacts-search-panel__chat-body min-w-0 flex-1">
+                    <div class="contacts-search-panel__chat-top">
+                      <Name
+                        class="contacts-search-panel__chat-name truncate"
+                        :id="resolveChatPeerId(item)"
+                        :type="resolveChatSceneType(item)"
+                        instant />
+                      <time class="contacts-search-panel__chat-time">
+                        {{ formatSessionListDate(item.latestCreatedAt, locale) }}
+                      </time>
+                    </div>
+                    <div class="contacts-search-panel__chat-snippet truncate">
+                      <template
+                        v-for="(segment, index) in getHighlightSegments(
+                          item.latestKeywordContent || '',
+                          searchedKeyword
+                        )"
+                        :key="`${item.sessionId}-snippet-${index}`">
+                        <span :class="{ 'contacts-search-panel__highlight': segment.highlight }">
+                          {{ segment.text }}
+                        </span>
+                      </template>
+                    </div>
+                    <div class="contacts-search-panel__chat-count">
+                      <i18n-t keypath="searchChatRecord.sessionMatchCount" tag="span">
+                        <template #count>
+                          <span class="contacts-search-panel__count-num">{{ item.matchCount }}</span>
+                        </template>
+                      </i18n-t>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  v-if="chatSessions.length > PREVIEW_LIMIT"
+                  type="button"
+                  class="contacts-search-panel__view-all"
+                  @click.stop="onOpenChatRecords">
+                  {{ t('contacts.search.viewAll', { count: chatSessions.length }) }}
+                </button>
+              </div>
             </template>
           </n-scrollbar>
         </n-spin>
@@ -146,13 +200,20 @@
 
 <script setup lang="ts">
   import { SceneType } from '@/constants/common'
+  import type { SceneType as SceneTypeValue } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
+  import { useMessageDbStore } from '@/stores/message/messageDb'
   import { useContactsStore } from '@/stores/user/contacts'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
+  import { useUserStore } from '@/stores/user/user'
   import type { Contact } from '@/types/api/contacts'
   import type { GroupInfoResult } from '@/types/api/group'
   import type { User } from '@/types/api/user'
+  import type { MessageSessionSearchHit } from '@/db/message'
   import { getHighlightSegments } from '@/utils/common/highlight'
+  import { formatSessionListDate } from '@/utils/common/time'
+  import { openSearchChatRecord } from '@/utils/message/searchChatRecord'
+  import { getGroupIdFromSessionId, getPeerIdFromUserSession, getSessionSceneType } from '@/utils/message/session'
   import { onClickOutside, useDebounceFn, useEventListener, useWindowSize } from '@vueuse/core'
   import type { CSSProperties } from 'vue'
   import { useI18n } from 'vue-i18n'
@@ -169,10 +230,12 @@
   const BOTTOM_GAP = 20
   const MIN_PANEL_HEIGHT = 80
 
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const homeTabStore = useHomeTabStore()
   const contactsStore = useContactsStore()
   const peerInfoStore = usePeerInfoStore()
+  const userStore = useUserStore()
+  const messageDbStore = useMessageDbStore()
   const { height: windowHeight } = useWindowSize()
 
   const pickText = (...values: Array<string | null | undefined>) => {
@@ -238,13 +301,21 @@
   const panelLeft = ref(0)
   const panelTop = ref(0)
   const panelMaxHeight = ref(360)
+  const chatSessions = ref<MessageSessionSearchHit[]>([])
+  const chatLoading = ref(false)
 
-  const loading = computed(() => {
+  let chatSearchSeq = 0
+
+  const currentUserId = computed(() => userStore.authInfo.userId?.trim() || '')
+
+  const contactsLoading = computed(() => {
     if (!searchedKeyword.value) return false
     const friendsPending = contactsStore.friendList.length === 0 && contactsStore.friendListLoading
     const groupsPending = contactsStore.groupList.length === 0 && contactsStore.groupListLoading
     return friendsPending || groupsPending
   })
+
+  const loading = computed(() => contactsLoading.value || chatLoading.value)
 
   const searchResult = computed(() => {
     void peerInfoStore.users
@@ -255,7 +326,9 @@
   const friends = computed(() => searchResult.value.friends)
   const groups = computed(() => searchResult.value.groups)
 
-  const isEmpty = computed(() => friends.value.length === 0 && groups.value.length === 0)
+  const isEmpty = computed(
+    () => friends.value.length === 0 && groups.value.length === 0 && chatSessions.value.length === 0
+  )
 
   const visibleFriends = computed(() => {
     if (friendsExpanded.value) return friends.value
@@ -267,12 +340,26 @@
     return groups.value.slice(0, PREVIEW_LIMIT)
   })
 
+  const visibleChatSessions = computed(() => chatSessions.value.slice(0, PREVIEW_LIMIT))
+
   const panelStyle = computed<CSSProperties>(() => ({
     left: `${panelLeft.value}px`,
     top: `${panelTop.value}px`,
     width: `${PANEL_WIDTH}px`,
     maxHeight: `${panelMaxHeight.value}px`
   }))
+
+  const resolveChatSceneType = (item: MessageSessionSearchHit): SceneTypeValue => {
+    const sceneType = item.sceneType || getSessionSceneType(item.sessionId)
+    return sceneType === SceneType.Group ? SceneType.Group : SceneType.User
+  }
+
+  const resolveChatPeerId = (item: MessageSessionSearchHit) => {
+    if (resolveChatSceneType(item) === SceneType.Group) {
+      return getGroupIdFromSessionId(item.sessionId)
+    }
+    return getPeerIdFromUserSession(item.sessionId, currentUserId.value)
+  }
 
   const updatePanelPosition = () => {
     const anchor = rootRef.value
@@ -288,6 +375,9 @@
     friendsExpanded.value = false
     groupsExpanded.value = false
     searchedKeyword.value = ''
+    chatSessions.value = []
+    chatLoading.value = false
+    chatSearchSeq += 1
   }
 
   const closePanel = () => {
@@ -308,6 +398,22 @@
     })
   }
 
+  const runChatSearch = (trimmed: string) => {
+    const seq = ++chatSearchSeq
+    chatLoading.value = true
+    chatSessions.value = []
+    messageDbStore
+      .searchSessionsByKeyword(trimmed)
+      .then((result) => {
+        if (seq !== chatSearchSeq) return
+        chatSessions.value = result
+      })
+      .finally(() => {
+        if (seq !== chatSearchSeq) return
+        chatLoading.value = false
+      })
+  }
+
   const runSearch = (value: string) => {
     const trimmed = value.trim()
     if (!trimmed) {
@@ -322,6 +428,7 @@
     searchedKeyword.value = trimmed
     openPanel()
     prefetchPeerInfo(contactsStore.friendList, contactsStore.groupList)
+    runChatSearch(trimmed)
   }
 
   const debouncedSearch = useDebounceFn((value: string) => {
@@ -349,6 +456,13 @@
       })
   }
 
+  const onOpenChatRecords = () => {
+    const kw = searchedKeyword.value.trim()
+    if (!kw) return
+    openSearchChatRecord(kw)
+    clearAndClose()
+  }
+
   watch(keyword, (value) => {
     if (!value.trim()) {
       resetResults()
@@ -367,7 +481,7 @@
     if (panelVisible.value) updatePanelPosition()
   })
 
-  watch([friendsExpanded, groupsExpanded], () => {
+  watch([friendsExpanded, groupsExpanded, chatSessions, chatLoading], () => {
     if (panelVisible.value) {
       nextTick(() => updatePanelPosition())
     }
@@ -438,7 +552,7 @@
       height: 100%;
 
       .n-scrollbar-content {
-        padding: 8px 0;
+        padding: 4px 0;
         box-sizing: border-box;
       }
     }
@@ -522,6 +636,64 @@
     &__highlight {
       color: var(--primary-color);
       font-weight: 600;
+    }
+
+    &__count-num {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    &__chat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--button-soft-bg);
+      }
+    }
+
+    &__chat-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    &__chat-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    &__chat-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 14px;
+      line-height: 1.3;
+      color: var(--text-color);
+    }
+
+    &__chat-time {
+      flex-shrink: 0;
+      font-size: 11px;
+      line-height: 1.3;
+      color: var(--text-secondary-color);
+    }
+
+    &__chat-snippet {
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--text-secondary-color);
+    }
+
+    &__chat-count {
+      font-size: 12px;
+      line-height: 1.3;
+      color: var(--text-secondary-color);
     }
 
     &__view-all {

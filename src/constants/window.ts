@@ -9,6 +9,7 @@ export const SCREENSHOT_WINDOW_LABEL = 'screenshot'
 export const IMG_VIEWER_WINDOW_LABEL = 'imgViewer'
 export const VIDEO_VIEWER_WINDOW_LABEL = 'videoViewer'
 export const CHAT_RECORD_WINDOW_LABEL = 'chatRecord'
+export const SEARCH_CHAT_RECORD_WINDOW_LABEL = 'searchChatRecord'
 export const ADD_CONTACTS_WINDOW_LABEL = 'addContacts'
 export const GROUP_NOTICE_WINDOW_LABEL = 'groupNotice'
 export const MESSAGE_REMIND_WINDOW_LABEL = 'messageRemind'
@@ -76,6 +77,12 @@ export const CHAT_RECORD_WINDOW_WIDTH = 660
 export const CHAT_RECORD_WINDOW_HEIGHT = 700
 export const CHAT_RECORD_WINDOW_MIN_WIDTH = 660
 export const CHAT_RECORD_WINDOW_MIN_HEIGHT = 580
+
+// 搜索聊天记录窗口
+export const SEARCH_CHAT_RECORD_WINDOW_WIDTH = 800
+export const SEARCH_CHAT_RECORD_WINDOW_HEIGHT = 620
+export const SEARCH_CHAT_RECORD_WINDOW_MIN_WIDTH = 680
+export const SEARCH_CHAT_RECORD_WINDOW_MIN_HEIGHT = 480
 
 // 添加联系人/群聊窗口
 export const ADD_CONTACTS_WINDOW_WIDTH = 640

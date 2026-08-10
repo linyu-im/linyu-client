@@ -56,6 +56,18 @@ export interface MessagePageResult {
   pageSize: number
 }
 
+/**
+ * 跨会话关键词搜索命中（按 session 聚合）
+ */
+export interface MessageSessionSearchHit {
+  sessionId: string
+  sceneType: SceneType
+  matchCount: number
+  latestCreatedAt: string
+  latestKeywordContent: string
+  latestMsgId: string
+}
+
 const MESSAGE_SELECT_FIELDS = `id, user_id AS userId, session_id AS sessionId, from_id AS fromId, to_id AS toId,
   msg_type AS msgType, from_type AS fromType, is_show_time AS isShowTime,
   content, status, scene_type AS sceneType, quote_msg_id AS quoteMsgId,
@@ -166,6 +178,43 @@ export async function queryMessagesByPage(query: MessagePageQuery): Promise<Mess
   )
 
   return { records, page, pageSize }
+}
+
+/**
+ * 按 keyword_content 跨会话聚合搜索
+ */
+export async function searchSessionsByKeyword(userId: string, keyword: string): Promise<MessageSessionSearchHit[]> {
+  const trimmed = keyword.trim()
+  if (!userId || !trimmed) return []
+
+  const db = await getDb()
+  const like = `%${trimmed}%`
+
+  const rows = await db.select<MessageSessionSearchHit[]>(
+    `SELECT
+       m.session_id AS sessionId,
+       m.scene_type AS sceneType,
+       agg.matchCount AS matchCount,
+       m.created_at AS latestCreatedAt,
+       COALESCE(m.keyword_content, '') AS latestKeywordContent,
+       m.id AS latestMsgId
+     FROM t_message m
+     INNER JOIN (
+       SELECT session_id, COUNT(*) AS matchCount, MAX(created_at) AS max_created_at
+       FROM t_message
+       WHERE user_id = ? AND deleted_at IS NULL AND keyword_content LIKE ?
+       GROUP BY session_id
+     ) agg ON m.session_id = agg.session_id AND m.created_at = agg.max_created_at
+     WHERE m.user_id = ? AND m.deleted_at IS NULL AND m.keyword_content LIKE ?
+     GROUP BY m.session_id
+     ORDER BY m.created_at DESC`,
+    [userId, like, userId, like]
+  )
+
+  return rows.map((row) => ({
+    ...row,
+    matchCount: Number(row.matchCount) || 0
+  }))
 }
 
 /**

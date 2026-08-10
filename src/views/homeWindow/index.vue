@@ -112,6 +112,7 @@
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
   } from '@/utils/desktop/window'
+  import { openSearchChatRecord } from '@/utils/message/searchChatRecord'
   import { ensureNotificationActionListener, stopNotificationActionListener } from '@/utils/desktop/notification'
   import { listen } from '@tauri-apps/api/event'
   import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
@@ -208,6 +209,10 @@
       key: 'feedback'
     },
     {
+      label: () => t('home.options.more.searchChatRecord'),
+      key: 'searchChatRecord'
+    },
+    {
       label: () => t('home.options.more.setting'),
       key: 'setting'
     },
@@ -228,6 +233,8 @@
       showUpdateModal.value = true
     } else if (key === 'feedback') {
       createFeedbackWinodw()
+    } else if (key === 'searchChatRecord') {
+      openSearchChatRecord()
     } else if (key === 'exit') {
       exitApp()
     }

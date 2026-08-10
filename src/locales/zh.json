@@ -58,6 +58,7 @@
         "text": "更多",
         "update": "检查更新",
         "feedback": "意见反馈",
+        "searchChatRecord": "聊天记录搜索",
         "setting": "设置",
         "exit": "退出"
       }
@@ -292,6 +293,7 @@
     "search": {
       "friends": "联系人",
       "groups": "群聊",
+      "chatRecords": "聊天记录",
       "viewAll": "查看全部({count})",
       "empty": "无搜索结果",
       "loading": "搜索中..."
@@ -1459,6 +1461,18 @@
       "date": "日期"
     },
     "dateModalTitle": "选择日期范围"
+  },
+  "searchChatRecord": {
+    "title": "搜索聊天记录",
+    "searchPlaceholder": "搜索",
+    "hintInput": "输入关键词搜索聊天记录",
+    "hintSelectSession": "选择左侧会话查看匹配消息",
+    "emptySessions": "未找到相关聊天记录",
+    "emptyMessages": "该会话暂无匹配消息",
+    "sessionMatchCount": "共 {count} 条相关聊天记录",
+    "detailMatchCount": "共 {count} 条与 \"{keyword}\" 的聊天记录",
+    "enterChat": "进入聊天",
+    "loadingMore": "加载更多..."
   },
   "messageRemind": {
     "cancelBlink": "取消闪动"

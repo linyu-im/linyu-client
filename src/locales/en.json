@@ -58,6 +58,7 @@
         "text": "More",
         "update": "Check Update",
         "feedback": "Feedback",
+        "searchChatRecord": "Search Chat History",
         "setting": "Settings",
         "exit": "Exit"
       }
@@ -292,6 +293,7 @@
     "search": {
       "friends": "Contacts",
       "groups": "Groups",
+      "chatRecords": "Chat History",
       "viewAll": "View all ({count})",
       "empty": "No results",
       "loading": "Searching..."
@@ -1485,6 +1487,18 @@
       "date": "Date"
     },
     "dateModalTitle": "Select date range"
+  },
+  "searchChatRecord": {
+    "title": "Search Chat History",
+    "searchPlaceholder": "Search",
+    "hintInput": "Enter keywords to search chat history",
+    "hintSelectSession": "Select a conversation on the left to view matches",
+    "emptySessions": "No matching chat history",
+    "emptyMessages": "No matching messages in this conversation",
+    "sessionMatchCount": "{count} related messages",
+    "detailMatchCount": "{count} messages matching \"{keyword}\"",
+    "enterChat": "Open chat",
+    "loadingMore": "Loading more..."
   },
   "messageRemind": {
     "cancelBlink": "Stop flashing"

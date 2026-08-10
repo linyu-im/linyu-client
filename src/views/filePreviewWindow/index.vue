@@ -368,10 +368,10 @@
 
     &__markdown,
     &__code {
-      width: min(960px, calc(100% - 32px));
-      min-height: calc(100% - 32px);
-      margin: 16px auto;
-      padding: 36px 44px;
+      width: calc(100% - 16px);
+      min-height: calc(100% - 24px);
+      margin: 12px auto;
+      padding: 16px 12px;
       border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
       border-radius: 6px;
       box-sizing: border-box;
