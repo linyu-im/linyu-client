@@ -107,7 +107,17 @@
     textColorTextHover: 'var(--text-color)',
     textColorTextPressed: 'var(--text-color)',
     textColorTextFocus: 'var(--text-color)',
-    textColorTextDisabled: 'var(--text-secondary-color)'
+    textColorTextDisabled: 'var(--text-secondary-color)',
+    textColorTextPrimary: 'var(--primary-color)',
+    textColorTextHoverPrimary: 'var(--primary-soft-color)',
+    textColorTextPressedPrimary: 'var(--primary-strong-color)',
+    textColorTextFocusPrimary: 'var(--primary-color)',
+    textColorTextDisabledPrimary: 'var(--text-secondary-color)',
+    textColorGhostPrimary: 'var(--primary-color)',
+    textColorGhostHoverPrimary: 'var(--primary-soft-color)',
+    textColorGhostPressedPrimary: 'var(--primary-strong-color)',
+    textColorGhostFocusPrimary: 'var(--primary-color)',
+    textColorGhostDisabledPrimary: 'var(--text-secondary-color)'
   }
 
   const defaultButtonPeers = {
@@ -222,6 +232,17 @@
       textColorTextPressed: 'var(--text-color)',
       textColorTextFocus: 'var(--text-color)',
       textColorTextDisabled: 'var(--text-secondary-color)',
+      // text / ghost + primary：验证码等文字按钮走主题色
+      textColorTextPrimary: 'var(--primary-color)',
+      textColorTextHoverPrimary: 'var(--primary-soft-color)',
+      textColorTextPressedPrimary: 'var(--primary-strong-color)',
+      textColorTextFocusPrimary: 'var(--primary-color)',
+      textColorTextDisabledPrimary: 'var(--text-secondary-color)',
+      textColorGhostPrimary: 'var(--primary-color)',
+      textColorGhostHoverPrimary: 'var(--primary-soft-color)',
+      textColorGhostPressedPrimary: 'var(--primary-strong-color)',
+      textColorGhostFocusPrimary: 'var(--primary-color)',
+      textColorGhostDisabledPrimary: 'var(--text-secondary-color)',
       // warning 实心钮与主题色对齐（dialog.warning 确认钮用 type=warning）
       colorWarning: 'var(--primary-color)',
       colorHoverWarning: 'rgba(var(--primary-rgb), 0.8)',
@@ -239,6 +260,15 @@
       textColorFocusWarning: '#FFF',
       textColorDisabledWarning: '#FFF',
       rippleColorWarning: 'var(--primary-color)'
+    },
+    Carousel: {
+      dotColor: 'rgba(var(--primary-rgb), 0.28)',
+      dotColorActive: 'var(--primary-color)',
+      dotColorFocus: 'rgba(var(--primary-rgb), 0.55)',
+      dotSize: '8px',
+      dotLineWidth: '14px',
+      dotLineWidthActive: '24px',
+      arrowColor: 'var(--text-secondary-color)'
     },
     Dialog: {
       color: 'var(--bg-primary-color)',
@@ -382,6 +412,20 @@
       color: 'var(--input-soft-bg)',
       colorFocus: 'var(--input-soft-bg)',
       colorDisabled: 'var(--input-soft-bg)',
+      colorFocusWarning: 'var(--input-soft-bg)',
+      colorFocusError: 'var(--input-soft-bg)',
+      borderWarning: '1px solid var(--red)',
+      borderHoverWarning: '1px solid var(--red)',
+      borderFocusWarning: '1px solid var(--red)',
+      borderError: '1px solid var(--red)',
+      borderHoverError: '1px solid var(--red)',
+      borderFocusError: '1px solid var(--red)',
+      boxShadowFocusWarning: '0 0 0 1px color-mix(in srgb, var(--red) 30%, transparent)',
+      boxShadowFocusError: '0 0 0 1px color-mix(in srgb, var(--red) 30%, transparent)',
+      caretColorWarning: 'var(--red)',
+      caretColorError: 'var(--red)',
+      loadingColorWarning: 'var(--red)',
+      loadingColorError: 'var(--red)',
       iconColor: 'var(--text-secondary-color)',
       iconColorDisabled: 'var(--text-muted-color)',
       iconColorHover: 'var(--text-color)',

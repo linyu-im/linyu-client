@@ -43,6 +43,70 @@
       "language": "语言"
     }
   },
+  "register": {
+    "welcome": {
+      "title": "欢迎使用 Linyu",
+      "subtitle": "注册账号，开启安全、便捷的沟通体验"
+    },
+    "features": {
+      "secure": {
+        "titleHighlight": "安全",
+        "titleRest": "可靠，沟通无忧",
+        "desc": "多重加密保护，守护你的每一次交流"
+      },
+      "efficient": {
+        "titleHighlight": "高效",
+        "titleRest": "沟通，稳定流畅",
+        "desc": "稳定流畅的体验，让沟通更高效"
+      },
+      "simple": {
+        "titleHighlight": "简单",
+        "titleRest": "易用，一目了然",
+        "desc": "界面简洁直观，上手零门槛"
+      }
+    },
+    "form": {
+      "title": "创建账号",
+      "subtitle": "请填写以下信息完成注册",
+      "account": "账号",
+      "accountHint": "长度为 4-20 个字符，须以字母开头，只能包含字母、数字、下划线和中划线",
+      "accountInvalid": "账号格式不正确，请查看规则说明",
+      "accountTaken": "该账号已被使用",
+      "accountAvailable": "该账号可以使用",
+      "checkAccount": "检测",
+      "email": "邮箱地址",
+      "emailInvalid": "请输入正确的邮箱地址",
+      "sendCode": "发送验证码",
+      "sendCodeSuccess": "验证码已发送，请查收邮箱",
+      "resendCode": "{seconds}s 后重发",
+      "code": "邮箱验证码",
+      "password": "设置密码",
+      "passwordHint": "8-20 位字符，包含字母、数字和特殊字符",
+      "passwordInvalid": "密码需为 8-20 位，且包含字母、数字和特殊字符",
+      "passwordMismatch": "两次输入的密码不一致",
+      "confirmPassword": "确认密码",
+      "submit": "注册"
+    },
+    "terms": {
+      "text1": "我已阅读并同意 {text2} 和 {text3}",
+      "text2": "服务协议",
+      "text3": "隐私政策"
+    },
+    "hasAccount": {
+      "tip": "已有账号？",
+      "login": "立即登录"
+    },
+    "success": {
+      "title": "账号创建成功",
+      "subtitle": "注册完成，现在可以开始使用 Linyu",
+      "accountLabel": "你的 Linyu 账号",
+      "accountTip": "请妥善保存该账号，可用于后续登录",
+      "copyAccount": "复制账号",
+      "copySuccess": "账号已复制",
+      "copyFailed": "复制失败，请手动复制",
+      "start": "立即体验"
+    }
+  },
   "tray": {
     "exit": "退出Linyu"
   },

@@ -1,6 +1,7 @@
 // 窗口 label（与 Tauri 窗口 label、路由 path 保持一致）
 export const HOME_WINDOW_LABEL = 'home'
 export const LOGIN_WINDOW_LABEL = 'login'
+export const REGISTER_WINDOW_LABEL = 'register'
 export const TRAY_WINDOW_LABEL = 'tray'
 export const EMOTION_WINDOW_LABEL = 'emotion'
 export const SET_WINDOW_LABEL = 'set'
@@ -38,6 +39,10 @@ export const HOME_WINDOW_WIDTH = 960
 export const HOME_WINDOW_HEIGHT = 675
 export const HOME_WINDOW_MIN_WIDTH = 800
 export const HOME_WINDOW_MIN_HEIGHT = 600
+
+// 注册窗口
+export const REGISTER_WINDOW_WIDTH = 1020
+export const REGISTER_WINDOW_HEIGHT = 660
 
 // 心情窗口
 export const EMOTION_WINDOW_WIDTH = 320

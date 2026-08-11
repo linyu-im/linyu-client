@@ -208,7 +208,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background-color: var(--bg-primary-color);
+    background-color: var(--content-card-bg);
     border: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
     border-radius: 10px;
     padding: 14px 16px;

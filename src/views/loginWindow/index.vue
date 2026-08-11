@@ -154,7 +154,9 @@
             </div>
             <div class="text-12px text-[var(--text-secondary-color)] m-t-20px">
               <span>{{ t('login.register.tip') }}</span>
-              <span class="color-[var(--primary-color)] cursor-pointer">{{ t('login.register.text') }}</span>
+              <span class="color-[var(--primary-color)] cursor-pointer" @click="onGoRegister">
+                {{ t('login.register.text') }}
+              </span>
             </div>
           </div>
         </div>
@@ -179,6 +181,7 @@
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import {
     createHomeWinodw,
+    createRegisterWindow,
     exitApp,
     hideCurrentWindow,
     minimizeCurrentWindow,
@@ -396,6 +399,10 @@
 
   const onAutoLoginChange = (val: boolean) => {
     globalStore.setIsAutoLogin(val)
+  }
+
+  const onGoRegister = () => {
+    void createRegisterWindow()
   }
 
   onClickOutside(accountInputRef, () => {

@@ -82,6 +82,10 @@ import {
   IMG_VIEWER_WINDOW_MIN_WIDTH,
   IMG_VIEWER_WINDOW_WIDTH,
   MESSAGE_REMIND_WINDOW_LABEL,
+  LOGIN_WINDOW_LABEL,
+  REGISTER_WINDOW_HEIGHT,
+  REGISTER_WINDOW_LABEL,
+  REGISTER_WINDOW_WIDTH,
   MOMENT_WINDOW_HEIGHT,
   MOMENT_WINDOW_LABEL_PREFIX,
   MOMENT_WINDOW_MIN_HEIGHT,
@@ -302,6 +306,19 @@ export const createHomeWinodw = () =>
     // 网盘/消息大文件拖入必须拿本地路径（onDragDropEvent.paths）
     dragDropEnabled: true
   })
+
+export const createRegisterWindow = () =>
+  createWebviewWindow('注册', REGISTER_WINDOW_LABEL, {
+    width: REGISTER_WINDOW_WIDTH,
+    height: REGISTER_WINDOW_HEIGHT,
+    transparent: true,
+    resizable: false
+  })
+
+export const backToLoginWindow = async () => {
+  await openAndFocusWindow(LOGIN_WINDOW_LABEL)
+  await closeCurrentWindow()
+}
 
 export const createEmotionWinodw = () =>
   createWebviewWindow('心情', EMOTION_WINDOW_LABEL, {

@@ -3,6 +3,7 @@ import * as appVersionApi from './appVersion'
 import * as oauth2Api from './oauth2'
 import * as emotionApi from './emotion'
 import * as authApi from './auth'
+import * as registerApi from './register'
 import * as chatApi from './chat'
 import * as messageApi from './message'
 import * as momentApi from './moment'
@@ -30,6 +31,7 @@ export {
   oauth2Api,
   emotionApi,
   authApi,
+  registerApi,
   chatApi,
   messageApi,
   momentApi,

@@ -21,11 +21,11 @@
         v-bind="$attrs"
         class="user-select-none avatar"
         :class="avatarStateClass"
-        :src="src || undefined"
+        :src="displaySrc"
         :img-props="imgProps"
         :round="round"
         :size="size"
-        fallback-src="/avatar.png" />
+        :fallback-src="DEFAULT_AVATAR" />
     </template>
     <ProfileCard
       :id="id"
@@ -38,11 +38,11 @@
     v-bind="$attrs"
     class="user-select-none avatar"
     :class="avatarStateClass"
-    :src="src || undefined"
+    :src="displaySrc"
     :img-props="imgProps"
     :round="round"
     :size="size"
-    fallback-src="/avatar.png" />
+    :fallback-src="DEFAULT_AVATAR" />
 </template>
 
 <script setup lang="ts">
@@ -54,6 +54,8 @@
   import type { CSSProperties } from 'vue'
 
   defineOptions({ inheritAttrs: false })
+
+  const DEFAULT_AVATAR = '/avatar.png'
 
   interface Props {
     id: string
@@ -82,7 +84,7 @@
 
   const getInitialAvatarState = () => {
     if (!props.id) {
-      return { src: '', visible: props.instant }
+      return { src: DEFAULT_AVATAR, visible: true }
     }
 
     if (!props.refresh) {
@@ -92,7 +94,7 @@
       }
     }
 
-    return { src: '', visible: props.instant }
+    return { src: DEFAULT_AVATAR, visible: props.instant }
   }
 
   const initialAvatarState = getInitialAvatarState()
@@ -106,14 +108,25 @@
     padding: 0
   }
 
-  /** 同步解码，避免切换会话时新建的 <img> 先空白再显示已缓存头像导致闪烁 */
-  const imgProps = { decoding: 'sync' as const, loading: 'eager' as const }
-
   const popoverRef = ref<PopoverInst | null>(null)
   const src = ref(initialAvatarState.src)
   const visible = ref(initialAvatarState.visible)
   const profileVisible = ref(false)
   const editProfileShow = ref(false)
+
+  const displaySrc = computed(() => src.value || DEFAULT_AVATAR)
+
+  /** 同步解码，避免切换会话时新建的 <img> 先空白再显示已缓存头像导致闪烁 */
+  const imgProps = {
+    decoding: 'sync' as const,
+    loading: 'eager' as const,
+    onError: () => {
+      if (src.value !== DEFAULT_AVATAR) {
+        src.value = DEFAULT_AVATAR
+      }
+      visible.value = true
+    }
+  }
 
   const syncProfilePosition = () => {
     nextTick(() => {
@@ -142,13 +155,17 @@
     return url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now()
   }
 
+  const applyAvatarSrc = (url: string) => {
+    src.value = url || DEFAULT_AVATAR
+    visible.value = true
+  }
+
   const loadAvatar = async () => {
     const id = props.id
     const type = props.type
 
     if (!id) {
-      src.value = ''
-      visible.value = true
+      applyAvatarSrc(DEFAULT_AVATAR)
       return
     }
 
@@ -158,14 +175,14 @@
       const quickUrl = await avatarStore.resolveSrc(type, id)
       if (isStale(seq, id, type)) return
       if (quickUrl) {
-        src.value = quickUrl
-        visible.value = true
+        applyAvatarSrc(quickUrl)
+      } else {
+        applyAvatarSrc(DEFAULT_AVATAR)
       }
       // 后台从远程刷新，加载完成后替换
       avatarStore.refreshSrc(type, id).then((url) => {
         if (!isStale(seq, id, type) && url) {
-          src.value = bustCache(url)
-          visible.value = true
+          applyAvatarSrc(bustCache(url))
         }
       })
       return
@@ -174,8 +191,7 @@
     // 非刷新模式：优先读内存缓存
     const cached = avatarStore.getCachedSrc(type, id)
     if (cached) {
-      src.value = cached
-      visible.value = true
+      applyAvatarSrc(cached)
       return
     }
 
@@ -187,8 +203,7 @@
     const url = await avatarStore.resolveSrc(type, id)
     if (isStale(seq, id, type)) return
 
-    src.value = url
-    visible.value = true
+    applyAvatarSrc(url)
   }
 
   const refreshAvatarOnOpen = () => {
@@ -196,8 +211,7 @@
 
     avatarStore.refreshSrc(props.type, props.id).then((url) => {
       if (url) {
-        src.value = bustCache(url)
-        visible.value = true
+        applyAvatarSrc(bustCache(url))
       }
     })
   }
@@ -251,8 +265,7 @@
       if (newVal && newVal !== oldVal) {
         const url = avatarStore.getCachedSrc(props.type, props.id)
         if (url) {
-          src.value = bustCache(url)
-          visible.value = true
+          applyAvatarSrc(bustCache(url))
         }
       }
     }

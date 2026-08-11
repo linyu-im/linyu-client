@@ -8,6 +8,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/loginWindow/index.vue')
   },
   {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/registerWindow/index.vue')
+  },
+  {
     path: '/home',
     name: 'home',
     redirect: '/home/message',
@@ -81,7 +86,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/messageRemind',
     name: 'messageRemind',
-    component: () => import('@/views/messageRemindWindows/index.vue')
+    component: () => import('@/views/messageRemindWindow/index.vue')
   },
   {
     path: '/call',

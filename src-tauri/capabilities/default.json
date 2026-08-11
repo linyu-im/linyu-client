@@ -4,6 +4,7 @@
   "description": "Capability for trusted Linyu application windows",
   "windows": [
     "login",
+    "register",
     "tray",
     "messageRemind",
     "screenshot",

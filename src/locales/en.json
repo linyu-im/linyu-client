@@ -43,6 +43,70 @@
       "language": "Language"
     }
   },
+  "register": {
+    "welcome": {
+      "title": "Welcome to Linyu",
+      "subtitle": "Create an account for secure and seamless messaging"
+    },
+    "features": {
+      "secure": {
+        "titleHighlight": "Secure",
+        "titleRest": " & reliable, chat with peace of mind",
+        "desc": "Multi-layer encryption protecting every conversation"
+      },
+      "efficient": {
+        "titleHighlight": "Fast",
+        "titleRest": " messaging, stable and smooth",
+        "desc": "A smooth experience that keeps conversations flowing"
+      },
+      "simple": {
+        "titleHighlight": "Simple",
+        "titleRest": " & easy, clear at a glance",
+        "desc": "A clean interface you can pick up instantly"
+      }
+    },
+    "form": {
+      "title": "Create Account",
+      "subtitle": "Fill in the details below to register",
+      "account": "Account",
+      "accountHint": "4-20 characters, must start with a letter, and only letters, numbers, underscores and hyphens are allowed",
+      "accountInvalid": "Invalid account format. Please check the rules",
+      "accountTaken": "This account is already taken",
+      "accountAvailable": "This account is available",
+      "checkAccount": "Check",
+      "email": "Email address",
+      "emailInvalid": "Please enter a valid email address",
+      "sendCode": "Send code",
+      "sendCodeSuccess": "Verification code sent. Please check your email",
+      "resendCode": "Resend in {seconds}s",
+      "code": "Verification code",
+      "password": "Set password",
+      "passwordHint": "8-20 characters with letters, numbers and symbols",
+      "passwordInvalid": "Password must be 8-20 characters with letters, numbers and symbols",
+      "passwordMismatch": "Passwords do not match",
+      "confirmPassword": "Confirm password",
+      "submit": "Sign Up"
+    },
+    "terms": {
+      "text1": "I have read and agree to the {text2} and {text3}",
+      "text2": "Terms of Service",
+      "text3": "Privacy Policy"
+    },
+    "hasAccount": {
+      "tip": "Already have an account?",
+      "login": "Sign in"
+    },
+    "success": {
+      "title": "Account created",
+      "subtitle": "Registration complete. You can start using Linyu now",
+      "accountLabel": "Your Linyu account",
+      "accountTip": "Please save this account for future logins",
+      "copyAccount": "Copy account",
+      "copySuccess": "Account copied",
+      "copyFailed": "Copy failed, please copy manually",
+      "start": "Get started"
+    }
+  },
   "tray": {
     "exit": "Exit Linyu"
   },
