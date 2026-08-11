@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getPlugin, listPlugins, removePlugin, setPluginEnabled, upsertPlugin } from '@/db/plugin'
+import { useUserStore } from '@/stores/user/user'
 import type { Application } from '@/types/api/application'
 import type { InstalledPlugin, PluginEntry, PluginPermission, PluginSystemInfo, PreparedPlugin } from '@/types/plugin'
 import { isApiOriginUrl, resolveResourceUrl } from '@/utils/network/http'
@@ -44,12 +45,23 @@ interface ExportDevelopmentInput {
   rootPath: string
 }
 
+const resolveUserId = () => {
+  const userStore = useUserStore()
+  return userStore.userInfo.id || userStore.authInfo.userId || ''
+}
+
+const requireUserId = () => {
+  const userId = resolveUserId()
+  if (!userId) throw new Error('PLUGIN_USER_REQUIRED')
+  return userId
+}
+
 export function getSystemInfo() {
   return invoke<PluginSystemInfo>('plugin_get_system_info')
 }
 
 export function list() {
-  return listPlugins()
+  return listPlugins(requireUserId())
 }
 
 export function prepareRemote(application: Application, authorization: string) {
@@ -78,7 +90,8 @@ export function prepareDevelopment(path: string) {
 }
 
 export function exportDevelopment(pluginId: string, destinationPath: string) {
-  return getPlugin(pluginId).then((plugin) => {
+  const userId = requireUserId()
+  return getPlugin(userId, pluginId).then((plugin) => {
     if (!plugin) throw new Error('PLUGIN_NOT_INSTALLED')
     if (plugin.source !== 'development') throw new Error('PLUGIN_EXPORT_DEVELOPMENT_ONLY')
     const input: ExportDevelopmentInput = {
@@ -95,13 +108,15 @@ export function abortInstall(transactionId: string) {
 }
 
 export function commitInstall(transactionId: string, grantedPermissions: PluginPermission[]) {
-  return listPlugins().then(async (existingPlugins) => {
+  const userId = requireUserId()
+  return listPlugins(userId).then(async (existingPlugins) => {
     const record = await invoke<InstalledPlugin>('plugin_commit_install', {
       input: {
         transactionId,
         grantedPermissions
       } satisfies CommitInstallInput
     })
+    record.userId = userId
     const previous = existingPlugins.find((item) => item.id === record.id)
     if (previous?.installedAt) {
       record.installedAt = previous.installedAt
@@ -112,7 +127,8 @@ export function commitInstall(transactionId: string, grantedPermissions: PluginP
 }
 
 export function uninstall(pluginId: string, deleteData = false) {
-  return getPlugin(pluginId).then(async (plugin) => {
+  const userId = requireUserId()
+  return getPlugin(userId, pluginId).then(async (plugin) => {
     if (!plugin) throw new Error('PLUGIN_NOT_INSTALLED')
     const input: UninstallInput = {
       pluginId,
@@ -120,12 +136,13 @@ export function uninstall(pluginId: string, deleteData = false) {
       isDevelopment: plugin.source === 'development'
     }
     await invoke<void>('plugin_uninstall', { input })
-    await removePlugin(pluginId, deleteData)
+    await removePlugin(userId, pluginId, deleteData)
   })
 }
 
 export function setEnabled(pluginId: string, enabled: boolean) {
-  return setPluginEnabled(pluginId, enabled).then(async (updated) => {
+  const userId = requireUserId()
+  return setPluginEnabled(userId, pluginId, enabled).then(async (updated) => {
     if (!updated) throw new Error('PLUGIN_NOT_INSTALLED')
     const input: SetEnabledInput = { pluginId, enabled }
     await invoke<void>('plugin_set_enabled', { input })
@@ -133,7 +150,8 @@ export function setEnabled(pluginId: string, enabled: boolean) {
 }
 
 export function readEntry(pluginId: string, kind: PluginEntry['kind'], windowId?: string) {
-  return getPlugin(pluginId).then((plugin) => {
+  const userId = requireUserId()
+  return getPlugin(userId, pluginId).then((plugin) => {
     if (!plugin) throw new Error('PLUGIN_NOT_INSTALLED')
     const input: ReadEntryInput = {
       pluginId,

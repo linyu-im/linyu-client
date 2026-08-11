@@ -36,14 +36,14 @@ const requirePermission = (permissions: { name: string }[], name: string) => {
 }
 
 export function invokePluginApi<T = unknown>(pluginId: string, userId: string, method: string, params: unknown = {}) {
-  return getPlugin(pluginId).then(async (plugin) => {
+  const safeUserId = userId || 'anonymous'
+  if (!/^[a-zA-Z0-9._:-]{1,64}$/.test(safeUserId)) {
+    throw new Error('PLUGIN_USER_ID_INVALID')
+  }
+
+  return getPlugin(safeUserId, pluginId).then(async (plugin) => {
     if (!plugin) throw new Error('PLUGIN_NOT_INSTALLED')
     if (!plugin.enabled) throw new Error('PLUGIN_DISABLED')
-
-    const safeUserId = userId || 'anonymous'
-    if (!/^[a-zA-Z0-9._:-]{1,64}$/.test(safeUserId)) {
-      throw new Error('PLUGIN_USER_ID_INVALID')
-    }
 
     if (method.startsWith('storage.')) {
       requirePermission(plugin.grantedPermissions, 'storage')

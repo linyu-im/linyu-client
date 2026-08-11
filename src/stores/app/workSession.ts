@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { saveWorkMessage, saveWorkStep, type WorkAttachmentRecord, type WorkStepRecord } from '@/db/workAssistant'
 import i18n from '@/services/i18n'
 import * as workService from '@/services/workService'
+import { useUserStore } from '@/stores/user/user'
 import type { WorkEvent, WorkPermissionOption, WorkPermissionRequest } from '@/types/cmd/work'
 import { showNotification } from '@/utils/desktop/notification'
 
@@ -64,6 +65,11 @@ const normalizeStepStatus = (status: string): WorkStepRecord['status'] => {
   if (['in_progress', 'running'].includes(status)) return 'in_progress'
   if (['waiting_approval', 'waiting'].includes(status)) return 'waiting_approval'
   return 'pending'
+}
+
+const resolveUserId = () => {
+  const userStore = useUserStore()
+  return userStore.userInfo.id || userStore.authInfo.userId || ''
 }
 
 export const useWorkSessionStore = defineStore('workSession', {
@@ -182,6 +188,7 @@ export const useWorkSessionStore = defineStore('workSession', {
         const previous = this.liveSteps.find((step) => step.id === id)
         const step: WorkStepRecord = {
           id,
+          userId: resolveUserId(),
           conversationId: this.conversationId,
           runId: this.currentRunId,
           title: next.title,
@@ -208,6 +215,7 @@ export const useWorkSessionStore = defineStore('workSession', {
           const previous = liveSteps.find((step) => step.id === id)
           const step: WorkStepRecord = {
             id,
+            userId: resolveUserId(),
             conversationId: this.conversationId,
             runId: this.currentRunId,
             title: entry.content,
@@ -245,6 +253,7 @@ export const useWorkSessionStore = defineStore('workSession', {
       if (this.busy && this.conversationId && this.currentRunId) {
         const permissionStep: WorkStepRecord = {
           id: `permission:${event.requestId}`,
+          userId: resolveUserId(),
           conversationId: this.conversationId,
           runId: this.currentRunId,
           title: request.title,
@@ -310,13 +319,18 @@ export const useWorkSessionStore = defineStore('workSession', {
       if (!assistant.content && fallbackContent) assistant.content = fallbackContent
       this.$patch({ liveMessages: [...this.liveMessages] })
       if (assistant.content) {
+        const userId = resolveUserId()
         await saveWorkMessage({
           id: assistant.id,
+          userId,
           conversationId: this.conversationId,
           role: assistant.role,
           content: assistant.content,
           runId: assistant.runId,
-          attachments: assistant.attachments,
+          attachments: assistant.attachments.map((attachment) => ({
+            ...attachment,
+            userId
+          })),
           createdAt: assistant.createdAt
         })
       }

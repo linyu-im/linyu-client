@@ -25,7 +25,7 @@
         :img-props="imgProps"
         :round="round"
         :size="size"
-        :fallback-src="DEFAULT_AVATAR" />
+        :fallback-src="defaultAvatar" />
     </template>
     <ProfileCard
       :id="id"
@@ -42,7 +42,7 @@
     :img-props="imgProps"
     :round="round"
     :size="size"
-    :fallback-src="DEFAULT_AVATAR" />
+    :fallback-src="defaultAvatar" />
 </template>
 
 <script setup lang="ts">
@@ -55,7 +55,8 @@
 
   defineOptions({ inheritAttrs: false })
 
-  const DEFAULT_AVATAR = '/avatar.png'
+  const DEFAULT_USER_AVATAR = '/avatar.png'
+  const DEFAULT_GROUP_AVATAR = '/group-avatar.png'
 
   interface Props {
     id: string
@@ -82,9 +83,12 @@
   const avatarStore = useAvatarStore()
   const chatStore = useChatStore()
 
+  const defaultAvatar = computed(() => (props.type === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR))
+
   const getInitialAvatarState = () => {
+    const fallback = props.type === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR
     if (!props.id) {
-      return { src: DEFAULT_AVATAR, visible: true }
+      return { src: fallback, visible: true }
     }
 
     if (!props.refresh) {
@@ -94,7 +98,7 @@
       }
     }
 
-    return { src: DEFAULT_AVATAR, visible: props.instant }
+    return { src: fallback, visible: props.instant }
   }
 
   const initialAvatarState = getInitialAvatarState()
@@ -114,15 +118,15 @@
   const profileVisible = ref(false)
   const editProfileShow = ref(false)
 
-  const displaySrc = computed(() => src.value || DEFAULT_AVATAR)
+  const displaySrc = computed(() => src.value || defaultAvatar.value)
 
   /** 同步解码，避免切换会话时新建的 <img> 先空白再显示已缓存头像导致闪烁 */
   const imgProps = {
     decoding: 'sync' as const,
     loading: 'eager' as const,
     onError: () => {
-      if (src.value !== DEFAULT_AVATAR) {
-        src.value = DEFAULT_AVATAR
+      if (src.value !== defaultAvatar.value) {
+        src.value = defaultAvatar.value
       }
       visible.value = true
     }
@@ -156,7 +160,7 @@
   }
 
   const applyAvatarSrc = (url: string) => {
-    src.value = url || DEFAULT_AVATAR
+    src.value = url || defaultAvatar.value
     visible.value = true
   }
 
@@ -165,7 +169,7 @@
     const type = props.type
 
     if (!id) {
-      applyAvatarSrc(DEFAULT_AVATAR)
+      applyAvatarSrc(defaultAvatar.value)
       return
     }
 
@@ -177,7 +181,7 @@
       if (quickUrl) {
         applyAvatarSrc(quickUrl)
       } else {
-        applyAvatarSrc(DEFAULT_AVATAR)
+        applyAvatarSrc(defaultAvatar.value)
       }
       // 后台从远程刷新，加载完成后替换
       avatarStore.refreshSrc(type, id).then((url) => {

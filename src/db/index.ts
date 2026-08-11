@@ -153,10 +153,11 @@ export async function initDatabase(): Promise<void> {
     `CREATE INDEX IF NOT EXISTS idx_t_space_recent_access_user_previewed ON t_space_recent_access(user_id, previewed_at DESC)`
   )
 
-  // 插件安装记录
+  // 插件安装记录（按 user_id 隔离）
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_plugin_installation (
-      id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
+      id TEXT NOT NULL,
       application_id TEXT,
       name TEXT NOT NULL,
       version TEXT NOT NULL,
@@ -173,9 +174,11 @@ export async function initDatabase(): Promise<void> {
       signature_status TEXT NOT NULL DEFAULT 'unverified',
       development_path TEXT,
       manifest_json TEXT NOT NULL,
-      grants_json TEXT NOT NULL DEFAULT '[]'
+      grants_json TEXT NOT NULL DEFAULT '[]',
+      PRIMARY KEY (user_id, id)
     )
   `)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_plugin_installation_user_id ON t_plugin_installation(user_id)`)
 
   // 插件 KV 存储（按 plugin_id + user_id 隔离）
   await db.execute(`
@@ -190,9 +193,11 @@ export async function initDatabase(): Promise<void> {
   `)
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_plugin_kv_plugin_user ON t_plugin_kv(plugin_id, user_id)`)
 
+  // 工作助手会话（按 user_id 隔离）
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_work_conversation (
       id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
       title TEXT NOT NULL,
       runtime_id TEXT NOT NULL,
       provider_id TEXT NOT NULL DEFAULT '',
@@ -203,15 +208,14 @@ export async function initDatabase(): Promise<void> {
       updated_at TEXT NOT NULL
     )
   `)
-  const workConversationColumns = await db.select<Array<{ name: string }>>('PRAGMA table_info(t_work_conversation)')
-  if (!workConversationColumns.some((column) => column.name === 'scope_mode')) {
-    await db.execute("ALTER TABLE t_work_conversation ADD COLUMN scope_mode TEXT NOT NULL DEFAULT 'chat'")
-  }
-  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_work_conversation_updated ON t_work_conversation(updated_at DESC)`)
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS idx_t_work_conversation_user_updated ON t_work_conversation(user_id, updated_at DESC)`
+  )
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_work_message (
       id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
       conversation_id TEXT NOT NULL,
       role TEXT NOT NULL,
       content TEXT NOT NULL,
@@ -219,17 +223,14 @@ export async function initDatabase(): Promise<void> {
       created_at TEXT NOT NULL
     )
   `)
-  const workMessageColumns = await db.select<Array<{ name: string }>>('PRAGMA table_info(t_work_message)')
-  if (!workMessageColumns.some((column) => column.name === 'run_id')) {
-    await db.execute("ALTER TABLE t_work_message ADD COLUMN run_id TEXT NOT NULL DEFAULT ''")
-  }
   await db.execute(
-    `CREATE INDEX IF NOT EXISTS idx_t_work_message_conversation ON t_work_message(conversation_id, created_at ASC)`
+    `CREATE INDEX IF NOT EXISTS idx_t_work_message_user_conversation ON t_work_message(user_id, conversation_id, created_at ASC)`
   )
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_work_message_attachment (
       id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
       message_id TEXT NOT NULL,
       conversation_id TEXT NOT NULL,
       name TEXT NOT NULL,
@@ -241,12 +242,13 @@ export async function initDatabase(): Promise<void> {
     )
   `)
   await db.execute(
-    `CREATE INDEX IF NOT EXISTS idx_t_work_attachment_message ON t_work_message_attachment(message_id, created_at ASC)`
+    `CREATE INDEX IF NOT EXISTS idx_t_work_attachment_user_message ON t_work_message_attachment(user_id, message_id, created_at ASC)`
   )
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_work_step (
       id TEXT PRIMARY KEY NOT NULL,
+      user_id TEXT NOT NULL,
       conversation_id TEXT NOT NULL,
       run_id TEXT NOT NULL,
       title TEXT NOT NULL,
@@ -260,7 +262,7 @@ export async function initDatabase(): Promise<void> {
     )
   `)
   await db.execute(
-    `CREATE INDEX IF NOT EXISTS idx_t_work_step_run ON t_work_step(conversation_id, run_id, sequence ASC)`
+    `CREATE INDEX IF NOT EXISTS idx_t_work_step_user_run ON t_work_step(user_id, conversation_id, run_id, sequence ASC)`
   )
 }
 

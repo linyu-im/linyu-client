@@ -329,6 +329,7 @@
   import { useWorkAssistantStore } from '@/stores/app/workAssistant'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useWorkSessionStore, type WorkLiveMessage } from '@/stores/app/workSession'
+  import { useUserStore } from '@/stores/user/user'
   import type { WorkApprovalMode, WorkMode, WorkScopeMode } from '@/types/cmd/work'
   import { ensureNotificationPermission } from '@/utils/desktop/notification'
   import { createSetWinodw } from '@/utils/desktop/window'
@@ -341,6 +342,8 @@
   const store = useWorkAssistantStore()
   const sessionStore = useWorkSessionStore()
   const homeTabStore = useHomeTabStore()
+  const userStore = useUserStore()
+  const currentUserId = computed(() => userStore.userInfo.id || userStore.authInfo.userId || '')
   const activeView = ref<'chat' | 'skills'>('chat')
   const conversations = ref<WorkConversationRecord[]>([])
   const conversationId = ref('')
@@ -463,6 +466,7 @@
   }
   const createAttachment = (path: string, info: { size: number }): WorkAttachmentRecord => ({
     id: crypto.randomUUID(),
+    userId: currentUserId.value,
     messageId: '',
     conversationId: conversationId.value,
     name: fileName(path),
@@ -496,15 +500,20 @@
   const renameInputRef = ref<HTMLInputElement | null>(null)
 
   const loadHistory = async () => {
-    conversations.value = await listWorkConversations()
+    if (!currentUserId.value) {
+      conversations.value = []
+      return
+    }
+    conversations.value = await listWorkConversations(currentUserId.value)
   }
   const touchConversation = async (id: string, patch?: Partial<WorkConversationRecord>) => {
-    if (!id) return
+    if (!id || !currentUserId.value) return
     const index = conversations.value.findIndex((item) => item.id === id)
     if (index === -1) return
     const next: WorkConversationRecord = {
       ...conversations.value[index],
       ...patch,
+      userId: currentUserId.value,
       updatedAt: new Date().toISOString()
     }
     conversations.value = [next, ...conversations.value.filter((item) => item.id !== id)]
@@ -544,7 +553,7 @@
     const index = conversations.value.findIndex((item) => item.id === id)
     if (index === -1 || conversations.value[index].title === title) return
 
-    const next: WorkConversationRecord = { ...conversations.value[index], title }
+    const next: WorkConversationRecord = { ...conversations.value[index], title, userId: currentUserId.value }
     conversations.value = conversations.value.map((item) => (item.id === id ? next : item))
     await upsertWorkConversation(next)
     if (sessionStore.conversationId === id) {
@@ -584,7 +593,10 @@
       messages.value = []
       steps.value = []
     } else {
-      const [messageRecords, stepRecords] = await Promise.all([listWorkMessages(record.id), listWorkSteps(record.id)])
+      const [messageRecords, stepRecords] = await Promise.all([
+        listWorkMessages(currentUserId.value, record.id),
+        listWorkSteps(currentUserId.value, record.id)
+      ])
       messages.value = messageRecords.map((item) => ({
         id: item.id,
         role: item.role,
@@ -608,7 +620,7 @@
       await sessionStore.closeBoundSession(store.activeRuntimeId)
       sessionStore.clearRunFlags({ keepSession: false, clearLive: true })
     }
-    await deleteWorkConversation(record.id)
+    await deleteWorkConversation(currentUserId.value, record.id)
     conversations.value = conversations.value.filter((item) => item.id !== record.id)
     if (!wasActive) return
     const next = conversations.value[0]
@@ -676,10 +688,12 @@
   }
   const createConversationLocally = (text: string) => {
     if (conversationId.value) return null
+    if (!currentUserId.value) throw new Error('WORK_USER_REQUIRED')
     const now = new Date().toISOString()
     conversationId.value = crypto.randomUUID()
     const record: WorkConversationRecord = {
       id: conversationId.value,
+      userId: currentUserId.value,
       title: text.slice(0, 28),
       runtimeId: store.activeRuntimeId,
       providerId: store.activeProviderId || '',
@@ -695,11 +709,15 @@
   const persistChatMessage = (message: ChatMessage, targetConversationId = conversationId.value) =>
     saveWorkMessage({
       id: message.id,
+      userId: currentUserId.value,
       conversationId: targetConversationId,
       role: message.role,
       content: message.content,
       runId: message.runId,
-      attachments: message.attachments,
+      attachments: message.attachments.map((attachment) => ({
+        ...attachment,
+        userId: currentUserId.value
+      })),
       createdAt: message.createdAt
     })
   const runTitle = (targetConversationId: string) =>
@@ -731,6 +749,7 @@
     const userMessageId = crypto.randomUUID()
     const sendingAttachments = attachments.value.map((attachment) => ({
       ...attachment,
+      userId: currentUserId.value,
       messageId: userMessageId,
       conversationId: targetConversationId
     }))
@@ -758,6 +777,7 @@
     ).map((item) => ({ ...item, streaming: false }))
     const startingStep: WorkStepRecord = {
       id: `${runId}:start`,
+      userId: currentUserId.value,
       conversationId: targetConversationId,
       runId,
       title: t('ai.work.run.preparing'),
@@ -1348,9 +1368,9 @@
       width: 100%;
       margin-bottom: 14px;
       padding: 14px 16px;
-      border: 1px solid color-mix(in srgb, var(--yellow) 30%, var(--border-color));
+      border: 1px solid color-mix(in srgb, var(--yellow) 18%, var(--border-color));
       border-radius: 10px;
-      background: color-mix(in srgb, var(--yellow) 6%, var(--card-bg-color));
+      background: color-mix(in srgb, var(--yellow) 9%, var(--bg-primary-color));
       box-sizing: border-box;
     }
     &__setup-card > div {
@@ -1474,9 +1494,9 @@
       max-width: 820px;
       margin: 0 auto 7px;
       padding: 8px 10px;
-      border: 1px solid color-mix(in srgb, var(--yellow) 35%, var(--border-color));
+      border: 1px solid color-mix(in srgb, var(--yellow) 20%, var(--border-color));
       border-radius: 8px;
-      background: color-mix(in srgb, var(--yellow) 8%, var(--card-bg-color));
+      background: color-mix(in srgb, var(--yellow) 10%, var(--bg-primary-color));
       color: var(--text-secondary-color);
       font-size: 10px;
     }

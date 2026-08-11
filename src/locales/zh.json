@@ -463,6 +463,7 @@
     "emotion": "心情",
     "region": "地区",
     "friendProfile": "朋友资料",
+    "friendProfileEmpty": "这里有点安静，暂时没有内容。",
     "voiceChat": "语音聊天",
     "videoChat": "视频聊天",
     "addFriend": "添加好友",

@@ -2,6 +2,7 @@ import { getDb } from '.'
 import type { InstalledPlugin, PluginManifest, PluginPermission } from '@/types/plugin'
 
 interface PluginInstallationRow {
+  userId: string
   id: string
   applicationId: string | null
   name: string
@@ -23,6 +24,7 @@ interface PluginInstallationRow {
 }
 
 const SELECT_FIELDS = `
+  user_id AS userId,
   id,
   application_id AS applicationId,
   name,
@@ -52,6 +54,7 @@ const parseJson = <T>(value: string, fallback: T): T => {
 }
 
 const rowToPlugin = (row: PluginInstallationRow): InstalledPlugin => ({
+  userId: row.userId,
   id: row.id,
   applicationId: row.applicationId || undefined,
   name: row.name,
@@ -91,19 +94,23 @@ const rowToPlugin = (row: PluginInstallationRow): InstalledPlugin => ({
   grantedPermissions: parseJson<PluginPermission[]>(row.grantsJson, [])
 })
 
-export async function listPlugins(): Promise<InstalledPlugin[]> {
+export async function listPlugins(userId: string): Promise<InstalledPlugin[]> {
   const db = await getDb()
   const rows = await db.select<PluginInstallationRow[]>(
-    `SELECT ${SELECT_FIELDS} FROM t_plugin_installation ORDER BY installed_at DESC`
+    `SELECT ${SELECT_FIELDS} FROM t_plugin_installation
+     WHERE user_id = ?
+     ORDER BY installed_at DESC`,
+    [userId]
   )
   return rows.map(rowToPlugin)
 }
 
-export async function getPlugin(pluginId: string): Promise<InstalledPlugin | null> {
+export async function getPlugin(userId: string, pluginId: string): Promise<InstalledPlugin | null> {
   const db = await getDb()
   const rows = await db.select<PluginInstallationRow[]>(
-    `SELECT ${SELECT_FIELDS} FROM t_plugin_installation WHERE id = ? LIMIT 1`,
-    [pluginId]
+    `SELECT ${SELECT_FIELDS} FROM t_plugin_installation
+     WHERE user_id = ? AND id = ? LIMIT 1`,
+    [userId, pluginId]
   )
   return rows[0] ? rowToPlugin(rows[0]) : null
 }
@@ -112,11 +119,11 @@ export async function upsertPlugin(record: InstalledPlugin): Promise<void> {
   const db = await getDb()
   await db.execute(
     `INSERT INTO t_plugin_installation (
-      id, application_id, name, version, description, author, icon_url, tags_json,
+      user_id, id, application_id, name, version, description, author, icon_url, tags_json,
       source, enabled, installed_at, updated_at, root_path, package_sha256,
       signature_status, development_path, manifest_json, grants_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(user_id, id) DO UPDATE SET
       application_id = excluded.application_id,
       name = excluded.name,
       version = excluded.version,
@@ -134,6 +141,7 @@ export async function upsertPlugin(record: InstalledPlugin): Promise<void> {
       manifest_json = excluded.manifest_json,
       grants_json = excluded.grants_json`,
     [
+      record.userId,
       record.id,
       record.applicationId || null,
       record.name,
@@ -156,21 +164,21 @@ export async function upsertPlugin(record: InstalledPlugin): Promise<void> {
   )
 }
 
-export async function setPluginEnabled(pluginId: string, enabled: boolean): Promise<boolean> {
+export async function setPluginEnabled(userId: string, pluginId: string, enabled: boolean): Promise<boolean> {
   const db = await getDb()
-  const result = await db.execute(`UPDATE t_plugin_installation SET enabled = ?, updated_at = ? WHERE id = ?`, [
-    enabled ? 1 : 0,
-    String(Date.now()),
-    pluginId
-  ])
+  const result = await db.execute(
+    `UPDATE t_plugin_installation SET enabled = ?, updated_at = ?
+     WHERE user_id = ? AND id = ?`,
+    [enabled ? 1 : 0, String(Date.now()), userId, pluginId]
+  )
   return (result.rowsAffected || 0) > 0
 }
 
-export async function removePlugin(pluginId: string, deleteData: boolean): Promise<void> {
+export async function removePlugin(userId: string, pluginId: string, deleteData: boolean): Promise<void> {
   const db = await getDb()
-  await db.execute(`DELETE FROM t_plugin_installation WHERE id = ?`, [pluginId])
+  await db.execute(`DELETE FROM t_plugin_installation WHERE user_id = ? AND id = ?`, [userId, pluginId])
   if (deleteData) {
-    await db.execute(`DELETE FROM t_plugin_kv WHERE plugin_id = ?`, [pluginId])
+    await db.execute(`DELETE FROM t_plugin_kv WHERE plugin_id = ? AND user_id = ?`, [pluginId, userId])
   }
 }
 

@@ -83,6 +83,7 @@ export interface PluginManifest {
 
 export interface InstalledPlugin {
   id: string
+  userId: string
   applicationId?: string
   name: string
   version: string

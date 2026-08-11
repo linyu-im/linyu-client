@@ -33,6 +33,9 @@
 
       <div class="profile-card__section-title">{{ t('avatarProfile.friendProfile') }}</div>
       <div class="profile-card__meta">
+        <div v-if="!hasFriendProfileContent" class="profile-card__empty">
+          {{ t('avatarProfile.friendProfileEmpty') }}
+        </div>
         <div v-if="emotionName" class="profile-card__row profile-card__row--emotion">
           <span class="profile-card__row-label">{{ t('avatarProfile.emotion') }}</span>
           <div class="profile-card__value-slot">
@@ -231,6 +234,15 @@
       .slice(0, 4)
   })
 
+  const hasFriendProfileContent = computed(
+    () =>
+      !!emotionName.value ||
+      !!remarkText.value ||
+      !!tagText.value ||
+      !!signatureText.value ||
+      momentThumbs.value.length > 0
+  )
+
   const genderClass = computed(() => {
     const g = props.userInfo?.gender?.trim().toLowerCase()
     if (g === '?' || g === 'female' || g === 'f') return 'is-female'
@@ -359,6 +371,16 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      min-height: 28px;
+    }
+
+    &__empty {
+      padding: 4px 0 2px;
+      font-size: 12px;
+      line-height: 18px;
+      color: var(--text-muted-color);
+      text-align: center;
+      user-select: none;
     }
 
     &__row {

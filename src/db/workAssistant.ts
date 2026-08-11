@@ -2,6 +2,7 @@ import { getDb } from './index'
 
 export interface WorkConversationRecord {
   id: string
+  userId: string
   title: string
   runtimeId: string
   providerId: string
@@ -14,6 +15,7 @@ export interface WorkConversationRecord {
 
 export interface WorkMessageRecord {
   id: string
+  userId: string
   conversationId: string
   role: 'user' | 'assistant'
   content: string
@@ -24,6 +26,7 @@ export interface WorkMessageRecord {
 
 export interface WorkAttachmentRecord {
   id: string
+  userId: string
   messageId: string
   conversationId: string
   name: string
@@ -36,6 +39,7 @@ export interface WorkAttachmentRecord {
 
 export interface WorkStepRecord {
   id: string
+  userId: string
   conversationId: string
   runId: string
   title: string
@@ -48,32 +52,39 @@ export interface WorkStepRecord {
   completedAt: string
 }
 
-export async function listWorkConversations(): Promise<WorkConversationRecord[]> {
+export async function listWorkConversations(userId: string): Promise<WorkConversationRecord[]> {
   const db = await getDb()
-  return db.select<WorkConversationRecord[]>(`
-    SELECT id, title, runtime_id AS runtimeId, provider_id AS providerId, model,
+  return db.select<WorkConversationRecord[]>(
+    `
+    SELECT id, user_id AS userId, title, runtime_id AS runtimeId, provider_id AS providerId, model,
       workspace_path AS workspacePath, scope_mode AS scopeMode,
       created_at AS createdAt, updated_at AS updatedAt
     FROM t_work_conversation
+    WHERE user_id = ?
     ORDER BY COALESCE(
-      (SELECT MAX(m.created_at) FROM t_work_message m WHERE m.conversation_id = t_work_conversation.id),
+      (SELECT MAX(m.created_at) FROM t_work_message m
+       WHERE m.conversation_id = t_work_conversation.id AND m.user_id = t_work_conversation.user_id),
       updated_at
     ) DESC
-  `)
+  `,
+    [userId]
+  )
 }
 
 export async function upsertWorkConversation(record: WorkConversationRecord): Promise<void> {
   const db = await getDb()
   await db.execute(
     `INSERT INTO t_work_conversation
-      (id, title, runtime_id, provider_id, model, workspace_path, scope_mode, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, user_id, title, runtime_id, provider_id, model, workspace_path, scope_mode, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET title=excluded.title, runtime_id=excluded.runtime_id,
       provider_id=excluded.provider_id, model=excluded.model, workspace_path=excluded.workspace_path,
       scope_mode=excluded.scope_mode,
-      updated_at=excluded.updated_at`,
+      updated_at=excluded.updated_at
+     WHERE t_work_conversation.user_id = excluded.user_id`,
     [
       record.id,
+      record.userId,
       record.title,
       record.runtimeId,
       record.providerId,
@@ -86,20 +97,20 @@ export async function upsertWorkConversation(record: WorkConversationRecord): Pr
   )
 }
 
-export async function listWorkMessages(conversationId: string): Promise<WorkMessageRecord[]> {
+export async function listWorkMessages(userId: string, conversationId: string): Promise<WorkMessageRecord[]> {
   const db = await getDb()
   const messages = await db.select<Array<Omit<WorkMessageRecord, 'attachments'>>>(
     `
-    SELECT id, conversation_id AS conversationId, role, content, run_id AS runId, created_at AS createdAt
-    FROM t_work_message WHERE conversation_id = ? ORDER BY created_at ASC
+    SELECT id, user_id AS userId, conversation_id AS conversationId, role, content, run_id AS runId, created_at AS createdAt
+    FROM t_work_message WHERE user_id = ? AND conversation_id = ? ORDER BY created_at ASC
   `,
-    [conversationId]
+    [userId, conversationId]
   )
   const attachments = await db.select<WorkAttachmentRecord[]>(
-    `SELECT id, message_id AS messageId, conversation_id AS conversationId, name, path,
+    `SELECT id, user_id AS userId, message_id AS messageId, conversation_id AS conversationId, name, path,
       mime_type AS mimeType, size, category, created_at AS createdAt
-     FROM t_work_message_attachment WHERE conversation_id = ? ORDER BY created_at ASC`,
-    [conversationId]
+     FROM t_work_message_attachment WHERE user_id = ? AND conversation_id = ? ORDER BY created_at ASC`,
+    [userId, conversationId]
   )
   return messages.map((message) => ({
     ...message,
@@ -110,18 +121,22 @@ export async function listWorkMessages(conversationId: string): Promise<WorkMess
 export async function saveWorkMessage(record: WorkMessageRecord): Promise<void> {
   const db = await getDb()
   await db.execute(
-    `INSERT OR REPLACE INTO t_work_message (id, conversation_id, role, content, run_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [record.id, record.conversationId, record.role, record.content, record.runId, record.createdAt]
+    `INSERT OR REPLACE INTO t_work_message (id, user_id, conversation_id, role, content, run_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [record.id, record.userId, record.conversationId, record.role, record.content, record.runId, record.createdAt]
   )
-  await db.execute('DELETE FROM t_work_message_attachment WHERE message_id = ?', [record.id])
+  await db.execute('DELETE FROM t_work_message_attachment WHERE user_id = ? AND message_id = ?', [
+    record.userId,
+    record.id
+  ])
   for (const attachment of record.attachments) {
     await db.execute(
       `INSERT INTO t_work_message_attachment
-        (id, message_id, conversation_id, name, path, mime_type, size, category, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, user_id, message_id, conversation_id, name, path, mime_type, size, category, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         attachment.id,
+        record.userId,
         record.id,
         record.conversationId,
         attachment.name,
@@ -135,13 +150,13 @@ export async function saveWorkMessage(record: WorkMessageRecord): Promise<void> 
   }
 }
 
-export async function listWorkSteps(conversationId: string): Promise<WorkStepRecord[]> {
+export async function listWorkSteps(userId: string, conversationId: string): Promise<WorkStepRecord[]> {
   const db = await getDb()
   return db.select<WorkStepRecord[]>(
-    `SELECT id, conversation_id AS conversationId, run_id AS runId, title, kind, status, detail,
+    `SELECT id, user_id AS userId, conversation_id AS conversationId, run_id AS runId, title, kind, status, detail,
       payload_json AS payloadJson, sequence, started_at AS startedAt, completed_at AS completedAt
-     FROM t_work_step WHERE conversation_id = ? ORDER BY sequence ASC, started_at ASC`,
-    [conversationId]
+     FROM t_work_step WHERE user_id = ? AND conversation_id = ? ORDER BY sequence ASC, started_at ASC`,
+    [userId, conversationId]
   )
 }
 
@@ -149,13 +164,15 @@ export async function saveWorkStep(record: WorkStepRecord): Promise<void> {
   const db = await getDb()
   await db.execute(
     `INSERT INTO t_work_step
-      (id, conversation_id, run_id, title, kind, status, detail, payload_json, sequence, started_at, completed_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, user_id, conversation_id, run_id, title, kind, status, detail, payload_json, sequence, started_at, completed_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET title=excluded.title, kind=excluded.kind, status=excluded.status,
       detail=excluded.detail, payload_json=excluded.payload_json, sequence=excluded.sequence,
-      completed_at=excluded.completed_at`,
+      completed_at=excluded.completed_at
+     WHERE t_work_step.user_id = excluded.user_id`,
     [
       record.id,
+      record.userId,
       record.conversationId,
       record.runId,
       record.title,
@@ -170,10 +187,10 @@ export async function saveWorkStep(record: WorkStepRecord): Promise<void> {
   )
 }
 
-export async function deleteWorkConversation(id: string): Promise<void> {
+export async function deleteWorkConversation(userId: string, id: string): Promise<void> {
   const db = await getDb()
-  await db.execute('DELETE FROM t_work_step WHERE conversation_id = ?', [id])
-  await db.execute('DELETE FROM t_work_message_attachment WHERE conversation_id = ?', [id])
-  await db.execute('DELETE FROM t_work_message WHERE conversation_id = ?', [id])
-  await db.execute('DELETE FROM t_work_conversation WHERE id = ?', [id])
+  await db.execute('DELETE FROM t_work_step WHERE user_id = ? AND conversation_id = ?', [userId, id])
+  await db.execute('DELETE FROM t_work_message_attachment WHERE user_id = ? AND conversation_id = ?', [userId, id])
+  await db.execute('DELETE FROM t_work_message WHERE user_id = ? AND conversation_id = ?', [userId, id])
+  await db.execute('DELETE FROM t_work_conversation WHERE user_id = ? AND id = ?', [userId, id])
 }

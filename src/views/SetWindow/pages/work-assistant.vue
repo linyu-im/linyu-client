@@ -70,7 +70,7 @@
             </SettingRow>
           </SettingCard>
         </div>
-        <n-empty v-else :description="t('settings.work.provider.empty')" />
+        <div v-else class="work-settings__empty">{{ t('settings.work.provider.empty') }}</div>
       </n-tab-pane>
 
       <n-tab-pane name="model" :tab="t('settings.work.tabs.model')">
@@ -136,6 +136,7 @@
         class="work-settings__modal"
         :style="{
           width: 'min(620px, calc(100vw - 48px))',
+          maxHeight: 'min(640px, calc(100vh - 96px))',
           backgroundColor: 'var(--bg-primary-color)',
           color: 'var(--text-color)'
         }"
@@ -144,55 +145,67 @@
         role="dialog"
         :title="t('settings.work.provider.editorTitle')"
         @close="showProviderModal = false">
-        <n-form label-placement="top">
-          <div class="work-settings__preset-row">
-            <n-button size="tiny" @click="applyPreset('deepseek')">DeepSeek</n-button>
-            <n-button size="tiny" @click="applyPreset('openai')">OpenAI Compatible</n-button>
-            <n-button size="tiny" @click="applyPreset('anthropic')">Anthropic</n-button>
-          </div>
-          <n-form-item :label="t('settings.work.provider.name')">
-            <n-input v-model:value="providerForm.name" />
-          </n-form-item>
-          <div class="work-settings__form-grid">
-            <n-form-item :label="t('settings.work.provider.id')">
-              <n-input class="work-settings__provider-id" v-model:value="providerForm.id" :disabled="editingProvider" />
-            </n-form-item>
-            <n-form-item :label="t('settings.work.provider.kind')">
-              <n-select v-model:value="providerForm.kind" :options="kindOptions" />
-            </n-form-item>
-          </div>
-          <n-form-item :label="t('settings.work.provider.baseUrl')">
-            <n-input v-model:value="providerForm.baseUrl" />
-          </n-form-item>
-          <n-form-item :label="t('settings.work.provider.apiKey')">
-            <n-input
-              v-model:value="providerForm.apiKey"
-              type="password"
-              show-password-on="click"
-              :placeholder="apiKeyPlaceholder" />
-          </n-form-item>
-          <n-form-item :label="t('settings.work.provider.models')">
-            <n-dynamic-tags v-model:value="providerForm.models" />
-          </n-form-item>
-          <n-form-item :label="t('settings.work.provider.defaultModel')">
-            <n-select v-model:value="providerForm.defaultModel" :options="providerModelOptions" tag filterable />
-          </n-form-item>
-          <div v-if="providerTestMessage" class="work-settings__test-result" :class="{ success: providerTestSuccess }">
-            <span>
-              <i />
-              {{ providerTestMessage }}
-            </span>
-          </div>
-        </n-form>
+        <div class="work-settings__modal-body">
+          <n-scrollbar class="work-settings__modal-scroll" :style="{ maxHeight: 'min(460px, calc(100vh - 240px))' }">
+            <div class="work-settings__modal-scroll-inner">
+              <n-form label-placement="top">
+                <div class="work-settings__preset-row">
+                  <n-button size="tiny" @click="applyPreset('deepseek')">DeepSeek</n-button>
+                  <n-button size="tiny" @click="applyPreset('openai')">OpenAI Compatible</n-button>
+                  <n-button size="tiny" @click="applyPreset('anthropic')">Anthropic</n-button>
+                </div>
+                <n-form-item :label="t('settings.work.provider.name')">
+                  <n-input v-model:value="providerForm.name" />
+                </n-form-item>
+                <div class="work-settings__form-grid">
+                  <n-form-item :label="t('settings.work.provider.id')">
+                    <n-input
+                      class="work-settings__provider-id"
+                      v-model:value="providerForm.id"
+                      :disabled="editingProvider" />
+                  </n-form-item>
+                  <n-form-item :label="t('settings.work.provider.kind')">
+                    <n-select v-model:value="providerForm.kind" :options="kindOptions" />
+                  </n-form-item>
+                </div>
+                <n-form-item :label="t('settings.work.provider.baseUrl')">
+                  <n-input v-model:value="providerForm.baseUrl" />
+                </n-form-item>
+                <n-form-item :label="t('settings.work.provider.apiKey')">
+                  <n-input
+                    v-model:value="providerForm.apiKey"
+                    type="password"
+                    show-password-on="click"
+                    :placeholder="apiKeyPlaceholder" />
+                </n-form-item>
+                <n-form-item :label="t('settings.work.provider.models')">
+                  <n-dynamic-tags v-model:value="providerForm.models" />
+                </n-form-item>
+                <n-form-item :label="t('settings.work.provider.defaultModel')">
+                  <n-select v-model:value="providerForm.defaultModel" :options="providerModelOptions" tag filterable />
+                </n-form-item>
+              </n-form>
+            </div>
+          </n-scrollbar>
+        </div>
         <template #footer>
           <div class="work-settings__modal-actions">
-            <n-button @click="showProviderModal = false">{{ t('common.cancel') }}</n-button>
-            <n-button :loading="testingProvider" :disabled="savingProvider" @click="onTestProvider">
-              {{ t('settings.work.provider.test') }}
-            </n-button>
-            <n-button type="primary" :loading="savingProvider" @click="onSaveProvider">
-              {{ t('common.save') }}
-            </n-button>
+            <div
+              v-if="providerTestMessage"
+              class="work-settings__test-result"
+              :class="{ success: providerTestSuccess }">
+              <i />
+              <span>{{ providerTestMessage }}</span>
+            </div>
+            <div class="work-settings__modal-actions-btns">
+              <n-button @click="showProviderModal = false">{{ t('common.cancel') }}</n-button>
+              <n-button :loading="testingProvider" :disabled="savingProvider" @click="onTestProvider">
+                {{ t('settings.work.provider.test') }}
+              </n-button>
+              <n-button type="primary" :loading="savingProvider" @click="onSaveProvider">
+                {{ t('common.save') }}
+              </n-button>
+            </div>
           </div>
         </template>
       </n-card>
@@ -463,6 +476,18 @@
       flex-direction: column;
       gap: 10px;
     }
+    &__empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      padding: 24px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-muted-color);
+      text-align: center;
+      user-select: none;
+    }
     &__provider-action {
       --n-text-color: var(--primary-color) !important;
       --n-text-color-hover: var(--primary-soft-color) !important;
@@ -480,14 +505,34 @@
     }
     &__modal {
       width: min(620px, 90vw);
+      max-height: min(640px, calc(100vh - 96px));
+      overflow: hidden;
+
       :deep(.n-form-item-label) {
         color: var(--text-color);
       }
+
       :deep(.n-input.n-input--disabled) {
         --n-color-disabled: var(--input-soft-bg) !important;
         --n-text-color-disabled: var(--text-secondary-color) !important;
         --n-border-disabled: 1px solid var(--border-color) !important;
       }
+    }
+
+    &__modal-body {
+      max-height: min(460px, calc(100vh - 240px));
+      overflow: hidden;
+    }
+
+    &__modal-scroll {
+      :deep(.n-scrollbar-rail) {
+        right: 2px;
+      }
+    }
+
+    &__modal-scroll-inner {
+      padding-right: 8px;
+      box-sizing: border-box;
     }
     &__preset-row {
       display: flex;
@@ -501,34 +546,52 @@
     }
     &__modal-actions {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+    }
+
+    &__modal-actions-btns {
+      display: flex;
+      flex-shrink: 0;
       justify-content: flex-end;
       gap: 8px;
+      margin-left: auto;
     }
+
     &__test-result {
       display: flex;
       align-items: center;
-      padding: 9px 11px;
-      border: 1px solid color-mix(in srgb, var(--red) 30%, var(--border-color));
-      border-radius: 7px;
-      background: color-mix(in srgb, var(--red) 7%, var(--bg-secondary-color));
-      color: var(--text-secondary-color);
-      font-size: 11px;
-    }
-    &__test-result span {
-      display: flex;
-      align-items: center;
       gap: 7px;
+      min-width: 0;
+      flex: 1;
+      padding: 0 2px;
+      color: var(--text-secondary-color);
+      font-size: 12px;
+      line-height: 1.4;
+      user-select: none;
     }
+
+    &__test-result span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     &__test-result i {
+      flex-shrink: 0;
       width: 7px;
       height: 7px;
       border-radius: 50%;
       background: var(--red);
     }
+
     &__test-result.success {
-      border-color: color-mix(in srgb, var(--primary-color) 42%, var(--border-color));
-      background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-secondary-color));
+      color: var(--primary-color);
     }
+
     &__test-result.success i {
       background: var(--primary-color);
     }

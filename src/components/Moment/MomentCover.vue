@@ -1,7 +1,7 @@
 <template>
   <div class="moment-cover">
     <n-spin :show="loading || uploading" class="moment-cover__spin">
-      <img class="moment-cover__img" :src="coverSrc" alt="" />
+      <img class="moment-cover__img" :src="coverSrc" alt="" @error="onCoverError" />
       <div class="moment-cover__overlay" />
 
       <div v-if="userInfo" class="moment-cover__info">
@@ -63,10 +63,13 @@
   const peerInfoStore = usePeerInfoStore()
   const userStore = useUserStore()
 
+  const DEFAULT_COVER = '/moment-bg.png'
+
   const uploading = ref(false)
   const settingLoading = ref(false)
   const bgUrl = ref('')
   const coverCacheKey = ref(0)
+  const coverFailed = ref(false)
 
   const userInfo = computed(() => peerInfoStore.read(props.userId, 'user') as User | null)
   const isOwner = computed(() => !!props.userId && props.userId === userStore.userInfo.id)
@@ -78,13 +81,24 @@
   }
 
   const coverSrc = computed(() => {
-    if (!bgUrl.value) return ''
+    if (coverFailed.value || !bgUrl.value) return DEFAULT_COVER
     return coverCacheKey.value > 0 ? bustCache(bgUrl.value, coverCacheKey.value) : bgUrl.value
   })
 
+  const onCoverError = () => {
+    if (coverSrc.value !== DEFAULT_COVER) {
+      coverFailed.value = true
+    }
+  }
+
+  const applyBgUrl = (url: string) => {
+    coverFailed.value = false
+    bgUrl.value = url || ''
+  }
+
   const fetchSetting = () => {
     if (!props.userId) {
-      bgUrl.value = ''
+      applyBgUrl('')
       return
     }
 
@@ -93,10 +107,14 @@
       .getSetting({ userId: props.userId })
       .then((res) => {
         if (res.code === 0 && res.data) {
-          bgUrl.value = res.data.bgUrl || ''
+          applyBgUrl(res.data.bgUrl || '')
           return
         }
+        applyBgUrl('')
         window.$message.error(res.msg)
+      })
+      .catch(() => {
+        applyBgUrl('')
       })
       .finally(() => {
         settingLoading.value = false
@@ -123,7 +141,7 @@
           if (res.code === 0) {
             return momentApi.getSetting({ userId: props.userId }).then((settingRes) => {
               if (settingRes.code === 0 && settingRes.data) {
-                bgUrl.value = settingRes.data.bgUrl || ''
+                applyBgUrl(settingRes.data.bgUrl || '')
                 coverCacheKey.value = Date.now()
                 window.$message.success(t('moment.cover.uploadSuccess'))
                 return
