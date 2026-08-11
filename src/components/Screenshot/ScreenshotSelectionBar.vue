@@ -1,5 +1,5 @@
 <template>
-  <div class="screenshot-selection-bar" @mousedown.stop>
+  <div class="screenshot-selection-bar" @pointerdown.stop @mousedown.stop>
     <span class="screenshot-selection-bar__size">
       {{ t('screenshot.size', { width: Math.round(width), height: Math.round(height) }) }}
     </span>

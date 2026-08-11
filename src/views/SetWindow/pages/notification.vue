@@ -3,25 +3,31 @@
     <div class="settings-page__section-title">{{ t('settings.notification.soundSection') }}</div>
     <SettingCard>
       <SettingRow :label="t('settings.notification.messageSound')">
-        <n-switch v-model:value="appSettings.notifications.messageSound" />
+        <n-switch
+          :value="appSettings.notifications.messageSound"
+          @update:value="(v) => appSettings.setNotificationFlag('messageSound', v)" />
       </SettingRow>
       <SettingRow :label="t('settings.notification.callSound')">
-        <n-switch v-model:value="appSettings.notifications.callSound" />
+        <n-switch
+          :value="appSettings.notifications.callSound"
+          @update:value="(v) => appSettings.setNotificationFlag('callSound', v)" />
       </SettingRow>
     </SettingCard>
 
     <div class="settings-page__section-title">{{ t('settings.notification.badgeSection') }}</div>
     <SettingCard>
-      <SettingRow :label="t('settings.notification.badgeMoments')">
+      <SettingRow v-for="item in badgeOptions" :key="item.slot" :label="t(item.labelKey)">
         <template #label>
           <div class="settings-page__label-with-icon">
             <svg class="size-16px" aria-hidden="true">
-              <use href="#moment"></use>
+              <use :href="item.icon"></use>
             </svg>
-            <span>{{ t('settings.notification.badgeMoments') }}</span>
+            <span>{{ t(item.labelKey) }}</span>
           </div>
         </template>
-        <n-switch v-model:value="appSettings.notifications.badgeMoments" />
+        <n-switch
+          :value="appSettings.notifications.badges[item.slot]"
+          @update:value="(v) => appSettings.setBadgeEnabled(item.slot, v)" />
       </SettingRow>
     </SettingCard>
 
@@ -30,7 +36,9 @@
       <SettingRow
         :label="t('settings.notification.momentsInteraction')"
         :desc="t('settings.notification.momentsInteractionDesc')">
-        <n-switch v-model:value="appSettings.notifications.momentsInteraction" />
+        <n-switch
+          :value="appSettings.notifications.momentsInteraction"
+          @update:value="(v) => appSettings.setNotificationFlag('momentsInteraction', v)" />
       </SettingRow>
     </SettingCard>
   </div>
@@ -38,12 +46,20 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n'
-  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useAppSettingsStore, type NotificationBadgeSlot } from '@/stores/app/appSettings'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
 
   const { t } = useI18n()
   const appSettings = useAppSettingsStore()
+  appSettings.ensureNotificationBadges()
+
+  const badgeOptions: Array<{ slot: NotificationBadgeSlot; labelKey: string; icon: string }> = [
+    { slot: 'moment', labelKey: 'settings.notification.badgeMoment', icon: '#moment' },
+    { slot: 'ai', labelKey: 'settings.notification.badgeAi', icon: '#ai' },
+    { slot: 'drive', labelKey: 'settings.notification.badgeDrive', icon: '#drive' },
+    { slot: 'application', labelKey: 'settings.notification.badgeApplication', icon: '#application' }
+  ]
 </script>
 
 <style scoped lang="scss">

@@ -1,7 +1,8 @@
 <template>
   <div class="home">
+    <SessionLockOverlay v-if="sessionLock.locked" />
     <!-- 顶部 -->
-    <ToolBar class="home__header" @maximized="(is) => (isMaximize = is)">
+    <ToolBar v-show="!sessionLock.locked" class="home__header" @maximized="(is) => (isMaximize = is)">
       <div class="w-50px flex items-center justify-center">
         <div
           class="text-12px m-l-2 font-900 select-none bg-gradient-to-r from-[var(--primary-color)] to-[var(--primary-strong-color)] bg-clip-text text-transparent">
@@ -33,14 +34,14 @@
       </div>
     </ToolBar>
     <!-- 主体 -->
-    <div class="home__layout">
+    <div v-show="!sessionLock.locked" class="home__layout">
       <!-- 左侧 -->
       <ToolBar class="home__sider" @maximized="(is) => (isMaximize = is)">
         <div class="flex flex-col gap-8px">
           <n-popover v-for="item in menuOptions" :key="item.id" :show-arrow="false" placement="right" trigger="hover">
             <template #trigger>
               <n-badge
-                :show="homeNavBadgeStore.counts[item.id] > 0"
+                :show="homeNavBadgeStore.shouldShowBadge(item.id)"
                 dot
                 :color="'var(--red)'"
                 class="home__tab-badge"
@@ -67,7 +68,7 @@
             @select="onMoreMenuSelect">
             <n-popover :z-index="99" :show-arrow="false" placement="right" trigger="hover">
               <template #trigger>
-                <n-badge :show="homeNavBadgeStore.counts.more > 0" dot :color="'var(--red)'" :offset="[-2, 2]">
+                <n-badge :show="homeNavBadgeStore.shouldShowBadge('more')" dot :color="'var(--red)'" :offset="[-2, 2]">
                   <SvgIconButton :size="34" :radius="5" href="#list" icon-size="22px" />
                 </n-badge>
               </template>
@@ -91,12 +92,15 @@
 
 <script setup lang="ts">
   import UpdateModal from '@/components/Modal/UpdateModal.vue'
+  import SessionLockOverlay from '@/components/SessionLockOverlay.vue'
   import { dismissTopEscapeOverlay } from '@/composables/useEscapeOverlayStack'
   import { userApi } from '@/api'
   import { HOME_PAGE_NAMES, prefetchHomePages } from '@/router/home'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import { useHomeNavBadgeStore } from '@/stores/app/homeNavBadge'
+  import { useSessionLockStore } from '@/stores/app/sessionLock'
+  import { useShortcutConflictStore } from '@/stores/app/shortcutConflict'
   import { HOME_TAB_NAVIGATE_EVENT } from '@/constants/event'
   import { LOGIN_WINDOW_LABEL } from '@/constants/window'
   import { useHomeTabStore, type HomeTabId, type HomeTabNavigatePayload } from '@/stores/app/homeTab'
@@ -118,6 +122,7 @@
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
   } from '@/utils/desktop/window'
+  import { disposeGlobalShortcuts, initGlobalShortcuts } from '@/utils/desktop/shortcuts'
   import { openSearchChatRecord } from '@/utils/message/searchChatRecord'
   import { ensureNotificationActionListener, stopNotificationActionListener } from '@/utils/desktop/notification'
   import { listen } from '@tauri-apps/api/event'
@@ -128,14 +133,15 @@
 
   const userStore = useUserStore()
   const appSettings = useAppSettingsStore()
+  const sessionLock = useSessionLockStore()
   const homeTabStore = useHomeTabStore()
   const homeNavBadgeStore = useHomeNavBadgeStore()
+  const shortcutConflictStore = useShortcutConflictStore()
   const appUpdateStore = useAppUpdateStore()
   const chatStore = useChatStore()
   const spaceUploadStore = useSpaceUploadStore()
   const spaceDownloadStore = useSpaceDownloadStore()
   const { needUpdate, needForce } = storeToRefs(appUpdateStore)
-  const { counts: navBadgeCounts } = storeToRefs(homeNavBadgeStore)
 
   initOsFileDropListener().catch(() => undefined)
 
@@ -224,12 +230,12 @@
               display: 'inline-block',
               alignSelf: 'center',
               lineHeight: '1.2',
-              paddingRight: navBadgeCounts.value.more > 0 ? '10px' : '0'
+              paddingRight: homeNavBadgeStore.updatePending ? '10px' : '0'
             }
           },
           [
             t('home.options.more.update'),
-            navBadgeCounts.value.more > 0
+            homeNavBadgeStore.updatePending
               ? h('span', {
                   style: {
                     position: 'absolute',
@@ -248,15 +254,48 @@
       key: 'update'
     },
     {
-      label: () => t('home.options.more.feedback'),
-      key: 'feedback'
-    },
-    {
       label: () => t('home.options.more.searchChatRecord'),
       key: 'searchChatRecord'
     },
     {
-      label: () => t('home.options.more.setting'),
+      label: () => t('home.options.more.lock'),
+      key: 'lock'
+    },
+    {
+      label: () => t('home.options.more.feedback'),
+      key: 'feedback'
+    },
+    {
+      label: () =>
+        h(
+          'span',
+          {
+            style: {
+              position: 'relative',
+              display: 'inline-block',
+              alignSelf: 'center',
+              lineHeight: '1.2',
+              paddingRight: shortcutConflictStore.keys.length > 0 ? '10px' : '0'
+            }
+          },
+          [
+            t('home.options.more.setting'),
+            shortcutConflictStore.keys.length > 0
+              ? h('span', {
+                  style: {
+                    position: 'absolute',
+                    top: '0',
+                    right: '0',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--red)',
+                    transform: 'translate(50%, -35%)'
+                  }
+                })
+              : null
+          ]
+        ),
       key: 'setting'
     },
     {
@@ -285,6 +324,8 @@
         .catch(() => {
           window.$message?.error(t('update.checkFailed'))
         })
+    } else if (key === 'lock') {
+      sessionLock.lock()
     } else if (key === 'feedback') {
       createFeedbackWinodw()
     } else if (key === 'searchChatRecord') {
@@ -348,6 +389,7 @@
   }
 
   onMounted(() => {
+    appSettings.ensureNotificationBadges()
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     void createPluginRuntimeWindow()
     void ensureNotificationActionListener()
@@ -355,6 +397,7 @@
     void homeNavBadgeStore.refreshContactsBadges()
     prefetchHomePages(route.name as string)
     window.addEventListener('keydown', onKeyDown)
+    initGlobalShortcuts()
     void appUpdateStore
       .check({ silent: true })
       .then((info) => {
@@ -389,6 +432,7 @@
     unlistenHomeTabNavigate?.()
     void stopNotificationActionListener()
     window.removeEventListener('keydown', onKeyDown)
+    disposeGlobalShortcuts()
     void disconnectWebSocket().catch((err) => console.error('[WebSocket] disconnect failed:', err))
   })
 </script>

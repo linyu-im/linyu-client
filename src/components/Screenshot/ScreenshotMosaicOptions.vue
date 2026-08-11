@@ -1,5 +1,5 @@
 <template>
-  <div class="screenshot-mosaic-options" :style="{ marginLeft: `${anchorLeft}px` }" @mousedown.stop>
+  <div class="screenshot-mosaic-options" :style="{ marginLeft: `${anchorLeft}px` }" @pointerdown.stop @mousedown.stop>
     <div class="screenshot-mosaic-options__arrow" />
     <div class="screenshot-mosaic-options__body">
       <label class="screenshot-mosaic-options__field">

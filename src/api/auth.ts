@@ -1,4 +1,10 @@
-import type { AccountLoginParam, LoginClientParam, LoginResult, Oauth2LoginParam } from '@/types/api/auth'
+import type {
+  AccountLoginParam,
+  LoginClientParam,
+  LoginResult,
+  Oauth2LoginParam,
+  PasswordVerifyParam
+} from '@/types/api/auth'
 import { ApiResponse, post } from '@/utils/network/http'
 import { getAppPlatform, getAppVersionCode } from '@/utils/app/version'
 
@@ -24,4 +30,8 @@ export function oauth2Login(params: Oauth2LoginParam): Promise<ApiResponse<Login
   return withClientMeta(params).then((body) =>
     post<LoginResult, Oauth2LoginParam & LoginClientParam>('/api/auth/v1/login/oauth2', body)
   )
+}
+
+export function verifyPassword(params: PasswordVerifyParam): Promise<ApiResponse<boolean>> {
+  return post<boolean, PasswordVerifyParam>('/api/auth/v1/login/password/verify', params)
 }

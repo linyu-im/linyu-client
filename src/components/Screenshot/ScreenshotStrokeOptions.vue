@@ -1,5 +1,5 @@
 <template>
-  <div class="screenshot-stroke-options" :style="{ marginLeft: `${anchorLeft}px` }" @mousedown.stop>
+  <div class="screenshot-stroke-options" :style="{ marginLeft: `${anchorLeft}px` }" @pointerdown.stop @mousedown.stop>
     <div class="screenshot-stroke-options__arrow" />
     <div class="screenshot-stroke-options__body">
       <label class="screenshot-stroke-options__field">

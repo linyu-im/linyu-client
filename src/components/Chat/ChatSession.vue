@@ -8,8 +8,18 @@
         :peer-id="props.chat.peerId"
         :scene-type="props.chat.sceneType ?? SceneType.User" />
       <div class="chat-session__header-actions" @click.stop>
-        <SvgIconButton href="#record" @click="onOpenChatRecord" />
-        <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
+        <n-tooltip placement="bottom" :show-arrow="false">
+          <template #trigger>
+            <SvgIconButton href="#record" @click="onOpenChatRecord" />
+          </template>
+          <span>{{ t('message.toolbar.chatRecord') }}</span>
+        </n-tooltip>
+        <n-tooltip placement="bottom" :show-arrow="false">
+          <template #trigger>
+            <SvgIconButton href="#more" :active="settingsDrawerVisible" @click="onMoreClick" />
+          </template>
+          <span>{{ t('message.toolbar.more') }}</span>
+        </n-tooltip>
       </div>
     </div>
     <GroupCallStatusBar
@@ -51,31 +61,57 @@
                 v-model="draft"
                 :quote-msg="quoteMessage"
                 :fetch-mentions="onFetchMentions"
+                :submit-on-enter="submitOnEnter"
                 @submit="onSend"
                 @clear-quote="clearQuote"
                 @file-rejected="onFileRejected" />
             </div>
             <div class="flex w-full items-center justify-between m-t-10px gap-8px">
               <div class="flex items-center gap-5px flex-1 min-w-0">
-                <n-popover
-                  v-model:show="emojiPickerVisible"
-                  trigger="click"
-                  placement="top-start"
-                  display-directive="show"
-                  :animated="false"
-                  :duration="0"
-                  :show-arrow="false"
-                  raw
-                  :z-index="2000">
+                <n-tooltip placement="top" :show-arrow="false">
                   <template #trigger>
-                    <SvgIconButton href="#emotion" :active="emojiPickerVisible" />
+                    <n-popover
+                      v-model:show="emojiPickerVisible"
+                      trigger="click"
+                      placement="top-start"
+                      display-directive="show"
+                      :animated="false"
+                      :duration="0"
+                      :show-arrow="false"
+                      raw
+                      :z-index="2000">
+                      <template #trigger>
+                        <SvgIconButton href="#emotion" :active="emojiPickerVisible" />
+                      </template>
+                      <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
+                    </n-popover>
                   </template>
-                  <EmojiPicker :visible="emojiPickerVisible" @select="onEmojiSelect" />
-                </n-popover>
-                <SvgIconButton href="#scissor" @click="openAndFocusWindow(SCREENSHOT_WINDOW_LABEL)" />
-                <SvgIconButton href="#folder" @click="onPickFiles" />
-                <SvgIconButton href="#image" @click="onPickImages" />
-                <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
+                  <span>{{ t('message.toolbar.emoji') }}</span>
+                </n-tooltip>
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#scissor" @click="openScreenshotWindow" />
+                  </template>
+                  <span>{{ screenshotTip }}</span>
+                </n-tooltip>
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#folder" @click="onPickFiles" />
+                  </template>
+                  <span>{{ t('message.toolbar.file') }}</span>
+                </n-tooltip>
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#image" @click="onPickImages" />
+                  </template>
+                  <span>{{ t('message.toolbar.image') }}</span>
+                </n-tooltip>
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#microphone" :active="voiceRecordingVisible" @click="onToggleVoiceRecording" />
+                  </template>
+                  <span>{{ sendVoiceTip }}</span>
+                </n-tooltip>
                 <VoiceRecordBar
                   v-if="voiceRecordingVisible"
                   class="chat-session__voice-bar"
@@ -87,8 +123,18 @@
                   @send="onVoiceRecordSend" />
               </div>
               <div v-if="!voiceRecordingVisible" class="flex items-center gap-5px">
-                <SvgIconButton href="#phone" @click="onStartCall('audio')" />
-                <SvgIconButton href="#video" @click="onStartCall('video')" />
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#phone" @click="onStartCall('audio')" />
+                  </template>
+                  <span>{{ t('message.toolbar.audioCall') }}</span>
+                </n-tooltip>
+                <n-tooltip placement="top" :show-arrow="false">
+                  <template #trigger>
+                    <SvgIconButton href="#video" @click="onStartCall('video')" />
+                  </template>
+                  <span>{{ t('message.toolbar.videoCall') }}</span>
+                </n-tooltip>
                 <n-button size="tiny" type="primary" class="w-56px m-l-10px p-y-12px" @click="onSend()">
                   {{ t('message.editor.send') }}
                 </n-button>
@@ -172,10 +218,11 @@
     focusCallWindow,
     isCallWindowOpen,
     isCurrentWindowLabel,
-    openAndFocusWindow,
+    openScreenshotWindow,
     requestCurrentWindowAttention
   } from '@/utils/desktop/window.ts'
-  import { HOME_WINDOW_LABEL, SCREENSHOT_WINDOW_LABEL } from '@/constants/window'
+  import { HOME_WINDOW_LABEL } from '@/constants/window'
+  import { matchShortcutEvent } from '@/utils/desktop/shortcuts'
   import { CHAT_SERVER_MESSAGE_EVENT } from '@/constants/event'
   import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
@@ -194,6 +241,21 @@
   const appSettingsStore = useAppSettingsStore()
   const avCallStore = useAvCallStore()
   const messageBubbleActions = useMessageBubbleActions()
+
+  const submitOnEnter = computed(() => appSettingsStore.shortcuts.sendMessage !== 'Ctrl+Enter')
+
+  const withShortcutTip = (label: string, shortcut: string) => {
+    const key = shortcut.trim()
+    return key ? `${label} (${key})` : label
+  }
+
+  const screenshotTip = computed(() =>
+    withShortcutTip(t('message.toolbar.screenshot'), appSettingsStore.shortcuts.screenshot)
+  )
+
+  const sendVoiceTip = computed(() =>
+    withShortcutTip(t('message.toolbar.sendVoice'), appSettingsStore.shortcuts.sendVoice)
+  )
 
   initOsFileDropListener().catch(() => undefined)
 
@@ -1250,6 +1312,69 @@
         window.$message?.error(t('message.voiceRecord.uploadFailed'))
       })
   }
+
+  const onVoiceShortcutPress = () => {
+    if (voiceRecordingVisible.value || voiceSending.value) return
+    startVoiceRecord()
+      .then(() => {
+        resetVoiceRecordLimitState()
+        voiceRecordingVisible.value = true
+      })
+      .catch(() => {
+        window.$message?.error(t('message.voiceRecord.startFailed'))
+      })
+  }
+
+  const onVoiceShortcutRelease = () => {
+    if (!voiceRecordingVisible.value || voiceSending.value) return
+    onVoiceRecordSend()
+  }
+
+  const isVoiceShortcutActive = () => Boolean(chatStore.isChatActive(props.chat.id))
+
+  const onVoiceShortcutKeyDown = (event: KeyboardEvent) => {
+    if (event.repeat || !isVoiceShortcutActive()) return
+    if (!matchShortcutEvent(event, appSettingsStore.shortcuts.sendVoice)) return
+    event.preventDefault()
+    event.stopPropagation()
+    onVoiceShortcutPress()
+  }
+
+  const onVoiceShortcutKeyUp = (event: KeyboardEvent) => {
+    if (!isVoiceShortcutActive()) return
+    if (!matchShortcutEvent(event, appSettingsStore.shortcuts.sendVoice, { ignoreModifiers: true })) return
+    event.preventDefault()
+    event.stopPropagation()
+    onVoiceShortcutRelease()
+  }
+
+  const onVoiceShortcutBlur = () => {
+    if (!voiceRecordingVisible.value || voiceSending.value) return
+    onVoiceRecordCancel()
+  }
+
+  const onVoiceShortcutVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      onVoiceShortcutBlur()
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener('keydown', onVoiceShortcutKeyDown, true)
+    window.addEventListener('keyup', onVoiceShortcutKeyUp, true)
+    window.addEventListener('blur', onVoiceShortcutBlur)
+    document.addEventListener('visibilitychange', onVoiceShortcutVisibilityChange)
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onVoiceShortcutKeyDown, true)
+    window.removeEventListener('keyup', onVoiceShortcutKeyUp, true)
+    window.removeEventListener('blur', onVoiceShortcutBlur)
+    document.removeEventListener('visibilitychange', onVoiceShortcutVisibilityChange)
+    if (voiceRecordingVisible.value) {
+      onVoiceRecordCancel()
+    }
+  })
 
   const onEmojiSelect = (item: Sticker) => {
     emojiPickerVisible.value = false

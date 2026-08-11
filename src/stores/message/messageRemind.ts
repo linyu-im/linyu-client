@@ -1,6 +1,7 @@
 import { SceneType } from '@/constants/common'
 import { MESSAGE_REMIND_WINDOW_LABEL } from '@/constants/window'
 import i18n from '@/services/i18n'
+import { useSessionLockStore } from '@/stores/app/sessionLock'
 import { useChatStore } from '@/stores/chat/chat'
 import { useUserStore } from '@/stores/user/user'
 import type { Message } from '@/types/api/message'
@@ -324,6 +325,7 @@ export const useMessageRemindStore = defineStore('messageRemind', {
     showNearTray(rect: MessageRemindTrayRect) {
       // 仅 shouldBlink 为 true 时（有未读且未取消闪动）才响应托盘 hover
       if (!this.shouldBlink) return Promise.resolve()
+      if (useSessionLockStore().locked) return Promise.resolve()
 
       this.cancelHideWindow()
       this.$patch((state) => {

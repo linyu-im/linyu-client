@@ -18,10 +18,12 @@
           :options="translateOptions"
           size="small"
           :consistent-menu-width="true"
-          @update:value="(v) => (appSettings.general.translateTo = v)" />
+          @update:value="(v) => appSettings.setGeneralField('translateTo', v)" />
       </SettingRow>
       <SettingRow :label="t('settings.general.autoTranslate')" :desc="t('settings.general.autoTranslateDesc')">
-        <n-switch v-model:value="appSettings.general.autoTranslate" />
+        <n-switch
+          :value="appSettings.general.autoTranslate"
+          @update:value="(v) => appSettings.setGeneralField('autoTranslate', v)" />
       </SettingRow>
     </SettingCard>
 
@@ -39,7 +41,10 @@
       <SettingRow :label="t('settings.general.fontSize')" stack>
         <template #default>
           <div class="settings-page__slider">
-            <n-slider v-model:value="appSettings.general.fontSize" :step="1" />
+            <n-slider
+              :value="appSettings.general.fontSize"
+              :step="1"
+              @update:value="(v) => appSettings.setGeneralField('fontSize', v)" />
             <div class="settings-page__slider-labels">
               <span>{{ t('settings.general.fontSmall') }}</span>
               <span>{{ t('settings.general.fontStandard') }}</span>
@@ -52,7 +57,10 @@
 
     <SettingCard>
       <SettingRow :label="t('settings.general.autoLaunchOnStartup')">
-        <n-switch v-model:value="appSettings.general.autoLaunchOnStartup" />
+        <n-switch
+          :value="appSettings.general.autoLaunchOnStartup"
+          :loading="autostartLoading"
+          @update:value="onAutoLaunchChange" />
       </SettingRow>
       <SettingRow :label="t('settings.general.closeMainPanel')">
         <n-select
@@ -61,27 +69,30 @@
           :options="closeMainPanelOptions"
           size="small"
           :consistent-menu-width="true"
-          @update:value="(v) => (appSettings.general.closeMainPanelAction = v)" />
+          @update:value="(v) => appSettings.setGeneralField('closeMainPanelAction', v)" />
       </SettingRow>
       <SettingRow :label="t('settings.general.voiceToText')">
-        <n-switch v-model:value="appSettings.general.voiceToText" />
+        <n-switch
+          :value="appSettings.general.voiceToText"
+          @update:value="(v) => appSettings.setGeneralField('voiceToText', v)" />
       </SettingRow>
     </SettingCard>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
   import { useI18n } from 'vue-i18n'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { useSystemSettingStore } from '@/stores/app/systemSetting'
-  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { useAppSettingsStore, type CloseMainPanelAction } from '@/stores/app/appSettings'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
+  import { readAutostartEnabled, syncAutostart } from '@/utils/desktop/autostart'
 
   const { t } = useI18n()
   const systemSetting = useSystemSettingStore()
   const appSettings = useAppSettingsStore()
+  const autostartLoading = ref(false)
 
   const languageOptions = computed(() => [
     { label: '中文', value: LangEnum.ZH },
@@ -94,8 +105,8 @@
   ])
 
   const closeMainPanelOptions = computed(() => [
-    { label: t('settings.general.closeMinimizeToTray'), value: 'minimizeToTray' },
-    { label: t('settings.general.closeExitApp'), value: 'exit' }
+    { label: t('settings.general.closeMinimizeToTray'), value: 'minimizeToTray' satisfies CloseMainPanelAction },
+    { label: t('settings.general.closeExitApp'), value: 'exit' satisfies CloseMainPanelAction }
   ])
 
   const appearanceOptions = computed(() => [
@@ -111,6 +122,31 @@
   const onAppearanceChange = (pattern: ThemePatternEnum) => {
     systemSetting.setThemePattern(pattern)
   }
+
+  const onAutoLaunchChange = (enabled: boolean) => {
+    const prev = appSettings.general.autoLaunchOnStartup
+    appSettings.setGeneralField('autoLaunchOnStartup', enabled)
+    autostartLoading.value = true
+    syncAutostart(enabled)
+      .then(() => undefined)
+      .catch(() => {
+        appSettings.setGeneralField('autoLaunchOnStartup', prev)
+        window.$message?.error(t('settings.general.autoLaunchFailed'))
+      })
+      .finally(() => {
+        autostartLoading.value = false
+      })
+  }
+
+  onMounted(() => {
+    readAutostartEnabled()
+      .then((enabled) => {
+        if (enabled !== appSettings.general.autoLaunchOnStartup) {
+          appSettings.setGeneralField('autoLaunchOnStartup', enabled)
+        }
+      })
+      .catch(() => undefined)
+  })
 </script>
 
 <style scoped lang="scss">

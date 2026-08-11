@@ -7,6 +7,7 @@ import {
   PhysicalPosition,
   UserAttentionType,
   currentMonitor,
+  getAllWindows,
   primaryMonitor
 } from '@tauri-apps/api/window'
 import { exit } from '@tauri-apps/plugin-process'
@@ -103,6 +104,8 @@ import {
   SET_WINDOW_MIN_HEIGHT,
   SET_WINDOW_MIN_WIDTH,
   SET_WINDOW_WIDTH,
+  SCREENSHOT_WINDOW_LABEL,
+  TRAY_WINDOW_LABEL,
   VIDEO_VIEWER_WINDOW_HEIGHT,
   VIDEO_VIEWER_WINDOW_LABEL,
   VIDEO_VIEWER_WINDOW_MIN_HEIGHT,
@@ -263,8 +266,43 @@ export const openAndFocusWindow = async (label: string) => {
   const webview = await WebviewWindow.getByLabel(label)
   if (webview) {
     await webview.show()
+    await webview.unminimize()
     await webview.setFocus()
   }
+}
+
+/** 打开截图窗（与普通窗口相同：show + focus；关闭时已在隐藏态 reset） */
+export const openScreenshotWindow = async () => {
+  const { useSessionLockStore } = await import('@/stores/app/sessionLock')
+  if (useSessionLockStore().locked) return
+  await openAndFocusWindow(SCREENSHOT_WINDOW_LABEL)
+}
+
+/** 会话锁定：按各窗口既有语义 hide/close，并聚焦 home */
+export const closeOrHideWindowsForSessionLock = async () => {
+  const hideLabels = new Set([
+    TRAY_WINDOW_LABEL,
+    MESSAGE_REMIND_WINDOW_LABEL,
+    SCREENSHOT_WINDOW_LABEL,
+    IMG_VIEWER_WINDOW_LABEL,
+    VIDEO_VIEWER_WINDOW_LABEL
+  ])
+  const skipLabels = new Set([HOME_WINDOW_LABEL, PLUGIN_RUNTIME_WINDOW_LABEL, LOGIN_WINDOW_LABEL])
+
+  const windows = await getAllWindows()
+  await Promise.all(
+    windows.map(async (window) => {
+      const label = window.label
+      if (skipLabels.has(label)) return
+      if (hideLabels.has(label)) {
+        await window.hide().catch(() => undefined)
+        return
+      }
+      await window.close().catch(() => undefined)
+    })
+  )
+
+  await openAndFocusWindow(HOME_WINDOW_LABEL)
 }
 
 export const minimizeCurrentWindow = async () => {

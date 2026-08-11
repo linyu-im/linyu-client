@@ -22,3 +22,8 @@ export interface Oauth2LoginParam {
   code: string
   type: string
 }
+
+// 密码验证参数
+export interface PasswordVerifyParam {
+  password: string
+}

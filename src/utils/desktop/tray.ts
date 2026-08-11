@@ -6,6 +6,7 @@ import { getAllWindows, PhysicalPosition } from '@tauri-apps/api/window'
 import { MESSAGE_REMIND_SHOW_EVENT } from '@/constants/event'
 import { HOME_WINDOW_LABEL, LOGIN_WINDOW_LABEL, TRAY_WINDOW_LABEL } from '@/constants/window'
 import { useMessageRemindStore, type MessageRemindTrayRect } from '@/stores/message/messageRemind'
+import { useSessionLockStore } from '@/stores/app/sessionLock'
 
 export const TRAY_ID = 'tray'
 
@@ -37,6 +38,7 @@ export const initSystemTray = async () => {
         case 'Enter':
         case 'Move': {
           if (!messageRemindStore.shouldBlink) break
+          if (useSessionLockStore().locked) break
 
           const rect = toTrayRect(event.rect)
           messageRemindStore.cancelHideWindow()

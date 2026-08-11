@@ -116,13 +116,14 @@
       "contacts": "联系人",
       "moment": "过往",
       "drive": "网盘",
-      "ai": "AI",
+      "ai": "AI Work",
       "application": "应用",
       "more": {
         "text": "更多",
         "update": "检查更新",
         "feedback": "意见反馈",
         "searchChatRecord": "聊天记录搜索",
+        "lock": "锁定",
         "setting": "设置",
         "exit": "退出"
       }
@@ -130,6 +131,13 @@
     "emotion": {
       "setText": "设置我的心情"
     }
+  },
+  "sessionLock": {
+    "title": "会话已锁定",
+    "desc": "请输入密码以解锁并继续查看聊天内容",
+    "passwordPlaceholder": "请输入密码",
+    "unlock": "解锁并继续使用",
+    "verifyFailed": "密码错误，请重试"
   },
   "message": {
     "noChat": "暂无新的消息",
@@ -249,6 +257,17 @@
       "pickFile": "选择文件",
       "pickFailed": "读取文件失败",
       "clearQuote": "取消引用"
+    },
+    "toolbar": {
+      "chatRecord": "聊天记录",
+      "more": "更多",
+      "emoji": "表情",
+      "screenshot": "截图",
+      "file": "文件",
+      "image": "图片",
+      "sendVoice": "语音消息",
+      "audioCall": "语音通话",
+      "videoCall": "视频通话"
     },
     "quote": {
       "notFound": "引用内容不存在"
@@ -1288,12 +1307,12 @@
       "general": "通用",
       "shortcuts": "快捷键",
       "notification": "通知",
-      "work": "AI 助手",
+      "work": "AI Work",
       "plugins": "插件",
       "about": "关于"
     },
     "work": {
-      "title": "AI 助手",
+      "title": "AI Work",
       "description": "管理 Agent 运行时、模型供应商、权限策略与 Skills",
       "tabs": { "runtime": "Agent", "providers": "供应商", "model": "模型与权限", "skills": "Skills" },
       "runtime": {
@@ -1393,6 +1412,7 @@
       "fontStandard": "标准",
       "fontLarge": "大",
       "autoLaunchOnStartup": "开机时自动打开林语",
+      "autoLaunchFailed": "设置开机自启失败",
       "closeMainPanel": "关闭主面板时",
       "closeMinimizeToTray": "最小化至托盘",
       "closeExitApp": "退出林语",
@@ -1409,14 +1429,22 @@
       "toggleWindow": "显示/隐藏窗口",
       "hold": "按住",
       "clear": "清除快捷键",
-      "restore": "恢复默认设置"
+      "restore": "恢复默认设置",
+      "clickToSet": "点击设置",
+      "pressKeys": "按下组合键",
+      "conflict": "与“{name}”快捷键冲突",
+      "conflictHint": "快捷键冲突，修改后可恢复使用",
+      "noUnread": "暂无未读消息"
     },
     "notification": {
       "soundSection": "声音",
       "messageSound": "新消息通知声音",
       "callSound": "语音和视频通话声音",
       "badgeSection": "通知标记",
-      "badgeMoments": "过往",
+      "badgeMoment": "过往",
+      "badgeAi": "AI Work",
+      "badgeDrive": "网盘",
+      "badgeApplication": "应用",
       "momentsSection": "过往提醒",
       "momentsInteraction": "仅提醒好友与我的互动",
       "momentsInteractionDesc": "仅在过往出现与我相关的点赞、评论时出现标记"

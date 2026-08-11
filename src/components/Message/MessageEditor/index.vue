@@ -271,8 +271,8 @@
         })
       }),
       SingleLine.configure({
-        onEnter: () => {
-          if (!props.submitOnEnter) return false
+        shouldSubmitOnEnter: () => props.submitOnEnter,
+        onSubmit: () => {
           handleSubmit()
           return true
         }

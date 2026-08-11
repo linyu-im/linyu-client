@@ -1,4 +1,5 @@
 import type { User } from '@/types/api/user'
+import { useSessionLockStore } from '@/stores/app/sessionLock'
 import { disconnectWebSocket } from '@/utils/network/websocket'
 import { defineStore } from 'pinia'
 
@@ -51,6 +52,7 @@ export const useUserStore = defineStore('user', {
         state.authInfo.userId = authInfo.userId
         state.authInfo.isLoggedIn = true
       })
+      useSessionLockStore().unlock()
     },
     removeAuthInfo() {
       void disconnectWebSocket()
@@ -59,6 +61,7 @@ export const useUserStore = defineStore('user', {
         state.authInfo.userId = ''
         state.authInfo.isLoggedIn = false
       })
+      useSessionLockStore().unlock()
     },
     setUserInfo(info: User) {
       this.$patch((state) => {

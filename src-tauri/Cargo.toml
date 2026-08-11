@@ -52,6 +52,9 @@ keyring = { version = "3", features = [
   "crypto-rust",
 ] }
 tauri-plugin-os = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 notify-rust = "4.18.0"

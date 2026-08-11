@@ -3,9 +3,30 @@ import type { DragState, Rect, ResizeHandle } from '@/types/screenshot'
 const MIN_SIZE = 24
 const MASK_COLOR = 'rgba(0, 0, 0, 0.45)'
 
+const RESIZE_CURSOR: Record<ResizeHandle, string> = {
+  n: 'ns-resize',
+  s: 'ns-resize',
+  e: 'ew-resize',
+  w: 'ew-resize',
+  ne: 'nesw-resize',
+  sw: 'nesw-resize',
+  nw: 'nwse-resize',
+  se: 'nwse-resize'
+}
+
 export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
   const selection = ref<Rect | null>(null)
   const dragState = ref<DragState | null>(null)
+
+  let activePointerId: number | null = null
+  let captureTarget: Element | null = null
+  let previousBodyCursor = ''
+  let createGuardUntil = 0
+
+  /** 打开截图窗后短暂忽略新建选区，避免焦点/快捷键残余 pointer 误触 */
+  const armCreateGuard = (ms = 200) => {
+    createGuardUntil = Date.now() + ms
+  }
 
   const hasSelection = computed(() => {
     const rect = selection.value
@@ -42,7 +63,7 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
     return { width: rect.width, height: rect.height }
   }
 
-  const getPoint = (event: MouseEvent) => {
+  const getPoint = (event: PointerEvent | MouseEvent) => {
     const el = containerRef.value
     if (!el) return { x: 0, y: 0 }
     const rect = el.getBoundingClientRect()
@@ -88,8 +109,63 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
     return clampRect({ x, y, width, height })
   }
 
-  const onOverlayMouseDown = (event: MouseEvent) => {
+  const setDragCursor = (mode: DragState['mode'], handle?: ResizeHandle) => {
+    previousBodyCursor = document.body.style.cursor
+    if (mode === 'resize' && handle) {
+      document.body.style.cursor = RESIZE_CURSOR[handle]
+      return
+    }
+    if (mode === 'move') {
+      document.body.style.cursor = 'move'
+      return
+    }
+    document.body.style.cursor = 'crosshair'
+  }
+
+  const clearDragCursor = () => {
+    document.body.style.cursor = previousBodyCursor
+    previousBodyCursor = ''
+  }
+
+  const beginCapture = (event: PointerEvent) => {
+    const target = event.currentTarget
+    if (!(target instanceof Element)) return
+    activePointerId = event.pointerId
+    captureTarget = target
+    try {
+      target.setPointerCapture(event.pointerId)
+    } catch {
+      // ignore capture failures on unsupported targets
+    }
+  }
+
+  const endCapture = () => {
+    if (captureTarget && activePointerId !== null) {
+      try {
+        if (captureTarget.hasPointerCapture?.(activePointerId)) {
+          captureTarget.releasePointerCapture(activePointerId)
+        }
+      } catch {
+        // ignore
+      }
+    }
+    captureTarget = null
+    activePointerId = null
+  }
+
+  const onOverlayPointerDown = (event: PointerEvent) => {
     if (event.button !== 0) return
+    if (Date.now() < createGuardUntil) return
+    const target = event.target
+    if (
+      target instanceof Element &&
+      target.closest(
+        '.screenshot-editor__toolbar, .screenshot-editor__selection-bar, .screenshot-toolbar, .screenshot-toolbar-wrap, .screenshot-selection-bar, .screenshot-stroke-options, .screenshot-mosaic-options'
+      )
+    ) {
+      return
+    }
+    event.preventDefault()
     const point = getPoint(event)
     dragState.value = {
       mode: 'create',
@@ -98,10 +174,13 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
       origin: { x: point.x, y: point.y, width: 0, height: 0 }
     }
     selection.value = { x: point.x, y: point.y, width: 0, height: 0 }
+    beginCapture(event)
+    setDragCursor('create')
   }
 
-  const onSelectionMouseDown = (event: MouseEvent, mode: 'move' | 'resize', handle?: ResizeHandle) => {
+  const onSelectionPointerDown = (event: PointerEvent, mode: 'move' | 'resize', handle?: ResizeHandle) => {
     if (event.button !== 0 || !selection.value) return
+    event.preventDefault()
     event.stopPropagation()
     const point = getPoint(event)
     dragState.value = {
@@ -111,11 +190,15 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
       startY: point.y,
       origin: { ...selection.value }
     }
+    beginCapture(event)
+    setDragCursor(mode, handle)
   }
 
-  const onMouseMove = (event: MouseEvent) => {
+  const onPointerMove = (event: PointerEvent) => {
     const state = dragState.value
     if (!state) return
+    if (activePointerId !== null && event.pointerId !== activePointerId) return
+
     const point = getPoint(event)
     const dx = point.x - state.startX
     const dy = point.y - state.startY
@@ -143,9 +226,14 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
     }
   }
 
-  const onMouseUp = () => {
+  const onPointerUp = (event: PointerEvent) => {
     if (!dragState.value) return
+    if (activePointerId !== null && event.pointerId !== activePointerId) return
+
     dragState.value = null
+    endCapture()
+    clearDragCursor()
+
     if (selection.value && (selection.value.width < MIN_SIZE || selection.value.height < MIN_SIZE)) {
       selection.value = null
     }
@@ -158,15 +246,20 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
   }
 
   onMounted(() => {
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
+    armCreateGuard(200)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
     window.addEventListener('resize', onWindowResize)
   })
 
   onUnmounted(() => {
-    window.removeEventListener('mousemove', onMouseMove)
-    window.removeEventListener('mouseup', onMouseUp)
+    window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
+    window.removeEventListener('pointercancel', onPointerUp)
     window.removeEventListener('resize', onWindowResize)
+    endCapture()
+    clearDragCursor()
   })
 
   return {
@@ -175,7 +268,8 @@ export function useScreenshotSelection(containerRef: Ref<HTMLElement | null>) {
     showSelection,
     showEditorChrome,
     selectionStyle,
-    onOverlayMouseDown,
-    onSelectionMouseDown
+    onOverlayPointerDown,
+    onSelectionPointerDown,
+    armCreateGuard
   }
 }

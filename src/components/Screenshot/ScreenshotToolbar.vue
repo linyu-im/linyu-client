@@ -1,6 +1,6 @@
 <template>
-  <div class="screenshot-toolbar-wrap">
-    <div class="screenshot-toolbar" @mousedown.stop>
+  <div class="screenshot-toolbar-wrap" @pointerdown.stop>
+    <div class="screenshot-toolbar" @pointerdown.stop @mousedown.stop>
       <div class="screenshot-toolbar__group">
         <n-tooltip v-for="tool in drawTools" :key="tool.id" placement="top" :show-arrow="false">
           <template #trigger>

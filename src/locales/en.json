@@ -116,13 +116,14 @@
       "contacts": "Contacts",
       "moment": "Moment",
       "drive": "Drive",
-      "ai": "AI",
+      "ai": "AI Work",
       "application": "Application",
       "more": {
         "text": "More",
         "update": "Check Update",
         "feedback": "Feedback",
         "searchChatRecord": "Search Chat History",
+        "lock": "Lock",
         "setting": "Settings",
         "exit": "Exit"
       }
@@ -130,6 +131,13 @@
     "emotion": {
       "setText": "Set My Emotion"
     }
+  },
+  "sessionLock": {
+    "title": "Session Locked",
+    "desc": "Enter your password to unlock and continue viewing chats",
+    "passwordPlaceholder": "Enter password",
+    "unlock": "Unlock and continue",
+    "verifyFailed": "Incorrect password, please try again"
   },
   "message": {
     "noChat": "No new messages",
@@ -249,6 +257,17 @@
       "pickFile": "Select files",
       "pickFailed": "Failed to read file",
       "clearQuote": "Clear quote"
+    },
+    "toolbar": {
+      "chatRecord": "Chat history",
+      "more": "More",
+      "emoji": "Emoji",
+      "screenshot": "Screenshot",
+      "file": "File",
+      "image": "Image",
+      "sendVoice": "Voice message",
+      "audioCall": "Voice call",
+      "videoCall": "Video call"
     },
     "quote": {
       "notFound": "Quoted message unavailable"
@@ -1310,12 +1329,12 @@
       "general": "General",
       "shortcuts": "Shortcuts",
       "notification": "Notifications",
-      "work": "AI Assistant",
+      "work": "AI Work",
       "plugins": "Plugins",
       "about": "About"
     },
     "work": {
-      "title": "AI Assistant",
+      "title": "AI Work",
       "description": "Manage Agent runtimes, model providers, approval policies, and Skills",
       "tabs": { "runtime": "Agent", "providers": "Providers", "model": "Model & Permissions", "skills": "Skills" },
       "runtime": {
@@ -1419,6 +1438,7 @@
       "fontStandard": "Standard",
       "fontLarge": "Large",
       "autoLaunchOnStartup": "Launch Linyu on startup",
+      "autoLaunchFailed": "Failed to update launch on startup",
       "closeMainPanel": "When closing main window",
       "closeMinimizeToTray": "Minimize to tray",
       "closeExitApp": "Exit Linyu",
@@ -1435,14 +1455,22 @@
       "toggleWindow": "Show/hide window",
       "hold": "Hold",
       "clear": "Clear shortcut",
-      "restore": "Restore defaults"
+      "restore": "Restore defaults",
+      "clickToSet": "Click to set",
+      "pressKeys": "Press keys",
+      "conflict": "Conflicts with “{name}”",
+      "conflictHint": "Shortcut conflict. Change it to restore usage",
+      "noUnread": "No unread messages"
     },
     "notification": {
       "soundSection": "Sound",
       "messageSound": "New message sound",
       "callSound": "Voice & video call sound",
       "badgeSection": "Badges",
-      "badgeMoments": "Moment",
+      "badgeMoment": "Moment",
+      "badgeAi": "AI Work",
+      "badgeDrive": "Cloud Drive",
+      "badgeApplication": "Apps",
       "momentsSection": "Moment alerts",
       "momentsInteraction": "Friends' interactions only",
       "momentsInteractionDesc": "Show badge only for likes and comments on your Moment posts"

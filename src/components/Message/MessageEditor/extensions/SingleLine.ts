@@ -3,7 +3,9 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Slice, Fragment } from '@tiptap/pm/model'
 
 export interface SingleLineOptions {
-  onEnter?: (event: KeyboardEvent) => boolean | void
+  /** Enter 发送时返回 true；Ctrl/Cmd+Enter 发送时返回 false（允许换行） */
+  shouldSubmitOnEnter?: () => boolean
+  onSubmit?: () => boolean | void
 }
 
 export const SingleLine = Extension.create<SingleLineOptions>({
@@ -11,34 +13,44 @@ export const SingleLine = Extension.create<SingleLineOptions>({
 
   addOptions() {
     return {
-      onEnter: undefined
+      shouldSubmitOnEnter: () => true,
+      onSubmit: undefined
     }
   },
 
   addKeyboardShortcuts() {
-    const handleEnter = (event: KeyboardEvent) => {
-      const handled = this.options.onEnter?.(event)
-      return handled !== false
-    }
+    const submit = () => this.options.onSubmit?.() !== false
+    const submitOnEnter = () => this.options.shouldSubmitOnEnter?.() !== false
     return {
-      Enter: () => handleEnter(new KeyboardEvent('keydown', { key: 'Enter' })),
-      'Shift-Enter': () => true,
-      'Mod-Enter': () => handleEnter(new KeyboardEvent('keydown', { key: 'Enter' }))
+      Enter: () => {
+        if (submitOnEnter()) return submit()
+        return false
+      },
+      'Shift-Enter': () => {
+        // Enter 发送模式下拦截换行；Ctrl+Enter 发送模式允许换行
+        return submitOnEnter()
+      },
+      'Mod-Enter': () => submit()
     }
   },
 
   addProseMirrorPlugins() {
+    const shouldSanitize = () => this.options.shouldSubmitOnEnter?.() !== false
+
     return [
       new Plugin({
         key: new PluginKey('singleLinePasteSanitizer'),
         props: {
           transformPastedHTML(html) {
+            if (!shouldSanitize()) return html
             return html.replace(/<br\s*\/?>/gi, ' ').replace(/\r?\n/g, ' ')
           },
           transformPastedText(text) {
+            if (!shouldSanitize()) return text
             return text.replace(/\r?\n/g, ' ')
           },
           transformPasted(slice) {
+            if (!shouldSanitize()) return slice
             const inlineNodes: any[] = []
             slice.content.descendants((node) => {
               if (node.isInline) {

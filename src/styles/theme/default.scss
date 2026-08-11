@@ -34,7 +34,7 @@
         //按钮浅色背景
         --button-soft-bg: #EBEBEB;
         //输入框浅色背景
-        --input-soft-bg: #F3F3F3;
+        --input-soft-bg: #EBEBEB;
         //icon按钮的hover颜色
         --icon-hover-color: rgba(169, 169, 169, 0.25);
         //操作栏背景色
@@ -49,7 +49,7 @@
         --card-bg-secondary-color: #e8e8e8;
         --content-card-bg: #F5F5F5;
         //消息气泡/文件卡片背景（对方文本、文件、名片等）
-        --message-card-bg: #ececec;
+        --message-card-bg: #EBEBEB;
         //滚动条颜色
         --scrollbar-color: #b1b1b1;
     }
@@ -89,9 +89,9 @@ html[data-theme="dark"] {
 
         /* 组件级别 */
         //按钮浅色背景
-        --button-soft-bg: #3A3A3B;
+        --button-soft-bg: #373737;
         //输入框浅色背景
-        --input-soft-bg: #282828;
+        --input-soft-bg: #2F2F2F;
         //icon按钮的hover颜色
         --icon-hover-color: rgba(166, 166, 166, 0.2);
         //操作栏背景色

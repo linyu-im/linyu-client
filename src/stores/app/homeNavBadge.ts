@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { userBadgeApi } from '@/api'
 import { UserBadgeCode } from '@/constants/userBadge'
+import { useAppSettingsStore, type NotificationBadgeSlot } from '@/stores/app/appSettings'
 import type { HomeTabId } from '@/stores/app/homeTab'
 import type { UserBadge } from '@/types/api/userBadge'
 
@@ -12,6 +13,8 @@ type HomeNavBadgeCounts = Record<HomeNavBadgeSlot, number>
 type HomeNavBadgeStore = {
   counts: HomeNavBadgeCounts
   contactsBadges: UserBadge[]
+  updatePending: boolean
+  shortcutConflict: boolean
 }
 
 export const ACTIVE_UPLOAD_STATUSES = new Set(['pending', 'hashing', 'checking', 'uploading', 'paused', 'failed'])
@@ -42,7 +45,9 @@ export const useHomeNavBadgeStore = defineStore('homeNavBadge', {
   share: { enable: true, initialize: true },
   state: (): HomeNavBadgeStore => ({
     counts: createDefaultCounts(),
-    contactsBadges: []
+    contactsBadges: [],
+    updatePending: false,
+    shortcutConflict: false
   }),
   actions: {
     setCount(slot: HomeNavBadgeSlot, count: number) {
@@ -59,6 +64,21 @@ export const useHomeNavBadgeStore = defineStore('homeNavBadge', {
           }
         }
       })
+    },
+
+    isBadgeEnabled(slot: HomeNavBadgeSlot) {
+      const appSettings = useAppSettingsStore()
+      const badges = appSettings.notifications.badges as Partial<Record<NotificationBadgeSlot, boolean>> | undefined
+      if (!badges || badges[slot] === undefined) return true
+      return Boolean(badges[slot])
+    },
+
+    shouldShowBadge(slot: HomeNavBadgeSlot) {
+      return this.isBadgeEnabled(slot) && this.counts[slot] > 0
+    },
+
+    refreshMoreCount() {
+      this.setCount('more', this.updatePending || this.shortcutConflict ? 1 : 0)
     },
 
     refreshContactsBadges() {
@@ -99,7 +119,17 @@ export const useHomeNavBadgeStore = defineStore('homeNavBadge', {
     },
 
     syncMoreFromUpdate(needUpdate: boolean, needForce: boolean) {
-      this.setCount('more', needUpdate || needForce ? 1 : 0)
+      this.$patch((state) => {
+        state.updatePending = needUpdate || needForce
+      })
+      this.refreshMoreCount()
+    },
+
+    syncMoreFromShortcutConflict(hasConflict: boolean) {
+      this.$patch((state) => {
+        state.shortcutConflict = hasConflict
+      })
+      this.refreshMoreCount()
     }
   }
 })

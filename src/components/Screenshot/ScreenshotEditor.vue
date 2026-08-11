@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="screenshot-editor" @mousedown="onOverlayMouseDown">
+  <div ref="containerRef" class="screenshot-editor" @pointerdown="onOverlayPointerDown">
     <div v-if="!hasSelection" class="screenshot-editor__screen-frame" />
 
     <template v-if="showSelection && selection">
@@ -13,7 +13,7 @@
             'screenshot-editor__preview--text': activeTool === 'text'
           }"
           :style="previewStyle"
-          @mousedown.stop="onPreviewMouseDown"
+          @pointerdown.stop="onPreviewPointerDown"
           @click.stop="onPreviewClick">
           <div ref="previewRef" class="screenshot-editor__canvas">
             <ScreenshotAnnotationLayer
@@ -38,14 +38,24 @@
         <template v-if="showEditorChrome">
           <div
             v-for="handle in resizeHandles"
-            :key="handle"
+            :key="`edge-${handle}`"
+            class="screenshot-editor__edge"
+            :class="`screenshot-editor__edge--${handle}`"
+            @pointerdown.stop.prevent="onHandlePointerDown($event, handle)" />
+          <div
+            v-for="handle in resizeHandles"
+            :key="`dot-${handle}`"
             class="screenshot-editor__handle"
             :class="`screenshot-editor__handle--${handle}`"
-            @mousedown="onHandleMouseDown($event, handle)" />
+            @pointerdown.stop.prevent="onHandlePointerDown($event, handle)" />
         </template>
       </div>
 
-      <div v-if="showEditorChrome" class="screenshot-editor__selection-bar" :style="selectionBarStyle">
+      <div
+        v-if="showEditorChrome"
+        class="screenshot-editor__selection-bar"
+        :style="selectionBarStyle"
+        @pointerdown.stop>
         <ScreenshotSelectionBar
           :width="selection.width"
           :height="selection.height"
@@ -53,7 +63,7 @@
           @update:corner-radius="cornerRadius = $event" />
       </div>
 
-      <div v-if="showEditorChrome" class="screenshot-editor__toolbar" :style="toolbarStyle">
+      <div v-if="showEditorChrome" class="screenshot-editor__toolbar" :style="toolbarStyle" @pointerdown.stop>
         <ScreenshotToolbar
           v-model:active-tool="activeTool"
           v-model:stroke-width="strokeWidth"
@@ -96,8 +106,8 @@
     showSelection,
     showEditorChrome,
     selectionStyle,
-    onOverlayMouseDown,
-    onSelectionMouseDown
+    onOverlayPointerDown,
+    onSelectionPointerDown
   } = useScreenshotSelection(containerRef)
   const strokeWidth = ref(SCREENSHOT_DEFAULT_STROKE_STYLE.strokeWidth)
   const strokeColor = ref(SCREENSHOT_DEFAULT_STROKE_STYLE.stroke)
@@ -161,9 +171,9 @@
     }
   })
 
-  const onPreviewMouseDown = (event: MouseEvent) => {
+  const onPreviewPointerDown = (event: PointerEvent) => {
     if (activeTool.value === 'move') {
-      onSelectionMouseDown(event, 'move')
+      onSelectionPointerDown(event, 'move')
       return
     }
     if (activeTool.value === 'text') {
@@ -179,8 +189,8 @@
     onTextPlace(event)
   }
 
-  const onHandleMouseDown = (event: MouseEvent, handle: ResizeHandle) => {
-    onSelectionMouseDown(event, 'resize', handle)
+  const onHandlePointerDown = (event: PointerEvent, handle: ResizeHandle) => {
+    onSelectionPointerDown(event, 'resize', handle)
   }
 
   const onUndo = () => {
@@ -232,6 +242,9 @@
     overflow: hidden;
     cursor: crosshair;
     background: transparent;
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: none;
 
     &__screen-frame {
       position: absolute;
@@ -256,6 +269,9 @@
       overflow: hidden;
       pointer-events: auto;
       cursor: crosshair;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: none;
 
       &--move {
         cursor: move;
@@ -282,6 +298,78 @@
       z-index: 1;
     }
 
+    &__edge {
+      position: absolute;
+      pointer-events: auto;
+      z-index: 2;
+      touch-action: none;
+      -webkit-user-drag: none;
+
+      &--n {
+        top: -4px;
+        left: 10px;
+        right: 10px;
+        height: 8px;
+        cursor: ns-resize;
+      }
+
+      &--s {
+        bottom: -4px;
+        left: 10px;
+        right: 10px;
+        height: 8px;
+        cursor: ns-resize;
+      }
+
+      &--e {
+        right: -4px;
+        top: 10px;
+        bottom: 10px;
+        width: 8px;
+        cursor: ew-resize;
+      }
+
+      &--w {
+        left: -4px;
+        top: 10px;
+        bottom: 10px;
+        width: 8px;
+        cursor: ew-resize;
+      }
+
+      &--ne {
+        top: -6px;
+        right: -6px;
+        width: 14px;
+        height: 14px;
+        cursor: nesw-resize;
+      }
+
+      &--nw {
+        top: -6px;
+        left: -6px;
+        width: 14px;
+        height: 14px;
+        cursor: nwse-resize;
+      }
+
+      &--se {
+        bottom: -6px;
+        right: -6px;
+        width: 14px;
+        height: 14px;
+        cursor: nwse-resize;
+      }
+
+      &--sw {
+        bottom: -6px;
+        left: -6px;
+        width: 14px;
+        height: 14px;
+        cursor: nesw-resize;
+      }
+    }
+
     &__handle {
       position: absolute;
       width: 10px;
@@ -291,6 +379,9 @@
       background: var(--bg-primary-color);
       pointer-events: auto;
       z-index: 3;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: none;
 
       &--n {
         top: -5px;

@@ -5,7 +5,7 @@
     :style="wrapperStyle"
     @click="handleClick">
     <svg class="pointer-events-none">
-      <use :href="href"></use>
+      <use :href="href" width="100%" height="100%" />
     </svg>
   </div>
 </template>
@@ -62,6 +62,7 @@
   svg {
     color: v-bind(color);
     fill: currentColor;
+    overflow: visible;
     transition:
       color 0.2s ease,
       transform 0.22s ease,

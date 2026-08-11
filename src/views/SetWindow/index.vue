@@ -19,6 +19,10 @@
               <use :href="item.icon"></use>
             </svg>
             <span class="set-window__nav-label">{{ t(item.labelKey) }}</span>
+            <span
+              v-if="item.key === 'shortcuts' && shortcutConflictStore.keys.length > 0"
+              class="set-window__nav-dot"
+              aria-hidden="true" />
           </button>
         </aside>
 
@@ -39,6 +43,7 @@
   import { useI18n } from 'vue-i18n'
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import { SETTINGS_NAVIGATE_EVENT } from '@/constants/event'
+  import { useShortcutConflictStore } from '@/stores/app/shortcutConflict'
   import { closeCurrentWindow, minimizeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
   import AccountPage from './pages/account.vue'
   import GeneralPage from './pages/general.vue'
@@ -52,6 +57,7 @@
 
   const { t } = useI18n()
   const route = useRoute()
+  const shortcutConflictStore = useShortcutConflictStore()
   const routeTab = String(route.query.tab || '')
   const activeKey = ref<SettingsMenuKey>(routeTab === 'work' ? 'work' : 'account')
 
@@ -208,7 +214,16 @@
     }
 
     &__nav-label {
+      flex: 1;
       line-height: 1.3;
+    }
+
+    &__nav-dot {
+      flex-shrink: 0;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
     }
 
     &__content {

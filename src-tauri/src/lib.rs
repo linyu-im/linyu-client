@@ -31,6 +31,15 @@ use work::commands::{
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let focus_label =
+                if app.get_webview_window("home").is_some() { "home" } else { "login" };
+            if let Some(window) = app.get_webview_window(focus_label) {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .setup(|app| {
             let local_data = app.path().app_local_data_dir().map_err(|error| error.to_string())?;
             let plugin_root = local_data.join("plugin-system");
@@ -56,6 +65,8 @@ pub fn run() {
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_autostart::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             capture_screen,
             start_oauth_server,

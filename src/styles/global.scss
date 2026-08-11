@@ -98,3 +98,8 @@ body {
 .v-binder-follower-content:has(.n-base-select-menu) {
   background-color: transparent !important;
 }
+
+.n-tooltip {
+  user-select: none;
+  -webkit-user-select: none;
+}

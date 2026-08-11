@@ -13,13 +13,13 @@
   }
 
   const onEditorClose = async () => {
-    resetEditor()
     await hideCurrentWindow()
+    resetEditor()
   }
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      onEditorClose()
+      void onEditorClose()
     }
   }
 
