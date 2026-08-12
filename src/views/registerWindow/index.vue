@@ -875,12 +875,14 @@
       font-size: 30px;
       font-weight: 800;
       line-height: 1.3;
+      letter-spacing: 2px;
       color: var(--text-color);
       text-align: center;
     }
 
     &__slide-title-em {
       color: var(--primary-color);
+      margin-right: -2px;
     }
 
     &__slide-desc {

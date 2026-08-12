@@ -2,10 +2,10 @@
   "login": {
     "text": {
       "default": "Login",
-      "loading": "Login in progress",
-      "autoLoginLoading": "Auto in login in progress"
+      "loading": "Login in progress"
     },
-    "autoLogin": "Auto Login",
+    "keepLogin": "Keep me signed in",
+    "keepLoginExpired": "Login credential expired, please enter your password again",
     "other": {
       "text": "Other Methods",
       "scan": "QR Login",

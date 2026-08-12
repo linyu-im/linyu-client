@@ -2,10 +2,10 @@
   "login": {
     "text": {
       "default": "登录",
-      "loading": "登录中",
-      "autoLoginLoading": "自动登录中"
+      "loading": "登录中"
     },
-    "autoLogin": "自动登录",
+    "keepLogin": "保持登录",
+    "keepLoginExpired": "登录凭证已失效，请重新输入密码",
     "other": {
       "text": "其他登录方式",
       "scan": "扫码登录",

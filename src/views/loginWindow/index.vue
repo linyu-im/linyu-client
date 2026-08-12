@@ -21,7 +21,7 @@
     </ToolBar>
 
     <!-- 内容部分 -->
-    <div data-tauri-drag-region class="login__content">
+    <div class="login__content">
       <template v-if="versionChecking">
         <div class="flex flex-1 flex-col items-center justify-center gap-12px select-none">
           <n-spin size="medium" />
@@ -44,7 +44,7 @@
                 <div class="n-input__eye" @click.stop="toggleAccountHistory">
                   <i class="n-base-icon">
                     <svg
-                      class="login__account-chevron"
+                      class="login__account-chevron size-16px"
                       :class="{ 'login__account-chevron--open': accountHistoryVisible }">
                       <use href="#left-arrow" />
                     </svg>
@@ -73,13 +73,15 @@
           </div>
           <n-input
             type="password"
-            show-password-on="click"
-            v-model:value="accountInfo.password"
+            :show-password-on="passwordFreeMode ? undefined : 'click'"
+            :readonly="passwordFreeMode"
+            :value="accountInfo.password"
             :placeholder="t('login.input.password')"
-            clearable />
+            clearable
+            @update:value="onPasswordUpdate" />
           <div class="flex items-center">
-            <n-checkbox size="small" v-model:checked="globalStore.isAutoLogin" @update:checked="onAutoLoginChange" />
-            <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.autoLogin') }}</span>
+            <n-checkbox size="small" :checked="keepLoginChecked" @update:checked="onKeepLoginChange" />
+            <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.keepLogin') }}</span>
           </div>
         </div>
 
@@ -189,7 +191,6 @@
   } from '@/utils/desktop/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user/user'
-  import { useGlobalStore } from '@/stores/app/global'
   import { useLoginHistoryStore, type LoginHistoryItem } from '@/stores/user/loginHistory'
   import { invoke } from '@tauri-apps/api/core'
   import { openUrl } from '@/utils/desktop/open'
@@ -201,9 +202,10 @@
   import { onClickOutside } from '@vueuse/core'
   import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 
+  const FAKE_PASSWORD = '********'
+
   const { t } = useI18n()
   const userStore = useUserStore()
-  const globalStore = useGlobalStore()
   const loginHistoryStore = useLoginHistoryStore()
   const systemSetting = useSystemSettingStore()
   const appUpdateStore = useAppUpdateStore()
@@ -217,7 +219,8 @@
   const loginLoading = ref(false)
   const loginButtonDisabled = ref(true)
   const termsChecked = ref(false)
-  const loginType = ref('')
+  const keepLoginChecked = ref(false)
+  const passwordFreeMode = ref(false)
 
   const setttngsOptions = [
     {
@@ -271,7 +274,7 @@
 
   const loginText = computed(() => {
     if (loginLoading.value) {
-      return loginType.value === 'auto' ? t('login.text.autoLoginLoading') : t('login.text.loading')
+      return t('login.text.loading')
     }
     return t('login.text.default')
   })
@@ -279,7 +282,7 @@
   const currentAccountUserId = computed(() => {
     const account = accountInfo.value.account.trim()
     if (!account) return ''
-    const item = loginHistoryStore.accounts.find((a) => a.account === account)
+    const item = loginHistoryStore.findByAccount(account)
     return item?.userId || ''
   })
 
@@ -317,11 +320,32 @@
     systemSetting.setLang(lang)
   }
 
-  const loginSuccess = (info: LoginResult, saveAccount = false) => {
-    if (saveAccount && info.account) {
+  const applyAccountKeepLoginState = (account: string) => {
+    const item = loginHistoryStore.findByAccount(account.trim())
+    if (item?.keepLogin && item.token) {
+      keepLoginChecked.value = true
+      passwordFreeMode.value = true
+      accountInfo.value.password = FAKE_PASSWORD
+      return
+    }
+    keepLoginChecked.value = !!item?.keepLogin
+    passwordFreeMode.value = false
+    accountInfo.value.password = ''
+  }
+
+  const exitPasswordFreeMode = () => {
+    if (!passwordFreeMode.value) return
+    passwordFreeMode.value = false
+    accountInfo.value.password = ''
+  }
+
+  const loginSuccess = (info: LoginResult) => {
+    if (info.account) {
       loginHistoryStore.addAccount({
         account: info.account,
-        userId: info.userId
+        userId: info.userId,
+        keepLogin: keepLoginChecked.value,
+        token: keepLoginChecked.value ? info.token : undefined
       })
     }
     userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
@@ -336,48 +360,88 @@
   const onSelectHistoryAccount = (item: LoginHistoryItem) => {
     accountInfo.value.account = item.account
     accountHistoryVisible.value = false
+    applyAccountKeepLoginState(item.account)
   }
 
   const onRemoveHistoryAccount = (account: string) => {
     loginHistoryStore.removeAccount(account)
     if (accountInfo.value.account === account) {
-      accountInfo.value.account = loginHistoryStore.accounts[0]?.account || ''
+      const nextAccount = loginHistoryStore.accounts[0]?.account || ''
+      accountInfo.value.account = nextAccount
+      if (nextAccount) {
+        applyAccountKeepLoginState(nextAccount)
+      } else {
+        keepLoginChecked.value = false
+        passwordFreeMode.value = false
+        accountInfo.value.password = ''
+      }
     }
     if (!loginHistoryStore.accounts.length) {
       accountHistoryVisible.value = false
     }
   }
 
+  const onPasswordUpdate = (val: string) => {
+    if (passwordFreeMode.value) {
+      if (val !== FAKE_PASSWORD) {
+        exitPasswordFreeMode()
+      }
+      return
+    }
+    accountInfo.value.password = val
+  }
+
+  const onKeepLoginChange = (val: boolean) => {
+    keepLoginChecked.value = val
+    const account = accountInfo.value.account.trim()
+    if (!val && account) {
+      loginHistoryStore.clearKeepLogin(account)
+      exitPasswordFreeMode()
+    }
+  }
+
+  const onKeepLoginExpired = (account: string, message?: string) => {
+    loginHistoryStore.clearKeepLogin(account)
+    keepLoginChecked.value = false
+    passwordFreeMode.value = false
+    accountInfo.value.password = ''
+    window.$message.error(message || t('login.keepLoginExpired'))
+  }
+
   const onAccountLogin = () => {
-    loginType.value = 'manual'
     loginLoading.value = true
-    authApi.accountLogin({ account: accountInfo.value.account, password: accountInfo.value.password }).then((res) => {
+    const account = accountInfo.value.account.trim()
+
+    if (passwordFreeMode.value) {
+      const item = loginHistoryStore.findByAccount(account)
+      const token = item?.token
+      if (!token) {
+        loginLoading.value = false
+        onKeepLoginExpired(account)
+        return
+      }
+      userStore.$patch((state) => {
+        state.authInfo.token = token
+      })
+      authApi.tokenReset().then((res) => {
+        loginLoading.value = false
+        if (res.code === 0 && res.data) {
+          loginSuccess(res.data)
+        } else {
+          onKeepLoginExpired(account, res.msg || t('login.keepLoginExpired'))
+        }
+      })
+      return
+    }
+
+    authApi.accountLogin({ account, password: accountInfo.value.password }).then((res) => {
       loginLoading.value = false
       if (res.code === 0 && res.data) {
-        loginSuccess(res.data, true)
+        loginSuccess(res.data)
       } else {
         window.$message.error(res.msg)
       }
     })
-  }
-
-  const onAutoLogin = () => {
-    loginType.value = 'auto'
-    loginLoading.value = true
-    loginButtonDisabled.value = true
-    authApi
-      .tokenReset()
-      .then((res) => {
-        if (res.code === 0 && res.data) {
-          loginSuccess(res.data)
-        } else {
-          window.$message.error(res.msg)
-        }
-      })
-      .finally(() => {
-        loginLoading.value = false
-        loginButtonDisabled.value = false
-      })
   }
 
   const onOauth2Login = async (oauthType: string) => {
@@ -397,10 +461,6 @@
     })
   }
 
-  const onAutoLoginChange = (val: boolean) => {
-    globalStore.setIsAutoLogin(val)
-  }
-
   const onGoRegister = () => {
     void createRegisterWindow()
   }
@@ -411,8 +471,9 @@
 
   watch(
     () => accountInfo.value.account,
-    () => {
+    (account) => {
       accountHistoryVisible.value = false
+      applyAccountKeepLoginState(account)
     }
   )
 
@@ -420,6 +481,7 @@
     const latestAccount = loginHistoryStore.accounts[0]
     if (latestAccount) {
       accountInfo.value.account = latestAccount.account
+      applyAccountKeepLoginState(latestAccount.account)
     }
     versionChecking.value = true
     appUpdateStore
@@ -427,18 +489,11 @@
       .then((info) => {
         showForceUpdate.value = info.needForce
         versionChecking.value = false
-        if (info.needForce) return
-        if (globalStore.isAutoLogin) {
-          onAutoLogin()
-        }
       })
       .catch((error: Error) => {
         console.error('[AppUpdate] login check failed:', error)
         showForceUpdate.value = false
         versionChecking.value = false
-        if (globalStore.isAutoLogin) {
-          onAutoLogin()
-        }
       })
     nextTick(() => {
       ShowCurrentWindow()
@@ -446,8 +501,9 @@
   })
 
   watchEffect(() => {
-    loginButtonDisabled.value =
-      accountInfo.value.account === '' || accountInfo.value.password === '' || loginLoading.value || !termsChecked.value
+    const hasAccount = accountInfo.value.account.trim() !== ''
+    const hasPassword = passwordFreeMode.value || accountInfo.value.password !== ''
+    loginButtonDisabled.value = !hasAccount || !hasPassword || loginLoading.value || !termsChecked.value
   })
 </script>
 
@@ -458,6 +514,7 @@
     display: flex;
     flex-direction: column;
     color: var(--text-color);
+    user-select: none;
 
     .login__toolbar {
       height: 40px;
@@ -583,6 +640,9 @@
       }
 
       .login__account-chevron {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
         transform: rotate(-90deg);
         transition: transform 0.2s ease;
 
@@ -683,6 +743,7 @@
         padding: 0;
         height: 40px;
         line-height: 40px;
+        user-select: text;
       }
     }
   }
