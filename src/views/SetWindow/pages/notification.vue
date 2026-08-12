@@ -12,6 +12,11 @@
           :value="appSettings.notifications.callSound"
           @update:value="(v) => appSettings.setNotificationFlag('callSound', v)" />
       </SettingRow>
+      <SettingRow :label="t('settings.notification.driveSound')">
+        <n-switch
+          :value="appSettings.notifications.driveSound"
+          @update:value="(v) => appSettings.setNotificationFlag('driveSound', v)" />
+      </SettingRow>
     </SettingCard>
 
     <div class="settings-page__section-title">{{ t('settings.notification.badgeSection') }}</div>
@@ -52,7 +57,6 @@
 
   const { t } = useI18n()
   const appSettings = useAppSettingsStore()
-  appSettings.ensureNotificationBadges()
 
   const badgeOptions: Array<{ slot: NotificationBadgeSlot; labelKey: string; icon: string }> = [
     { slot: 'moment', labelKey: 'settings.notification.badgeMoment', icon: '#moment' },

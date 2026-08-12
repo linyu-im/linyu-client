@@ -23,6 +23,8 @@ import {
   isUploadCancelledError,
   uploadSpaceFileChunks
 } from '@/utils/file/spaceFileUpload'
+import { playSound } from '@/utils/common/sound'
+import { useAppSettingsStore } from '@/stores/app/appSettings'
 import { exists } from '@tauri-apps/plugin-fs'
 
 type RuntimeControl = {
@@ -285,6 +287,9 @@ const runTask = (taskId: string) => {
           clearControl(taskId)
           store.bumpCompletedVersion()
           finishRunning()
+          if (useAppSettingsStore().notifications.driveSound) {
+            playSound('complete')
+          }
           return 'done' as const
         })
       }
@@ -322,6 +327,9 @@ const runTask = (taskId: string) => {
             clearControl(taskId)
             store.bumpCompletedVersion()
             finishRunning()
+            if (useAppSettingsStore().notifications.driveSound) {
+              playSound('complete')
+            }
             return 'done' as const
           })
         })

@@ -62,11 +62,14 @@
   import { resolveChatSessionIdByPeer, sendCallRecordMsg } from '@/utils/message/callRecord'
   import { CALL_INVITE_HANGUP_EVENT, CALL_INVITE_UPDATE_EVENT } from '@/constants/event'
   import { closeCurrentWindow, createCallWindow, isCallWindowOpen, ShowCurrentWindow } from '@/utils/desktop/window'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { startLoopSound, stopLoopSound } from '@/utils/common/sound'
 
   type InviteScene = 'user' | 'group'
 
   const { t } = useI18n()
   const route = useRoute()
+  const appSettings = useAppSettingsStore()
 
   const sessionId = ref('')
   const fromId = ref('')
@@ -218,6 +221,9 @@
 
   onMounted(async () => {
     applyFromRoute()
+    if (appSettings.notifications.callSound) {
+      startLoopSound('call')
+    }
     unlistenUpdate = await listen<CallInviteWindowPayload>(CALL_INVITE_UPDATE_EVENT, (event) => {
       applyPayload(event.payload)
     })
@@ -235,6 +241,7 @@
   })
 
   onBeforeUnmount(() => {
+    stopLoopSound('call')
     unlistenUpdate?.()
     unlistenHangup?.()
   })

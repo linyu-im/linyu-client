@@ -1440,6 +1440,7 @@
       "soundSection": "声音",
       "messageSound": "新消息通知声音",
       "callSound": "语音和视频通话声音",
+      "driveSound": "网盘上传/下载完成通知",
       "badgeSection": "通知标记",
       "badgeMoment": "过往",
       "badgeAi": "AI Work",

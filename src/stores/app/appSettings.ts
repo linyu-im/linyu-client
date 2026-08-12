@@ -6,7 +6,7 @@ export type ShortcutKey = 'sendMessage' | 'sendVoice' | 'openUnread' | 'screensh
 /** 侧栏通知标记槽位（与 homeNavBadge 对齐） */
 export type NotificationBadgeSlot = 'message' | 'contacts' | 'moment' | 'ai' | 'drive' | 'application' | 'more'
 
-export type NotificationFlagKey = 'messageSound' | 'callSound' | 'momentsInteraction'
+export type NotificationFlagKey = 'messageSound' | 'callSound' | 'driveSound' | 'momentsInteraction'
 
 export type GeneralFieldKey =
   | 'autoTranslate'
@@ -34,6 +34,7 @@ type AppSettingsStore = {
   notifications: {
     messageSound: boolean
     callSound: boolean
+    driveSound: boolean
     momentsInteraction: boolean
     badges: Record<NotificationBadgeSlot, boolean>
   }
@@ -79,6 +80,7 @@ export const useAppSettingsStore = defineStore('appSettings', {
     notifications: {
       messageSound: true,
       callSound: true,
+      driveSound: true,
       momentsInteraction: false,
       badges: { ...DEFAULT_BADGES }
     },
@@ -111,19 +113,6 @@ export const useAppSettingsStore = defineStore('appSettings', {
     setGeneralField<K extends GeneralFieldKey>(key: K, value: AppSettingsStore['general'][K]) {
       this.$patch((state) => {
         state.general[key] = value
-      })
-    },
-    /** 兼容旧持久化数据：补齐 badges 缺省项 */
-    ensureNotificationBadges() {
-      this.$patch((state) => {
-        const legacy = state.notifications as AppSettingsStore['notifications'] & {
-          badgeMoments?: boolean
-        }
-        const merged = { ...DEFAULT_BADGES, ...(legacy.badges || {}) }
-        if (legacy.badgeMoments === false) {
-          merged.moment = false
-        }
-        state.notifications.badges = merged
       })
     }
   },

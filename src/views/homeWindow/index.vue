@@ -389,7 +389,6 @@
   }
 
   onMounted(() => {
-    appSettings.ensureNotificationBadges()
     void connectWebSocket().catch((err) => console.error('[WebSocket] connect failed:', err))
     void createPluginRuntimeWindow()
     void ensureNotificationActionListener()

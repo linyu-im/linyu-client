@@ -185,6 +185,8 @@
   import type { CallRecordCallStatus } from '@/types/api/message'
   import { resolveChatSessionIdByPeer, sendCallRecordMsg } from '@/utils/message/callRecord'
   import { closeCurrentWindow, minimizeCurrentWindow, restoreOrMaximizeCurrentWindow } from '@/utils/desktop/window'
+  import { useAppSettingsStore } from '@/stores/app/appSettings'
+  import { startLoopSound, stopLoopSound } from '@/utils/common/sound'
 
   const RECONNECT_HOLD_MS = 5000
   const END_CLOSE_DELAY_MS = 2000
@@ -221,6 +223,7 @@
   const { t } = useI18n()
   const route = useRoute()
   const avCallStore = useAvCallStore()
+  const appSettings = useAppSettingsStore()
   const userStore = useUserStore()
 
   const sessionId = ref('')
@@ -476,11 +479,15 @@
       clearTimeout(unansweredTimer)
       unansweredTimer = undefined
     }
+    stopLoopSound('call')
   }
 
   const startUnansweredTimer = () => {
     clearUnansweredTimer()
     if (hadRemotePeer.value) return
+    if (appSettings.notifications.callSound) {
+      startLoopSound('call')
+    }
     unansweredTimer = setTimeout(() => {
       void endCall({
         notifyApi: true,

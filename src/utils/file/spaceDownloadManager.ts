@@ -18,6 +18,8 @@ import { useSpaceUploadStore } from '@/stores/cloudDrive/spaceUpload'
 import { useUserStore } from '@/stores/user/user'
 import { normalizeFileSize } from '@/utils/file/filePick'
 import { cancelSpaceFileDownload, downloadSpaceFile, isDownloadCancelledError } from '@/utils/file/spaceFileDownload'
+import { playSound } from '@/utils/common/sound'
+import { useAppSettingsStore } from '@/stores/app/appSettings'
 import { join } from '@tauri-apps/api/path'
 import { exists, mkdir, remove } from '@tauri-apps/plugin-fs'
 
@@ -283,6 +285,9 @@ const runTask = (taskId: string) => {
       }).then(() => {
         clearControl(taskId)
         finishRunning()
+        if (useAppSettingsStore().notifications.driveSound) {
+          playSound('complete')
+        }
       })
     })
     .catch((err: unknown) => {

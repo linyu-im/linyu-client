@@ -1466,6 +1466,7 @@
       "soundSection": "Sound",
       "messageSound": "New message sound",
       "callSound": "Voice & video call sound",
+      "driveSound": "Cloud drive transfer complete sound",
       "badgeSection": "Badges",
       "badgeMoment": "Moment",
       "badgeAi": "AI Work",

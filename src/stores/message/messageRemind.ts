@@ -7,6 +7,8 @@ import { useUserStore } from '@/stores/user/user'
 import type { Message } from '@/types/api/message'
 import type { FromType } from '@/types/common'
 import { formatCallRecordSummary } from '@/utils/message/callRecord'
+import { playSound } from '@/utils/common/sound'
+import { useAppSettingsStore } from '@/stores/app/appSettings'
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow'
 import { LogicalSize, PhysicalPosition } from '@tauri-apps/api/window'
 import { defineStore } from 'pinia'
@@ -187,6 +189,10 @@ export const useMessageRemindStore = defineStore('messageRemind', {
       const chat = chatStore.chatList.find((item) => item.sessionId === msg.sessionId)
       if (!chat || chat.peerIsMute) return
       if (chatStore.isChatActive(chat.id)) return
+
+      if (useAppSettingsStore().notifications.messageSound) {
+        playSound('message')
+      }
 
       const preview = formatMessagePreview(msg).trim()
       const name = (chat.peerRemark || chat.peerName || '').trim() || chat.peerId
