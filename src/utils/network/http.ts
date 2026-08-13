@@ -1,5 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http'
-import { SERVICE_URL } from '@/constants/network'
+import { getServiceUrl } from '@/constants/network'
 import { useUserStore } from '@/stores/user/user'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import i18n from '@/services/i18n'
@@ -68,18 +68,18 @@ function buildUrl(url: string, params?: Record<string, any>): string {
     _t: Date.now().toString()
   }).toString()
 
-  return `${SERVICE_URL}${url}${query ? `?${query}` : ''}`
+  return `${getServiceUrl()}${url}${query ? `?${query}` : ''}`
 }
 
 export function resolveResourceUrl(url: string): string {
   if (/^https?:\/\//i.test(url)) return url
   const path = url.startsWith('/') ? url : `/${url}`
-  return `${SERVICE_URL}${path}`
+  return `${getServiceUrl()}${path}`
 }
 
 const getServiceOrigin = () => {
   try {
-    return new URL(SERVICE_URL).origin
+    return new URL(getServiceUrl()).origin
   } catch {
     return ''
   }

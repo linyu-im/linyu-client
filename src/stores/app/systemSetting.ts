@@ -12,6 +12,10 @@ type SystemSettingStore = {
     //语言
     lang: LangEnum
   }
+  network: {
+    // 自定义后端服务地址；空字符串表示使用默认地址
+    serviceUrl: string
+  }
 }
 
 export const useSystemSettingStore = defineStore('systemSetting', {
@@ -24,6 +28,9 @@ export const useSystemSettingStore = defineStore('systemSetting', {
       },
       preferences: {
         lang: LangEnum.ZH
+      },
+      network: {
+        serviceUrl: ''
       }
     }
   },
@@ -43,6 +50,14 @@ export const useSystemSettingStore = defineStore('systemSetting', {
     setLang(lang: LangEnum) {
       this.$patch((state) => {
         state.preferences.lang = lang
+      })
+    },
+    setNetworkServiceUrl(serviceUrl: string) {
+      this.$patch((state) => {
+        if (!state.network) {
+          state.network = { serviceUrl: '' }
+        }
+        state.network.serviceUrl = serviceUrl.trim().replace(/\/+$/, '')
       })
     }
   },

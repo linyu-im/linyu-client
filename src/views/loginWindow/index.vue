@@ -28,6 +28,32 @@
           <div class="text-12px text-[var(--text-secondary-color)]">{{ t('update.checking') }}</div>
         </div>
       </template>
+      <template v-else-if="showNetworkSettings">
+        <div class="login__network">
+          <div class="login__network-header">
+            <SvgIconButton href="#left-arrow" @click="onCancelNetworkSettings" />
+            <div class="login__network-title">{{ t('login.networkSettings.title') }}</div>
+            <div class="size-28px" />
+          </div>
+          <div class="login__network-form">
+            <div class="login__network-field">
+              <div class="login__network-label">{{ t('login.networkSettings.serviceUrl') }}</div>
+              <n-input
+                v-model:value="networkServiceUrlDraft"
+                clearable
+                :placeholder="t('login.networkSettings.serviceUrlPlaceholder')" />
+            </div>
+            <div class="login__network-actions">
+              <n-button type="primary" @click="onConfirmNetworkSettings">
+                {{ t('login.networkSettings.confirm') }}
+              </n-button>
+              <n-button class="login__network-cancel" @click="onCancelNetworkSettings">
+                {{ t('login.networkSettings.cancel') }}
+              </n-button>
+            </div>
+          </div>
+        </div>
+      </template>
       <template v-else>
         <div class="flex justify-center m-t-40px m-b-40px select-none">
           <div class="login__avatar-wrapper">
@@ -198,6 +224,7 @@
   import { OAuth2LoginPayload } from '@/types/cmd/login'
   import { LoginResult } from '@/types/api/auth'
   import { useSystemSettingStore } from '@/stores/app/systemSetting'
+  import { isValidServiceUrl } from '@/constants/network'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { onClickOutside } from '@vueuse/core'
   import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
@@ -214,6 +241,8 @@
 
   const accountInputRef = ref<HTMLElement>()
   const accountHistoryVisible = ref(false)
+  const showNetworkSettings = ref(false)
+  const networkServiceUrlDraft = ref('')
 
   const accountInfo = ref({ account: '', password: '' })
   const loginLoading = ref(false)
@@ -269,6 +298,13 @@
           }
         }
       ]
+    },
+    {
+      label: () => t('login.settings.network'),
+      key: 'network',
+      props: {
+        onClick: () => onOpenNetworkSettings()
+      }
     }
   ]
 
@@ -314,6 +350,27 @@
 
   const onSetThemeColor = (pattern: ThemePatternEnum) => {
     systemSetting.setThemePattern(pattern)
+  }
+
+  const onOpenNetworkSettings = () => {
+    networkServiceUrlDraft.value = systemSetting.network?.serviceUrl || ''
+    showNetworkSettings.value = true
+    accountHistoryVisible.value = false
+  }
+
+  const onCancelNetworkSettings = () => {
+    showNetworkSettings.value = false
+    networkServiceUrlDraft.value = systemSetting.network?.serviceUrl || ''
+  }
+
+  const onConfirmNetworkSettings = () => {
+    const nextUrl = networkServiceUrlDraft.value.trim()
+    if (nextUrl && !isValidServiceUrl(nextUrl)) {
+      window.$message.error(t('login.networkSettings.invalidUrl'))
+      return
+    }
+    systemSetting.setNetworkServiceUrl(nextUrl)
+    showNetworkSettings.value = false
   }
 
   const onSetLanguage = (lang: LangEnum) => {
@@ -630,6 +687,66 @@
 
         &:not(.n-button--disabled):hover {
           background: linear-gradient(to right, var(--primary-soft-color), var(--primary-strong-color));
+        }
+      }
+
+      .login__network {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding-top: 12px;
+      }
+
+      .login__network-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 -10px 24px;
+      }
+
+      .login__network-title {
+        flex: 1;
+        text-align: center;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-color);
+        user-select: none;
+      }
+
+      .login__network-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .login__network-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .login__network-label {
+        font-size: 13px;
+        color: var(--text-secondary-color);
+        user-select: none;
+      }
+
+      .login__network-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .login__network-cancel {
+        color: var(--text-color);
+        background-color: var(--button-soft-bg) !important;
+        border: 1px solid var(--border-color);
+
+        &:hover {
+          color: var(--text-color);
+          background-color: var(--button-soft-bg) !important;
+          border-color: var(--border-color);
+          filter: brightness(1.05);
         }
       }
 

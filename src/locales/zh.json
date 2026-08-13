@@ -40,7 +40,16 @@
         "light": "浅色",
         "system": "跟随系统"
       },
-      "language": "语言"
+      "language": "语言",
+      "network": "网络设置"
+    },
+    "networkSettings": {
+      "title": "网络设置",
+      "serviceUrl": "服务地址",
+      "serviceUrlPlaceholder": "如 http://192.168.1.1:8080",
+      "confirm": "确定",
+      "cancel": "取消",
+      "invalidUrl": "请输入以 http:// 或 https:// 开头的有效地址"
     }
   },
   "register": {

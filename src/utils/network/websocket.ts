@@ -1,11 +1,11 @@
 import WebSocket, { type Message } from '@tauri-apps/plugin-websocket'
 import {
+  getWsUrl,
   WS_DEVICE,
   WS_HEARTBEAT_INTERVAL_MS,
   WS_HEARTBEAT_ROUTE,
   WS_MAX_RECONNECT_ATTEMPTS,
-  WS_RECONNECT_BASE_INTERVAL_MS,
-  WS_URL
+  WS_RECONNECT_BASE_INTERVAL_MS
 } from '@/constants/network'
 import { handleAvCallWs } from '@/services/avCallWs'
 import { useUserStore } from '@/stores/user/user'
@@ -58,7 +58,7 @@ function resetReconnectState() {
 }
 
 function canReconnect(): boolean {
-  return !manualClose && Boolean(useUserStore().authInfo.token) && Boolean(WS_URL)
+  return !manualClose && Boolean(useUserStore().authInfo.token) && Boolean(getWsUrl())
 }
 
 function scheduleReconnect(reason: string) {
@@ -190,15 +190,16 @@ async function connectWebSocketInternal(): Promise<void> {
     console.warn('[WebSocket] skip connect: missing token')
     return
   }
-  if (!WS_URL) {
-    console.warn('[WebSocket] skip connect: VITE_WEBSOCKET_URL is empty')
+  const wsUrl = getWsUrl()
+  if (!wsUrl) {
+    console.warn('[WebSocket] skip connect: service url is invalid')
     return
   }
 
   connecting = (async () => {
     await cleanupSocket()
 
-    socket = await WebSocket.connect(WS_URL, {
+    socket = await WebSocket.connect(wsUrl, {
       headers: {
         Authorization: token,
         device: WS_DEVICE
@@ -208,7 +209,7 @@ async function connectWebSocketInternal(): Promise<void> {
     removeMessageListener = socket.addListener(onMessage)
     startHeartbeat()
     resetReconnectState()
-    console.log('[WebSocket] connected:', WS_URL)
+    console.log('[WebSocket] connected:', wsUrl)
   })()
 
   try {

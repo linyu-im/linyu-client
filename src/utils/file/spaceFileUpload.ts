@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { spaceUploadApi } from '@/api'
 import { SPACE_UPLOAD_FILE_PROGRESS_EVENT as SPACE_PROGRESS_EVENT } from '@/constants/event'
-import { SERVICE_URL } from '@/constants/network'
+import { getServiceUrl } from '@/constants/network'
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 import { useUserStore } from '@/stores/user/user'
 import type { SpaceUploadFileParam, UploadFileProgressPayload } from '@/types/cmd/upload'
@@ -103,7 +103,7 @@ export const uploadSpaceFileChunks = (params: SpaceFileUploadParams) => {
   const param: SpaceUploadFileParam = {
     filePath: params.filePath,
     fileName: params.fileName,
-    baseUrl: SERVICE_URL,
+    baseUrl: getServiceUrl(),
     authToken: userStore.authInfo.token || '',
     lang: systemSettingStore.preferences.lang || 'zh',
     chunkSize: DEFAULT_FILE_CHUNK_SIZE,
