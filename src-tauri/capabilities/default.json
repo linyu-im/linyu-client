@@ -5,6 +5,7 @@
   "windows": [
     "login",
     "register",
+    "changePwd",
     "tray",
     "messageRemind",
     "screenshot",

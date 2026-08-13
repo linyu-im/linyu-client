@@ -111,6 +111,7 @@
   import { initOsFileDropListener } from '@/utils/file/nativeFileDrop'
   import { connectWebSocket, disconnectWebSocket } from '@/utils/network/websocket'
   import {
+    createChangePwdWindow,
     createEmotionWinodw,
     createFeedbackWinodw,
     createPluginRuntimeWindow,
@@ -262,6 +263,10 @@
       key: 'lock'
     },
     {
+      label: () => t('home.options.more.changePwd'),
+      key: 'changePwd'
+    },
+    {
       label: () => t('home.options.more.feedback'),
       key: 'feedback'
     },
@@ -326,6 +331,8 @@
         })
     } else if (key === 'lock') {
       sessionLock.lock()
+    } else if (key === 'changePwd') {
+      void createChangePwdWindow('change')
     } else if (key === 'feedback') {
       createFeedbackWinodw()
     } else if (key === 'searchChatRecord') {

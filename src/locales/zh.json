@@ -5,6 +5,7 @@
       "loading": "登录中"
     },
     "keepLogin": "保持登录",
+    "forgotPassword": "忘记密码",
     "keepLoginExpired": "登录凭证已失效，请重新输入密码",
     "other": {
       "text": "其他登录方式",
@@ -50,6 +51,43 @@
       "confirm": "确定",
       "cancel": "取消",
       "invalidUrl": "请输入以 http:// 或 https:// 开头的有效地址"
+    }
+  },
+  "auth": {
+    "unauthorized": "登录已失效，请重新登录"
+  },
+  "changePwd": {
+    "titleRecover": "找回密码",
+    "titleChange": "修改密码",
+    "subtitle": "验证你的账号信息，然后设置新的登录密码",
+    "form": {
+      "email": "邮箱",
+      "emailPlaceholder": "请输入绑定邮箱",
+      "emailInvalid": "请输入正确的邮箱地址",
+      "code": "邮箱验证码",
+      "codePlaceholder": "请输入验证码",
+      "sendCode": "发送验证码",
+      "sendCodeSuccess": "验证码已发送，请查收邮箱",
+      "resendCode": "{seconds}s 后重发",
+      "password": "新密码",
+      "passwordPlaceholder": "请输入新密码",
+      "passwordHint": "8-20 位，建议包含字母、数字和特殊字符",
+      "passwordInvalid": "密码需为 8-20 位，且包含字母、数字和特殊字符",
+      "passwordMismatch": "两次输入的密码不一致",
+      "confirmPassword": "确认新密码",
+      "confirmPasswordPlaceholder": "请再次输入新密码",
+      "submit": "重置密码",
+      "securityTip": "密码重置成功后，其他设备上的登录状态可能会失效"
+    },
+    "hasPassword": {
+      "tip": "想起密码了？",
+      "login": "返回登录"
+    },
+    "success": {
+      "title": "修改成功",
+      "subtitle": "你的登录密码已成功更新，现在可以使用新密码重新登录 Linyu",
+      "securityTip": "为保障安全，其他设备上的登录状态可能需要重新验证",
+      "backToLogin": "返回登录"
     }
   },
   "register": {
@@ -133,6 +171,7 @@
         "feedback": "意见反馈",
         "searchChatRecord": "聊天记录搜索",
         "lock": "锁定",
+        "changePwd": "修改密码",
         "setting": "设置",
         "exit": "退出"
       }

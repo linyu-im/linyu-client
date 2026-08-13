@@ -2,6 +2,7 @@
 export const HOME_WINDOW_LABEL = 'home'
 export const LOGIN_WINDOW_LABEL = 'login'
 export const REGISTER_WINDOW_LABEL = 'register'
+export const CHANGE_PWD_WINDOW_LABEL = 'changePwd'
 export const TRAY_WINDOW_LABEL = 'tray'
 export const EMOTION_WINDOW_LABEL = 'emotion'
 export const SET_WINDOW_LABEL = 'set'
@@ -40,9 +41,15 @@ export const HOME_WINDOW_HEIGHT = 675
 export const HOME_WINDOW_MIN_WIDTH = 800
 export const HOME_WINDOW_MIN_HEIGHT = 600
 
-// 注册窗口
+// 登录窗口（与 tauri.conf 静态 login 一致，供动态重建）
+export const LOGIN_WINDOW_WIDTH = 336
+export const LOGIN_WINDOW_HEIGHT = 580
+
+// 注册 / 重置密码窗口
 export const REGISTER_WINDOW_WIDTH = 1020
 export const REGISTER_WINDOW_HEIGHT = 660
+export const CHANGE_PWD_WINDOW_WIDTH = REGISTER_WINDOW_WIDTH
+export const CHANGE_PWD_WINDOW_HEIGHT = REGISTER_WINDOW_HEIGHT
 
 // 心情窗口
 export const EMOTION_WINDOW_WIDTH = 320

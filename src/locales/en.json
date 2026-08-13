@@ -5,6 +5,7 @@
       "loading": "Login in progress"
     },
     "keepLogin": "Keep me signed in",
+    "forgotPassword": "Forgot password",
     "keepLoginExpired": "Login credential expired, please enter your password again",
     "other": {
       "text": "Other Methods",
@@ -50,6 +51,43 @@
       "confirm": "OK",
       "cancel": "Cancel",
       "invalidUrl": "Please enter a valid URL starting with http:// or https://"
+    }
+  },
+  "auth": {
+    "unauthorized": "Session expired, please sign in again"
+  },
+  "changePwd": {
+    "titleRecover": "Forgot password",
+    "titleChange": "Change password",
+    "subtitle": "Verify your account, then set a new login password",
+    "form": {
+      "email": "Email",
+      "emailPlaceholder": "Enter your bound email",
+      "emailInvalid": "Please enter a valid email address",
+      "code": "Email verification code",
+      "codePlaceholder": "Enter verification code",
+      "sendCode": "Send code",
+      "sendCodeSuccess": "Code sent, please check your email",
+      "resendCode": "Resend in {seconds}s",
+      "password": "New password",
+      "passwordPlaceholder": "Enter new password",
+      "passwordHint": "8-20 characters, include letters, numbers, and special characters",
+      "passwordInvalid": "Password must be 8-20 characters and include letters, numbers, and special characters",
+      "passwordMismatch": "Passwords do not match",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Enter new password again",
+      "submit": "Reset password",
+      "securityTip": "After resetting, other devices may be signed out"
+    },
+    "hasPassword": {
+      "tip": "Remembered your password?",
+      "login": "Back to login"
+    },
+    "success": {
+      "title": "Password updated",
+      "subtitle": "Your login password has been updated. You can now sign in to Linyu with the new password",
+      "securityTip": "For security, other devices may need to sign in again",
+      "backToLogin": "Back to login"
     }
   },
   "register": {
@@ -133,6 +171,7 @@
         "feedback": "Feedback",
         "searchChatRecord": "Search Chat History",
         "lock": "Lock",
+        "changePwd": "Change password",
         "setting": "Settings",
         "exit": "Exit"
       }

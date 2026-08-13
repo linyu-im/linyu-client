@@ -105,9 +105,14 @@
             :placeholder="t('login.input.password')"
             clearable
             @update:value="onPasswordUpdate" />
-          <div class="flex items-center">
-            <n-checkbox size="small" :checked="keepLoginChecked" @update:checked="onKeepLoginChange" />
-            <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.keepLogin') }}</span>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <n-checkbox size="small" :checked="keepLoginChecked" @update:checked="onKeepLoginChange" />
+              <span class="text-12px text-[var(--text-secondary-color)] m-l-5px">{{ t('login.keepLogin') }}</span>
+            </div>
+            <span class="text-12px color-[var(--primary-color)] cursor-pointer" @click="onForgotPassword">
+              {{ t('login.forgotPassword') }}
+            </span>
           </div>
         </div>
 
@@ -208,6 +213,8 @@
   import { authApi, oauth2Api } from '@/api'
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import {
+    closeWebviewWindow,
+    createChangePwdWindow,
     createHomeWinodw,
     createRegisterWindow,
     exitApp,
@@ -215,6 +222,7 @@
     minimizeCurrentWindow,
     ShowCurrentWindow
   } from '@/utils/desktop/window'
+  import { CHANGE_PWD_WINDOW_LABEL, REGISTER_WINDOW_LABEL } from '@/constants/window'
   import { useI18n } from 'vue-i18n'
   import { useUserStore } from '@/stores/user/user'
   import { useLoginHistoryStore, type LoginHistoryItem } from '@/stores/user/loginHistory'
@@ -407,6 +415,8 @@
     }
     userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
     createHomeWinodw()
+    void closeWebviewWindow(REGISTER_WINDOW_LABEL)
+    void closeWebviewWindow(CHANGE_PWD_WINDOW_LABEL)
     void hideCurrentWindow()
   }
 
@@ -520,6 +530,10 @@
 
   const onGoRegister = () => {
     void createRegisterWindow()
+  }
+
+  const onForgotPassword = () => {
+    void createChangePwdWindow('recover')
   }
 
   onClickOutside(accountInputRef, () => {

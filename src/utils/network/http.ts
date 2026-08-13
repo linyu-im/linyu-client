@@ -24,6 +24,16 @@ function getToken(): string {
   return userStore.authInfo.token || ''
 }
 
+/** 仅已登录时处理 401 */
+function handleUnauthorized(code: number) {
+  if (code !== 401) return
+  const userStore = useUserStore()
+  if (!userStore.authInfo.isLoggedIn && !userStore.authInfo.token) return
+  void import('@/utils/auth/returnToLogin').then(({ returnToLogin }) => {
+    void returnToLogin({ reason: 'unauthorized' })
+  })
+}
+
 function getLang(): string {
   const systemSetting = useSystemSettingStore()
   return systemSetting.preferences.lang || 'zh'
@@ -45,14 +55,16 @@ async function send<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
     })
 
     if (!response.ok) {
-      return {
+      const failed: ApiResponse<T> = {
         code: response.status,
         msg: t('http.networkError')
       }
+      handleUnauthorized(failed.code)
+      return failed
     }
 
     const result: ApiResponse<T> = await response.json()
-
+    handleUnauthorized(result.code)
     return result
   } catch (_error: any) {
     return {

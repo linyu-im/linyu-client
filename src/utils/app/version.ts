@@ -1,6 +1,6 @@
 import { getVersion } from '@tauri-apps/api/app'
 import { platform } from '@tauri-apps/plugin-os'
-import { check as checkAppVersionApi } from '@/api/appVersion'
+import { appVersionApi } from '@/api'
 import type { AppVersionCheckResult } from '@/types/api/appVersion'
 
 export type AppPlatform = 'windows' | 'macos'
@@ -42,7 +42,7 @@ function toVersionCode(value: unknown): number {
 
 export function checkAppVersion(): Promise<AppVersionCheckInfo> {
   return getAppPlatform().then((appPlatform) => {
-    return checkAppVersionApi({ platform: appPlatform }).then((res) => {
+    return appVersionApi.check({ platform: appPlatform }).then((res) => {
       if (res.code === 0 && res.data) {
         const localCode = getAppVersionCode()
         const minSupportVersionCode = toVersionCode(res.data.minSupportVersionCode)

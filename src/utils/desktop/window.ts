@@ -72,6 +72,9 @@ import {
   GROUP_NOTICE_WINDOW_MIN_HEIGHT,
   GROUP_NOTICE_WINDOW_MIN_WIDTH,
   GROUP_NOTICE_WINDOW_WIDTH,
+  CHANGE_PWD_WINDOW_HEIGHT,
+  CHANGE_PWD_WINDOW_LABEL,
+  CHANGE_PWD_WINDOW_WIDTH,
   HOME_WINDOW_HEIGHT,
   HOME_WINDOW_LABEL,
   HOME_WINDOW_MIN_HEIGHT,
@@ -82,8 +85,10 @@ import {
   IMG_VIEWER_WINDOW_MIN_HEIGHT,
   IMG_VIEWER_WINDOW_MIN_WIDTH,
   IMG_VIEWER_WINDOW_WIDTH,
-  MESSAGE_REMIND_WINDOW_LABEL,
+  LOGIN_WINDOW_HEIGHT,
   LOGIN_WINDOW_LABEL,
+  LOGIN_WINDOW_WIDTH,
+  MESSAGE_REMIND_WINDOW_LABEL,
   REGISTER_WINDOW_HEIGHT,
   REGISTER_WINDOW_LABEL,
   REGISTER_WINDOW_WIDTH,
@@ -114,6 +119,54 @@ import {
 } from '@/constants/window'
 import type { CallInviteWindowPayload } from '@/types/api/avCall'
 import type { InstalledPlugin, PluginWindow } from '@/types/plugin'
+
+/** 锁屏 / 回登录时对窗口的处置方式 */
+export type WindowDismissAction = 'close' | 'hide' | 'retain'
+
+export type WindowDismissReason = 'sessionLock' | 'returnToLogin'
+
+export interface WindowDismissPolicy {
+  sessionLock: WindowDismissAction
+  returnToLogin: WindowDismissAction
+}
+
+const DEFAULT_DISMISS_POLICY: WindowDismissPolicy = {
+  sessionLock: 'close',
+  returnToLogin: 'close'
+}
+
+const windowDismissPolicies = new Map<string, WindowDismissPolicy>()
+
+export const registerWindowDismissPolicy = (label: string, policy: Partial<WindowDismissPolicy> = {}) => {
+  windowDismissPolicies.set(label, {
+    ...DEFAULT_DISMISS_POLICY,
+    ...policy
+  })
+}
+
+/** 静态启动窗：不走 createWebviewWindow，启动时登记策略 */
+registerWindowDismissPolicy(LOGIN_WINDOW_LABEL, { sessionLock: 'retain', returnToLogin: 'retain' })
+registerWindowDismissPolicy(TRAY_WINDOW_LABEL, { sessionLock: 'hide', returnToLogin: 'hide' })
+registerWindowDismissPolicy(MESSAGE_REMIND_WINDOW_LABEL, { sessionLock: 'hide', returnToLogin: 'hide' })
+registerWindowDismissPolicy(SCREENSHOT_WINDOW_LABEL, { sessionLock: 'hide', returnToLogin: 'hide' })
+
+export const sweepWindowsByReason = async (
+  reason: WindowDismissReason,
+  overrides?: Partial<Record<string, WindowDismissAction>>
+) => {
+  const windows = await getAllWindows()
+  await Promise.all(
+    windows.map(async (window) => {
+      const action = overrides?.[window.label] ?? windowDismissPolicies.get(window.label)?.[reason] ?? 'close'
+      if (action === 'retain') return
+      if (action === 'hide') {
+        await window.hide().catch(() => undefined)
+        return
+      }
+      await window.close().catch(() => undefined)
+    })
+  )
+}
 
 const syncCallInviteWindowSize = (webview: WebviewWindow) =>
   webview.setSize(new LogicalSize(CALL_INVITE_WINDOW_WIDTH, CALL_INVITE_WINDOW_HEIGHT))
@@ -177,12 +230,14 @@ const readPluginWindowBounds = (pluginId: string, windowId: string): PersistedPl
   }
 }
 
-export const createWebviewWindow = async (
-  title: string,
-  label: string,
-  options: Partial<typeof defaultOptions> = {}
-) => {
-  const opts = { ...defaultOptions, ...options }
+type CreateWebviewWindowOptions = Partial<typeof defaultOptions> & {
+  dismissPolicy?: Partial<WindowDismissPolicy>
+}
+
+export const createWebviewWindow = async (title: string, label: string, options: CreateWebviewWindowOptions = {}) => {
+  const { dismissPolicy, ...rest } = options
+  const opts = { ...defaultOptions, ...rest }
+  registerWindowDismissPolicy(label, dismissPolicy)
 
   let webview = await WebviewWindow.getByLabel(label)
   if (webview) {
@@ -278,30 +333,9 @@ export const openScreenshotWindow = async () => {
   await openAndFocusWindow(SCREENSHOT_WINDOW_LABEL)
 }
 
-/** 会话锁定：按各窗口既有语义 hide/close，并聚焦 home */
+/** 会话锁定：按各窗口创建时登记的 dismissPolicy 处置，并聚焦 home */
 export const closeOrHideWindowsForSessionLock = async () => {
-  const hideLabels = new Set([
-    TRAY_WINDOW_LABEL,
-    MESSAGE_REMIND_WINDOW_LABEL,
-    SCREENSHOT_WINDOW_LABEL,
-    IMG_VIEWER_WINDOW_LABEL,
-    VIDEO_VIEWER_WINDOW_LABEL
-  ])
-  const skipLabels = new Set([HOME_WINDOW_LABEL, PLUGIN_RUNTIME_WINDOW_LABEL, LOGIN_WINDOW_LABEL])
-
-  const windows = await getAllWindows()
-  await Promise.all(
-    windows.map(async (window) => {
-      const label = window.label
-      if (skipLabels.has(label)) return
-      if (hideLabels.has(label)) {
-        await window.hide().catch(() => undefined)
-        return
-      }
-      await window.close().catch(() => undefined)
-    })
-  )
-
+  await sweepWindowsByReason('sessionLock')
   await openAndFocusWindow(HOME_WINDOW_LABEL)
 }
 
@@ -342,7 +376,18 @@ export const createHomeWinodw = () =>
     // 动态窗口先 hidden 再 show 会永久显示禁止拖放（tauri#14643）。
     visible: true,
     // 网盘/消息大文件拖入必须拿本地路径（onDragDropEvent.paths）
-    dragDropEnabled: true
+    dragDropEnabled: true,
+    dismissPolicy: { sessionLock: 'retain', returnToLogin: 'close' }
+  })
+
+export const createLoginWindow = () =>
+  createWebviewWindow('登录', LOGIN_WINDOW_LABEL, {
+    width: LOGIN_WINDOW_WIDTH,
+    height: LOGIN_WINDOW_HEIGHT,
+    transparent: true,
+    resizable: false,
+    visible: true,
+    dismissPolicy: { sessionLock: 'retain', returnToLogin: 'retain' }
   })
 
 export const createRegisterWindow = () =>
@@ -352,6 +397,22 @@ export const createRegisterWindow = () =>
     transparent: true,
     resizable: false
   })
+
+export type ChangePwdWindowMode = 'recover' | 'change'
+
+export const createChangePwdWindow = async (mode: ChangePwdWindowMode = 'recover') => {
+  const existing = await WebviewWindow.getByLabel(CHANGE_PWD_WINDOW_LABEL)
+  if (existing) await existing.close().catch(() => undefined)
+
+  const title = mode === 'change' ? '修改密码' : '找回密码'
+  return createWebviewWindow(title, CHANGE_PWD_WINDOW_LABEL, {
+    width: CHANGE_PWD_WINDOW_WIDTH,
+    height: CHANGE_PWD_WINDOW_HEIGHT,
+    transparent: true,
+    resizable: false,
+    url: `/changePwd?mode=${mode}`
+  })
+}
 
 export const backToLoginWindow = async () => {
   await openAndFocusWindow(LOGIN_WINDOW_LABEL)
@@ -390,8 +451,15 @@ export const createFeedbackWinodw = () =>
   })
 
 export const createPluginRuntimeWindow = async () => {
+  const dismissPolicy: Partial<WindowDismissPolicy> = {
+    sessionLock: 'retain',
+    returnToLogin: 'close'
+  }
   const runtimeWindow = await WebviewWindow.getByLabel(PLUGIN_RUNTIME_WINDOW_LABEL)
-  if (runtimeWindow) return runtimeWindow
+  if (runtimeWindow) {
+    registerWindowDismissPolicy(PLUGIN_RUNTIME_WINDOW_LABEL, dismissPolicy)
+    return runtimeWindow
+  }
 
   return createWebviewWindow('Linyu Plugin Runtime', PLUGIN_RUNTIME_WINDOW_LABEL, {
     url: PLUGIN_RUNTIME_WINDOW_URL,
@@ -401,7 +469,8 @@ export const createPluginRuntimeWindow = async () => {
     center: false,
     skipTaskbar: true,
     decorations: false,
-    transparent: false
+    transparent: false,
+    dismissPolicy
   })
 }
 
@@ -537,7 +606,8 @@ export const createImgViewerWindow = () =>
     minWidth: IMG_VIEWER_WINDOW_MIN_WIDTH,
     minHeight: IMG_VIEWER_WINDOW_MIN_HEIGHT,
     resizable: true,
-    transparent: true
+    transparent: true,
+    dismissPolicy: { sessionLock: 'hide', returnToLogin: 'close' }
   })
 
 export const createVideoViewerWindow = () =>
@@ -547,7 +617,8 @@ export const createVideoViewerWindow = () =>
     minWidth: VIDEO_VIEWER_WINDOW_MIN_WIDTH,
     minHeight: VIDEO_VIEWER_WINDOW_MIN_HEIGHT,
     resizable: true,
-    transparent: true
+    transparent: true,
+    dismissPolicy: { sessionLock: 'hide', returnToLogin: 'close' }
   })
 
 export interface FilePreviewWindowOptions {

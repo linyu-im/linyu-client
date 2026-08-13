@@ -13,6 +13,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/registerWindow/index.vue')
   },
   {
+    path: '/changePwd',
+    name: 'changePwd',
+    component: () => import('@/views/changePwdWindow/index.vue')
+  },
+  {
     path: '/home',
     name: 'home',
     redirect: '/home/message',

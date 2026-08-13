@@ -106,7 +106,7 @@
   import Avatar from '@/components/Avatar.vue'
   import { useUserStore } from '@/stores/user/user'
   import { useAppSettingsStore } from '@/stores/app/appSettings'
-  import { closeCurrentWindow } from '@/utils/desktop/window'
+  import { returnToLogin } from '@/utils/auth/returnToLogin'
   import { resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
@@ -165,9 +165,7 @@
   }
 
   const onLogout = () => {
-    userStore.removeAuthInfo()
-    closeCurrentWindow()
-    window.$message?.success(t('settings.account.logoutSuccess'))
+    void returnToLogin({ reason: 'logout' })
   }
 </script>
 
