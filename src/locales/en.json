@@ -155,7 +155,10 @@
     }
   },
   "tray": {
-    "exit": "Exit Linyu"
+    "open": "Open Linyu",
+    "lock": "Lock",
+    "settings": "Settings",
+    "exit": "Exit"
   },
   "home": {
     "options": {

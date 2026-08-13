@@ -9,6 +9,7 @@ export const CALL_INVITE_HANGUP_EVENT = 'callinvite:hangup'
 export const HOME_TAB_NAVIGATE_EVENT = 'home-tab://navigate'
 export const SETTINGS_NAVIGATE_EVENT = 'settings:navigate'
 export const MESSAGE_REMIND_SHOW_EVENT = 'message-remind://show-near-tray'
+export const TRAY_MENU_SYNC_EVENT = 'tray://menu-sync'
 
 // 插件运行时事件
 export const PLUGIN_RUNTIME_REQUEST_EVENT = 'plugin-runtime:request'

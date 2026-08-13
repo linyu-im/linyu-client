@@ -1,25 +1,82 @@
 <template>
   <div class="tray">
-    <div class="p-5px">
+    <div class="tray__inner">
+      <template v-if="menuLoggedIn">
+        <div class="tray__option" @click="onOpenLinyu">{{ t('tray.open') }}</div>
+        <div class="tray__option" @click="onLock">{{ t('tray.lock') }}</div>
+        <div class="tray__option" @click="onSettings">{{ t('tray.settings') }}</div>
+        <div class="tray__divider" />
+      </template>
       <div class="tray__option" @click="onExitApp">{{ t('tray.exit') }}</div>
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
   import { defaultWindowIcon } from '@tauri-apps/api/app'
+  import { listen } from '@tauri-apps/api/event'
   import { Image } from '@tauri-apps/api/image'
   import { TrayIcon } from '@tauri-apps/api/tray'
   import { useI18n } from 'vue-i18n'
+  import { TRAY_MENU_SYNC_EVENT } from '@/constants/event'
   import { useChatStore } from '@/stores/chat/chat'
   import { useMessageRemindStore } from '@/stores/message/messageRemind'
-  import { initSystemTray, setTrayEvent, TRAY_ID } from '@/utils/desktop/tray'
-  import { exitApp } from '@/utils/desktop/window'
+  import { useSessionLockStore } from '@/stores/app/sessionLock'
+  import { useUserStore } from '@/stores/user/user'
+  import {
+    hideTrayMenuWindow,
+    initSystemTray,
+    openMainWindow,
+    setTrayEvent,
+    setTrayMenuLoggedIn,
+    shouldShowFullTrayMenu,
+    TRAY_ID
+  } from '@/utils/desktop/tray'
+  import { createSetWinodw, exitApp } from '@/utils/desktop/window'
 
   const BLINK_INTERVAL_MS = 500
 
   const { t } = useI18n()
   const chatStore = useChatStore()
   const messageRemindStore = useMessageRemindStore()
+  const userStore = useUserStore()
+  const sessionLock = useSessionLockStore()
+
+  const menuLoggedIn = ref(false)
+
+  const applyMenuLoggedIn = (loggedIn: boolean) => {
+    menuLoggedIn.value = loggedIn
+    setTrayMenuLoggedIn(loggedIn)
+  }
+
+  const refreshMenuLoggedIn = () => {
+    return shouldShowFullTrayMenu().then((loggedIn) => {
+      applyMenuLoggedIn(loggedIn)
+    })
+  }
+
+  let unlistenMenuSync: (() => void) | null = null
+
+  onMounted(() => {
+    void refreshMenuLoggedIn()
+    void listen<{ loggedIn: boolean }>(TRAY_MENU_SYNC_EVENT, (event) => {
+      applyMenuLoggedIn(!!event.payload?.loggedIn)
+    }).then((unlisten) => {
+      unlistenMenuSync = unlisten
+    })
+  })
+
+  // 登出 / 锁屏时收起完整菜单；登录或解锁后再按 home 确认
+  watch(
+    () => [!!userStore.authInfo.isLoggedIn, sessionLock.locked] as const,
+    ([loggedIn, locked]) => {
+      if (!loggedIn || locked) {
+        applyMenuLoggedIn(false)
+        return
+      }
+      void refreshMenuLoggedIn()
+    }
+  )
 
   let blinkTimer: ReturnType<typeof setInterval> | null = null
   let blinkShowNormal = true
@@ -97,14 +154,36 @@
   setTrayEvent()
 
   onBeforeUnmount(() => {
+    unlistenMenuSync?.()
+    unlistenMenuSync = null
     if (blinkTimer) {
       clearInterval(blinkTimer)
       blinkTimer = null
     }
   })
 
+  const runMenuAction = (action: () => void | Promise<void>) => {
+    void hideTrayMenuWindow().then(() => action())
+  }
+
+  const onOpenLinyu = () => {
+    runMenuAction(() => openMainWindow())
+  }
+
+  const onLock = () => {
+    runMenuAction(() => {
+      sessionLock.lock()
+    })
+  }
+
+  const onSettings = () => {
+    runMenuAction(() => {
+      void createSetWinodw()
+    })
+  }
+
   const onExitApp = () => {
-    exitApp()
+    runMenuAction(() => exitApp())
   }
 </script>
 
@@ -114,22 +193,37 @@
     width: 100vw;
     background-color: var(--bg-primary-color);
     user-select: none;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-color);
+    box-sizing: border-box;
 
-    .tray__option {
+    &__inner {
+      padding: 5px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__option {
       cursor: pointer;
       color: var(--text-color);
       height: 30px;
+      padding: 0 10px;
       border-radius: 5px;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: flex-start;
+      white-space: nowrap;
 
       &:hover {
-        background-color: var(--primary-color);
-        color: #fff;
+        background-color: var(--button-soft-bg);
       }
+    }
+
+    &__divider {
+      height: 1px;
+      margin: 4px 6px;
+      background-color: var(--border-color);
+      flex-shrink: 0;
     }
   }
 </style>

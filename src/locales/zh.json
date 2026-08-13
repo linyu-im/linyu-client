@@ -155,7 +155,10 @@
     }
   },
   "tray": {
-    "exit": "退出Linyu"
+    "open": "打开林语",
+    "lock": "锁定",
+    "settings": "设置",
+    "exit": "退出"
   },
   "home": {
     "options": {
