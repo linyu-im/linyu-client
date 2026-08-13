@@ -211,6 +211,7 @@
   import Avatar from '@/components/Avatar.vue'
   import ForceUpdatePanel from '@/components/Modal/ForceUpdatePanel.vue'
   import { authApi, oauth2Api } from '@/api'
+  import { initDatabase } from '@/db'
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import {
     closeWebviewWindow,
@@ -414,10 +415,17 @@
       })
     }
     userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
-    createHomeWinodw()
-    void closeWebviewWindow(REGISTER_WINDOW_LABEL)
-    void closeWebviewWindow(CHANGE_PWD_WINDOW_LABEL)
-    void hideCurrentWindow()
+    initDatabase()
+      .then(() => {
+        createHomeWinodw()
+        void closeWebviewWindow(REGISTER_WINDOW_LABEL)
+        void closeWebviewWindow(CHANGE_PWD_WINDOW_LABEL)
+        void hideCurrentWindow()
+      })
+      .catch(() => {
+        userStore.removeAuthInfo()
+        window.$message.error(t('login.dbInitFailed'))
+      })
   }
 
   const toggleAccountHistory = () => {

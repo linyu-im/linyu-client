@@ -4,6 +4,7 @@ import type {
   MomentCommentDelParam,
   MomentCreateParam,
   MomentDeleteParam,
+  MomentExpireDaysParam,
   MomentLike,
   MomentLikeParam,
   MomentPageParam,
@@ -49,4 +50,8 @@ export function uploadBackground(file: Blob, fileName = 'background.jpg'): Promi
 
 export function getSetting(data: MomentSettingGetParam): Promise<ApiResponse<MomentSettingResult>> {
   return post<MomentSettingResult, MomentSettingGetParam>('/api/basic/v1/moment/setting/get', data)
+}
+
+export function setExpireDays(data: MomentExpireDaysParam): Promise<ApiResponse<void>> {
+  return post<void, MomentExpireDaysParam>('/api/basic/v1/moment/setting/expire-days', data)
 }

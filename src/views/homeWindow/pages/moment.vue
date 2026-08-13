@@ -18,6 +18,8 @@
       :user-id="userStore.userInfo.id"
       :username="userStore.userInfo.username"
       @success="onComposeSuccess" />
+
+    <MomentExpireDaysModal v-model:show="showExpireDays" :user-id="userStore.userInfo.id" />
   </div>
 </template>
 
@@ -26,6 +28,7 @@
   import MomentFeed from '@/components/Moment/MomentFeed.vue'
   import MomentFloatNav from '@/components/Moment/MomentFloatNav.vue'
   import MomentComposeModal from '@/components/Modal/MomentComposeModal.vue'
+  import MomentExpireDaysModal from '@/components/Modal/MomentExpireDaysModal.vue'
   import { useUserStore } from '@/stores/user/user'
   import type { MomentFilter } from '@/types/api/moment'
   import { useI18n } from 'vue-i18n'
@@ -35,6 +38,7 @@
 
   const activeFilter = ref<MomentFilter>('all')
   const showCompose = ref(false)
+  const showExpireDays = ref(false)
   const feedRef = ref<InstanceType<typeof MomentFeed> | null>(null)
 
   const feedViewUserId = computed(() => {
@@ -53,7 +57,7 @@
   }
 
   const onSettings = () => {
-    window.$message.info(t('moment.cover.todo'))
+    showExpireDays.value = true
   }
 
   onActivated(() => {

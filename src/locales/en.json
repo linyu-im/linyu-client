@@ -7,6 +7,7 @@
     "keepLogin": "Keep me signed in",
     "forgotPassword": "Forgot password",
     "keepLoginExpired": "Login credential expired, please enter your password again",
+    "dbInitFailed": "Failed to initialize local data, please try again",
     "other": {
       "text": "Other Methods",
       "scan": "QR Login",
@@ -585,6 +586,22 @@
       "uploadFailed": "Failed to upload cover",
       "settings": "Settings",
       "todo": "Coming soon"
+    },
+    "expireDays": {
+      "title": "Who can see my past moments",
+      "hint": "Friends can only see moments within the selected time range",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "success": "Settings updated",
+      "failed": "Failed to update settings",
+      "loadFailed": "Failed to load settings",
+      "options": {
+        "180": "Last 6 months",
+        "30": "Last month",
+        "3": "Last 3 days",
+        "0": "All",
+        "invisible": "Invisible"
+      }
     },
     "visibility": {
       "all": "Public",

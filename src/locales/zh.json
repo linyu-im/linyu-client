@@ -7,6 +7,7 @@
     "keepLogin": "保持登录",
     "forgotPassword": "忘记密码",
     "keepLoginExpired": "登录凭证已失效，请重新输入密码",
+    "dbInitFailed": "本地数据初始化失败，请重试",
     "other": {
       "text": "其他登录方式",
       "scan": "扫码登录",
@@ -585,6 +586,22 @@
       "uploadFailed": "封面上传失败",
       "settings": "设置",
       "todo": "功能开发中"
+    },
+    "expireDays": {
+      "title": "允许好友查看过往的范围",
+      "hint": "好友只能看到该时间范围内的过往动态",
+      "cancel": "取消",
+      "confirm": "确定",
+      "success": "设置已更新",
+      "failed": "设置失败，请重试",
+      "loadFailed": "加载设置失败",
+      "options": {
+        "180": "最近半年",
+        "30": "最近一个月",
+        "3": "最近三天",
+        "0": "全部",
+        "invisible": "不可见"
+      }
     },
     "visibility": {
       "all": "公开",

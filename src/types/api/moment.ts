@@ -106,11 +106,18 @@ export interface MomentProfile {
 export interface MomentSettingResult {
   UserID: string
   bgUrl: string
-  ExpireDays: number
+  /** 允许好友查看过往的天数；0=永久，-1=不可见 */
+  expireDays?: number
+  /** 兼容旧字段名 */
+  ExpireDays?: number
   CreatedAt: string
   UpdatedAt: string
 }
 
 export interface MomentSettingGetParam {
   userId: string
+}
+
+export interface MomentExpireDaysParam {
+  expireDays: number
 }

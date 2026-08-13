@@ -7,6 +7,8 @@ const DB_FILE_NAME = 'linyu.db'
 
 let dbInstance: Database | null = null
 let dbPathPromise: Promise<string> | null = null
+let dbLoadPromise: Promise<Database> | null = null
+let schemaReadyPromise: Promise<void> | null = null
 
 /**
  * 获取数据库绝对路径（存放在 appLocalDataDir/data 目录下）
@@ -25,25 +27,45 @@ async function getDbPath(): Promise<string> {
 }
 
 /**
- * 获取数据库实例（单例模式）
+ * 获取数据库实例（单例模式，同窗并发共用一次 load）
  */
 export async function getDb(): Promise<Database> {
   if (dbInstance) {
     return dbInstance
   }
-
-  const dbPath = await getDbPath()
-  dbInstance = await Database.load(`sqlite:${dbPath}`)
-  return dbInstance
+  if (!dbLoadPromise) {
+    dbLoadPromise = (async () => {
+      const dbPath = await getDbPath()
+      dbInstance = await Database.load(`sqlite:${dbPath}`)
+      return dbInstance
+    })().catch((error) => {
+      dbLoadPromise = null
+      throw error
+    })
+  }
+  return dbLoadPromise
 }
 
 /**
- * 初始化数据库表结构
- * 在应用启动时调用，确保所有表存在
+ * 初始化数据库表结构（仅登录成功时调用，各窗口启动不再执行）
  */
 export async function initDatabase(): Promise<void> {
-  const db = await getDb()
+  if (schemaReadyPromise) {
+    return schemaReadyPromise
+  }
 
+  schemaReadyPromise = (async () => {
+    const db = await getDb()
+    await ensureSchema(db)
+  })().catch((error) => {
+    schemaReadyPromise = null
+    throw error
+  })
+
+  return schemaReadyPromise
+}
+
+async function ensureSchema(db: Database): Promise<void> {
   // 创建消息表
   await db.execute(`
     CREATE TABLE IF NOT EXISTS t_message (
@@ -274,6 +296,8 @@ export async function closeDatabase(): Promise<void> {
     await dbInstance.close()
     dbInstance = null
   }
+  dbLoadPromise = null
+  schemaReadyPromise = null
 }
 
 // 导出所有数据库操作
