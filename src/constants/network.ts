@@ -1,6 +1,10 @@
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 
 export const DEFAULT_SERVICE_URL = 'http://api.linyu.chat'
+export const OFFICIAL_WEBSITE_URL = 'https://linyu.chat'
+export const TERMS_OF_SERVICE_URL = 'https://linyu.chat/terms'
+export const PRIVACY_POLICY_URL = 'https://linyu.chat/privacy'
+export const PRICING_URL = 'https://linyu.chat/pricing'
 
 export const WS_DEVICE = 'desktop'
 export const WS_HEARTBEAT_ROUTE = 'heartbeat'
@@ -23,18 +27,13 @@ export function isValidServiceUrl(url: string): boolean {
 
 /**
  * 运行时 HTTP 服务根地址：
- * 1. 网络设置里自定义地址
- * 2. 否则 .env 的 VITE_SERVICE_URL（本地开发与改配置前行为一致）
- * 3. 再否则官方默认 http://api.linyu.chat
+ * 1. 网络设置里已填写的自定义地址
+ * 2. 未填写（空）时使用官方默认 DEFAULT_SERVICE_URL
  */
 export function getServiceUrl(): string {
-  const custom = useSystemSettingStore().network?.serviceUrl
-  if (custom?.trim()) {
+  const custom = useSystemSettingStore().network?.serviceUrl?.trim()
+  if (custom) {
     return normalizeServiceUrl(custom)
-  }
-  const envUrl = import.meta.env.VITE_SERVICE_URL?.trim()
-  if (envUrl) {
-    return normalizeServiceUrl(envUrl)
   }
   return DEFAULT_SERVICE_URL
 }

@@ -1560,13 +1560,12 @@
     },
     "about": {
       "version": "Version",
-      "help": "Help",
+      "website": "Website",
       "checkUpdate": "Check for updates",
-      "viewHelp": "View help",
+      "viewWebsite": "Visit website",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "feedback": "Feedback",
-      "uploadLogs": "Upload logs",
       "copyright": "Linyu Team. All rights reserved.",
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
@@ -1696,6 +1695,7 @@
     "cameraOffLabel": "Camera off",
     "connecting": "Connecting…",
     "connectFailed": "Failed to connect the call",
+    "disabled": "Audio and video calls are not available yet",
     "localPreview": "You",
     "waitingRemote": "Waiting for others to join…",
     "waitingAnswer": "Waiting for answer",

@@ -159,6 +159,7 @@
   import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
   import type { User } from '@/types/api/user'
+  import { ensureLivekitEnabled, isLivekitDisabledError, livekitErrorI18nKey } from '@/services/livekitCall'
   import { createCallWindow } from '@/utils/desktop/window'
   import { buildSessionId } from '@/utils/message/session'
   import type { InputInst } from 'naive-ui'
@@ -361,8 +362,8 @@
   const onStartAudioCall = () => {
     if (callStarting.value || !props.userId) return
     callStarting.value = true
-    avCallApi
-      .inviteUser({ userId: props.userId, callType: 'audio' })
+    ensureLivekitEnabled()
+      .then(() => avCallApi.inviteUser({ userId: props.userId, callType: 'audio' }))
       .then((res) => {
         if (res.code === 0 && res.data?.sessionId) {
           const displayName = userInfo.value?.remark?.trim() || userInfo.value?.username?.trim() || props.userId
@@ -379,6 +380,9 @@
           return
         }
         window.$message.error(res.msg)
+      })
+      .catch((error) => {
+        window.$message.error(t(isLivekitDisabledError(error) ? 'audioVideoCall.disabled' : livekitErrorI18nKey(error)))
       })
       .finally(() => {
         callStarting.value = false

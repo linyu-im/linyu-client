@@ -1534,13 +1534,12 @@
     },
     "about": {
       "version": "版本信息",
-      "help": "帮助",
+      "website": "官网",
       "checkUpdate": "检查更新",
-      "viewHelp": "查看帮助",
+      "viewWebsite": "查看官网",
       "terms": "服务协议",
       "privacy": "隐私政策",
       "feedback": "意见反馈",
-      "uploadLogs": "上传日志",
       "copyright": "Linyu Team 版权所有",
       "rights": "Copyright © 2026 Linyu. All Rights Reserved."
     }
@@ -1670,6 +1669,7 @@
     "cameraOffLabel": "摄像头已关闭",
     "connecting": "正在连接…",
     "connectFailed": "通话连接失败",
+    "disabled": "暂未开启音视频通话",
     "localPreview": "我",
     "waitingRemote": "等待对方加入…",
     "waitingAnswer": "等待接听中",

@@ -116,9 +116,9 @@
     createFeedbackWinodw,
     createPluginRuntimeWindow,
     createSetWinodw,
-    closeWebviewWindow,
     exitApp,
     hideCurrentWindow,
+    hideWebviewWindow,
     minimizeCurrentWindow,
     restoreOrMaximizeCurrentWindow,
     ShowCurrentWindow
@@ -429,7 +429,8 @@
       })
     nextTick(() => {
       ShowCurrentWindow()
-      void closeWebviewWindow(LOGIN_WINDOW_LABEL)
+      // 隐藏而非销毁，保留登录历史等登录窗内状态；回登录时可直接复用
+      void hideWebviewWindow(LOGIN_WINDOW_LABEL)
     })
   })
 

@@ -1,5 +1,5 @@
 import type {
-  LivekitHostResult,
+  LivekitInfoResult,
   LivekitRoomUsersParam,
   LivekitRoomUsersResult,
   LivekitTokenParam,
@@ -7,9 +7,9 @@ import type {
 } from '@/types/api/livekit'
 import { post, type ApiResponse } from '@/utils/network/http'
 
-/** 获取 LiveKit 地址 */
-export function getHost(): Promise<ApiResponse<LivekitHostResult>> {
-  return post<LivekitHostResult>('/api/voip/v1/livekit/host', {})
+/** 获取 LiveKit 服务信息（是否启用 + host） */
+export function getInfo(): Promise<ApiResponse<LivekitInfoResult>> {
+  return post<LivekitInfoResult>('/api/voip/v1/livekit/info', {})
 }
 
 /** 获取群聊入会 LiveKit token */

@@ -212,6 +212,7 @@
   import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
   import { isValidBackendTime, parseBackendTime } from '@/utils/common/time'
   import { openChatRecord } from '@/utils/message/chatRecord'
+  import { ensureLivekitEnabled, isLivekitDisabledError, livekitErrorI18nKey } from '@/services/livekitCall'
   import {
     closeCurrentWindow,
     createCallWindow,
@@ -348,14 +349,17 @@
   const startUserCall = (callType: AvCallType) => {
     if (callStarting.value) return
     callStarting.value = true
-    avCallApi
-      .inviteUser({ userId: props.chat.peerId, callType })
+    ensureLivekitEnabled()
+      .then(() => avCallApi.inviteUser({ userId: props.chat.peerId, callType }))
       .then((res) => {
         if (res.code === 0 && res.data?.sessionId) {
           openCallAfterInvite(res.data.sessionId, callType)
         } else {
           window.$message.error(res.msg)
         }
+      })
+      .catch((error) => {
+        window.$message.error(t(isLivekitDisabledError(error) ? 'audioVideoCall.disabled' : livekitErrorI18nKey(error)))
       })
       .finally(() => {
         callStarting.value = false
@@ -375,14 +379,17 @@
     if (callStarting.value || userIds.length === 0) return
     const callType = pendingGroupCallType.value
     callStarting.value = true
-    avCallApi
-      .inviteGroup({ groupId: props.chat.peerId, callType, userIds })
+    ensureLivekitEnabled()
+      .then(() => avCallApi.inviteGroup({ groupId: props.chat.peerId, callType, userIds }))
       .then((res) => {
         if (res.code === 0 && res.data?.sessionId) {
           openCallAfterInvite(res.data.sessionId, callType, userIds)
         } else {
           window.$message.error(res.msg)
         }
+      })
+      .catch((error) => {
+        window.$message.error(t(isLivekitDisabledError(error) ? 'audioVideoCall.disabled' : livekitErrorI18nKey(error)))
       })
       .finally(() => {
         callStarting.value = false
@@ -392,7 +399,8 @@
   const onJoinGroupCall = () => {
     if (groupCallJoining.value || props.chat.sceneType !== SceneType.Group) return
     groupCallJoining.value = true
-    isCallWindowOpen()
+    ensureLivekitEnabled()
+      .then(() => isCallWindowOpen())
       .then(async (busy) => {
         if (busy) {
           const sameGroup = avCallStore.sceneType === 'group' && avCallStore.peerId === props.chat.peerId
@@ -405,8 +413,10 @@
         }
         openCallAfterInvite(props.chat.sessionId, 'video')
       })
-      .catch(() => {
-        window.$message?.error(t('audioVideoCall.connectFailed'))
+      .catch((error) => {
+        window.$message?.error(
+          t(isLivekitDisabledError(error) ? 'audioVideoCall.disabled' : 'audioVideoCall.connectFailed')
+        )
       })
       .finally(() => {
         groupCallJoining.value = false

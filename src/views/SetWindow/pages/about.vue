@@ -9,21 +9,25 @@
             </n-button>
           </n-badge>
         </SettingRow>
-        <SettingRow :label="t('settings.about.help')">
-          <n-button size="small" @click="onTodo">{{ t('settings.about.viewHelp') }}</n-button>
+        <SettingRow :label="t('settings.about.website')">
+          <n-button size="small" @click="onOpenWebsite">{{ t('settings.about.viewWebsite') }}</n-button>
         </SettingRow>
       </SettingCard>
     </div>
 
     <footer class="settings-page__footer">
       <div class="settings-page__footer-links">
-        <button type="button" class="settings-page__link" @click="onTodo">{{ t('settings.about.terms') }}</button>
+        <button type="button" class="settings-page__link" @click="onOpenTerms">
+          {{ t('settings.about.terms') }}
+        </button>
         <span class="settings-page__sep">|</span>
-        <button type="button" class="settings-page__link" @click="onTodo">{{ t('settings.about.privacy') }}</button>
+        <button type="button" class="settings-page__link" @click="onOpenPrivacy">
+          {{ t('settings.about.privacy') }}
+        </button>
         <span class="settings-page__sep">|</span>
-        <button type="button" class="settings-page__link" @click="onTodo">{{ t('settings.about.feedback') }}</button>
-        <span class="settings-page__sep">|</span>
-        <button type="button" class="settings-page__link" @click="onTodo">{{ t('settings.about.uploadLogs') }}</button>
+        <button type="button" class="settings-page__link" @click="onOpenFeedback">
+          {{ t('settings.about.feedback') }}
+        </button>
       </div>
 
       <div class="settings-page__copyright">
@@ -42,8 +46,11 @@
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import UpdateModal from '@/components/Modal/UpdateModal.vue'
+  import { OFFICIAL_WEBSITE_URL, PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '@/constants/network'
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import { getAppVersion } from '@/utils/app/version'
+  import { openUrl } from '@/utils/desktop/open'
+  import { createFeedbackWinodw } from '@/utils/desktop/window'
 
   const { t } = useI18n()
   const appUpdateStore = useAppUpdateStore()
@@ -68,8 +75,20 @@
       })
   }
 
-  const onTodo = () => {
-    window.$message?.info(t('settings.todo'))
+  const onOpenWebsite = () => {
+    void openUrl(OFFICIAL_WEBSITE_URL)
+  }
+
+  const onOpenTerms = () => {
+    void openUrl(TERMS_OF_SERVICE_URL)
+  }
+
+  const onOpenPrivacy = () => {
+    void openUrl(PRIVACY_POLICY_URL)
+  }
+
+  const onOpenFeedback = () => {
+    void createFeedbackWinodw()
   }
 
   onMounted(() => {

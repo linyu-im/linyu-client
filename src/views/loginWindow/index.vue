@@ -134,12 +134,12 @@
               tag="div"
               class="inline text-12px text-[var(--text-secondary-color)]">
               <template #text2>
-                <span class="color-[var(--primary-color)] cursor-pointer">
+                <span class="color-[var(--primary-color)] cursor-pointer" @click="onOpenTerms">
                   {{ t('login.terms.text2') }}
                 </span>
               </template>
               <template #text3>
-                <span class="color-[var(--primary-color)] cursor-pointer">
+                <span class="color-[var(--primary-color)] cursor-pointer" @click="onOpenPrivacy">
                   {{ t('login.terms.text3') }}
                 </span>
               </template>
@@ -199,7 +199,7 @@
     <!-- 底部内容 -->
     <div data-tauri-drag-region class="login__footer">
       <div>{{ t('login.footer.provider') }}</div>
-      <div class="cursor-pointer">{{ t('login.footer.support') }}</div>
+      <div class="cursor-pointer" @click="onOpenSupport">{{ t('login.footer.support') }}</div>
     </div>
 
     <ForceUpdatePanel v-model:show="showForceUpdate" />
@@ -233,7 +233,7 @@
   import { OAuth2LoginPayload } from '@/types/cmd/login'
   import { LoginResult } from '@/types/api/auth'
   import { useSystemSettingStore } from '@/stores/app/systemSetting'
-  import { isValidServiceUrl } from '@/constants/network'
+  import { isValidServiceUrl, PRIVACY_POLICY_URL, PRICING_URL, TERMS_OF_SERVICE_URL } from '@/constants/network'
   import { LangEnum, ThemePatternEnum } from '@/constants/system'
   import { onClickOutside } from '@vueuse/core'
   import { computed, nextTick, onMounted, ref, watch, watchEffect } from 'vue'
@@ -386,6 +386,18 @@
     systemSetting.setLang(lang)
   }
 
+  const onOpenTerms = () => {
+    void openUrl(TERMS_OF_SERVICE_URL)
+  }
+
+  const onOpenPrivacy = () => {
+    void openUrl(PRIVACY_POLICY_URL)
+  }
+
+  const onOpenSupport = () => {
+    void openUrl(PRICING_URL)
+  }
+
   const applyAccountKeepLoginState = (account: string) => {
     const item = loginHistoryStore.findByAccount(account.trim())
     if (item?.keepLogin && item.token) {
@@ -405,15 +417,21 @@
     accountInfo.value.password = ''
   }
 
-  const loginSuccess = (info: LoginResult) => {
-    if (info.account) {
+  const loginSuccess = (info: LoginResult, fallbackAccount = '') => {
+    const account = String(info.account || fallbackAccount || accountInfo.value.account || '').trim()
+    console.info('[login] loginSuccess account=', account, 'apiAccount=', info.account)
+
+    if (account) {
       loginHistoryStore.addAccount({
-        account: info.account,
+        account,
         userId: info.userId,
         keepLogin: keepLoginChecked.value,
         token: keepLoginChecked.value ? info.token : undefined
       })
+    } else {
+      console.warn('[login] loginSuccess missing account, history not saved', info)
     }
+
     userStore.setAuthInfo({ token: info?.token || '', userId: info?.userId || '' })
     initDatabase()
       .then(() => {
@@ -422,9 +440,11 @@
         void closeWebviewWindow(CHANGE_PWD_WINDOW_LABEL)
         void hideCurrentWindow()
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('[login] initDatabase failed:', error)
         userStore.removeAuthInfo()
-        window.$message.error(t('login.dbInitFailed'))
+        const detail = error instanceof Error ? error.message : String(error || '')
+        window.$message.error(detail ? `${t('login.dbInitFailed')}（${detail}）` : t('login.dbInitFailed'))
       })
   }
 
@@ -501,7 +521,7 @@
       authApi.tokenReset().then((res) => {
         loginLoading.value = false
         if (res.code === 0 && res.data) {
-          loginSuccess(res.data)
+          loginSuccess(res.data, account)
         } else {
           onKeepLoginExpired(account, res.msg || t('login.keepLoginExpired'))
         }
@@ -512,7 +532,7 @@
     authApi.accountLogin({ account, password: accountInfo.value.password }).then((res) => {
       loginLoading.value = false
       if (res.code === 0 && res.data) {
-        loginSuccess(res.data)
+        loginSuccess(res.data, account)
       } else {
         window.$message.error(res.msg)
       }
@@ -528,7 +548,7 @@
       authApi.oauth2Login({ code: event.payload.code, type: oauthType }).then((res) => {
         loginLoading.value = false
         if (res.code === 0 && res.data) {
-          loginSuccess(res.data)
+          loginSuccess(res.data, res.data.account || '')
         } else {
           window.$message.error(res.msg)
         }
@@ -557,11 +577,24 @@
   )
 
   onMounted(() => {
-    const latestAccount = loginHistoryStore.accounts[0]
-    if (latestAccount) {
-      accountInfo.value.account = latestAccount.account
-      applyAccountKeepLoginState(latestAccount.account)
+    const syncHistoryToForm = () => {
+      const latestAccount = loginHistoryStore.accounts[0]
+      if (!latestAccount) return
+      // 仅在输入框为空时回填，避免覆盖用户正在输入
+      if (!accountInfo.value.account.trim()) {
+        accountInfo.value.account = latestAccount.account
+        applyAccountKeepLoginState(latestAccount.account)
+      }
     }
+
+    void loginHistoryStore.hydrate().then(() => {
+      syncHistoryToForm()
+      console.info(
+        '[loginHistory] hydrated',
+        loginHistoryStore.accounts.map((a) => a.account)
+      )
+    })
+
     versionChecking.value = true
     appUpdateStore
       .check({ silent: true })

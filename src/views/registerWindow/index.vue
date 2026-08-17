@@ -222,10 +222,14 @@
               tag="div"
               class="inline text-12px text-[var(--text-secondary-color)]">
               <template #text2>
-                <span class="color-[var(--primary-color)] cursor-pointer">{{ t('register.terms.text2') }}</span>
+                <span class="color-[var(--primary-color)] cursor-pointer" @click="onOpenTerms">
+                  {{ t('register.terms.text2') }}
+                </span>
               </template>
               <template #text3>
-                <span class="color-[var(--primary-color)] cursor-pointer">{{ t('register.terms.text3') }}</span>
+                <span class="color-[var(--primary-color)] cursor-pointer" @click="onOpenPrivacy">
+                  {{ t('register.terms.text3') }}
+                </span>
               </template>
             </i18n-t>
           </div>
@@ -252,12 +256,14 @@
 <script setup lang="ts">
   import SvgIconButton from '@/components/SvgIconButton.vue'
   import { registerApi } from '@/api'
+  import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '@/constants/network'
   import {
     backToLoginWindow,
     closeCurrentWindow,
     minimizeCurrentWindow,
     ShowCurrentWindow
   } from '@/utils/desktop/window'
+  import { openUrl } from '@/utils/desktop/open'
   import { writeText } from '@tauri-apps/plugin-clipboard-manager'
   import { useI18n } from 'vue-i18n'
 
@@ -281,6 +287,14 @@
   const registering = ref(false)
   let codeTimer: ReturnType<typeof setInterval> | null = null
   let accountCheckSeq = 0
+
+  const onOpenTerms = () => {
+    void openUrl(TERMS_OF_SERVICE_URL)
+  }
+
+  const onOpenPrivacy = () => {
+    void openUrl(PRIVACY_POLICY_URL)
+  }
 
   const features = [
     {

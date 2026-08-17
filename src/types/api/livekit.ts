@@ -1,5 +1,8 @@
-/** 获取 LiveKit 服务地址（data 为 host/url 字符串） */
-export type LivekitHostResult = string
+/** LiveKit 服务信息 */
+export interface LivekitInfoResult {
+  enabled: boolean
+  host: string
+}
 
 export interface LivekitTokenParam {
   sessionId: string

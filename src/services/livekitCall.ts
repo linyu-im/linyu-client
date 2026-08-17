@@ -1,5 +1,6 @@
 import { livekitApi } from '@/api'
 import type { AvCallType } from '@/types/api/avCall'
+import type { LivekitInfoResult } from '@/types/api/livekit'
 
 export interface LivekitCredentials {
   host: string
@@ -30,6 +31,10 @@ export type CallRoomChangePayload = {
 /** 将 LiveKit / 媒体设备错误归类，便于展示用户可读提示 */
 export type LivekitErrorKind = 'deviceInUse' | 'permissionDenied' | 'deviceNotFound' | 'connectFailed'
 
+export const isLivekitDisabledError = (error: unknown) => {
+  return error instanceof Error && error.message === 'LIVEKIT_DISABLED'
+}
+
 export const classifyLivekitError = (error: unknown): LivekitErrorKind => {
   const msg =
     error instanceof Error ? `${error.name} ${error.message}` : typeof error === 'string' ? error : String(error ?? '')
@@ -50,7 +55,10 @@ export const classifyLivekitError = (error: unknown): LivekitErrorKind => {
   return 'connectFailed'
 }
 
-export const livekitErrorI18nKey = (error: unknown) => `audioVideoCall.errors.${classifyLivekitError(error)}` as const
+export const livekitErrorI18nKey = (error: unknown) => {
+  if (isLivekitDisabledError(error)) return 'audioVideoCall.disabled' as const
+  return `audioVideoCall.errors.${classifyLivekitError(error)}` as const
+}
 
 const pickStringField = (raw: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
@@ -95,13 +103,10 @@ export const prepareLivekitCredentials = (
   sessionId: string,
   sceneType: 'user' | 'group'
 ): Promise<LivekitCredentials> => {
-  return livekitApi.getHost().then((hostRes) => {
-    if (hostRes.code !== 0 || hostRes.data == null || hostRes.data === '') {
-      return Promise.reject(new Error(hostRes.msg || 'LIVEKIT_HOST_FAILED'))
-    }
+  return ensureLivekitEnabled().then((info) => {
     let host: string
     try {
-      host = normalizeLivekitUrl(hostRes.data)
+      host = normalizeLivekitUrl(info.host)
     } catch (error) {
       return Promise.reject(error instanceof Error ? error : new Error('LIVEKIT_HOST_INVALID'))
     }
@@ -118,5 +123,21 @@ export const prepareLivekitCredentials = (
         return Promise.reject(error instanceof Error ? error : new Error('LIVEKIT_TOKEN_INVALID'))
       }
     })
+  })
+}
+
+/** 校验 LiveKit 已启用并返回 info；未启用时 reject LIVEKIT_DISABLED */
+export const ensureLivekitEnabled = (): Promise<LivekitInfoResult> => {
+  return livekitApi.getInfo().then((res) => {
+    if (res.code !== 0 || !res.data) {
+      return Promise.reject(new Error(res.msg || 'LIVEKIT_INFO_FAILED'))
+    }
+    if (!res.data.enabled) {
+      return Promise.reject(new Error('LIVEKIT_DISABLED'))
+    }
+    if (!res.data.host?.trim()) {
+      return Promise.reject(new Error('LIVEKIT_HOST_EMPTY'))
+    }
+    return res.data
   })
 }
