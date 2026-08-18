@@ -70,7 +70,7 @@
       width: 56px;
       height: 56px;
       border-radius: 8px;
-      background: var(--bg-secondary-color);
+      background: #fff;
     }
 
     &__head-main {

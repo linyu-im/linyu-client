@@ -19,20 +19,18 @@
         </button>
       </div>
 
-      <n-spin :show="loading">
-        <div class="moment-expire-modal__body">
-          <p class="moment-expire-modal__hint">{{ t('moment.expireDays.hint') }}</p>
-          <n-radio-group v-model:value="selectedDays" class="moment-expire-modal__group" name="moment-expire-days">
-            <div
-              v-for="option in options"
-              :key="option.value"
-              class="moment-expire-modal__option"
-              @click="selectedDays = option.value">
-              <n-radio :value="option.value" :label="option.label" />
-            </div>
-          </n-radio-group>
-        </div>
-      </n-spin>
+      <div class="moment-expire-modal__body">
+        <p class="moment-expire-modal__hint">{{ t('moment.expireDays.hint') }}</p>
+        <n-radio-group v-model:value="selectedDays" class="moment-expire-modal__group" name="moment-expire-days">
+          <div
+            v-for="option in options"
+            :key="option.value"
+            class="moment-expire-modal__option"
+            @click="selectedDays = option.value">
+            <n-radio :value="option.value" :label="option.label" />
+          </div>
+        </n-radio-group>
+      </div>
 
       <div class="moment-expire-modal__footer">
         <n-button class="moment-expire-modal__btn" @click="onCancel">

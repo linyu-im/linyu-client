@@ -724,21 +724,22 @@
       flex-direction: column;
       align-items: flex-start;
       min-width: 0;
-      transform: translateY(-2px);
+      gap: 8px;
     }
 
     &__account-label {
-      margin-bottom: 12px;
       font-size: 15px;
-      line-height: 1;
+      line-height: 1.2;
       font-weight: 400;
       color: rgba(222, 233, 255, 0.76);
       letter-spacing: 0.2px;
     }
 
     &__account-number {
+      position: relative;
+      z-index: 1;
       font-size: 34px;
-      line-height: 1;
+      line-height: 1.5;
       font-weight: 700;
       color: #f7f9ff;
       letter-spacing: 1.5px;
@@ -747,10 +748,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 100%;
+      padding: 2px 4px 8px 0;
+      box-sizing: content-box;
     }
 
     &__account-tip {
-      margin-top: 14px;
       font-size: 14px;
       line-height: 1.4;
       font-weight: 400;

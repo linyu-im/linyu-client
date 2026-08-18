@@ -1,6 +1,6 @@
-import { Emotonn } from '@/types/api/emotion'
+import { Emotion } from '@/types/api/emotion'
 import { ApiResponse, post } from '@/utils/network/http'
 
-export function list(): Promise<ApiResponse<Emotonn[]>> {
-  return post<Emotonn[], void>('/api/basic/v1/emotion/list')
+export function list(): Promise<ApiResponse<Emotion[]>> {
+  return post<Emotion[], void>('/api/basic/v1/emotion/list')
 }

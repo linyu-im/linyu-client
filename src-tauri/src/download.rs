@@ -15,6 +15,9 @@ const SPACE_PROGRESS_EVENT: &str = "space-download-file-progress";
 /// 进度 IPC 节流，避免大文件下载打满前端主线程
 const PROGRESS_EMIT_INTERVAL: Duration = Duration::from_millis(250);
 
+// 与 @tauri-apps/plugin-http 的 User-Agent 保持一致，
+const DESKTOP_USER_AGENT: &str = "tauri-plugin-http/2.5.7";
+
 struct DownloadTaskState {
     cancel_flags: Mutex<HashMap<String, Arc<AtomicBool>>>,
 }
@@ -401,6 +404,7 @@ pub async fn download_space_file<R: Runtime>(
         check_cancelled(&cancel_flag)?;
 
         let client = reqwest::Client::builder()
+            .user_agent(DESKTOP_USER_AGENT)
             .pool_max_idle_per_host(4)
             .redirect(reqwest::redirect::Policy::limited(10))
             .build()

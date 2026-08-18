@@ -142,10 +142,10 @@
                         <Avatar class="size-34px rounded-5px bg-#FFF" :id="contact.peerId" />
                         <div class="min-w-0 flex-1">
                           <div class="text-14px truncate">{{ getContactDisplayName(contact) }}</div>
-                          <div class="contacts__sub">
+                          <div v-if="contact.emotionUrl || contact.emotionName" class="contacts__sub">
                             <span>[</span>
                             <EmotionIcon :url="contact.emotionUrl" :size="18" />
-                            <div v-if="contact.emotionUrl">{{ contact.emotionName }}</div>
+                            <div v-if="contact.emotionName">{{ contact.emotionName }}</div>
                             <span>]</span>
                           </div>
                         </div>
@@ -491,6 +491,7 @@
       color: var(--text-secondary-color);
       padding: 8px 10px;
       user-select: none;
+      text-align: center;
     }
 
     &__empty {

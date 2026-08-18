@@ -114,10 +114,19 @@
   .profile-card__spin {
     width: 320px;
     max-width: calc(100vw - 24px);
+    background: var(--bg-primary-color);
+    border-radius: 10px;
+    overflow: hidden;
 
     :deep(.n-spin-container),
     :deep(.n-spin-content) {
       width: 100%;
+      background: var(--bg-primary-color);
+      border-radius: 10px;
+    }
+
+    :deep(.n-spin-content) {
+      opacity: 1 !important;
     }
   }
 </style>

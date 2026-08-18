@@ -55,7 +55,10 @@
 
   const profileContentStyle: CSSProperties = {
     maxHeight: 'calc(100vh - 16px)',
-    padding: 0
+    padding: 0,
+    background: 'var(--bg-primary-color)',
+    borderRadius: '10px',
+    overflow: 'hidden'
   }
 
   const popoverRef = ref<PopoverInst | null>(null)

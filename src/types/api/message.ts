@@ -73,6 +73,8 @@ export interface StickerMessageLocalExt {
   contentY?: number
   contentWidth?: number
   contentHeight?: number
+  sourceWidth?: number
+  sourceHeight?: number
 }
 
 export interface ECardContent {

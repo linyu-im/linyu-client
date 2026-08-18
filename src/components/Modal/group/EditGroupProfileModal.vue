@@ -65,17 +65,21 @@
 
           <div class="edit-group-profile__field edit-group-profile__field--tags">
             <span class="edit-group-profile__label">{{ t('message.chatSettings.group.groupTags') }}</span>
-            <n-select
-              v-model:value="form.tags"
-              class="edit-group-profile__select"
-              filterable
-              multiple
-              tag
-              :bordered="false"
-              :show-arrow="false"
-              :show="false"
-              :placeholder="t('message.chatSettings.group.tagsPlaceholder')"
-              :consistent-menu-width="false" />
+            <div class="edit-group-profile__tags">
+              <n-tag
+                v-for="(tag, index) in form.tags"
+                :key="`${tag}-${index}`"
+                size="small"
+                closable
+                @close="removeTag(index)">
+                {{ tag }}
+              </n-tag>
+              <n-input
+                v-model:value="tagDraft"
+                class="edit-group-profile__input"
+                :placeholder="form.tags.length ? '' : t('message.chatSettings.group.tagsPlaceholder')"
+                @keydown.enter.prevent="addTag" />
+            </div>
           </div>
         </div>
       </div>
@@ -137,6 +141,7 @@
     describe: '',
     tags: []
   })
+  const tagDraft = ref('')
 
   const fillForm = () => {
     form.value = {
@@ -166,6 +171,21 @@
     showAvatarCrop.value = false
     avatarUploading.value = false
     saving.value = false
+    tagDraft.value = ''
+  }
+
+  const addTag = () => {
+    const tag = tagDraft.value.trim()
+    if (!tag || form.value.tags.includes(tag)) {
+      tagDraft.value = ''
+      return
+    }
+    form.value.tags = [...form.value.tags, tag]
+    tagDraft.value = ''
+  }
+
+  const removeTag = (index: number) => {
+    form.value.tags = form.value.tags.filter((_, i) => i !== index)
   }
 
   const onClose = () => {
@@ -264,6 +284,7 @@
 
   watch(visible, (show) => {
     if (show) {
+      tagDraft.value = ''
       fillForm()
     }
   })
@@ -507,66 +528,17 @@
       }
     }
 
-    &__select {
+    &__tags {
       flex: 1;
       min-width: 0;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      align-self: stretch;
+      gap: 6px;
 
-      :deep(.n-base-selection) {
-        --n-border: none;
-        --n-border-hover: none;
-        --n-border-active: none;
-        --n-border-focus: none;
-        --n-box-shadow-active: none;
-        --n-box-shadow-focus: none;
-        --n-color: transparent;
-        --n-color-active: transparent;
-        --n-color-disabled: transparent;
-        --n-text-color: var(--text-color);
-        --n-text-color-disabled: var(--text-muted-color);
-        --n-placeholder-color: var(--text-muted-color);
-        --n-arrow-color: var(--text-secondary-color);
-        --n-height: 34px;
-        --n-padding-single: 0;
-        --n-padding-multiple: 0;
-        display: flex;
-        align-items: center;
-        width: 100%;
-        min-height: 34px;
-        background: transparent;
-      }
-
-      :deep(.n-base-selection-label) {
-        display: flex;
-        align-items: center;
-        background: transparent;
-      }
-
-      :deep(.n-base-selection-placeholder) {
-        color: var(--text-muted-color);
-      }
-
-      :deep(.n-base-selection:hover .n-base-selection-label),
-      :deep(.n-base-selection.n-base-selection--active .n-base-selection-label),
-      :deep(.n-base-selection.n-base-selection--focus .n-base-selection-label) {
-        background: transparent;
-      }
-
-      :deep(.n-base-selection-input) {
-        font-size: 14px;
-        line-height: 22px;
-      }
-
-      :deep(.n-base-selection-tags) {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 4px;
-        width: 100%;
-        min-height: 24px;
-        padding: 0;
+      .edit-group-profile__input {
+        flex: 1;
+        min-width: 80px;
       }
     }
 

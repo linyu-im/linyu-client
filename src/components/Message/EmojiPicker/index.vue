@@ -1,8 +1,8 @@
 <template>
   <div class="emoji-picker">
     <div ref="contentScrollRef" class="emoji-picker__scroll">
-      <div class="emoji-picker__body">
-        <n-spin :show="contentLoading">
+      <n-spin :show="contentLoading" class="emoji-picker__spin">
+        <div class="emoji-picker__body">
           <section v-if="activeTab === 'default'" class="emoji-picker__section">
             <div v-if="recentDefaultStickers.length" class="emoji-picker__recent">
               <div class="emoji-picker__section-title">{{ t('message.emojiPicker.recent') }}</div>
@@ -38,8 +38,8 @@
               <StickerItem v-for="item in activePackStickers" :key="item.id" :sticker="item" @select="onSelect" />
             </div>
           </section>
-        </n-spin>
-      </div>
+        </div>
+      </n-spin>
     </div>
     <div class="emoji-picker__footer">
       <div ref="tabScrollRef" class="emoji-picker__tabs">
@@ -242,9 +242,22 @@
       min-height: 0;
       overflow-y: auto;
       overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__spin {
+      flex: 1 0 auto;
+      min-height: 100%;
+
+      :deep(.n-spin-content) {
+        min-height: 100%;
+      }
     }
 
     &__body {
+      box-sizing: border-box;
+      min-height: 100%;
       padding: 8px 4px 4px;
     }
 

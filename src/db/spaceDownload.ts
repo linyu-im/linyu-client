@@ -1,4 +1,4 @@
-import { getDb } from '.'
+import { getDb } from './connection'
 
 export type SpaceDownloadStatus = 'pending' | 'downloading' | 'paused' | 'completed' | 'failed' | 'cancelled'
 

@@ -111,14 +111,14 @@
           </template>
           <template v-else>
             <span class="profile-card__action-sep" aria-hidden="true" />
-            <button type="button" class="profile-card__action">
+            <button type="button" class="profile-card__action" :disabled="callStarting" @click="startUserCall('audio')">
               <svg class="profile-card__action-icon size-18px">
                 <use href="#phone" />
               </svg>
               <span class="profile-card__action-label">{{ t('avatarProfile.voiceChat') }}</span>
             </button>
             <span class="profile-card__action-sep" aria-hidden="true" />
-            <button type="button" class="profile-card__action">
+            <button type="button" class="profile-card__action" :disabled="callStarting" @click="startUserCall('video')">
               <svg class="profile-card__action-icon size-18px">
                 <use href="#video" />
               </svg>
@@ -134,15 +134,18 @@
 </template>
 
 <script setup lang="ts">
+  import type { AvCallType } from '@/types/api/avCall'
   import type { User } from '@/types/api/user'
-  import { contactsApi } from '@/api'
+  import { avCallApi, contactsApi } from '@/api'
   import EditUserProfileModal from '@/components/Modal/EditUserProfileModal.vue'
   import { SceneType } from '@/constants/common'
   import { useAvatarStore } from '@/stores/user/avatar'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useUserStore } from '@/stores/user/user'
+  import { ensureLivekitEnabled, isLivekitDisabledError, livekitErrorI18nKey } from '@/services/livekitCall'
   import { openImgViewer } from '@/utils/desktop/imgViewer'
-  import { createMomentWindow } from '@/utils/desktop/window'
+  import { createCallWindow, createMomentWindow } from '@/utils/desktop/window'
+  import { buildSessionId } from '@/utils/message/session'
   import { useI18n } from 'vue-i18n'
 
   const props = defineProps<{
@@ -160,6 +163,7 @@
   const homeTabStore = useHomeTabStore()
 
   const sendingMessage = ref(false)
+  const callStarting = ref(false)
 
   const currentUserId = computed(() => userStore.userInfo?.id || userStore.authInfo?.userId || '')
   const isSelf = computed(() => props.id === currentUserId.value)
@@ -263,6 +267,35 @@
     homeTabStore.openMessageWithPeer(props.id, SceneType.User).finally(() => {
       sendingMessage.value = false
     })
+  }
+
+  const startUserCall = (callType: AvCallType) => {
+    if (callStarting.value || isSelf.value || !props.id) return
+    callStarting.value = true
+    ensureLivekitEnabled()
+      .then(() => avCallApi.inviteUser({ userId: props.id, callType }))
+      .then((res) => {
+        if (res.code === 0 && res.data?.sessionId) {
+          const chatSessionId = buildSessionId(props.id, SceneType.User, currentUserId.value)
+          void createCallWindow({
+            mode: callType,
+            callType,
+            sessionId: res.data.sessionId,
+            sceneType: 'user',
+            peerId: props.id,
+            displayName: displayName.value || props.id,
+            chatSessionId
+          })
+          return
+        }
+        window.$message.error(res.msg)
+      })
+      .catch((error) => {
+        window.$message.error(t(isLivekitDisabledError(error) ? 'audioVideoCall.disabled' : livekitErrorI18nKey(error)))
+      })
+      .finally(() => {
+        callStarting.value = false
+      })
   }
 </script>
 

@@ -132,6 +132,7 @@
                     </div> -->
                   </div>
                   <div
+                    v-if="item.emotionUrl || item.emotionName"
                     class="contacts-profile__top-emotion text-12px flex gap-2px justify-center items-center m-4px text-[var(--text-muted-color)]">
                     <span>[</span>
                     <EmotionIcon :url="item.emotionUrl" :size="18" />

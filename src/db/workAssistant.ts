@@ -1,4 +1,4 @@
-import { getDb } from './index'
+import { getDb } from './connection'
 
 export interface WorkConversationRecord {
   id: string

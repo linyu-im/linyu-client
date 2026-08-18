@@ -32,6 +32,13 @@ const matchFields = (fields: Array<string | null | undefined>, keyword: string) 
 }
 
 export const useContactsStore = defineStore('contacts', {
+  persist: {
+    pick: ['enterpriseList', 'groupList', 'friendList']
+  },
+  share: {
+    enable: true,
+    initialize: true
+  },
   state: (): ContactsStore => ({
     enterpriseList: [],
     groupList: [],
@@ -165,13 +172,14 @@ export const useContactsStore = defineStore('contacts', {
         })
     },
     fetchAll() {
+      this.$patch((state) => {
+        state.enterpriseListLoading = false
+        state.groupListLoading = false
+        state.friendListLoading = false
+      })
       this.fetchEnterpriseList()
       this.fetchGroupList()
       this.fetchFriendList()
     }
-  },
-  share: {
-    enable: true,
-    initialize: true
   }
 })

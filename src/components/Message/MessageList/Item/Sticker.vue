@@ -28,8 +28,8 @@
   } from '@/utils/message/messageFileSave'
   import { mergeMediaMessageLocalExt } from '@/utils/message/messageLocalExt'
   import {
+    calcStickerContentDisplaySize,
     calcStickerDisplaySize,
-    DEFAULT_STICKER_SIZE,
     getMediaDisplaySizeFromLocalExt,
     hasSameDisplaySize
   } from '@/utils/message/messageMediaLayout'
@@ -59,13 +59,34 @@
   const cacheInFlight = ref(false)
   const currentLocalPath = ref('')
   const blobObjectUrl = ref('')
-  const displayWidth = ref(DEFAULT_STICKER_SIZE.displayWidth)
-  const displayHeight = ref(DEFAULT_STICKER_SIZE.displayHeight)
   let assetFallbackAttempted = false
-  /** 当前 displaySrc 是否为裁剪后的内容图，避免裁剪图加载再次触发测量裁剪 */
-  let croppedApplied = false
+  /** 首次展示后锁定宽高，避免裁剪替换时尺寸/位置跳动 */
+  let layoutLocked = false
 
   const stickerLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
+
+  const resolveSizeFromExt = (localExt?: StickerMessageLocalExt) => {
+    if (
+      localExt?.contentWidth &&
+      localExt.contentHeight &&
+      localExt.sourceWidth &&
+      localExt.sourceHeight &&
+      localExt.sourceWidth > 0 &&
+      localExt.sourceHeight > 0
+    ) {
+      return calcStickerContentDisplaySize({
+        width: localExt.contentWidth,
+        height: localExt.contentHeight,
+        sourceWidth: localExt.sourceWidth,
+        sourceHeight: localExt.sourceHeight
+      })
+    }
+    return getMediaDisplaySizeFromLocalExt(localExt)
+  }
+
+  const initialSize = resolveSizeFromExt(props.localExt)
+  const displayWidth = ref(initialSize?.displayWidth ?? 0)
+  const displayHeight = ref(initialSize?.displayHeight ?? 0)
 
   const wrapStyle = computed(() => ({
     width: `${displayWidth.value}px`,
@@ -92,12 +113,25 @@
     blobObjectUrl.value = ''
   }
 
-  const applyLayoutFromLocalExt = (localExt?: StickerMessageLocalExt) => {
-    const size = getMediaDisplaySizeFromLocalExt(localExt)
-    if (!size) return
-    if (stickerReady.value && displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight) {
-      return
+  const readCachedContentBox = (): StickerContentBox | undefined => {
+    const ext = stickerLocalExt.value
+    if (ext?.contentX != null && ext.contentY != null && ext.contentWidth != null && ext.contentHeight != null) {
+      return {
+        x: ext.contentX,
+        y: ext.contentY,
+        width: ext.contentWidth,
+        height: ext.contentHeight,
+        sourceWidth: ext.sourceWidth ?? 0,
+        sourceHeight: ext.sourceHeight ?? 0
+      }
     }
+    return undefined
+  }
+
+  const applyLayoutFromLocalExt = (localExt?: StickerMessageLocalExt) => {
+    if (layoutLocked) return
+    const size = resolveSizeFromExt(localExt)
+    if (!size) return
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
   }
@@ -109,31 +143,16 @@
   }
 
   const persistDisplaySize = (naturalW: number, naturalH: number) => {
-    const size = calcStickerDisplaySize(naturalW, naturalH)
-    const sizeUnchanged = displayWidth.value === size.displayWidth && displayHeight.value === size.displayHeight
-    if (sizeUnchanged) {
-      if (!hasSameDisplaySize(stickerLocalExt.value, size)) persistLocalExt(size)
-      return
-    }
+    if (layoutLocked) return
+    const cachedBox = readCachedContentBox()
+    const size =
+      cachedBox && cachedBox.sourceWidth > 0 && cachedBox.sourceHeight > 0
+        ? calcStickerContentDisplaySize(cachedBox)
+        : calcStickerDisplaySize(naturalW, naturalH)
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
-    if (hasSameDisplaySize(stickerLocalExt.value, size)) return
-    persistLocalExt(size)
-  }
-
-  const readCachedContentBox = (): StickerContentBox | undefined => {
-    const ext = stickerLocalExt.value
-    if (ext?.contentX != null && ext.contentY != null && ext.contentWidth != null && ext.contentHeight != null) {
-      return {
-        x: ext.contentX,
-        y: ext.contentY,
-        width: ext.contentWidth,
-        height: ext.contentHeight,
-        sourceWidth: 0,
-        sourceHeight: 0
-      }
-    }
-    return undefined
+    layoutLocked = true
+    if (!hasSameDisplaySize(stickerLocalExt.value, size)) persistLocalExt(size)
   }
 
   const hasSameContentBox = (box: StickerContentBox) => {
@@ -147,19 +166,30 @@
   }
 
   const applyContentSize = (box: StickerContentBox) => {
-    const size = calcStickerDisplaySize(box.width, box.height)
+    if (layoutLocked) return
+    const size = calcStickerContentDisplaySize(box)
     displayWidth.value = size.displayWidth
     displayHeight.value = size.displayHeight
+    layoutLocked = true
   }
 
   const persistContentBox = (box: StickerContentBox) => {
-    if (hasSameContentBox(box)) return
-    const size = calcStickerDisplaySize(box.width, box.height)
+    const size = calcStickerContentDisplaySize(box)
+    if (
+      hasSameContentBox(box) &&
+      stickerLocalExt.value?.sourceWidth === box.sourceWidth &&
+      stickerLocalExt.value?.sourceHeight === box.sourceHeight &&
+      hasSameDisplaySize(stickerLocalExt.value, size)
+    ) {
+      return
+    }
     persistLocalExt({
       contentX: box.x,
       contentY: box.y,
       contentWidth: box.width,
       contentHeight: box.height,
+      sourceWidth: box.sourceWidth,
+      sourceHeight: box.sourceHeight,
       displayWidth: size.displayWidth,
       displayHeight: size.displayHeight
     })
@@ -204,9 +234,9 @@
         persistLocalExt({ localPath })
         void tryCropFromLocalPath(localPath).then((cropped) => {
           if (!cropped || normalizedStickerId.value !== stickerId) return
-          applyContentSize(cropped.box)
-          croppedApplied = true
-          applyDisplaySrc(cropped.url, localPath)
+          persistContentBox(cropped.box)
+          if (layoutLocked) return
+          applyCroppedResult(cropped.url, localPath, cropped.box)
         })
       })
       .catch((error) => {
@@ -228,9 +258,10 @@
     void cacheRemoteSticker()
   }
 
-  const applyDisplaySrc = (nextSrc: string, localPath = '') => {
+  const applyDisplaySrc = (nextSrc: string, localPath = '', onCommit?: () => void) => {
     if (displaySrc.value === nextSrc) {
       if (localPath) currentLocalPath.value = localPath
+      onCommit?.()
       return
     }
 
@@ -240,6 +271,7 @@
       assetFallbackAttempted = false
       if (!localPath) revokeBlobObjectUrl()
       displaySrc.value = nextSrc
+      onCommit?.()
     }
 
     const deferred = preloadMediaDisplaySrc(displaySrc.value, nextSrc, stickerReady.value, () => {
@@ -253,8 +285,32 @@
     }
   }
 
+  const applyCroppedResult = (url: string, localPath: string, box: StickerContentBox) => {
+    if (layoutLocked) {
+      persistContentBox(box)
+      return
+    }
+    persistContentBox(box)
+    applyDisplaySrc(url, localPath, () => applyContentSize(box))
+  }
+
+  const cropFromDisplayUrl = (url: string) => {
+    if (!url || isAnimatedSticker()) return Promise.resolve(null)
+    return new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image()
+      const isLocal = url.startsWith('blob:') || url.startsWith('data:') || url.startsWith('asset:')
+      if (!isLocal) image.crossOrigin = 'anonymous'
+      image.onload = () => resolve(image)
+      image.onerror = () => reject(new Error('sticker decode failed'))
+      image.src = url
+    })
+      .then((image) => cropStickerImage(image))
+      .catch(() => null)
+  }
+
   const syncDisplaySrc = () => {
     const run = async () => {
+      if (layoutLocked) return
       applyLayoutFromLocalExt(stickerLocalExt.value)
 
       const storageRoot = await resolveMessageStorageRoot(appSettingsStore.storage.path)
@@ -263,9 +319,7 @@
       if (localPath && (await exists(localPath))) {
         const cropped = await tryCropFromLocalPath(localPath)
         if (cropped) {
-          applyContentSize(cropped.box)
-          croppedApplied = true
-          applyDisplaySrc(cropped.url, localPath)
+          applyCroppedResult(cropped.url, localPath, cropped.box)
         } else {
           applyDisplaySrc(toLocalFileDisplayUrl(localPath), localPath)
         }
@@ -277,55 +331,40 @@
         persistLocalExt({ localPath: sharedPath })
         const cropped = await tryCropFromLocalPath(sharedPath)
         if (cropped) {
-          applyContentSize(cropped.box)
-          croppedApplied = true
-          applyDisplaySrc(cropped.url, sharedPath)
+          applyCroppedResult(cropped.url, sharedPath, cropped.box)
         } else {
           applyDisplaySrc(toLocalFileDisplayUrl(sharedPath), sharedPath)
         }
         return
       }
 
-      if (isLocalPendingUrl(props.content.stickerUrl)) {
-        applyDisplaySrc(resolveLocalMediaDisplayUrl(props.content.stickerUrl))
-        return
+      const pendingSrc = isLocalPendingUrl(props.content.stickerUrl)
+        ? resolveLocalMediaDisplayUrl(props.content.stickerUrl)
+        : props.content.stickerUrl
+
+      if (!isAnimatedSticker()) {
+        const cropped = await cropFromDisplayUrl(pendingSrc)
+        if (cropped) {
+          applyCroppedResult(cropped.url, '', cropped.box)
+          scheduleStickerCache()
+          return
+        }
       }
 
-      applyDisplaySrc(props.content.stickerUrl)
-
+      applyDisplaySrc(pendingSrc)
       scheduleStickerCache()
     }
 
     void run()
   }
 
-  const tryCropLoadedImage = (image: HTMLImageElement) => {
-    const stickerId = normalizedStickerId.value
-    void cropStickerImage(image)
-      .then((cropped) => {
-        if (normalizedStickerId.value !== stickerId) return
-        if (!cropped) {
-          persistDisplaySize(image.naturalWidth, image.naturalHeight)
-          return
-        }
-        applyContentSize(cropped.box)
-        persistContentBox(cropped.box)
-        croppedApplied = true
-        applyDisplaySrc(cropped.url, currentLocalPath.value)
-        stickerReady.value = true
-      })
-      .catch(() => {
-        if (normalizedStickerId.value !== stickerId) return
-        persistDisplaySize(image.naturalWidth, image.naturalHeight)
-      })
-  }
-
   const resetMediaState = () => {
     receivedLocalExt.value = undefined
     cacheInFlight.value = false
-    displayWidth.value = DEFAULT_STICKER_SIZE.displayWidth
-    displayHeight.value = DEFAULT_STICKER_SIZE.displayHeight
-    croppedApplied = false
+    const size = resolveSizeFromExt(props.localExt)
+    displayWidth.value = size?.displayWidth ?? 0
+    displayHeight.value = size?.displayHeight ?? 0
+    layoutLocked = false
   }
 
   watch(
@@ -353,23 +392,12 @@
 
   const onStickerLoad = (event: Event) => {
     const image = event.target as HTMLImageElement
-    if (croppedApplied) {
-      stickerReady.value = true
-      stickerError.value = false
-      scheduleStickerCache()
-      return
-    }
-    if (isAnimatedSticker()) {
-      persistDisplaySize(image.naturalWidth, image.naturalHeight)
-      stickerReady.value = true
-      stickerError.value = false
-      scheduleStickerCache()
-      return
-    }
     stickerReady.value = true
     stickerError.value = false
+    if (!layoutLocked) {
+      persistDisplaySize(image.naturalWidth, image.naturalHeight)
+    }
     scheduleStickerCache()
-    tryCropLoadedImage(image)
   }
 
   const onStickerError = () => {
@@ -379,7 +407,6 @@
         .then((url) => {
           revokeBlobObjectUrl()
           blobObjectUrl.value = url
-          croppedApplied = false
           stickerReady.value = false
           displaySrc.value = url
         })

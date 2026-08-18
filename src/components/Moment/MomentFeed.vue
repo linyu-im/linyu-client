@@ -1,28 +1,30 @@
 <template>
-  <n-spin :show="loading" class="moment-feed">
+  <div class="moment-feed">
     <n-scrollbar class="moment-feed__scroll">
       <div class="moment-feed__content">
         <MomentCover :user-id="coverUserId" @settings="emit('settings')" />
 
         <div class="moment-feed__spacer" />
 
-        <MomentPostCard
-          v-for="record in records"
-          :key="record.moment.id"
-          :record="record"
-          :current-user-id="currentUserId"
-          @toggle-like="onToggleLike"
-          @view-all-comments="onViewAllComments"
-          @add-comment="onAddComment"
-          @delete-comment="onDeleteComment"
-          @delete="onDeletePost" />
+        <n-spin :show="loading" class="moment-feed__list">
+          <MomentPostCard
+            v-for="record in records"
+            :key="record.moment.id"
+            :record="record"
+            :current-user-id="currentUserId"
+            @toggle-like="onToggleLike"
+            @view-all-comments="onViewAllComments"
+            @add-comment="onAddComment"
+            @delete-comment="onDeleteComment"
+            @delete="onDeletePost" />
 
-        <div v-if="!loading && records.length === 0" class="moment-feed__empty">
-          <n-divider class="moment-feed__empty-text">{{ t('moment.empty') }}</n-divider>
-        </div>
+          <div v-if="!loading && records.length === 0" class="moment-feed__empty">
+            <n-divider class="moment-feed__empty-text">{{ t('moment.empty') }}</n-divider>
+          </div>
+        </n-spin>
       </div>
     </n-scrollbar>
-  </n-spin>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -185,16 +187,16 @@
     min-width: 0;
     height: 100%;
 
-    :deep(.n-spin-container) {
-      height: 100%;
-    }
-
-    :deep(.n-spin-content) {
-      height: 100%;
-    }
-
     &__scroll {
       height: 100%;
+    }
+
+    &__list {
+      min-height: 120px;
+
+      :deep(.n-spin-container) {
+        min-height: 120px;
+      }
     }
 
     &__content {

@@ -41,6 +41,28 @@ export function calcStickerDisplaySize(naturalW?: number, naturalH?: number) {
   return { ...DEFAULT_STICKER_SIZE }
 }
 
+/**
+ * 按源画布适配到 STICKER_MAX_SIZE 的同一比例缩放内容盒。
+ * 若用内容盒自身去适配上限，裁掉透明边后图案会被二次放大，看起来突然变大。
+ */
+export function calcStickerContentDisplaySize(box: {
+  width: number
+  height: number
+  sourceWidth?: number
+  sourceHeight?: number
+}) {
+  const sourceW = box.sourceWidth && box.sourceWidth > 0 ? box.sourceWidth : box.width
+  const sourceH = box.sourceHeight && box.sourceHeight > 0 ? box.sourceHeight : box.height
+  if (box.width > 0 && box.height > 0 && sourceW > 0 && sourceH > 0) {
+    const scale = Math.min(1, STICKER_MAX_SIZE / sourceW, STICKER_MAX_SIZE / sourceH)
+    return {
+      displayWidth: Math.max(1, Math.round(box.width * scale)),
+      displayHeight: Math.max(1, Math.round(box.height * scale))
+    }
+  }
+  return { ...DEFAULT_STICKER_SIZE }
+}
+
 export function getMediaDisplaySizeFromLocalExt(localExt?: MediaLocalExt) {
   const displayWidth = localExt?.displayWidth
   const displayHeight = localExt?.displayHeight

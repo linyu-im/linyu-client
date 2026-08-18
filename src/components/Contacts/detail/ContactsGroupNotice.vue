@@ -9,7 +9,7 @@
         <div class="contacts-detail__cards">
           <div v-for="item in list" :key="item.id" class="contacts-apply-card">
             <template v-if="isLeaveNotice(item)">
-              <Avatar class="size-48px shrink-0 rounded-full bg-#FFF" :id="item.extra.leaveUserId" />
+              <Avatar class="size-48px shrink-0 rounded-full" :id="item.extra.leaveUserId" />
               <div class="min-w-0 flex-1">
                 <div class="contacts-apply-card__head">
                   <Name
@@ -24,7 +24,7 @@
               </div>
             </template>
             <template v-else>
-              <Avatar class="size-48px shrink-0 rounded-8px bg-#FFF" type="group" :id="item.extra.groupId" />
+              <Avatar class="size-48px shrink-0 rounded-8px" type="group" :id="item.extra.groupId" />
               <div class="min-w-0 flex-1">
                 <div class="contacts-apply-card__head">
                   <Name class="contacts-apply-card__name" type="group" :id="item.extra.groupId" />

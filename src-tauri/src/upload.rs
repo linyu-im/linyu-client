@@ -13,6 +13,9 @@ const UPLOAD_WEIGHT: f64 = 94.0;
 const DEFAULT_CHUNK_SIZE: usize = 5 * 1024 * 1024;
 const SAMPLE_SIZE: usize = 1024 * 1024;
 
+// 与 @tauri-apps/plugin-http 的 User-Agent 保持一致，
+const DESKTOP_USER_AGENT: &str = "tauri-plugin-http/2.5.7";
+
 pub const UPLOAD_CANCELLED: &str = "UPLOAD_CANCELLED";
 
 const MESSAGE_PROGRESS_EVENT: &str = "upload-file-progress";
@@ -228,6 +231,7 @@ async fn upload_chunks_and_merge<R: Runtime>(
     let total_chunks = (file_size + chunk_size - 1) / chunk_size;
     // 复用连接，避免每个分片重建 TLS/TCP
     let client = reqwest::Client::builder()
+        .user_agent(DESKTOP_USER_AGENT)
         .pool_max_idle_per_host(4)
         .build()
         .unwrap_or_else(|_| reqwest::Client::new());
@@ -397,6 +401,13 @@ pub async fn upload_file_chunks<R: Runtime>(
         None,
     )
     .await;
+
+    if let Err(err) = &result {
+        eprintln!(
+            "[upload_file_chunks] failed path={} name={} base={} err={}",
+            param.file_path, param.file_name, param.base_url, err
+        );
+    }
 
     if param.temp_file.unwrap_or(false) {
         let _ = tokio::fs::remove_file(&param.file_path).await;

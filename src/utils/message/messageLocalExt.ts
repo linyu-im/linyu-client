@@ -6,6 +6,7 @@ import type {
 } from '@/types/api/message'
 
 export const FILE_MESSAGE_STATUS_DOWNLOADED = 'downloaded'
+export const FILE_MESSAGE_STATUS_EXPIRED = 'expired'
 
 type MediaMessageLocalExt = ImageMessageLocalExt | VideoMessageLocalExt | StickerMessageLocalExt
 
@@ -22,6 +23,9 @@ const parseMediaMessageLocalExt = (parsed: Record<string, unknown>): MediaMessag
     typeof parsed.contentWidth === 'number' && parsed.contentWidth > 0 ? parsed.contentWidth : undefined
   const contentHeight =
     typeof parsed.contentHeight === 'number' && parsed.contentHeight > 0 ? parsed.contentHeight : undefined
+  const sourceWidth = typeof parsed.sourceWidth === 'number' && parsed.sourceWidth > 0 ? parsed.sourceWidth : undefined
+  const sourceHeight =
+    typeof parsed.sourceHeight === 'number' && parsed.sourceHeight > 0 ? parsed.sourceHeight : undefined
   const hasContentBox = contentX != null && contentY != null && contentWidth != null && contentHeight != null
 
   if (!localPath && !hasContentBox && (!displayWidth || !displayHeight)) return undefined
@@ -29,7 +33,8 @@ const parseMediaMessageLocalExt = (parsed: Record<string, unknown>): MediaMessag
   return {
     ...(localPath ? { localPath } : {}),
     ...(displayWidth && displayHeight ? { displayWidth, displayHeight } : {}),
-    ...(hasContentBox ? { contentX, contentY, contentWidth, contentHeight } : {})
+    ...(hasContentBox ? { contentX, contentY, contentWidth, contentHeight } : {}),
+    ...(sourceWidth && sourceHeight ? { sourceWidth, sourceHeight } : {})
   }
 }
 
@@ -49,11 +54,17 @@ export function mergeMediaMessageLocalExt<T extends MediaMessageLocalExt>(
   const contentY = stickerPatch.contentY ?? stickerExisting?.contentY
   const contentWidth = stickerPatch.contentWidth ?? stickerExisting?.contentWidth
   const contentHeight = stickerPatch.contentHeight ?? stickerExisting?.contentHeight
+  const sourceWidth = stickerPatch.sourceWidth ?? stickerExisting?.sourceWidth
+  const sourceHeight = stickerPatch.sourceHeight ?? stickerExisting?.sourceHeight
   if (contentX != null && contentY != null && contentWidth != null && contentHeight != null) {
     merged.contentX = contentX
     merged.contentY = contentY
     merged.contentWidth = contentWidth
     merged.contentHeight = contentHeight
+  }
+  if (sourceWidth != null && sourceHeight != null) {
+    merged.sourceWidth = sourceWidth
+    merged.sourceHeight = sourceHeight
   }
 
   return merged as T

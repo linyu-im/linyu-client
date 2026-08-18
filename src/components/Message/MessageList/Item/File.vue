@@ -27,8 +27,8 @@
             <template v-else-if="downloading">{{ downloadProgress }}%</template>
             <template v-else>{{ formatSize(content.fileSize) }}</template>
           </span>
-          <span v-if="!isDownloaded && !downloading" class="message-file__status">
-            {{ t('message.file.notDownloaded') }}
+          <span v-if="(isExpired || !isDownloaded) && !downloading" class="message-file__status">
+            {{ isExpired ? t('message.file.expired') : t('message.file.notDownloaded') }}
           </span>
         </div>
       </div>
@@ -49,7 +49,7 @@
   import { openLocalFile } from '@/utils/file/openLocalFile'
   import { prepareLocalFileDrag, startLocalFileDrag } from '@/utils/file/dragLocalFile'
   import type { FileContent, FileMessageLocalExt } from '@/types/api/message'
-  import { FILE_MESSAGE_STATUS_DOWNLOADED } from '@/utils/message/messageLocalExt'
+  import { FILE_MESSAGE_STATUS_DOWNLOADED, FILE_MESSAGE_STATUS_EXPIRED } from '@/utils/message/messageLocalExt'
   import { downloadMessageToStorage, resolveMessageStorageRoot } from '@/utils/message/messageFileSave'
   import { getFileIconUrl, isFileNameTruncated, splitFileName, truncateFileBase } from '@/utils/file/fileIcon'
   import UploadProgress from '@/components/Message/UploadProgress.vue'
@@ -84,9 +84,15 @@
   const fileLocalExt = computed(() => receivedLocalExt.value ?? props.localExt)
 
   const isDownloaded = computed(() => fileLocalExt.value?.status === FILE_MESSAGE_STATUS_DOWNLOADED)
+  const isExpired = computed(() => fileLocalExt.value?.status === FILE_MESSAGE_STATUS_EXPIRED)
 
   const canDragOut = computed(
-    () => isDownloaded.value && !!fileLocalExt.value?.localPath && !uploading.value && !downloading.value
+    () =>
+      isDownloaded.value &&
+      !isExpired.value &&
+      !!fileLocalExt.value?.localPath &&
+      !uploading.value &&
+      !downloading.value
   )
 
   watch(
@@ -138,8 +144,17 @@
     void messageDbStore.updateFileMessageLocalExt(props.messageId, localExt)
   }
 
+  const persistExpired = () => {
+    const localExt = {
+      status: FILE_MESSAGE_STATUS_EXPIRED,
+      localPath: fileLocalExt.value?.localPath ?? ''
+    }
+    receivedLocalExt.value = localExt
+    void messageDbStore.updateFileMessageLocalExt(props.messageId, localExt)
+  }
+
   const receiveDownload = () => {
-    if (uploading.value || downloading.value || !props.content.fileUrl) return
+    if (uploading.value || downloading.value || isExpired.value || !props.content.fileUrl) return
 
     messageDownloadStore.setProgress(props.messageId, 0)
     resolveMessageStorageRoot(appSettingsStore.storage.path)
@@ -161,7 +176,7 @@
         })
       })
       .catch(() => {
-        window.$message.error(t('message.file.downloadFailed'))
+        persistExpired()
       })
       .finally(() => {
         messageDownloadStore.clearProgress(props.messageId)
@@ -170,12 +185,12 @@
 
   const openDownloadedFile = (localPath: string) => {
     openLocalFile(localPath).catch(() => {
-      window.$message.error(t('message.file.openFailed'))
+      persistExpired()
     })
   }
 
   const onClick = () => {
-    if (uploading.value || downloading.value || !props.content.fileUrl) return
+    if (uploading.value || downloading.value || isExpired.value || !props.content.fileUrl) return
     // 已下载且支持拖出：点击打开。mouseup + 拖拽结束判断，避免 startDrag 吞掉 click
     if (canDragOut.value) return
     if (!isDownloaded.value) {

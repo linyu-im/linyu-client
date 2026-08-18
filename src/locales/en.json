@@ -266,8 +266,7 @@
       "fileSize": "File size: {size}",
       "receive": "Receive File",
       "notDownloaded": "Not downloaded",
-      "downloadFailed": "Failed to download file",
-      "openFailed": "Failed to open file",
+      "expired": "File expired",
       "storagePathMissing": "Please configure storage location in settings first",
       "close": "Close"
     },
@@ -1561,8 +1560,10 @@
     "about": {
       "version": "Version",
       "website": "Website",
+      "github": "GitHub",
       "checkUpdate": "Check for updates",
       "viewWebsite": "Visit website",
+      "viewGithub": "Star on GitHub",
       "terms": "Terms of Service",
       "privacy": "Privacy Policy",
       "feedback": "Feedback",

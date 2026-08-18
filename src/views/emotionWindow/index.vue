@@ -33,24 +33,14 @@
 </template>
 
 <script setup lang="ts">
-  import { emotionApi, userApi } from '@/api'
+  import { userApi } from '@/api'
+  import { useEmotionCache } from '@/composables/useEmotionCache'
   import { useUserStore } from '@/stores/user/user'
-  import { Emotonn } from '@/types/api/emotion'
   import { closeCurrentWindow, ShowCurrentWindow } from '@/utils/desktop/window'
 
-  const emotionList = ref<Emotonn[]>([])
+  const { cachedEmotions: emotionList, loadEmotions } = useEmotionCache()
   const userStore = useUserStore()
   const activeEmotionId = ref<string>(userStore.userInfo.emotionId)
-
-  const onEmotionList = () => {
-    emotionApi.list().then((res) => {
-      if (res.code === 0 && res.data) {
-        emotionList.value = res.data
-      } else {
-        window.$message.error(res.msg)
-      }
-    })
-  }
 
   const onSelectEmotion = (emotionId: string, emotionName: string, emotionUrl: string) => {
     userApi.userEmotionSet(emotionId).then((res) => {
@@ -64,7 +54,7 @@
   }
 
   onMounted(() => {
-    onEmotionList()
+    loadEmotions()
     nextTick(() => {
       ShowCurrentWindow()
     })

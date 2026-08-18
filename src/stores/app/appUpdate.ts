@@ -25,10 +25,14 @@ let silentDownload = false
 
 export const useAppUpdateStore = defineStore('appUpdate', {
   persist: {
-    // 不持久化 needForce/needUpdate，避免登录后被旧缓存或延迟 hydrate 覆盖
+    // 不持久化 needForce/needUpdate/checking，避免登录后被旧缓存或延迟 hydrate 覆盖
     pick: ['installerPath']
   },
-  share: { enable: true, initialize: true },
+  share: {
+    enable: true,
+    initialize: true,
+    omit: ['checking']
+  },
   state: (): AppUpdateStore => ({
     checkResult: null,
     needForce: false,
@@ -78,8 +82,8 @@ export const useAppUpdateStore = defineStore('appUpdate', {
     },
     check(options?: { silent?: boolean }) {
       this.$patch((state) => {
-        state.checking = true
         if (!options?.silent) {
+          state.checking = true
           state.stage = 'checking'
           state.errorMsg = ''
         }

@@ -1,50 +1,9 @@
-import Database from '@tauri-apps/plugin-sql'
-import { appLocalDataDir, BaseDirectory, join } from '@tauri-apps/api/path'
-import { mkdir } from '@tauri-apps/plugin-fs'
+import type { Database } from './connection'
+import { closeDbConnection, getDb } from './connection'
 
-const DB_RELATIVE_DIR = 'data'
-const DB_FILE_NAME = 'linyu.db'
+export { getDb }
 
-let dbInstance: Database | null = null
-let dbPathPromise: Promise<string> | null = null
-let dbLoadPromise: Promise<Database> | null = null
 let schemaReadyPromise: Promise<void> | null = null
-
-/**
- * 获取数据库绝对路径（存放在 appLocalDataDir/data 目录下）
- */
-async function getDbPath(): Promise<string> {
-  if (!dbPathPromise) {
-    dbPathPromise = (async () => {
-      await mkdir(DB_RELATIVE_DIR, { baseDir: BaseDirectory.AppLocalData, recursive: true })
-      const dataDir = await appLocalDataDir()
-      const dbPath = await join(dataDir, DB_RELATIVE_DIR, DB_FILE_NAME)
-      return dbPath.replace(/\\/g, '/')
-    })()
-  }
-
-  return dbPathPromise
-}
-
-/**
- * 获取数据库实例（单例模式，同窗并发共用一次 load）
- */
-export async function getDb(): Promise<Database> {
-  if (dbInstance) {
-    return dbInstance
-  }
-  if (!dbLoadPromise) {
-    dbLoadPromise = (async () => {
-      const dbPath = await getDbPath()
-      dbInstance = await Database.load(`sqlite:${dbPath}`)
-      return dbInstance
-    })().catch((error) => {
-      dbLoadPromise = null
-      throw error
-    })
-  }
-  return dbLoadPromise
-}
 
 /**
  * 初始化数据库表结构（仅登录成功时调用，各窗口启动不再执行）
@@ -286,17 +245,55 @@ async function ensureSchema(db: Database): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS idx_t_work_step_user_run ON t_work_step(user_id, conversation_id, run_id, sequence ASC)`
   )
+
+  // 表情明细（全局目录，与后端 t_sticker 对齐）
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_sticker (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      icon_url TEXT,
+      type TEXT,
+      icon_value TEXT,
+      sticker_pack_id TEXT NOT NULL,
+      created_at TEXT,
+      updated_at TEXT,
+      deleted_at TEXT
+    )
+  `)
+  await db.execute(`CREATE INDEX IF NOT EXISTS idx_t_sticker_pack_id ON t_sticker(sticker_pack_id)`)
+
+  // 表情分组
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_sticker_pack (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      pack_icon_url TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      deleted_at TEXT
+    )
+  `)
+
+  // 心情列表
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS t_emotion (
+      id TEXT PRIMARY KEY NOT NULL,
+      emotion_name TEXT NOT NULL,
+      url TEXT NOT NULL,
+      type TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      deleted_at TEXT
+    )
+  `)
 }
 
 /**
  * 关闭数据库连接
  */
 export async function closeDatabase(): Promise<void> {
-  if (dbInstance) {
-    await dbInstance.close()
-    dbInstance = null
-  }
-  dbLoadPromise = null
+  await closeDbConnection()
   schemaReadyPromise = null
 }
 
@@ -307,3 +304,5 @@ export * from './spaceDownload'
 export * from './spaceRecentAccess'
 export * from './plugin'
 export * from './workAssistant'
+export * from './sticker'
+export * from './emotion'

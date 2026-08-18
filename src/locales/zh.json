@@ -266,8 +266,7 @@
       "fileSize": "文件大小：{size}",
       "receive": "接收文件",
       "notDownloaded": "未下载",
-      "downloadFailed": "文件下载失败",
-      "openFailed": "无法打开文件",
+      "expired": "文件已过期",
       "storagePathMissing": "请先在设置中配置存储位置",
       "close": "关闭"
     },
@@ -1535,8 +1534,10 @@
     "about": {
       "version": "版本信息",
       "website": "官网",
+      "github": "GitHub",
       "checkUpdate": "检查更新",
       "viewWebsite": "查看官网",
+      "viewGithub": "欢迎Star",
       "terms": "服务协议",
       "privacy": "隐私政策",
       "feedback": "意见反馈",

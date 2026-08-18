@@ -12,6 +12,9 @@
         <SettingRow :label="t('settings.about.website')">
           <n-button size="small" @click="onOpenWebsite">{{ t('settings.about.viewWebsite') }}</n-button>
         </SettingRow>
+        <SettingRow :label="t('settings.about.github')">
+          <n-button size="small" @click="onOpenGithub">{{ t('settings.about.viewGithub') }}</n-button>
+        </SettingRow>
       </SettingCard>
     </div>
 
@@ -46,7 +49,7 @@
   import SettingCard from '@/components/Set/SettingCard.vue'
   import SettingRow from '@/components/Set/SettingRow.vue'
   import UpdateModal from '@/components/Modal/UpdateModal.vue'
-  import { OFFICIAL_WEBSITE_URL, PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '@/constants/network'
+  import { GITHUB_REPO_URL, OFFICIAL_WEBSITE_URL, PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '@/constants/network'
   import { useAppUpdateStore } from '@/stores/app/appUpdate'
   import { getAppVersion } from '@/utils/app/version'
   import { openUrl } from '@/utils/desktop/open'
@@ -54,13 +57,16 @@
 
   const { t } = useI18n()
   const appUpdateStore = useAppUpdateStore()
-  const { checking, needUpdate, needForce } = storeToRefs(appUpdateStore)
+  const { needUpdate, needForce } = storeToRefs(appUpdateStore)
 
   const appVersion = ref('')
   const showUpdateModal = ref(false)
+  const checking = ref(false)
   const hasUpdateBadge = computed(() => needUpdate.value || needForce.value)
 
   const onCheckUpdate = () => {
+    if (checking.value) return
+    checking.value = true
     appUpdateStore
       .check()
       .then((info) => {
@@ -73,10 +79,17 @@
       .catch(() => {
         window.$message?.error(t('update.checkFailed'))
       })
+      .finally(() => {
+        checking.value = false
+      })
   }
 
   const onOpenWebsite = () => {
     void openUrl(OFFICIAL_WEBSITE_URL)
+  }
+
+  const onOpenGithub = () => {
+    void openUrl(GITHUB_REPO_URL)
   }
 
   const onOpenTerms = () => {

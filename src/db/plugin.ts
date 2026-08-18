@@ -1,4 +1,4 @@
-import { getDb } from '.'
+import { getDb } from './connection'
 import type { InstalledPlugin, PluginManifest, PluginPermission } from '@/types/plugin'
 
 interface PluginInstallationRow {

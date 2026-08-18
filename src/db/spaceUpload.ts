@@ -1,4 +1,4 @@
-import { getDb } from '.'
+import { getDb } from './connection'
 
 export type SpaceUploadStatus =
   | 'pending'

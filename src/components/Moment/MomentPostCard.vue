@@ -3,7 +3,7 @@
     <div class="moment-post__header">
       <div class="moment-post__author">
         <div class="moment-post__avatar-wrap">
-          <Avatar :id="moment.userId" class="moment-post__avatar size-48px rounded-14px bg-#FFF" />
+          <Avatar :id="moment.userId" class="moment-post__avatar size-48px rounded-14px" />
         </div>
         <div class="moment-post__detail">
           <div class="moment-post__name-row">
@@ -71,7 +71,7 @@
             v-for="like in displayLikes"
             :key="like.id"
             :id="like.userId"
-            class="moment-post__like-avatar size-28px rounded-full bg-#FFF" />
+            class="moment-post__like-avatar size-28px rounded-full" />
           <div v-if="likeMoreCount > 0" class="moment-post__like-more">+{{ likeMoreCount }}</div>
         </div>
         <span class="moment-post__likes-text">
@@ -82,7 +82,7 @@
 
       <div v-if="commentCount > 0" class="moment-post__comments">
         <div v-for="comment in previewComments" :key="comment.id" class="moment-post__comment">
-          <Avatar :id="comment.userId" class="size-28px rounded-full bg-#FFF flex-shrink-0" />
+          <Avatar :id="comment.userId" class="size-28px rounded-full flex-shrink-0" />
           <div class="moment-post__comment-body">
             <div class="moment-post__comment-content">
               <div class="moment-post__comment-name">{{ comment.username }}:</div>
@@ -113,7 +113,7 @@
       </div>
 
       <div v-show="showCommentInput" class="moment-post__comment-input">
-        <Avatar :id="currentUserId" class="size-32px rounded-full bg-#FFF flex-shrink-0" />
+        <Avatar :id="currentUserId" class="size-32px rounded-full flex-shrink-0" />
         <n-input
           v-model:value="commentDraft"
           round

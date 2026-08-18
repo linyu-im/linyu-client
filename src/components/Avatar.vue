@@ -85,23 +85,17 @@
 
   const defaultAvatar = computed(() => (props.type === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR))
 
-  const getInitialAvatarState = () => {
+  const getInitialAvatarSrc = () => {
     const fallback = props.type === 'group' ? DEFAULT_GROUP_AVATAR : DEFAULT_USER_AVATAR
-    if (!props.id) {
-      return { src: fallback, visible: true }
-    }
+    if (!props.id) return fallback
 
     if (!props.refresh) {
       const cached = avatarStore.getCachedSrc(props.type, props.id)
-      if (cached) {
-        return { src: cached, visible: true }
-      }
+      if (cached) return cached
     }
 
-    return { src: fallback, visible: props.instant }
+    return fallback
   }
-
-  const initialAvatarState = getInitialAvatarState()
 
   interface PopoverInst {
     syncPosition: () => void
@@ -109,12 +103,14 @@
 
   const profileContentStyle: CSSProperties = {
     maxHeight: 'calc(100vh - 16px)',
-    padding: 0
+    padding: 0,
+    background: 'var(--bg-primary-color)',
+    borderRadius: '10px',
+    overflow: 'hidden'
   }
 
   const popoverRef = ref<PopoverInst | null>(null)
-  const src = ref(initialAvatarState.src)
-  const visible = ref(initialAvatarState.visible)
+  const src = ref(getInitialAvatarSrc())
   const profileVisible = ref(false)
   const editProfileShow = ref(false)
 
@@ -128,7 +124,6 @@
       if (src.value !== defaultAvatar.value) {
         src.value = defaultAvatar.value
       }
-      visible.value = true
     }
   }
 
@@ -143,7 +138,6 @@
   }
 
   const avatarStateClass = computed(() => ({
-    'avatar--visible': visible.value || props.instant,
     'avatar--instant': props.instant,
     'avatar--clickable': props.profileEnabled && !!props.id,
     'avatar--radius': !props.round
@@ -161,12 +155,33 @@
 
   const applyAvatarSrc = (url: string) => {
     src.value = url || defaultAvatar.value
-    visible.value = true
+  }
+
+  const preloadThenApply = (url: string, seq: number, id: string, type: FromType) => {
+    const nextSrc = url || defaultAvatar.value
+    if (nextSrc === src.value) return
+
+    if (nextSrc === defaultAvatar.value) {
+      applyAvatarSrc(nextSrc)
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => {
+      if (isStale(seq, id, type)) return
+      applyAvatarSrc(nextSrc)
+    }
+    img.onerror = () => {
+      if (isStale(seq, id, type)) return
+      applyAvatarSrc(defaultAvatar.value)
+    }
+    img.src = nextSrc
   }
 
   const loadAvatar = async () => {
     const id = props.id
     const type = props.type
+    const seq = ++loadSeq
 
     if (!id) {
       applyAvatarSrc(defaultAvatar.value)
@@ -174,48 +189,45 @@
     }
 
     if (props.refresh) {
-      // 刷新模式：先展示缓存/本地版本（快速），再从远程拉取最新替换
-      const seq = ++loadSeq
+      const cached = avatarStore.getCachedSrc(type, id)
+      applyAvatarSrc(cached || defaultAvatar.value)
+
       const quickUrl = await avatarStore.resolveSrc(type, id)
       if (isStale(seq, id, type)) return
-      if (quickUrl) {
-        applyAvatarSrc(quickUrl)
-      } else {
-        applyAvatarSrc(defaultAvatar.value)
-      }
-      // 后台从远程刷新，加载完成后替换
+      preloadThenApply(quickUrl, seq, id, type)
+
       avatarStore.refreshSrc(type, id).then((url) => {
         if (!isStale(seq, id, type) && url) {
-          applyAvatarSrc(bustCache(url))
+          preloadThenApply(bustCache(url), seq, id, type)
         }
       })
       return
     }
 
-    // 非刷新模式：优先读内存缓存
     const cached = avatarStore.getCachedSrc(type, id)
     if (cached) {
       applyAvatarSrc(cached)
       return
     }
 
-    const seq = ++loadSeq
-    if (!props.instant) {
-      visible.value = false
-    }
+    applyAvatarSrc(defaultAvatar.value)
 
     const url = await avatarStore.resolveSrc(type, id)
     if (isStale(seq, id, type)) return
 
-    applyAvatarSrc(url)
+    preloadThenApply(url, seq, id, type)
   }
 
   const refreshAvatarOnOpen = () => {
     if (!props.id) return
 
-    avatarStore.refreshSrc(props.type, props.id).then((url) => {
-      if (url) {
-        applyAvatarSrc(bustCache(url))
+    const id = props.id
+    const type = props.type
+    const seq = loadSeq
+
+    avatarStore.refreshSrc(type, id).then((url) => {
+      if (!isStale(seq, id, type) && url) {
+        preloadThenApply(bustCache(url), seq, id, type)
       }
     })
   }
@@ -269,7 +281,7 @@
       if (newVal && newVal !== oldVal) {
         const url = avatarStore.getCachedSrc(props.type, props.id)
         if (url) {
-          applyAvatarSrc(bustCache(url))
+          preloadThenApply(bustCache(url), loadSeq, props.id, props.type)
         }
       }
     }
@@ -289,16 +301,9 @@
 
 <style scoped lang="scss">
   .avatar {
-    opacity: 0;
-    transition: opacity 0.12s ease;
     user-select: none;
 
-    &--visible {
-      opacity: 1;
-    }
-
     &--instant {
-      opacity: 1;
       transition: none;
     }
 

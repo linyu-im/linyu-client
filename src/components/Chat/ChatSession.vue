@@ -994,19 +994,27 @@
       messageUploadStore.setProgress(localId, 0)
     }
 
+    let uploadError: string | null = null
+
     const onProgress = (progress: number) => {
       messageUploadStore.setProgress(localId, progress)
     }
 
+    const onUploadError = (message: string) => {
+      uploadError = message
+    }
+
     return buildSendParam(unit, sessionId, {
       onProgress,
+      onError: onUploadError,
       isShowTime: messages.value.find((item) => item.id === localId)?.isShowTime ?? false,
       quoteMsgId: messages.value.find((item) => item.id === localId)?.quoteMsgId
     })
       .then((param) => {
         messageUploadStore.clearProgress(localId)
         if (!param) {
-          markLocalMessageFailed(localId, t('message.sendStatus.uploadFailed'), peerId, sessionId)
+          const reason = uploadError || t('message.sendStatus.uploadFailed')
+          markLocalMessageFailed(localId, reason, peerId, sessionId)
           return undefined
         }
 

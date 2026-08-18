@@ -1,7 +1,8 @@
 import { useSystemSettingStore } from '@/stores/app/systemSetting'
 
-export const DEFAULT_SERVICE_URL = 'http://api.linyu.chat'
+export const DEFAULT_SERVICE_URL = 'https://api.linyu.chat'
 export const OFFICIAL_WEBSITE_URL = 'https://linyu.chat'
+export const GITHUB_REPO_URL = 'https://github.com/linyu-im/linyu-client'
 export const TERMS_OF_SERVICE_URL = 'https://linyu.chat/terms'
 export const PRIVACY_POLICY_URL = 'https://linyu.chat/privacy'
 export const PRICING_URL = 'https://linyu.chat/pricing'

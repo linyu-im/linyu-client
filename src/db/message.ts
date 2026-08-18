@@ -1,6 +1,6 @@
 import type { SceneType } from '@/constants/common'
 import type { FromType } from '@/types/common'
-import { getDb } from '.'
+import { getDb } from './connection'
 
 /**
  * 数据库消息记录类型
