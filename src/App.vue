@@ -17,17 +17,17 @@
 
   const systemSetting = useSystemSettingStore()
 
-  // const onNativeContextMenu = (e: Event) => {
-  //   e.preventDefault()
-  // }
+  const onNativeContextMenu = (e: Event) => {
+    e.preventDefault()
+  }
 
-  // onMounted(() => {
-  //   document.addEventListener('contextmenu', onNativeContextMenu)
-  // })
+  onMounted(() => {
+    document.addEventListener('contextmenu', onNativeContextMenu)
+  })
 
-  // onUnmounted(() => {
-  //   document.removeEventListener('contextmenu', onNativeContextMenu)
-  // })
+  onUnmounted(() => {
+    document.removeEventListener('contextmenu', onNativeContextMenu)
+  })
 
   watch(
     () => systemSetting.themes.scheme,

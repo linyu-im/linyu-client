@@ -1,5 +1,5 @@
 <template>
-  <n-spin v-show="!editProfileShow" :show="loading" class="profile-card__spin">
+  <n-spin v-show="!editProfileShow" :show="loading" :size="24" class="profile-card__spin">
     <div class="profile-card">
       <ProfileCardUser
         v-if="type === 'user'"
