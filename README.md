@@ -4,14 +4,22 @@
 
 林语（Linyu）致力于打造**简单可部署、可自托管**的开源即时通讯方案——让个人、团队与企业都能轻松拥有一套数据可控、功能完整的沟通体系，覆盖桌面、移动等多端场景。本仓库为桌面端实现，基于 Tauri 2、Vue 3 与 TypeScript 构建。
 
-[![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://tauri.app/)
-[![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white)](https://vuejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Version](https://img.shields.io/badge/version-2.0.1-blue)](./package.json)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+<p align="center">
+  <a href="https://tauri.app/"><img src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white" alt="Tauri" /></a>
+  <a href="https://vuejs.org/"><img src="https://img.shields.io/badge/Vue-3-42b883?logo=vue.js&logoColor=white" alt="Vue" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-6+-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
+  <a href="./package.json"><img src="https://img.shields.io/badge/version-2.0.1-blue" alt="Version" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License" /></a>
+</p>
 
-**快速链接：** [组织主页](https://github.com/linyu-im) · [服务端](https://github.com/linyu-im/linyu-server) · [官网](https://linyu.chat)
+<p align="center">
+  <strong>快速链接：</strong>
+  <a href="https://github.com/linyu-im">组织主页</a> ·
+  <a href="https://github.com/linyu-im/linyu-server">服务端</a> ·
+  <a href="https://linyu.chat">官网</a> ·
+  <a href="#加入社区">加入社区</a>
+</p>
 
 ---
 
@@ -273,7 +281,7 @@ pnpm tauri build
 
 ## 参与贡献
 
-欢迎通过 Issue 反馈问题与建议，也欢迎提交 Pull Request，一起把林语做得更好用。
+欢迎通过 [Issue](https://github.com/linyu-im/linyu-client/issues) 反馈问题与建议，也欢迎提交 Pull Request，一起把林语做得更好用。也可扫码加入下方[社区交流群](#加入社区)。
 
 1. Fork 本仓库并创建功能分支
 2. 完成本地开发与自测
@@ -342,4 +350,22 @@ https://github.com/linyu-im/linyu-server/blob/main/LICENSE
 
 ---
 
-如果林语对你有帮助，欢迎 Star 支持，也欢迎通过 Issue 交流想法与问题，谢谢。
+## 加入社区
+
+欢迎扫码加入林语官方交流群，与开发者和用户一起讨论使用问题、分享建议，获取最新动态。
+
+<p align="center">
+  <img src="./.preview/community-wechat.jpg" alt="微信群二维码" width="260" style="border-radius: 8px; margin: 8px;" />
+  <img src="./.preview/community-qq.jpg" alt="QQ群二维码" width="260" style="border-radius: 8px; margin: 8px;" />
+</p>
+
+<p align="center">
+  <strong>微信群</strong> · 扫码加入「Linyu-官方交流群」<br />
+  <strong>QQ 群</strong> · 群号 <code>729158695</code>，或扫码加入
+</p>
+
+> 微信群二维码有时效性，若已过期请通过 QQ 群或 [Issue](https://github.com/linyu-im/linyu-client/issues) 联系我们获取最新入群方式。
+
+---
+
+如果林语对你有帮助，欢迎 Star 支持，也欢迎通过 Issue 或社群交流想法与问题，谢谢。
