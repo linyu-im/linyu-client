@@ -11,10 +11,15 @@ export const useNameStore = defineStore('name', () => {
   const peerInfoStore = usePeerInfoStore()
   const nameCache = new Map<string, string>()
   const inflight = new Map<string, Promise<string>>()
+  const lastRefresh = reactive(new Map<string, number>())
 
   const getCacheKey = (type: FromType, id: string, groupId = '') => {
     if (type === 'user' && groupId) return `${type}:${id}:g:${groupId}`
     return `${type}:${id}`
+  }
+
+  const bumpRefresh = (key: string) => {
+    lastRefresh.set(key, Date.now())
   }
 
   const cacheGet = (key: string) => {
@@ -60,7 +65,6 @@ export const useNameStore = defineStore('name', () => {
       }
       case 'group': {
         const res = await groupApi.getGroupInfo({ groupId: id })
-        console.log('getGroupInfo', res)
         if (res.code !== 0 || !res.data) return ''
         return res.data.info.name?.trim() || ''
       }
@@ -71,6 +75,11 @@ export const useNameStore = defineStore('name', () => {
 
   const getCachedName = (type: FromType, id: string, groupId = '') =>
     cacheGet(getCacheKey(type, id, type === 'user' ? groupId : ''))
+
+  const getLastRefresh = (type: FromType, id: string, groupId = '') => {
+    if (!id || !isNameType(type)) return 0
+    return lastRefresh.get(getCacheKey(type, id, type === 'user' ? groupId : '')) ?? 0
+  }
 
   const resolveName = async (type: FromType, id: string, groupId = ''): Promise<string> => {
     if (!id || !isNameType(type)) return ''
@@ -96,17 +105,61 @@ export const useNameStore = defineStore('name', () => {
     return task
   }
 
+  const setCachedName = (type: FromType, id: string, name: string, groupId = '') => {
+    if (!id || !isNameType(type)) return
+
+    const key = getCacheKey(type, id, type === 'user' ? groupId : '')
+    inflight.delete(key)
+
+    if (name.trim()) {
+      cacheSet(key, name.trim())
+    } else {
+      nameCache.delete(key)
+    }
+
+    bumpRefresh(key)
+  }
+
   const removeCachedName = (type: FromType, id: string, groupId = '') => {
     if (!id || !isNameType(type)) return
 
     const key = getCacheKey(type, id, type === 'user' ? groupId : '')
     nameCache.delete(key)
     inflight.delete(key)
+    bumpRefresh(key)
+  }
+
+  const invalidateUserNames = (userId: string) => {
+    if (!userId) return
+
+    const prefix = `user:${userId}`
+    const keysToBump = new Set<string>([prefix])
+
+    for (const key of nameCache.keys()) {
+      if (key === prefix || key.startsWith(`${prefix}:g:`)) {
+        keysToBump.add(key)
+      }
+    }
+
+    for (const key of lastRefresh.keys()) {
+      if (key === prefix || key.startsWith(`${prefix}:g:`)) {
+        keysToBump.add(key)
+      }
+    }
+
+    for (const key of keysToBump) {
+      nameCache.delete(key)
+      inflight.delete(key)
+      bumpRefresh(key)
+    }
   }
 
   return {
     getCachedName,
+    getLastRefresh,
     resolveName,
-    removeCachedName
+    setCachedName,
+    removeCachedName,
+    invalidateUserNames
   }
 })

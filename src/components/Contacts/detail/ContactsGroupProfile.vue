@@ -299,7 +299,11 @@
           peerInfoStore.refreshGroup(props.groupId)
           const userId = getCurrentMember()?.userId
           if (userId) {
-            nameStore.removeCachedName('user', userId, props.groupId)
+            if (next) {
+              nameStore.setCachedName('user', userId, next, props.groupId)
+            } else {
+              nameStore.removeCachedName('user', userId, props.groupId)
+            }
           }
           return
         }

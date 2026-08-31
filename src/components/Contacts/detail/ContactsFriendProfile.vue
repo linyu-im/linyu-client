@@ -155,6 +155,8 @@
   import { SceneType } from '@/constants/common'
   import { useHomeTabStore } from '@/stores/app/homeTab'
   import { useForwardMessageModal } from '@/composables/useForwardMessageModal'
+  import { useChatStore } from '@/stores/chat/chat'
+  import { useNameStore } from '@/stores/user/name'
   import { usePeerInfoStore } from '@/stores/user/peerInfo'
   import { useUserStore } from '@/stores/user/user'
   import type { Message } from '@/types/api/message'
@@ -186,6 +188,8 @@
   const peerInfoStore = usePeerInfoStore()
   const homeTabStore = useHomeTabStore()
   const userStore = useUserStore()
+  const chatStore = useChatStore()
+  const nameStore = useNameStore()
   const { openForwardMessageModal } = useForwardMessageModal()
 
   const sendingMessage = ref(false)
@@ -240,6 +244,12 @@
       .then((res) => {
         if (res.code === 0) {
           peerInfoStore.patchUser(props.userId, { remark: next })
+          chatStore.patchPeerRemark(props.userId, next)
+          nameStore.invalidateUserNames(props.userId)
+          const displayName = next || userInfo.value?.username?.trim() || ''
+          if (displayName) {
+            nameStore.setCachedName('user', props.userId, displayName)
+          }
           emit('remarkUpdated', { peerId: props.userId, remark: next })
           return
         }

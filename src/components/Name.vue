@@ -90,6 +90,15 @@
     },
     { immediate: true }
   )
+
+  watch(
+    () => nameStore.getLastRefresh(props.type, props.id, props.type === 'user' ? props.groupId : ''),
+    (newVal, oldVal) => {
+      if (newVal && newVal !== oldVal) {
+        loadName()
+      }
+    }
+  )
 </script>
 
 <style scoped lang="scss">
