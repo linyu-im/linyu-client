@@ -1,11 +1,12 @@
 <template>
-  <n-spin v-show="!editProfileShow" :show="loading" :size="24" class="profile-card__spin">
+  <n-spin v-show="!overlayBlocking" :show="loading" :size="24" class="profile-card__spin">
     <div class="profile-card">
       <ProfileCardUser
         v-if="type === 'user'"
         :id="id"
         :user-info="userInfo"
-        @update:edit-profile-show="onEditProfileShow" />
+        @update:edit-profile-show="onEditProfileShow"
+        @update:add-friend-show="onAddFriendShow" />
       <ProfileCardGroup
         v-else-if="type === 'group'"
         :id="id"
@@ -37,15 +38,23 @@
   const emit = defineEmits<{
     positionChange: []
     'update:editProfileShow': [show: boolean]
+    'update:addFriendShow': [show: boolean]
   }>()
 
   const userStore = useUserStore()
   const peerInfoStore = usePeerInfoStore()
   const editProfileShow = ref(false)
+  const addFriendShow = ref(false)
+  const overlayBlocking = computed(() => editProfileShow.value || addFriendShow.value)
 
   const onEditProfileShow = (show: boolean) => {
     editProfileShow.value = show
     emit('update:editProfileShow', show)
+  }
+
+  const onAddFriendShow = (show: boolean) => {
+    addFriendShow.value = show
+    emit('update:addFriendShow', show)
   }
 
   const userInfo = computed(() =>

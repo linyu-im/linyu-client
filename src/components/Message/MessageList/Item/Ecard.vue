@@ -30,7 +30,8 @@
       :id="content.userId"
       type="user"
       @position-change="syncProfilePosition"
-      @update:edit-profile-show="onEditProfileShow" />
+      @update:edit-profile-show="onEditProfileShow"
+      @update:add-friend-show="onAddFriendShow" />
   </n-popover>
 </template>
 
@@ -67,9 +68,15 @@
   const profileX = ref(0)
   const profileY = ref(0)
   const editProfileShow = ref(false)
+  const addFriendShow = ref(false)
+  const childModalBlocking = computed(() => editProfileShow.value || addFriendShow.value)
 
   const onEditProfileShow = (show: boolean) => {
     editProfileShow.value = show
+  }
+
+  const onAddFriendShow = (show: boolean) => {
+    addFriendShow.value = show
   }
 
   const openProfileAt = (x: number, y: number) => {
@@ -85,7 +92,7 @@
   }
 
   const onPopoverClickOutside = (e: MouseEvent) => {
-    if (editProfileShow.value) return
+    if (childModalBlocking.value) return
     const target = e.target as Node | null
     if (target && ecardRef.value?.contains(target)) return
     closeProfile()
@@ -102,7 +109,7 @@
   }
 
   const closeProfile = () => {
-    if (editProfileShow.value) return
+    if (childModalBlocking.value) return
     profileVisible.value = false
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
@@ -116,6 +123,7 @@
     }
 
     editProfileShow.value = false
+    addFriendShow.value = false
     window.removeEventListener('resize', onResizeSync)
   }
 

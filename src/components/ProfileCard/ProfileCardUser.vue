@@ -86,7 +86,7 @@
 
       <div class="profile-card__actions">
         <template v-if="!isSelf && !isFriend">
-          <button type="button" class="profile-card__action">
+          <button type="button" class="profile-card__action" @click="onAddFriend">
             <svg class="profile-card__action-icon size-18px">
               <use href="#plus" />
             </svg>
@@ -130,6 +130,7 @@
     </div>
 
     <EditUserProfileModal v-model:show="showEditProfile" :user-id="id" :user-info="userInfo" />
+    <AddFriendApplyModal v-model:show="showAddFriendModal" :user="userInfo" />
   </div>
 </template>
 
@@ -137,6 +138,7 @@
   import type { AvCallType } from '@/types/api/avCall'
   import type { User } from '@/types/api/user'
   import { avCallApi, contactsApi } from '@/api'
+  import AddFriendApplyModal from '@/components/Modal/AddFriendApplyModal.vue'
   import EditUserProfileModal from '@/components/Modal/EditUserProfileModal.vue'
   import { SceneType } from '@/constants/common'
   import { useAvatarStore } from '@/stores/user/avatar'
@@ -155,6 +157,7 @@
 
   const emit = defineEmits<{
     'update:editProfileShow': [show: boolean]
+    'update:addFriendShow': [show: boolean]
   }>()
 
   const { t } = useI18n()
@@ -169,11 +172,25 @@
   const isSelf = computed(() => props.id === currentUserId.value)
   const isFriend = ref(false)
   const showEditProfile = ref(false)
+  const showAddFriendModal = ref(false)
+
+  const onAddFriend = () => {
+    if (!props.userInfo) return
+    showAddFriendModal.value = true
+  }
 
   watch(
     showEditProfile,
     (show) => {
       emit('update:editProfileShow', show)
+    },
+    { immediate: true }
+  )
+
+  watch(
+    showAddFriendModal,
+    (show) => {
+      emit('update:addFriendShow', show)
     },
     { immediate: true }
   )

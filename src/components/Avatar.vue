@@ -31,7 +31,8 @@
       :id="id"
       :type="type"
       @position-change="syncProfilePosition"
-      @update:edit-profile-show="onEditProfileShow" />
+      @update:edit-profile-show="onEditProfileShow"
+      @update:add-friend-show="onAddFriendShow" />
   </n-popover>
   <n-avatar
     v-else
@@ -113,6 +114,8 @@
   const src = ref(getInitialAvatarSrc())
   const profileVisible = ref(false)
   const editProfileShow = ref(false)
+  const addFriendShow = ref(false)
+  const childModalBlocking = computed(() => editProfileShow.value || addFriendShow.value)
 
   const displaySrc = computed(() => src.value || defaultAvatar.value)
 
@@ -236,8 +239,12 @@
     editProfileShow.value = show
   }
 
+  const onAddFriendShow = (show: boolean) => {
+    addFriendShow.value = show
+  }
+
   const onPopoverClickOutside = () => {
-    if (editProfileShow.value) return
+    if (childModalBlocking.value) return
     closeProfile()
   }
 
@@ -249,6 +256,7 @@
     }
 
     editProfileShow.value = false
+    addFriendShow.value = false
     window.removeEventListener('resize', onResizeSync)
   }
 
@@ -259,7 +267,7 @@
   })
 
   const closeProfile = () => {
-    if (editProfileShow.value) return
+    if (childModalBlocking.value) return
     profileVisible.value = false
   }
 

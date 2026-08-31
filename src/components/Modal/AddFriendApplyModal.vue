@@ -1,5 +1,10 @@
 <template>
-  <n-modal v-model:show="visible" :mask-closable="true" transform-origin="center" @after-leave="resetForm">
+  <n-modal
+    v-model:show="visible"
+    :mask-closable="true"
+    :z-index="4000"
+    transform-origin="center"
+    @after-leave="resetForm">
     <div class="add-friend-modal">
       <div class="add-friend-modal__header">
         <h2 class="add-friend-modal__title">{{ t('addContacts.user.applyModal.title') }}</h2>
